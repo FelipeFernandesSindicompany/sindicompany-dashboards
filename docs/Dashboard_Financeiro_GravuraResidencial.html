@@ -180,7 +180,7 @@ var CONFIG = {
       mar26: 164210.97, }
   }
 };
-var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26'], EVO_V=[68151, 70022, 556, -61441, -104635, -98529, -27374, 11434, 68373, 65909, 24062, 113301, 188074, 188074.32];
+var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26'], EVO_V=[68151, 70022, 556, -61441, -104635, -98529, -27374, 11434, 68373, 65909, 24062, 113301, 188074];
 var BAL={
 
   // ── Abril / 2025 ──────────────────────────────────────────────────────
@@ -580,21 +580,7 @@ var BAL={
       {c:'CONSUMOS',               v:   538.79},
       {c:'ADMINISTRATIVO',         v: 11532.14}
     ]
-  },
-    mai26: {
-      tit: "Maio / 2026",
-      per: "01/05/2026 a 31/05/2026",
-      tAnt: 113332.33,
-      tCred: 300485.52,
-      tDeb: 225743.53,
-      tAtual: 188074.32,
-      tDesp: 225743.53,
-      inad: 19089.92,
-      inadProc: 0,
-      contas: [{n:"ORDINÁRIA", a:113332.33, c:300485.52, d:225743.53, s:188074.32}],
-      desp: [{c:"ORDINARIA", v:150802.67}, {c:"CONSUMO", v:52477.44}, {c:"BENFEITORIAS", v:10568.02}, {c:"MELHORAMENTOS", v:10100.0}, {c:"SALAO FESTAS/CHURRASQUEIRA", v:1100.0}, {c:"MATERIAL IMPLANTACAO", v:695.4}],
-      banco: {cc:188074.32, cdb:0.0, priv:0.0}
-    }
+  }
 };
 var MESES=Object.keys(BAL), chartsBuilt=false;
 
