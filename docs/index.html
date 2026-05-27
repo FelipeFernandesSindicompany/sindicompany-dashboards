@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sindicompany — Central de Dashboards Financeiros</title>
+  <style>
+    :root {
+      --brand: #171B2E;
+      --accent: #E87722;
+      --bg: #F0F2F8;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    header {
+      background: var(--brand);
+      color: white;
+      padding: 1.4rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .logo-badge {
+      width: 40px; height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1.1rem; color: white; flex-shrink: 0;
+    }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+    header .sub { font-size: .8rem; opacity: .65; margin-top: 2px; }
+    .total-badge {
+      background: rgba(232,119,34,.25);
+      border: 1px solid rgba(232,119,34,.5);
+      color: #E87722;
+      padding: .35rem .9rem;
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    /* ── Barra de busca ── */
+    .search-wrap {
+      max-width: 1200px;
+      margin: 2rem auto 1.5rem;
+      padding: 0 1.5rem;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: .6rem 1.1rem;
+      gap: .6rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      max-width: 480px;
+    }
+    .search-box input {
+      border: none; outline: none;
+      font-size: .95rem; width: 100%;
+      background: transparent; color: var(--text);
+    }
+    .search-icon { color: var(--muted); font-size: 1.1rem; }
+
+    /* ── Grid ── */
+    .grid-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+    }
+    .contagem {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      text-decoration: none;
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      border: 1.5px solid transparent;
+      transition: transform .15s, box-shadow .15s, border-color .15s;
+      border-left: 4px solid var(--cor);
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,.11);
+      border-color: var(--cor);
+      border-left-color: var(--cor);
+    }
+    .card-avatar {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: 10px;
+      background: var(--cor);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem;
+      opacity: .9;
+    }
+    .card-body { flex: 1; min-width: 0; }
+    .card-nome {
+      font-weight: 700;
+      font-size: .9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .card-mes {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .2rem;
+    }
+    .card-arrow {
+      color: var(--muted);
+      font-size: 1rem;
+      transition: transform .15s, color .15s;
+      flex-shrink: 0;
+    }
+    .card:hover .card-arrow {
+      transform: translateX(3px);
+      color: var(--cor);
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-size: .74rem;
+      color: var(--muted);
+      padding: 0 0 2.5rem;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 1rem; }
+      .card-nome { font-size: .85rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-badge">S</div>
+    <div>
+      <h1>Sindicompany</h1>
+      <div class="sub">Central de Dashboards Financeiros</div>
+    </div>
+  </div>
+  <span class="total-badge">51 condomínios</span>
+</header>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="busca" placeholder="Buscar condomínio..." oninput="filtrar()" autocomplete="off"/>
+  </div>
+</div>
+
+<div class="grid-wrap">
+  <div class="contagem" id="contagem">51 dashboards disponíveis</div>
+  <div class="grid" id="grid">
+    
+    <a href="Dashboard_Financeiro_Alvorada.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">A</div>
+      <div class="card-body">
+        <div class="card-nome">Alvorada</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_BarraVivaI_Alegria.html" class="card" style="--cor:#7c3aed" target="_blank">
+      <div class="card-avatar">B</div>
+      <div class="card-body">
+        <div class="card-nome">Barra Viva I · Alegria</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Baturite.html" class="card" style="--cor:#db2777" target="_blank">
+      <div class="card-avatar">B</div>
+      <div class="card-body">
+        <div class="card-nome">Baturité</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_BlueSky.html" class="card" style="--cor:#ea580c" target="_blank">
+      <div class="card-avatar">B</div>
+      <div class="card-body">
+        <div class="card-nome">Blue Sky</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_CapDAntibes.html" class="card" style="--cor:#ca8a04" target="_blank">
+      <div class="card-avatar">C</div>
+      <div class="card-body">
+        <div class="card-nome">Cap D'Antibes</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_CinqueTerre.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">C</div>
+      <div class="card-body">
+        <div class="card-nome">Cinque Terre Residenza</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_ClubParkButanta.html" class="card" style="--cor:#0891b2" target="_blank">
+      <div class="card-avatar">C</div>
+      <div class="card-body">
+        <div class="card-nome">Club Park Butantã</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Cores.html" class="card" style="--cor:#4f46e5" target="_blank">
+      <div class="card-avatar">C</div>
+      <div class="card-body">
+        <div class="card-nome">Cores</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_EloElo.html" class="card" style="--cor:#be185d" target="_blank">
+      <div class="card-avatar">E</div>
+      <div class="card-body">
+        <div class="card-nome">Elo & Elo Duo</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_FITRioBonito.html" class="card" style="--cor:#b45309" target="_blank">
+      <div class="card-avatar">8</div>
+      <div class="card-body">
+        <div class="card-nome">816 FIT Casa Rio Bonito</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_GiardinoDItalia.html" class="card" style="--cor:#0d9488" target="_blank">
+      <div class="card-avatar">G</div>
+      <div class="card-body">
+        <div class="card-nome">Giardino D’Itália</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_GoBarra_Funda.html" class="card" style="--cor:#dc2626" target="_blank">
+      <div class="card-avatar">G</div>
+      <div class="card-body">
+        <div class="card-nome">Go! Barra Funda</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_GoLiberdade.html" class="card" style="--cor:#9333ea" target="_blank">
+      <div class="card-avatar">G</div>
+      <div class="card-body">
+        <div class="card-nome">Go Liberdade</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_GravuraResidencial.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">G</div>
+      <div class="card-body">
+        <div class="card-nome">Gravura Residencial</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_GravuraStudio.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">G</div>
+      <div class="card-body">
+        <div class="card-nome">Gravura Studio</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Highlights_DrNelsonMoretti.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">H</div>
+      <div class="card-body">
+        <div class="card-nome">Highlights Dr. Nelson Moretti</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_HubHomeClub_Tatuape.html" class="card" style="--cor:#7c3aed" target="_blank">
+      <div class="card-avatar">H</div>
+      <div class="card-body">
+        <div class="card-nome">Hub Home Club Tatuapé</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_IGloo.html" class="card" style="--cor:#db2777" target="_blank">
+      <div class="card-avatar">I</div>
+      <div class="card-body">
+        <div class="card-nome">I-GLOO ALPHAVILLE</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_LivingForConsolacao.html" class="card" style="--cor:#ea580c" target="_blank">
+      <div class="card-avatar">L</div>
+      <div class="card-body">
+        <div class="card-nome">Living For Consolação</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_MaisonDuRhone.html" class="card" style="--cor:#ca8a04" target="_blank">
+      <div class="card-avatar">M</div>
+      <div class="card-body">
+        <div class="card-nome">Maison Du Rhone</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Monte_Tabor.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">M</div>
+      <div class="card-body">
+        <div class="card-nome">Monte Tabor</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_NYCBerrini.html" class="card" style="--cor:#0891b2" target="_blank">
+      <div class="card-avatar">N</div>
+      <div class="card-body">
+        <div class="card-nome">NYC</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Onze22.html" class="card" style="--cor:#4f46e5" target="_blank">
+      <div class="card-avatar">O</div>
+      <div class="card-body">
+        <div class="card-nome">Onze 22</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Organy_Residencial.html" class="card" style="--cor:#be185d" target="_blank">
+      <div class="card-avatar">O</div>
+      <div class="card-body">
+        <div class="card-nome">Organy Residencial</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Organy_Studio.html" class="card" style="--cor:#b45309" target="_blank">
+      <div class="card-avatar">O</div>
+      <div class="card-body">
+        <div class="card-nome">Organy Studio</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PadreCarvalho.html" class="card" style="--cor:#0d9488" target="_blank">
+      <div class="card-avatar">7</div>
+      <div class="card-body">
+        <div class="card-nome">730 Padre Carvalho</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PalmBeach.html" class="card" style="--cor:#dc2626" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Palm Beach</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Patricia.html" class="card" style="--cor:#9333ea" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Patrícia</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Plano Estação Campo Limpo</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PlanoMooca.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Plano & Mooca · Praça Lion III</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PlanoRioBonito.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Plano Rio Bonito</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Platinum.html" class="card" style="--cor:#7c3aed" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Platinum Building Berrini</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PortSaintTropez.html" class="card" style="--cor:#db2777" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Port Saint Tropez</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PracaSaude_Comercial.html" class="card" style="--cor:#ea580c" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Praça Saúde BY YOU - Comercial</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_PracaSaude_Residencial.html" class="card" style="--cor:#ca8a04" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Praça Saúde Residencial</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_ReservaVerde.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">R</div>
+      <div class="card-body">
+        <div class="card-nome">Reserva Verde</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_ResidencialNapoleao.html" class="card" style="--cor:#0891b2" target="_blank">
+      <div class="card-avatar">N</div>
+      <div class="card-body">
+        <div class="card-nome">Napoleão</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_SaintAfonso.html" class="card" style="--cor:#4f46e5" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Parque Saint Afonso</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Serra_da_Mantiqueira.html" class="card" style="--cor:#be185d" target="_blank">
+      <div class="card-avatar">S</div>
+      <div class="card-body">
+        <div class="card-nome">Serra da Mantiqueira</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_SplendorSquare.html" class="card" style="--cor:#b45309" target="_blank">
+      <div class="card-avatar">S</div>
+      <div class="card-body">
+        <div class="card-nome">Splendor Square</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Sublime.html" class="card" style="--cor:#0d9488" target="_blank">
+      <div class="card-avatar">S</div>
+      <div class="card-body">
+        <div class="card-nome">Sublime</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_TopNine.html" class="card" style="--cor:#dc2626" target="_blank">
+      <div class="card-avatar">T</div>
+      <div class="card-body">
+        <div class="card-nome">Top Nine</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_UpperItaim.html" class="card" style="--cor:#9333ea" target="_blank">
+      <div class="card-avatar">U</div>
+      <div class="card-body">
+        <div class="card-nome">Upper Itaim</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_VibraButanta.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Vibra Butantã</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_Victoria.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Victoria</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_VillaPark_Osasco.html" class="card" style="--cor:#2563eb" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Villa Park Osasco</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_VillaSardenha.html" class="card" style="--cor:#7c3aed" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Villa Sardenha</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_VistaVerde.html" class="card" style="--cor:#db2777" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Vista Verde</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_VitaParque.html" class="card" style="--cor:#ea580c" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Vita Parque</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Financeiro_VivazVilaGuilherme.html" class="card" style="--cor:#ca8a04" target="_blank">
+      <div class="card-avatar">V</div>
+      <div class="card-body">
+        <div class="card-nome">Vivaz Vila Guilherme</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <a href="Dashboard_Praça_Saúde_Moradia.html" class="card" style="--cor:#16a34a" target="_blank">
+      <div class="card-avatar">P</div>
+      <div class="card-body">
+        <div class="card-nome">Praça Saúde - Moradia</div>
+        <div class="card-mes">—</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+    <div class="empty" id="empty" style="display:none">Nenhum condomínio encontrado.</div>
+  </div>
+</div>
+
+<footer>Gerado em 27/05/2026 14:35 · Sindicompany Administradora</footer>
+
+<script>
+function filtrar() {
+  const q = document.getElementById('busca').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('#grid .card');
+  let vis = 0;
+  cards.forEach(c => {
+    const nome = c.querySelector('.card-nome').textContent.toLowerCase();
+    const show = !q || nome.includes(q);
+    c.style.display = show ? '' : 'none';
+    if (show) vis++;
+  });
+  document.getElementById('contagem').textContent =
+    q ? `${vis} resultado(s) para "${q}"` : `51 dashboards disponíveis`;
+  document.getElementById('empty').style.display = vis === 0 ? '' : 'none';
+}
+</script>
+</body>
+</html>

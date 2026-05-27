@@ -1,0 +1,35 @@
+# Dados financeiros (privados — nunca commitar)
+data/
+*.xlsx
+*.xls
+*.pdf
+*.PDF
+
+# Arquivos de teste temporários
+test_*.html
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Secrets / environment
+.env
+*.env
+secrets.json
+
+# Claude Code (sessão local)
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,68 @@
+name: Injeção Mensal
+
+on:
+  # Executa no dia 5 de cada mês às 08:00 BRT (= 11:00 UTC)
+  schedule:
+    - cron: '0 11 5 * *'
+  # Permite disparar manualmente pelo GitHub (Actions → Run workflow)
+  workflow_dispatch:
+    inputs:
+      mes:
+        description: 'Mês YYYY-MM (deixe vazio para usar o mês anterior)'
+        required: false
+        default: ''
+      condominio:
+        description: 'ID do condomínio (deixe vazio para processar todos)'
+        required: false
+        default: ''
+
+jobs:
+  injetar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar dependências
+        run: pip install openpyxl pdfplumber pandas lxml jinja2
+
+      - name: Calcular mês de referência
+        id: mes
+        run: |
+          if [ -n "${{ github.event.inputs.mes }}" ]; then
+            echo "MES=${{ github.event.inputs.mes }}" >> $GITHUB_OUTPUT
+          else
+            # Mês anterior ao dia de execução
+            echo "MES=$(date -d '1 month ago' '+%Y-%m')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Baixar arquivos do mês (Google Drive)
+        # TODO: Configurar secret GDRIVE_FOLDER_ID e instalar rclone
+        # Por ora, este passo é um placeholder — os arquivos precisam estar
+        # em data/{condominio_id}/{YYYY-MM}/ antes da execução.
+        run: echo "Mês alvo: ${{ steps.mes.outputs.MES }} — arquivos devem estar em data/"
+
+      - name: Injetar dados nos dashboards
+        run: |
+          MES="${{ steps.mes.outputs.MES }}"
+          COND="${{ github.event.inputs.condominio }}"
+          if [ -n "$COND" ]; then
+            python scripts/injetar_mes.py --mes "$MES" --condominio "$COND"
+          else
+            python scripts/injetar_mes.py --mes "$MES" --todos
+          fi
+
+      - name: Commitar HTMLs atualizados
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "Dashboard: injeta ${{ steps.mes.outputs.MES }}"
+          git push

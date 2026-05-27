@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sindicompany — Dashboards Financeiros {{ mes_label }}</title>
+  <style>
+    :root {
+      --cor: #2563eb;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header {
+      background: var(--cor);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header .sub { font-size: .85rem; opacity: .85; }
+    .badge {
+      background: rgba(255,255,255,.2);
+      padding: .3rem .9rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .stats-bar {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: var(--card);
+      border-radius: 10px;
+      padding: .9rem 1.4rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      min-width: 130px;
+    }
+    .stat-label { font-size: .72rem; color: var(--muted); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; margin-top: .2rem; }
+
+    .search-bar {
+      margin-bottom: 1.5rem;
+    }
+    .search-bar input {
+      width: 100%; max-width: 400px;
+      padding: .6rem 1rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-bar input:focus { border-color: var(--cor); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      overflow: hidden;
+      transition: transform .15s, box-shadow .15s;
+      border-top: 4px solid var(--cor-cond, var(--cor));
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+    .card a { text-decoration: none; color: inherit; display: block; }
+
+    .card-body { padding: 1.1rem 1.3rem 1.3rem; }
+    .card-nome { font-weight: 700; font-size: .95rem; margin-bottom: .3rem; }
+    .card-empresa { font-size: .75rem; color: var(--muted); margin-bottom: .8rem; }
+    .card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .75rem;
+      font-weight: 600;
+      padding: .25rem .7rem;
+      border-radius: 999px;
+    }
+    .card-status.ok      { background: #dcfce7; color: var(--success); }
+    .card-status.pending { background: #fef3c7; color: #92400e; }
+
+    .card-footer {
+      padding: .6rem 1.3rem;
+      background: var(--bg);
+      font-size: .75rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    footer {
+      text-align: center;
+      font-size: .75rem;
+      color: var(--muted);
+      padding: 2rem 0 3rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Sindicompany</h1>
+    <div class="sub">Central de Dashboards Financeiros</div>
+  </div>
+  <span class="badge">{{ mes_label }}</span>
+</header>
+
+<main>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-label">Total</div>
+      <div class="stat-value">{{ total }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Processados</div>
+      <div class="stat-value" style="color: var(--success)">{{ processados }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Pendentes</div>
+      <div class="stat-value" style="color: var(--danger)">{{ total - processados }}</div>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="busca" placeholder="Buscar condomínio..." oninput="filtrar()">
+  </div>
+
+  <div class="grid" id="grid">
+    {% for r in resumos %}
+    <div class="card" style="--cor-cond: {{ r.cond.cor | default('#2563eb') }}" data-nome="{{ r.cond.nome | lower }}">
+      {% if r.gerado %}
+      <a href="{{ r.link }}">
+      {% endif %}
+        <div class="card-body">
+          <div class="card-nome">{{ r.cond.nome }}</div>
+          <div class="card-empresa">{{ r.cond.empresa_gestora | replace('_', ' ') | title }}</div>
+          {% if r.gerado %}
+          <span class="card-status ok">✓ Dashboard disponível</span>
+          {% else %}
+          <span class="card-status pending">⏳ Aguardando arquivos</span>
+          {% endif %}
+        </div>
+        <div class="card-footer">
+          <span>{{ r.cond.unidades }} unidades</span>
+          <span>{{ r.cond.id }}</span>
+        </div>
+      {% if r.gerado %}
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+</main>
+
+<footer>
+  Gerado em {{ gerado_em }} · Sindicompany Administradora
+</footer>
+
+<script>
+function filtrar() {
+  const q = document.getElementById('busca').value.toLowerCase();
+  document.querySelectorAll('#grid .card').forEach(card => {
+    card.style.display = card.dataset.nome.includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

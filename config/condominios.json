@@ -1,0 +1,533 @@
+{
+  "condominios": [
+    {
+      "id": "alvorada",
+      "nome": "Alvorada",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/alvorada",
+      "html_file": "Dashboard_Financeiro_Alvorada.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "barra_viva_i_alegria",
+      "nome": "Barra Viva I · Alegria",
+      "empresa_gestora": "lello_xls",
+      "pasta_dados": "data/barra_viva_i_alegria",
+      "html_file": "Dashboard_Financeiro_BarraVivaI_Alegria.html",
+      "ativo": true,
+      "cor": "#7c3aed",
+      "unidades": 0
+    },
+    {
+      "id": "baturite",
+      "nome": "Baturité",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/baturite",
+      "html_file": "Dashboard_Financeiro_Baturite.html",
+      "ativo": true,
+      "cor": "#db2777",
+      "unidades": 0
+    },
+    {
+      "id": "residencial_blue_sky",
+      "nome": "Residencial Blue Sky",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/residencial_blue_sky",
+      "html_file": "Dashboard_Financeiro_BlueSky.html",
+      "ativo": true,
+      "cor": "#ea580c",
+      "unidades": 0
+    },
+    {
+      "id": "cap_d_antibes",
+      "nome": "Cap D'Antibes",
+      "empresa_gestora": "datadigitus_pdf",
+      "pasta_dados": "data/cap_d_antibes",
+      "html_file": "Dashboard_Financeiro_CapDAntibes.html",
+      "ativo": true,
+      "cor": "#ca8a04",
+      "unidades": 0
+    },
+    {
+      "id": "cinque_terre_residenza",
+      "nome": "Cinque Terre Residenza",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/cinque_terre_residenza",
+      "html_file": "Dashboard_Financeiro_CinqueTerre.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    },
+    {
+      "id": "club_park_butanta",
+      "nome": "Club Park Butantã",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/club_park_butanta",
+      "html_file": "Dashboard_Financeiro_ClubParkButanta.html",
+      "ativo": true,
+      "cor": "#0891b2",
+      "unidades": 0
+    },
+    {
+      "id": "cores",
+      "nome": "Cores",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/cores",
+      "html_file": "Dashboard_Financeiro_Cores.html",
+      "ativo": true,
+      "cor": "#4f46e5",
+      "unidades": 0
+    },
+    {
+      "id": "elo_elo_duo",
+      "nome": "Elo & Elo Duo",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/elo_elo_duo",
+      "html_file": "Dashboard_Financeiro_EloElo.html",
+      "ativo": true,
+      "cor": "#be185d",
+      "unidades": 0
+    },
+    {
+      "id": "816_fit_casa_rio_bonito",
+      "nome": "816 FIT Casa Rio Bonito",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/816_fit_casa_rio_bonito",
+      "html_file": "Dashboard_Financeiro_FITRioBonito.html",
+      "ativo": true,
+      "cor": "#b45309",
+      "unidades": 0
+    },
+    {
+      "id": "giardino_d_italia",
+      "nome": "Giardino D’Itália",
+      "empresa_gestora": "iello_pdf",
+      "pasta_dados": "data/giardino_d_italia",
+      "html_file": "Dashboard_Financeiro_GiardinoDItalia.html",
+      "ativo": true,
+      "cor": "#0d9488",
+      "unidades": 0
+    },
+    {
+      "id": "go_barra_funda",
+      "nome": "Go! Barra Funda",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/go_barra_funda",
+      "html_file": "Dashboard_Financeiro_GoBarra_Funda.html",
+      "ativo": true,
+      "cor": "#dc2626",
+      "unidades": 0
+    },
+    {
+      "id": "go_liberdade",
+      "nome": "Go Liberdade",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/go_liberdade",
+      "html_file": "Dashboard_Financeiro_GoLiberdade.html",
+      "ativo": true,
+      "cor": "#9333ea",
+      "unidades": 0
+    },
+    {
+      "id": "gravura_residencial",
+      "nome": "Gravura Residencial",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/gravura_residencial",
+      "html_file": "Dashboard_Financeiro_GravuraResidencial.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "gravura_studio",
+      "nome": "Gravura Studio",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/gravura_studio",
+      "html_file": "Dashboard_Financeiro_GravuraStudio.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    },
+    {
+      "id": "highlights_dr_nelson_moretti",
+      "nome": "Highlights Dr. Nelson Moretti",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/highlights_dr_nelson_moretti",
+      "html_file": "Dashboard_Financeiro_Highlights_DrNelsonMoretti.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "hub_home_club_tatuape",
+      "nome": "Hub Home Club Tatuapé",
+      "empresa_gestora": "lello_xls",
+      "pasta_dados": "data/hub_home_club_tatuape",
+      "html_file": "Dashboard_Financeiro_HubHomeClub_Tatuape.html",
+      "ativo": true,
+      "cor": "#7c3aed",
+      "unidades": 0
+    },
+    {
+      "id": "i_gloo_alphaville",
+      "nome": "I-GLOO ALPHAVILLE",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/i_gloo_alphaville",
+      "html_file": "Dashboard_Financeiro_IGloo.html",
+      "ativo": true,
+      "cor": "#db2777",
+      "unidades": 0
+    },
+    {
+      "id": "living_for_consolacao",
+      "nome": "Living For Consolação",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/living_for_consolacao",
+      "html_file": "Dashboard_Financeiro_LivingForConsolacao.html",
+      "ativo": true,
+      "cor": "#ea580c",
+      "unidades": 0
+    },
+    {
+      "id": "maison_du_rhone",
+      "nome": "Maison Du Rhone",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/maison_du_rhone",
+      "html_file": "Dashboard_Financeiro_MaisonDuRhone.html",
+      "ativo": true,
+      "cor": "#ca8a04",
+      "unidades": 0
+    },
+    {
+      "id": "monte_tabor",
+      "nome": "Monte Tabor",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/monte_tabor",
+      "html_file": "Dashboard_Financeiro_Monte_Tabor.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    },
+    {
+      "id": "nyc",
+      "nome": "NYC",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/nyc",
+      "html_file": "Dashboard_Financeiro_NYCBerrini.html",
+      "ativo": true,
+      "cor": "#0891b2",
+      "unidades": 0
+    },
+    {
+      "id": "onze_22",
+      "nome": "Onze 22",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/onze_22",
+      "html_file": "Dashboard_Financeiro_Onze22.html",
+      "ativo": true,
+      "cor": "#4f46e5",
+      "unidades": 0
+    },
+    {
+      "id": "organy_residencial",
+      "nome": "Organy Residencial",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/organy_residencial",
+      "html_file": "Dashboard_Financeiro_Organy_Residencial.html",
+      "ativo": true,
+      "cor": "#be185d",
+      "unidades": 0
+    },
+    {
+      "id": "organy_studio",
+      "nome": "Organy Studio",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/organy_studio",
+      "html_file": "Dashboard_Financeiro_Organy_Studio.html",
+      "ativo": true,
+      "cor": "#b45309",
+      "unidades": 0
+    },
+    {
+      "id": "730_padre_carvalho",
+      "nome": "730 Padre Carvalho",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/730_padre_carvalho",
+      "html_file": "Dashboard_Financeiro_PadreCarvalho.html",
+      "ativo": true,
+      "cor": "#0d9488",
+      "unidades": 0
+    },
+    {
+      "id": "palm_beach",
+      "nome": "Palm Beach",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/palm_beach",
+      "html_file": "Dashboard_Financeiro_PalmBeach.html",
+      "ativo": true,
+      "cor": "#dc2626",
+      "unidades": 0
+    },
+    {
+      "id": "patricia",
+      "nome": "Patrícia",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/patricia",
+      "html_file": "Dashboard_Financeiro_Patricia.html",
+      "ativo": true,
+      "cor": "#9333ea",
+      "unidades": 0
+    },
+    {
+      "id": "plano_estacao_campo_limpo",
+      "nome": "Plano Estação Campo Limpo",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/plano_estacao_campo_limpo",
+      "html_file": "Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "plano_mooca_praca_lion_iii",
+      "nome": "Plano & Mooca · Praça Lion III",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/plano_mooca_praca_lion_iii",
+      "html_file": "Dashboard_Financeiro_PlanoMooca.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    },
+    {
+      "id": "plano_rio_bonito",
+      "nome": "Plano Rio Bonito",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/plano_rio_bonito",
+      "html_file": "Dashboard_Financeiro_PlanoRioBonito.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "platinum_building_berrini",
+      "nome": "Platinum Building Berrini",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/platinum_building_berrini",
+      "html_file": "Dashboard_Financeiro_Platinum.html",
+      "ativo": true,
+      "cor": "#7c3aed",
+      "unidades": 0
+    },
+    {
+      "id": "port_saint_tropez",
+      "nome": "Port Saint Tropez",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/port_saint_tropez",
+      "html_file": "Dashboard_Financeiro_PortSaintTropez.html",
+      "ativo": true,
+      "cor": "#db2777",
+      "unidades": 0
+    },
+    {
+      "id": "praca_saude_by_you_comercial",
+      "nome": "Praça Saúde BY YOU - Comercial",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/praca_saude_by_you_comercial",
+      "html_file": "Dashboard_Financeiro_PracaSaude_Comercial.html",
+      "ativo": true,
+      "cor": "#ea580c",
+      "unidades": 0
+    },
+    {
+      "id": "praca_saude_residencial",
+      "nome": "Praça Saúde Residencial",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/praca_saude_residencial",
+      "html_file": "Dashboard_Financeiro_PracaSaude_Residencial.html",
+      "ativo": true,
+      "cor": "#ca8a04",
+      "unidades": 0
+    },
+    {
+      "id": "reserva_verde",
+      "nome": "Reserva Verde",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/reserva_verde",
+      "html_file": "Dashboard_Financeiro_ReservaVerde.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    },
+    {
+      "id": "residencial_napoleao",
+      "nome": "Residencial Napoleão",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/residencial_napoleao",
+      "html_file": "Dashboard_Financeiro_ResidencialNapoleao.html",
+      "ativo": true,
+      "cor": "#0891b2",
+      "unidades": 0
+    },
+    {
+      "id": "parque_saint_afonso",
+      "nome": "Parque Saint Afonso",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/parque_saint_afonso",
+      "html_file": "Dashboard_Financeiro_SaintAfonso.html",
+      "ativo": true,
+      "cor": "#4f46e5",
+      "unidades": 0
+    },
+    {
+      "id": "serra_da_mantiqueira",
+      "nome": "Serra da Mantiqueira",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/serra_da_mantiqueira",
+      "html_file": "Dashboard_Financeiro_Serra_da_Mantiqueira.html",
+      "ativo": true,
+      "cor": "#be185d",
+      "unidades": 0
+    },
+    {
+      "id": "splendor_square",
+      "nome": "Splendor Square",
+      "empresa_gestora": "lello_xls",
+      "pasta_dados": "data/splendor_square",
+      "html_file": "Dashboard_Financeiro_SplendorSquare.html",
+      "ativo": true,
+      "cor": "#b45309",
+      "unidades": 0
+    },
+    {
+      "id": "sublime",
+      "nome": "Sublime",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/sublime",
+      "html_file": "Dashboard_Financeiro_Sublime.html",
+      "ativo": true,
+      "cor": "#0d9488",
+      "unidades": 0
+    },
+    {
+      "id": "top_nine",
+      "nome": "Top Nine",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/top_nine",
+      "html_file": "Dashboard_Financeiro_TopNine.html",
+      "ativo": true,
+      "cor": "#dc2626",
+      "unidades": 0
+    },
+    {
+      "id": "upper_itaim",
+      "nome": "Upper Itaim",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/upper_itaim",
+      "html_file": "Dashboard_Financeiro_UpperItaim.html",
+      "ativo": true,
+      "cor": "#9333ea",
+      "unidades": 0
+    },
+    {
+      "id": "vibra_butanta",
+      "nome": "Vibra Butantã",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/vibra_butanta",
+      "html_file": "Dashboard_Financeiro_VibraButanta.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "victoria",
+      "nome": "Victoria",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/victoria",
+      "html_file": "Dashboard_Financeiro_Victoria.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    },
+    {
+      "id": "residencial_villa_park_osasco",
+      "nome": "Residencial Villa Park Osasco",
+      "empresa_gestora": "lello_xls",
+      "pasta_dados": "data/residencial_villa_park_osasco",
+      "html_file": "Dashboard_Financeiro_VillaPark_Osasco.html",
+      "ativo": true,
+      "cor": "#2563eb",
+      "unidades": 0
+    },
+    {
+      "id": "res_villa_sardenha",
+      "nome": "Res. Villa Sardenha",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/res_villa_sardenha",
+      "html_file": "Dashboard_Financeiro_VillaSardenha.html",
+      "ativo": true,
+      "cor": "#7c3aed",
+      "unidades": 0
+    },
+    {
+      "id": "vista_verde",
+      "nome": "Vista Verde",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/vista_verde",
+      "html_file": "Dashboard_Financeiro_VistaVerde.html",
+      "ativo": true,
+      "cor": "#db2777",
+      "unidades": 0
+    },
+    {
+      "id": "vita_parque",
+      "nome": "Vita Parque",
+      "empresa_gestora": "iello_pdf",
+      "pasta_dados": "data/vita_parque",
+      "html_file": "Dashboard_Financeiro_VitaParque.html",
+      "ativo": true,
+      "cor": "#ea580c",
+      "unidades": 0
+    },
+    {
+      "id": "vivaz_vila_guilherme",
+      "nome": "Vivaz Vila Guilherme",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/vivaz_vila_guilherme",
+      "html_file": "Dashboard_Financeiro_VivazVilaGuilherme.html",
+      "ativo": true,
+      "cor": "#ca8a04",
+      "unidades": 0
+    },
+    {
+      "id": "praca_saude_moradia",
+      "nome": "Praça Saúde - Moradia",
+      "empresa_gestora": "lirba_pdf",
+      "pasta_dados": "data/praca_saude_moradia",
+      "html_file": "Dashboard_Praça_Saúde_Moradia.html",
+      "ativo": true,
+      "cor": "#16a34a",
+      "unidades": 0
+    }
+  ],
+  "empresas": {
+    "empresa_a": {
+      "nome": "Empresa A Administradora",
+      "adapter": "adapters.empresa_a",
+      "formatos": [
+        "xlsx"
+      ],
+      "descricao": "Formato padrão com abas: Receitas, Despesas, Inadimplência"
+    },
+    "empresa_b": {
+      "nome": "Empresa B Gestão",
+      "adapter": "adapters.empresa_b",
+      "formatos": [
+        "xlsx",
+        "pdf"
+      ],
+      "descricao": "Planilha unificada com coluna Tipo (R/D) e PDF de resumo"
+    }
+  }
+}
