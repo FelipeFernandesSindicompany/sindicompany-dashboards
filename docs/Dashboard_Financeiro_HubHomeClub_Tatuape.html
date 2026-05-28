@@ -68,8 +68,155 @@ tr:nth-child(even) td{background:#FAFAFA;}
 .progress-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff;mix-blend-mode:difference;}
 @media print{#sb{display:none;}#mn{margin-left:0;}}
 </style>
+
+<style id="mob-css">
+/* ═══════════════════════════════════════════════════
+   RESPONSIVO v2 — iOS · Android · Windows · Mac
+   ═══════════════════════════════════════════════════ */
+
+/* ── Overlay escuro ────────────────────────────────── */
+#mob-ov{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:1000;
+  -webkit-tap-highlight-color:transparent;
+}
+#mob-ov.show{display:block;}
+
+/* ── Barra superior mobile ─────────────────────────── */
+#mob-bar{
+  display:none;
+  position:fixed;top:0;left:0;right:0;height:52px;
+  background:var(--p);z-index:1002;
+  align-items:center;padding:0 14px;gap:10px;
+  border-bottom:2px solid var(--o);
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+#mob-bar-btn{
+  background:none;border:none;color:#fff;
+  font-size:24px;cursor:pointer;
+  padding:2px 8px;line-height:1;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+#mob-bar-title{
+  color:#fff;font-size:13px;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;
+  letter-spacing:.3px;
+}
+#mob-bar-page{
+  color:var(--o);font-size:11px;font-weight:600;
+  white-space:nowrap;flex-shrink:0;max-width:120px;
+  overflow:hidden;text-overflow:ellipsis;
+}
+
+/* ════════════════════════════════════════════════════
+   MOBILE  (< 768 px)
+   ════════════════════════════════════════════════════ */
+@media(max-width:767px){
+
+  /* Barra topo visível */
+  #mob-bar{display:flex !important;}
+
+  /* ── Sidebar: width mantida em 230px, escondida via transform ── */
+  #sb{
+    width:230px !important;
+    transform:translateX(-230px) !important;
+    transition:transform .26s cubic-bezier(.4,0,.2,1);
+    z-index:1003 !important;
+    box-shadow:none;
+    top:0 !important;
+  }
+  #sb.mob-open{
+    transform:translateX(0) !important;
+    box-shadow:6px 0 28px rgba(0,0,0,.5);
+  }
+
+  /* ── Restaura texto da sidebar (overrides CSS interno que esconde texto) ── */
+  .ni{
+    display:flex !important;
+    justify-content:flex-start !important;
+    padding:11px 18px !important;
+    gap:10px !important;
+  }
+  .ni span:not(.ic){display:inline !important;}
+  .ni .ic{width:20px !important;text-align:center !important;flex-shrink:0;}
+  .sb-logo p{display:block !important;}
+  .sb-foot div{display:block !important;}
+  .sb-foot button{display:inline-block !important;}
+
+  /* ── Main: largura total, padding acima da barra ── */
+  #mn{
+    margin-left:0 !important;
+    padding:62px 10px 24px !important;
+    min-width:0 !important;
+    width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  /* ── Grids ── */
+  .g2{grid-template-columns:1fr !important;gap:12px !important;}
+  .kg{grid-template-columns:repeat(2,1fr) !important;gap:8px !important;}
+
+  /* ── KPI cards ── */
+  .kc{padding:10px 12px !important;}
+  .kv{font-size:16px !important;}
+  .kl{font-size:10px !important;}
+  .ks{font-size:10px !important;}
+
+  /* ── Content cards ── */
+  .cc{padding:14px 12px !important;}
+  .cc h3{font-size:13px !important;}
+
+  /* ── Gráficos ── */
+  .cw{height:200px !important;}
+  .cws{height:160px !important;}
+
+  /* ── Tabelas com scroll horizontal ── */
+  .tw{overflow-x:auto !important;-webkit-overflow-scrolling:touch;}
+  .tw table{min-width:460px;}
+  th{font-size:11px !important;padding:8px 10px !important;}
+  td{font-size:12px !important;padding:8px 10px !important;}
+
+  /* ── Cabeçalho de página ── */
+  .ph{margin-bottom:12px !important;}
+  .ph h1{font-size:17px !important;}
+  .ph p{font-size:11px !important;}
+
+  /* ── Alertas ── */
+  .al{font-size:12px !important;padding:10px 12px !important;}
+  .al .ai{font-size:16px !important;}
+
+  /* ── Select / input: sem zoom no iOS ── */
+  select,input,textarea{font-size:16px !important;}
+}
+
+/* ════════════════════════════════════════════════════
+   TABLET  (768–1023 px)
+   ════════════════════════════════════════════════════ */
+@media(min-width:768px) and (max-width:1023px){
+  :root{--sw:185px;}
+  #sb{width:185px !important;}
+  #mn{padding:18px !important;}
+  .kg{grid-template-columns:repeat(2,1fr);}
+  .cw{height:220px !important;}
+  .g2{gap:12px;}
+}
+
+/* ── Desktop: oculta elementos mobile ─────────────── */
+@media(min-width:768px){
+  #mob-bar{display:none !important;}
+  #mob-ov{display:none !important;}
+}
+</style>
+
 </head>
 <body>
+<div id="mob-ov" onclick="mobClose()"></div>
+<div id="mob-bar">
+  <button id="mob-bar-btn" onclick="mobToggle()" aria-label="Menu">&#9776;</button>
+  <span id="mob-bar-title">Dashboard Financeiro</span>
+  <span id="mob-bar-page"></span>
+</div>
+
 
 <nav id="sb">
   <div class="sb-logo">
@@ -528,7 +675,7 @@ function buildOrcamento(){
   h+='<div class="val-item"><div class="val-label">Variação Previsto × Realizado</div><div class="val-value" style="color:'+(gap>=0?'var(--g)':'var(--r)')+'">'+R(Math.abs(gap))+'</div><div class="val-pct">'+(gap>=0?'Superávit de arrecadação ':'Déficit de arrecadação ')+Math.abs(pctPvR-100).toFixed(1)+'%</div></div>';
   h+='</div>';
   var pctBar=Math.min(pctExec,100);
-  var barColor=pctExec>100?'var(--r)':pctExec>80?'var(--y)':'var(--g)';
+  var barColor=pctExec >= 100 ? 'var(--g)' : pctExec >= 80 ? 'var(--y)' : 'var(--r)';
   h+='<div class="progress-wrap" style="margin-top:16px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Execução do orçamento anual</span><span>'+pctExec.toFixed(1)+'%</span></div>';
   h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pctBar+'%;background:'+barColor+'"><span class="progress-label">'+pctExec.toFixed(1)+'%</span></div></div>';
   h+='<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>Abr/25</span><span>Projeção anual: '+R(projecaoAnual)+'</span><span>Mar/26</span></div></div></div>';
@@ -773,5 +920,43 @@ function buildCharts(){
   });
 }
 </script>
+<script id="mob-js">
+(function(){
+  function mobToggle(){
+    var sb=document.getElementById('sb');
+    var ov=document.getElementById('mob-ov');
+    var open=sb.classList.toggle('mob-open');
+    if(open)ov.classList.add('show');else ov.classList.remove('show');
+  }
+  function mobClose(){
+    document.getElementById('sb').classList.remove('mob-open');
+    document.getElementById('mob-ov').classList.remove('show');
+  }
+  window.mobToggle=mobToggle;
+  window.mobClose=mobClose;
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var h2=document.querySelector('.sb-logo h2');
+    var barTitle=document.getElementById('mob-bar-title');
+    if(h2&&barTitle)barTitle.textContent=h2.textContent;
+
+    document.querySelectorAll('.ni').forEach(function(ni){
+      ni.addEventListener('click',function(){
+        if(window.innerWidth<768)setTimeout(mobClose,150);
+        setTimeout(function(){
+          var active=document.querySelector('.ni.on');
+          var pg=document.getElementById('mob-bar-page');
+          if(active&&pg)pg.textContent=active.textContent.trim();
+        },100);
+      });
+    });
+
+    var active=document.querySelector('.ni.on');
+    var pg=document.getElementById('mob-bar-page');
+    if(active&&pg)pg.textContent=active.textContent.trim();
+  });
+})();
+</script>
+
 </body>
 </html>
