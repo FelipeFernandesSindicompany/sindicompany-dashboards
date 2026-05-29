@@ -13,15 +13,17 @@ export interface ExtractedBAL {
 }
 
 export function extractBAL(htmlFile: string): ExtractedBAL | null {
-  const htmlPath = path.join(DOCS_DIR, htmlFile);
-  if (!existsSync(htmlPath)) return null;
-
-  let content: string;
   try {
-    content = readFileSync(htmlPath, 'utf-8');
+    const htmlPath = path.join(DOCS_DIR, htmlFile);
+    if (!existsSync(htmlPath)) return null;
+    const content = readFileSync(htmlPath, 'utf-8');
+    return extractBALFromContent(content);
   } catch {
     return null;
   }
+}
+
+function extractBALFromContent(content: string): ExtractedBAL | null {
 
   // Find all valid month keys inside var BAL = { ... }
   const balBlock = content.match(/var\s+BAL\s*=\s*\{([\s\S]*?)\n\s*\};/);
