@@ -1,5 +1,8 @@
 # Dados financeiros (privados — nunca commitar)
 data/
+# Exceção: snapshot de build do painel admin (necessário para Vercel)
+!admin/src/data/
+!admin/src/data/**
 *.xlsx
 *.xls
 *.pdf
@@ -29,7 +32,14 @@ secrets.json
 # Claude Code (sessão local)
 .claude/
 
+# Node.js
+node_modules/
+.next/
+.env.local
+
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
+
+.vercel

@@ -13,6 +13,19 @@ export interface ExtractedBAL {
 }
 
 export function extractBAL(htmlFile: string): ExtractedBAL | null {
+  // On Vercel: use pre-generated snapshot (HTML files are not accessible at runtime)
+  if (process.env.GITHUB_TOKEN || process.env.VERCEL) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const snapshots = require('../data/snapshots.json');
+      const snap = snapshots[htmlFile];
+      if (snap) return snap as ExtractedBAL;
+      return null;
+    } catch {
+      return null;
+    }
+  }
+  // Local: read from filesystem
   try {
     const htmlPath = path.join(DOCS_DIR, htmlFile);
     if (!existsSync(htmlPath)) return null;
