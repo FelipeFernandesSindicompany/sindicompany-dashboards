@@ -440,6 +440,7 @@ def main():
         print("[ERRO] Informe --condominio <id> ou --todos"); sys.exit(1)
 
     ok = 0
+    htmls_atualizados = []
     for cond in condominios:
         print(f"\n> {cond['nome']} [{cond['empresa_gestora']}]")
 
@@ -455,8 +456,61 @@ def main():
 
         if processar_um(cond, args.mes, arquivo_path, config):
             ok += 1
+            htmls_atualizados.append(cond["html_file"])
 
     print(f"\nConcluído: {ok}/{len(condominios)} condomínios atualizados.")
+
+    # ── Auto-publicação no GitHub Pages ───────────────────────────────────────
+    if ok > 0 and htmls_atualizados:
+        _publicar_github(htmls_atualizados, args.mes)
+
+
+def _publicar_github(htmls: list, mes_str: str):
+    """
+    Commit e push automático dos dashboards atualizados para o GitHub Pages.
+    Silencioso se git não estiver disponível ou não houver remote configurado.
+    """
+    import subprocess
+    try:
+        # Verifica se está num repositório git
+        r = subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            capture_output=True, text=True, cwd=str(ROOT), timeout=10
+        )
+        if r.returncode != 0:
+            return
+
+        # Stage apenas os HTMLs modificados
+        paths_relativos = [f"docs/{h}" for h in htmls]
+        subprocess.run(
+            ["git", "add"] + paths_relativos,
+            capture_output=True, cwd=str(ROOT), timeout=10
+        )
+
+        # Verifica se há algo staged
+        diff = subprocess.run(
+            ["git", "diff", "--cached", "--name-only"],
+            capture_output=True, text=True, cwd=str(ROOT), timeout=10
+        )
+        if not diff.stdout.strip():
+            return  # Nada novo para commitar
+
+        nomes = ", ".join(h.replace("Dashboard_Financeiro_", "").replace("Dashboard_", "").replace(".html", "") for h in htmls)
+        msg = f"data: {mes_str} — {nomes}"
+        subprocess.run(
+            ["git", "commit", "-m", msg],
+            capture_output=True, cwd=str(ROOT), timeout=15
+        )
+        push = subprocess.run(
+            ["git", "push", "origin", "main"],
+            capture_output=True, text=True, cwd=str(ROOT), timeout=30
+        )
+        if push.returncode == 0:
+            print(f"\n  [GITHUB] Dashboard publicado em GitHub Pages automaticamente.")
+        else:
+            print(f"\n  [AVISO] Push para GitHub falhou (verifique conexão).")
+    except Exception:
+        pass  # Silencioso — publicação é opcional
 
 
 if __name__ == "__main__":
