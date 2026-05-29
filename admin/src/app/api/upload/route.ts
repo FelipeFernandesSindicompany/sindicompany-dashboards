@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { UPLOADS_DIR } from '@/lib/paths';
 import { getCondominios } from '@/lib/condominios';
 import { buildDetectedFile } from '@/lib/matcher';
-import { uploadFileToGitHub } from '@/lib/github';
 
 export const dynamic = 'force-dynamic';
-// Allow large file uploads
 export const maxDuration = 60;
+
+// Modo: 'cloud' quando GITHUB_TOKEN está definido (Vercel), 'local' caso contrário
+const IS_CLOUD = !!process.env.GITHUB_TOKEN;
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,15 +40,23 @@ export async function POST(request: NextRequest) {
       const id = uuidv4();
       const ext = file.name.split('.').pop() ?? 'bin';
       const savedName = `${id}.${ext}`;
-      // GitHub path for temporary storage
-      const githubPath = `data/uploads/${savedName}`;
-
       const buffer = Buffer.from(await file.arrayBuffer());
 
-      // Upload to GitHub repo
-      await uploadFileToGitHub(buffer, githubPath, `upload: ${file.name}`);
+      let savedPath: string;
 
-      const detectedFile = buildDetectedFile(id, file.name, githubPath, file.size, condominios);
+      if (IS_CLOUD) {
+        // ── Modo Vercel: salva no repositório GitHub ──────────────────────
+        const { uploadFileToGitHub } = await import('@/lib/github');
+        savedPath = `data/uploads/${savedName}`;
+        await uploadFileToGitHub(buffer, savedPath, `upload: ${file.name}`);
+      } else {
+        // ── Modo Local: salva no disco (ngrok / PM2 local) ────────────────
+        if (!existsSync(UPLOADS_DIR)) mkdirSync(UPLOADS_DIR, { recursive: true });
+        savedPath = path.join(UPLOADS_DIR, savedName);
+        writeFileSync(savedPath, buffer);
+      }
+
+      const detectedFile = buildDetectedFile(id, file.name, savedPath, file.size, condominios);
       detected.push(detectedFile);
     }
 
