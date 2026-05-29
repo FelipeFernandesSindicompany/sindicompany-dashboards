@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Zap, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const router       = useRouter();
-  const params       = useSearchParams();
-  const next         = params.get('next') ?? '/';
+  const router = useRouter();
 
   const [password, setPassword] = useState('');
   const [show,     setShow]     = useState(false);
@@ -29,6 +27,10 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
+        // Pega o parâmetro 'next' da URL (evita useSearchParams que quebra SSR)
+        const next = typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('next') ?? '/'
+          : '/';
         router.push(next);
         router.refresh();
       } else {
