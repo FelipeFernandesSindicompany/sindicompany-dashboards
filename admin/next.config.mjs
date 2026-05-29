@@ -6,7 +6,7 @@ const nextConfig = {
 
   // Inclui arquivos externos no bundle do Vercel
   outputFileTracingIncludes: {
-    '/**': ['../config/**', '../docs/**'],
+    '/**': ['../../config/**', '../../docs/**'],
   },
 
   async headers() {

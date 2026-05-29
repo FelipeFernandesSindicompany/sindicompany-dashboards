@@ -8,7 +8,8 @@ function loadCondominios(): Condominio[] {
   try {
     // Tenta importar o JSON bundled (funciona no Vercel e localmente)
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const data = require('../../../../config/condominios.json');
+    // admin/src/lib/ → ../../../ → project root → config/condominios.json
+    const data = require('../../../config/condominios.json');
     return (data.condominios as Condominio[]).filter((c: Condominio) => c.ativo);
   } catch {
     // Fallback: lê do filesystem (desenvolvimento local)
