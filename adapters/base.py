@@ -22,6 +22,11 @@ class DadosFinanceiros:
     unidades_inadimplentes: int = 0
     categorias_despesa: dict = field(default_factory=dict)
     # {"Manutenção": 1500.0, "Limpeza": 800.0, ...}
+    contas_detalhe: list = field(default_factory=list)
+    # [{"nome":"ORDINÁRIA","saldo_ant":0,"creditos":0,"debitos":0,"saldo_atual":0}, ...]
+    banco_cc: float = 0.0    # conta corrente / ordinária
+    banco_cdb: float = 0.0   # fundo de reserva / CDB / poupança
+    banco_priv: float = 0.0  # demais fundos (melhorias, obras, etc.)
     historico_meses: list = field(default_factory=list)
     # [{"mes": "2026-04", "receita": ..., "despesa": ..., "saldo": ...}, ...]
     observacoes: str = ""

@@ -193,7 +193,7 @@
     {
       "id": "maison_du_rhone",
       "nome": "Maison Du Rhone",
-      "empresa_gestora": "lirba_pdf",
+      "empresa_gestora": "datadigitus_pdf",
       "pasta_dados": "data/maison_du_rhone",
       "html_file": "Dashboard_Financeiro_MaisonDuRhone.html",
       "ativo": true,
@@ -273,7 +273,7 @@
     {
       "id": "patricia",
       "nome": "Patrícia",
-      "empresa_gestora": "lirba_pdf",
+      "empresa_gestora": "lello_xls",
       "pasta_dados": "data/patricia",
       "html_file": "Dashboard_Financeiro_Patricia.html",
       "ativo": true,
@@ -383,7 +383,7 @@
     {
       "id": "serra_da_mantiqueira",
       "nome": "Serra da Mantiqueira",
-      "empresa_gestora": "lirba_pdf",
+      "empresa_gestora": "datadigitus_pdf",
       "pasta_dados": "data/serra_da_mantiqueira",
       "html_file": "Dashboard_Financeiro_Serra_da_Mantiqueira.html",
       "ativo": true,

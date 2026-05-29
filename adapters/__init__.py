@@ -1,5 +1,5 @@
 from adapters.habitacional_xlsx import AdapterHabitacionalXLSX
-from adapters.lello_xls import AdapterLelloXLS
+from adapters.lello_mhtml import AdapterLelloMHTML
 from adapters.lirba_pdf import AdapterLirbaPDF
 from adapters.datadigitus_pdf import AdapterDatadigitusPDF
 from adapters.iello_pdf import AdapterIelloPDF
@@ -11,7 +11,7 @@ from adapters.empresa_b import AdapterEmpresaB
 ADAPTERS = {
     # Formatos reais
     "habitacional_xlsx": AdapterHabitacionalXLSX,
-    "lello_xls":         AdapterLelloXLS,
+    "lello_xls":         AdapterLelloMHTML,   # XLS são MHTML disfarçado
     "lirba_pdf":         AdapterLirbaPDF,
     "datadigitus_pdf":   AdapterDatadigitusPDF,
     "iello_pdf":         AdapterIelloPDF,

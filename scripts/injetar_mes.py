@@ -56,6 +56,115 @@ def mes_evo_label(mes_str: str) -> str:
     return f"{MESES_FULL[dt.month][:3]}/{str(dt.year)[2:]}"
 
 
+# ── Helpers de ordenação cronológica ──────────────────────────────────────
+
+MESES_NUM = {v: k for k, v in MESES_ABREV.items()}
+# {"jan":1, "fev":2, ..., "dez":12}
+
+MESES_LABEL_NUM = {
+    "Jan":1,"Fev":2,"Mar":3,"Abr":4,"Mai":5,"Jun":6,
+    "Jul":7,"Ago":8,"Set":9,"Out":10,"Nov":11,"Dez":12,
+}
+
+def chave_para_ordinal(chave: str) -> int:
+    """'mar25' → inteiro para ordenação cronológica."""
+    try:
+        return int(chave[3:]) * 12 + MESES_NUM.get(chave[:3], 0)
+    except (ValueError, IndexError):
+        return 0
+
+def label_para_ordinal(label: str) -> int:
+    """'Mar/25' → inteiro para ordenação cronológica."""
+    parts = label.split('/')
+    if len(parts) != 2:
+        return 0
+    try:
+        return int(parts[1].strip()) * 12 + MESES_LABEL_NUM.get(parts[0].strip(), 0)
+    except ValueError:
+        return 0
+
+
+def reordenar_bal_e_evo(texto: str) -> str:
+    """
+    Reordena entradas do BAL e arrays EVO_L/EVO_V em ordem cronológica.
+    Usa tracking de profundidade de chaves para extrair cada entrada corretamente.
+    """
+    # ── BAL ──────────────────────────────────────────────────────────────────
+    bal_m = re.search(r'(var\s+BAL\s*=\s*\{)(.*?)(\n\s*\};)', texto, re.DOTALL)
+    if bal_m:
+        body = bal_m.group(2)
+
+        # Extrai entradas com brace-depth tracking
+        key_re = re.compile(r'[ \t]*([a-z]{3}\d{2})\s*:\s*\{')
+        entries = []
+        pos = 0
+        while True:
+            km = key_re.search(body, pos)
+            if not km:
+                break
+            key = km.group(1)
+            # Encontra '{' da entrada e rastreia profundidade
+            brace_start = km.end() - 1
+            depth = 0
+            j = brace_start
+            while j < len(body):
+                if body[j] == '{':
+                    depth += 1
+                elif body[j] == '}':
+                    depth -= 1
+                    if depth == 0:
+                        j += 1
+                        break
+                j += 1
+            # Texto da entrada sem vírgula/espaço trailing
+            entry_text = body[km.start():j].rstrip()
+            entries.append((key, entry_text))
+            # Avança além da vírgula opcional
+            pos = j
+            while pos < len(body) and body[pos] in ' \t,\n':
+                pos += 1
+
+        if len(entries) > 1:
+            ords = [chave_para_ordinal(k) for k, _ in entries]
+            if ords != sorted(ords):
+                entries.sort(key=lambda x: chave_para_ordinal(x[0]))
+                # Reconstrói body preservando whitespace inicial
+                leading = re.match(r'^[ \t\n]*', body).group(0)
+                # Normaliza indentação: usa a do primeiro entry
+                ws_m = re.match(r'^([ \t]*)', entries[0][1])
+                ws = ws_m.group(1) if ws_m else '  '
+                parts = []
+                for _, et in entries:
+                    stripped = et.lstrip(' \t\n')
+                    parts.append(ws + stripped)
+                new_body = leading + (',\n').join(parts) + '\n'
+                texto = (texto[:bal_m.start()]
+                         + bal_m.group(1) + new_body + bal_m.group(3)
+                         + texto[bal_m.end():])
+
+    # ── EVO_L + EVO_V ────────────────────────────────────────────────────────
+    evo_l_m = re.search(r'(\bEVO_L\s*=\s*\[)([^\]]*?)(\])', texto)
+    evo_v_m = re.search(r'(\bEVO_V\s*=\s*\[)([^\]]*?)(\])', texto)
+    if evo_l_m and evo_v_m:
+        raw_l = [x.strip().strip("'\"") for x in evo_l_m.group(2).split(',') if x.strip()]
+        raw_v = [x.strip() for x in evo_v_m.group(2).split(',') if x.strip()]
+        if raw_l and len(raw_l) == len(raw_v):
+            pairs = list(zip(raw_l, raw_v))
+            sorted_pairs = sorted(pairs, key=lambda x: label_para_ordinal(x[0]))
+            if sorted_pairs != pairs:
+                new_l = ', '.join(f"'{lbl}'" for lbl, _ in sorted_pairs)
+                new_v = ', '.join(val for _, val in sorted_pairs)
+                texto = (texto[:evo_l_m.start()]
+                         + evo_l_m.group(1) + new_l + evo_l_m.group(3)
+                         + texto[evo_l_m.end():])
+                evo_v_m2 = re.search(r'(\bEVO_V\s*=\s*\[)([^\]]*?)(\])', texto)
+                if evo_v_m2:
+                    texto = (texto[:evo_v_m2.start()]
+                             + evo_v_m2.group(1) + new_v + evo_v_m2.group(3)
+                             + texto[evo_v_m2.end():])
+    return texto
+
+
 # ── Conversão DadosFinanceiros → bloco BAL ─────────────────────────────────
 
 def dados_para_bal(dados, mes_str: str) -> dict:
@@ -68,6 +177,40 @@ def dados_para_bal(dados, mes_str: str) -> dict:
     # tDesp = total usado para % nas despesas (soma das categorias, == total ordinária)
     t_desp = round(sum(dados.categorias_despesa.values()), 2) or round(dados.despesa_total, 2)
 
+    # prev = orçamento previsto (usa receita_prevista se disponível, senão tCred)
+    prev = round(dados.receita_prevista, 2) if dados.receita_prevista > 0 else round(dados.receita_realizada, 2)
+    real = round(dados.receita_realizada, 2)
+    # fac = despesas eventuais/extraordinárias (não separadas pelos adapters básicos → 0)
+    fac  = 0.0
+
+    # ── Contas individuais ──────────────────────────────────────────────────
+    if dados.contas_detalhe:
+        contas = [
+            {"n": c["nome"],
+             "a": round(c["saldo_ant"],   2),
+             "c": round(c["creditos"],    2),
+             "d": round(c["debitos"],     2),
+             "s": round(c["saldo_atual"], 2)}
+            for c in dados.contas_detalhe
+        ]
+    else:
+        contas = [{"n": "ORDINÁRIA",
+                   "a": round(dados.saldo_anterior,    2),
+                   "c": round(dados.receita_realizada, 2),
+                   "d": round(dados.despesa_total,     2),
+                   "s": round(dados.saldo_atual,       2)}]
+
+    # ── Banco (cc / cdb / priv) ──────────────────────────────────────────────
+    if dados.banco_cc or dados.banco_cdb or dados.banco_priv:
+        banco = {
+            "cc":   round(dados.banco_cc,   2),
+            "cdb":  round(dados.banco_cdb,  2),
+            "priv": round(dados.banco_priv, 2),
+        }
+    else:
+        # Fallback: tudo na cc
+        banco = {"cc": round(dados.saldo_atual, 2), "cdb": 0.0, "priv": 0.0}
+
     bloco = {
         "tit":    mes_titulo(mes_str),
         "per":    mes_periodo(mes_str),
@@ -75,14 +218,14 @@ def dados_para_bal(dados, mes_str: str) -> dict:
         "tCred":  round(dados.receita_realizada, 2),
         "tDeb":   round(dados.despesa_total, 2),
         "tAtual": round(dados.saldo_atual, 2),
+        "prev":   prev,
+        "real":   real,
+        "fac":    fac,
         "tDesp":  t_desp,
         "inad":   round(dados.inadimplencia_valor, 2),
         "inadProc": 0,
-        "banco":  {"cc": round(dados.saldo_atual, 2), "cdb": 0.0, "priv": 0.0},
-        "contas": [{"n": "ORDINÁRIA", "a": round(dados.saldo_anterior, 2),
-                    "c": round(dados.receita_realizada, 2),
-                    "d": round(dados.despesa_total, 2),
-                    "s": round(dados.saldo_atual, 2)}],
+        "banco":  banco,
+        "contas": contas,
         "desp": [
             {"c": cat.upper(), "v": round(val, 2)}
             for cat, val in sorted(
@@ -106,17 +249,23 @@ def bal_para_js(bloco: dict, chave: str, indent: int = 4) -> str:
     linhas.append(f"{pad}  tCred: {bloco['tCred']},")
     linhas.append(f"{pad}  tDeb: {bloco['tDeb']},")
     linhas.append(f"{pad}  tAtual: {bloco['tAtual']},")
+    linhas.append(f"{pad}  prev: {bloco['prev']},")
+    linhas.append(f"{pad}  real: {bloco['real']},")
+    linhas.append(f"{pad}  fac: {bloco['fac']},")
     linhas.append(f"{pad}  tDesp: {bloco['tDesp']},")
     linhas.append(f"{pad}  inad: {bloco['inad']},")
     linhas.append(f"{pad}  inadProc: {bloco['inadProc']},")
 
-    # contas
-    contas_js = ", ".join(
-        "{{n:{n}, a:{a}, c:{c}, d:{d}, s:{s}}}".format(
-            n=json.dumps(c["n"], ensure_ascii=False),
-            a=c["a"], c=c["c"], d=c["d"], s=c["s"]
-        ) for c in bloco["contas"]
-    )
+    # contas (suporta múltiplas contas)
+    contas_parts = []
+    for c in bloco["contas"]:
+        contas_parts.append(
+            "{{n:{n}, a:{a}, c:{c}, d:{d}, s:{s}}}".format(
+                n=json.dumps(c["n"], ensure_ascii=False),
+                a=c["a"], c=c["c"], d=c["d"], s=c["s"]
+            )
+        )
+    contas_js = ", ".join(contas_parts)
     linhas.append(f"{pad}  contas: [{contas_js}],")
 
     # desp
@@ -135,7 +284,8 @@ def bal_para_js(bloco: dict, chave: str, indent: int = 4) -> str:
 
 
 def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
-                    evo_label: str, saldo_atual: float) -> bool:
+                    evo_label: str, saldo_atual: float,
+                    inad_valor: float = None, orc_valor: float = None) -> bool:
     """
     Injeta novo mês no HTML:
     1. Adiciona entrada no objeto BAL
@@ -190,6 +340,26 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
         nova_lista = valores_atuais.rstrip() + (", " if valores_atuais.strip() else "") + novo_valor
         texto = texto[:evo_v_m.start()] + evo_v_m.group(1) + nova_lista + evo_v_m.group(3) + texto[evo_v_m.end():]
 
+    # ── 5. Atualiza INAD_V (inadimplência) ──
+    if inad_valor is not None:
+        inad_m = re.search(r'(\bINAD_V\s*=\s*\[)([^\]]*?)(\])', texto)
+        if inad_m:
+            inad_atual = inad_m.group(2)
+            novo_inad  = str(round(inad_valor, 2))
+            nova_inad_lista = inad_atual.rstrip() + (", " if inad_atual.strip() else "") + novo_inad
+            texto = texto[:inad_m.start()] + inad_m.group(1) + nova_inad_lista + inad_m.group(3) + texto[inad_m.end():]
+
+    # ── 6. Atualiza ORC_MESES (orçamento por mês) ──
+    if orc_valor is not None and orc_valor > 0:
+        orc_m = re.search(r'(var\s+ORC_MESES\s*=\s*\{)([^}]*?)(\})', texto, re.DOTALL)
+        if orc_m and chave not in orc_m.group(2):
+            orc_atual  = orc_m.group(2)
+            novo_orc   = orc_atual.rstrip().rstrip(',') + f",\n  {chave}:{round(orc_valor, 2)},"
+            texto = texto[:orc_m.start()] + orc_m.group(1) + novo_orc + orc_m.group(3) + texto[orc_m.end():]
+
+    # ── 7. Reordena BAL e EVO cronologicamente ──
+    texto = reordenar_bal_e_evo(texto)
+
     html_path.write_text(texto, encoding="utf-8")
     return True
 
@@ -220,9 +390,29 @@ def processar_um(cond: dict, mes_str: str, arquivo: Path, config_global: dict) -
         print(f"  [ERRO] HTML não encontrado: {html_path}")
         return False
 
-    ok = injetar_no_html(html_path, chave, bloco_js, evo_label, dados.saldo_atual)
+    ok = injetar_no_html(
+        html_path, chave, bloco_js, evo_label,
+        saldo_atual  = dados.saldo_atual,
+        inad_valor   = dados.inadimplencia_valor,
+        orc_valor    = bloco.get("prev", 0),
+    )
     if ok:
         print(f"  [OK] Mês '{chave}' injetado em {html_path.name}")
+        import json as _json
+        resumo = {
+            "chave": chave,
+            "html": html_path.name,
+            "tit": bloco["tit"],
+            "tAnt": bloco["tAnt"],
+            "tCred": bloco["tCred"],
+            "tDeb": bloco["tDeb"],
+            "tAtual": bloco["tAtual"],
+            "inad": bloco["inad"],
+            "nContas": len(bloco["contas"]),
+            "nDesp": len(bloco["desp"]),
+            "banco": bloco["banco"],
+        }
+        print(f"  [RESUMO] {_json.dumps(resumo, ensure_ascii=False)}")
     return ok
 
 

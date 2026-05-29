@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -191,6 +191,33 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   /* ── Select / input: sem zoom no iOS ── */
   select,input,textarea{font-size:16px !important;}
+
+  /* ── Filtro de meses: oculta pills, mostra select ── */
+  .pg-pills{display:none !important;}
+  #bal-select-mob{
+    display:block !important;
+    width:100%;
+    padding:10px 36px 10px 16px;
+    border-radius:24px;
+    border:2px solid var(--p);
+    background:var(--card);
+    color:var(--p);
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    outline:none;
+    margin-bottom:16px;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Cpath fill='%23171B2E' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+  }
+}
+
+/* ── Desktop: oculta select mobile ── */
+@media(min-width:768px){
+  #bal-select-mob{display:none !important;}
 }
 
 /* ════════════════════════════════════════════════════
@@ -411,10 +438,27 @@ var BAL = {
     banco:{cc:286369.28, cdb:24350.63, priv:0.00},
     desp:[{c:'PESSOAL E ENCARGOS',v:68056.55},{c:'CONTAS DE CONSUMO',v:239.96},{c:'CONTRATOS',v:43538.30},{c:'AQUISIÇÕES',v:687.84},{c:'OBRIG./DECL./TAXAS',v:0.00},{c:'DESPESAS GERAIS',v:30610.28}],
   },
+    abr26: {
+      tit: "Abril / 2026",
+      per: "01/04/2026 a 30/04/2026",
+      tAnt: 310719.91,
+      tCred: 201356.65,
+      tDeb: 180768.41,
+      tAtual: 331308.15,
+      prev: 231495.49,
+      real: 201356.65,
+      fac: 0.0,
+      tDesp: 357912.44,
+      inad: 40993.4,
+      inadProc: 0,
+      contas: [{n:"ORDINARIA", a:303354.37, c:136738.71, d:121189.58, s:318903.5}, {n:"FUNDO DE RESERVA", a:37684.87, c:6223.35, d:1812.19, s:42096.03}, {n:"SEGURANÇA", a:4556.45, c:0.0, d:0.0, s:4556.45}, {n:"FUNDO DE MANUTENÇÃO", a:25632.17, c:6223.35, d:8164.97, s:27573.79}, {n:"SALÃO FESTAS/CHURRASQ./GOURMET", a:9714.15, c:0.0, d:0.0, s:9714.15}, {n:"CONSUMOS", a:9844.86, c:52171.24, d:49601.67, s:7275.29}],
+      desp: [{c:"ORDINÁRIA", v:121189.58}, {c:"PESSOAL E ENCARGOS - TERCEIROS", v:64157.86}, {c:"CONSUMOS", v:49601.67}, {c:"CONTRATOS", v:44805.47}, {c:"GÁS", v:18912.27}, {c:"FUNDO DE MANUTENÇÃO", v:16329.94}, {c:"ENERGIA ELÉTRICA", v:15577.98}, {c:"ÁGUA", v:15111.42}, {c:"DESPESAS GERAIS", v:9680.82}, {c:"AQUISIÇÕES", v:1572.07}, {c:"OBRIGAÇÕES/DECLARAÇÕES/TAXAS", v:806.51}, {c:"CONTAS DE CONSUMO", v:119.98}, {c:"MANUTENÇÕES / SERVIÇOS", v:46.87}],
+      banco: {cc:318903.5, cdb:42096.03, priv:49119.68}
+    }
 };
-var EVO_L=['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'];
-var EVO_V=[102637.03,117886.57,124104.16,181844.53,242702.51,278448.48,152051.12,223918.80,260850.17,265003.77,306901.14,310719.91];
-var INAD_V=[39038.44,37787.89,43740.99,32568.95,42654.81,45809.15,55387.40,55318.51,51612.24,53062.70,53997.94,49412.78];
+var EVO_L=['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26', 'Abr/26'];
+var EVO_V=[102637.03,117886.57,124104.16,181844.53,242702.51,278448.48,152051.12,223918.80,260850.17,265003.77,306901.14,310719.91, 331308.15];
+var INAD_V=[39038.44,37787.89,43740.99,32568.95,42654.81,45809.15,55387.40,55318.51,51612.24,53062.70,53997.94,49412.78,40993.4];
 var ORC_MESES={
   abr25:186939.08,
   mai25:194863.03,
@@ -428,6 +472,7 @@ var ORC_MESES={
   jan26:176457.14,
   fev26:169480.08,
   mar26:167829.53,
+  abr26:231495.49,
 };
 var ORC_TOTAL=2322757.98;
 
@@ -711,6 +756,7 @@ function buildCharts(){
 </script>
 <script id="mob-js">
 (function(){
+  /* ── Sidebar toggle ── */
   function mobToggle(){
     var sb=document.getElementById('sb');
     var ov=document.getElementById('mob-ov');
@@ -723,6 +769,71 @@ function buildCharts(){
   }
   window.mobToggle=mobToggle;
   window.mobClose=mobClose;
+
+  /* ── Cria select de meses ── */
+  function buildBalSelect(){
+    if(document.getElementById('bal-select-mob'))return;
+    var pillsDiv=document.getElementById('bal-pills');
+    if(!pillsDiv)return;
+
+    /* Usa variáveis globais MESES/BAL (mais confiável que ler pills) */
+    var keys=[],labels=[];
+    if(typeof MESES!=='undefined'&&typeof BAL!=='undefined'&&MESES.length){
+      MESES.forEach(function(k){
+        if(BAL[k]){
+          keys.push(k);
+          labels.push(BAL[k].tit.replace(' / ','/'));
+        }
+      });
+    } else {
+      /* Fallback: lê pills do DOM */
+      var btns=Array.prototype.slice.call(pillsDiv.querySelectorAll('button.pill'));
+      btns.forEach(function(btn){
+        var oc=btn.getAttribute('onclick')||'';
+        var m=oc.match(/selMes\('([^']+)'/);
+        if(m){keys.push(m[1]);labels.push(btn.textContent.trim());}
+      });
+    }
+    if(!keys.length)return;
+
+    var sel=document.createElement('select');
+    sel.id='bal-select-mob';
+    sel.style.display='none';
+
+    /* Último mês selecionado por padrão */
+    keys.forEach(function(k,i){
+      var opt=document.createElement('option');
+      opt.value=k;
+      opt.textContent=labels[i];
+      if(i===keys.length-1)opt.selected=true;
+      sel.appendChild(opt);
+    });
+
+    /* Ao mudar: chama selMes com a chave do mês */
+    sel.addEventListener('change',function(){
+      var key=sel.value;
+      if(!key)return;
+      if(typeof selMes==='function'){
+        selMes(key,null);
+      } else if(typeof renderBal==='function'){
+        renderBal(key);
+      }
+    });
+
+    pillsDiv.parentNode.insertBefore(sel,pillsDiv);
+  }
+
+  /* ── Encadeia com window.onload original ── */
+  var _origLoad=window.onload;
+  window.onload=function(e){
+    if(_origLoad)_origLoad.call(this,e);
+    buildBalSelect();
+  };
+
+  /* ── Backup: garante execução mesmo se wrapping falhou ── */
+  window.addEventListener('load',function(){
+    setTimeout(buildBalSelect,150);
+  });
 
   document.addEventListener('DOMContentLoaded',function(){
     var h2=document.querySelector('.sb-logo h2');

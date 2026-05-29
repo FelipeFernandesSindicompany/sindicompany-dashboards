@@ -1,0 +1,41 @@
+import { readFileSync } from 'fs';
+import type { Condominio } from './types';
+import { CONFIG_PATH } from './paths';
+
+let _cache: Condominio[] | null = null;
+
+export function getCondominios(): Condominio[] {
+  if (_cache) return _cache;
+  const raw = readFileSync(CONFIG_PATH, 'utf-8');
+  const parsed = JSON.parse(raw);
+  _cache = (parsed.condominios as Condominio[]).filter(c => c.ativo);
+  return _cache;
+}
+
+export function getCondominio(id: string): Condominio | undefined {
+  return getCondominios().find(c => c.id === id);
+}
+
+export const ADAPTER_LABELS: Record<string, string> = {
+  habitacional_xlsx: 'Habitacional XLSX',
+  lello_xls: 'Lello XLS',
+  lirba_pdf: 'Lirba PDF',
+  datadigitus_pdf: 'DataDigitus PDF',
+  iello_pdf: 'Iello PDF',
+};
+
+export const ADAPTER_COLORS: Record<string, string> = {
+  habitacional_xlsx: '#3B82F6',
+  lello_xls: '#8B5CF6',
+  lirba_pdf: '#10B981',
+  datadigitus_pdf: '#F59E0B',
+  iello_pdf: '#EC4899',
+};
+
+export const ACCEPTED_EXTENSIONS: Record<string, string[]> = {
+  habitacional_xlsx: ['.xlsx'],
+  lello_xls: ['.xls', '.xlsx'],
+  lirba_pdf: ['.pdf'],
+  datadigitus_pdf: ['.pdf'],
+  iello_pdf: ['.pdf'],
+};

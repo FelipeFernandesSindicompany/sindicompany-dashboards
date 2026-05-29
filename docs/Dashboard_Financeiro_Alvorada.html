@@ -176,6 +176,33 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   /* ── Select / input: sem zoom no iOS ── */
   select,input,textarea{font-size:16px !important;}
+
+  /* ── Filtro de meses: oculta pills, mostra select ── */
+  .pg-pills{display:none !important;}
+  #bal-select-mob{
+    display:block !important;
+    width:100%;
+    padding:10px 36px 10px 16px;
+    border-radius:24px;
+    border:2px solid var(--p);
+    background:var(--card);
+    color:var(--p);
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    outline:none;
+    margin-bottom:16px;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Cpath fill='%23171B2E' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+  }
+}
+
+/* ── Desktop: oculta select mobile ── */
+@media(min-width:768px){
+  #bal-select-mob{display:none !important;}
 }
 
 /* ════════════════════════════════════════════════════
@@ -268,9 +295,27 @@ tr:nth-child(even) td{background:#FAFAFA;}
 </main>
 <script>
 var CONFIG={nome:"Condomínio Alvorada",administradora:"Habitacional"};
-var EVO_L=['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26'];
-var EVO_V=[179440.77,187331.38,184053.96,210992.33,203582.00,209365.08,201064.51,189899.22,173346.57,178879.58,177882.66,176820.25,197869.69];
+var EVO_L=['Mar/25','Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26'];
+var EVO_V=[247084.13,179440.77,187331.38,184053.96,210992.33,203582.00,209365.08,201064.51,189899.22,173346.57,178879.58,177882.66,176820.25,197869.69, 247084.13];
 var BAL={
+  mar25: {
+      tit: "Março / 2025",
+      per: "01/03/2025 a 31/03/2025",
+      tAnt: 231614.39,
+      tCred: 80525.36,
+      tDeb: 65055.62,
+      tAtual: 247084.13,
+      prev: 0,
+      real: 80525.36,
+      fac: 0,
+      tDesp: 59150.24,
+      inad: 4546.91,
+      inadProc: 0,
+      contas: [{n:"ORDINARIA", a:59660.29, c:66192.71, d:49983.58, s:75869.42},{n:"MELHORIAS", a:4480.41, c:5823.2, d:4583.33, s:5720.28},{n:"FUNDO DE RESERVA", a:23391.09, c:3112.9, d:0, s:26503.99},{n:"OBRAS", a:-5260.84, c:0, d:0, s:-5260.84},{n:"PROVISAO P/ 13o.SALARIO/FERIAS", a:94887.15, c:5281.66, d:0, s:100168.81},{n:"FUNDO CLT", a:54456.29, c:114.89, d:10488.71, s:44082.47}],
+      desp: [{c:"PESSOAL", v:36863.75}, {c:"MELHORIAS/OBRAS", v:9166.66}, {c:"CONTRATOS/MANUT.", v:6044.63}, {c:"CONSUMOS", v:5319.59}, {c:"DESP. OPERACIONAIS", v:624.2}, {c:"SEGUROS", v:570.96}, {c:"SERV. PRESTADOS", v:300.0}, {c:"MATERIAIS", v:260.45}],
+      banco: {cc:75869.42, cdb:26503.99, priv:144710.72}
+    },
+
   abr25:{tit:'Abril / 2025',per:'01/04/2025 a 30/04/2025',tAnt:247084.13,tCred:71713.34,tDeb:139356.70,tAtual:179440.77,contas:[{n:'ORDINARIA',a:75869.42,c:58648.85,d:45013.37,s:89504.90},{n:'MELHORIAS',a:5720.28,c:5223.02,d:4583.33,s:6359.97},{n:'FUNDO DE RESERVA',a:26503.99,c:2744.38,d:0.00,s:29248.37},{n:'OBRAS',a:-5260.84,c:0.00,d:0.00,s:-5260.84},{n:'REPARACAO DA FACHADA',a:0.00,c:469.77,d:89760.00,s:-89290.23},{n:'PROVISAO P/ 13o.SALARIO/FERIAS',a:100168.81,c:4627.32,d:0.00,s:104796.13},{n:'FUNDO CLT',a:44082.47,c:0.00,d:0.00,s:44082.47}],tDesp:45013.37,fac:94343.33,inad:25564.21,inadProc:41936.32,banco:{cc:89504.90,cdb:29248.37,priv:60687.50},desp:[{c:'PESSOAL',v:33350.83},{c:'CONSUMOS',v:1259.75},{c:'CONTRATOS/MANUT.',v:6641.46},{c:'SEGUROS',v:570.96},{c:'MATERIAIS',v:553.03},{c:'SERV. PRESTADOS',v:1255.33},{c:'DESP. OPERACIONAIS',v:1382.01},{c:'MELHORIAS/OBRAS',v:4583.33},{c:'REPARAÇÃO FACHADA',v:89760.00}]},
   mai25:{tit:'Maio / 2025',per:'01/05/2025 a 31/05/2025',tAnt:179440.77,tCred:86147.35,tDeb:78256.74,tAtual:187331.38,contas:[{n:'ORDINARIA',a:89504.90,c:60961.88,d:58592.35,s:91874.43},{n:'MELHORIAS',a:6359.97,c:5454.12,d:4583.33,s:7230.76},{n:'FUNDO DE RESERVA',a:29248.37,c:2639.93,d:0.00,s:31888.30},{n:'OBRAS',a:-5260.84,c:526.76,d:0.00,s:-4734.08},{n:'REPARACAO DA FACHADA',a:-89290.23,c:11753.35,d:11634.77,s:-89171.65},{n:'PROVISAO P/ 13o.SALARIO/FERIAS',a:104796.13,c:4811.31,d:3446.29,s:106161.15},{n:'FUNDO CLT',a:44082.47,c:0.00,d:0.00,s:44082.47}],tDesp:58592.35,fac:16218.10,inad:22488.55,inadProc:46923.24,banco:{cc:91874.43,cdb:31888.30,priv:63568.65},desp:[{c:'PESSOAL',v:38744.65},{c:'CONSUMOS',v:8985.28},{c:'CONTRATOS/MANUT.',v:6436.53},{c:'SEGUROS',v:570.98},{c:'MATERIAIS',v:1205.88},{c:'SERV. PRESTADOS',v:1365.33},{c:'DESP. OPERACIONAIS',v:1283.70},{c:'MELHORIAS/OBRAS',v:4583.33},{c:'REPARAÇÃO FACHADA',v:11634.77}]},
   jun25:{tit:'Junho / 2025',per:'01/06/2025 a 30/06/2025',tAnt:187331.38,tCred:77106.63,tDeb:80384.05,tAtual:184053.96,contas:[{n:'ORDINARIA',a:91874.43,c:54192.23,d:64165.95,s:81900.71},{n:'MELHORIAS',a:7230.76,c:4961.96,d:4583.33,s:7609.39},{n:'FUNDO DE RESERVA',a:31888.30,c:2567.55,d:0.00,s:34455.85},{n:'OBRAS',a:-4734.08,c:0.00,d:0.00,s:-4734.08},{n:'REPARACAO DA FACHADA',a:-89171.65,c:10972.93,d:11634.77,s:-89833.49},{n:'PROVISAO P/ 13o.SALARIO/FERIAS',a:106161.15,c:4411.96,d:0.00,s:110573.11},{n:'FUNDO CLT',a:44082.47,c:0.00,d:0.00,s:44082.47}],tDesp:64165.95,fac:16218.10,inad:29060.10,inadProc:41936.32,banco:{cc:81900.71,cdb:34455.85,priv:67697.40},desp:[{c:'PESSOAL',v:41710.83},{c:'CONSUMOS',v:10864.12},{c:'CONTRATOS/MANUT.',v:6467.48},{c:'MATERIAIS',v:967.36},{c:'SERV. PRESTADOS',v:2021.60},{c:'DESP. OPERACIONAIS',v:2134.56},{c:'MELHORIAS/OBRAS',v:4583.33},{c:'REPARAÇÃO FACHADA',v:11634.77}]},
@@ -415,6 +460,7 @@ function buildCharts(){
 </script>
 <script id="mob-js">
 (function(){
+  /* ── Sidebar toggle ── */
   function mobToggle(){
     var sb=document.getElementById('sb');
     var ov=document.getElementById('mob-ov');
@@ -427,6 +473,71 @@ function buildCharts(){
   }
   window.mobToggle=mobToggle;
   window.mobClose=mobClose;
+
+  /* ── Cria select de meses ── */
+  function buildBalSelect(){
+    if(document.getElementById('bal-select-mob'))return;
+    var pillsDiv=document.getElementById('bal-pills');
+    if(!pillsDiv)return;
+
+    /* Usa variáveis globais MESES/BAL (mais confiável que ler pills) */
+    var keys=[],labels=[];
+    if(typeof MESES!=='undefined'&&typeof BAL!=='undefined'&&MESES.length){
+      MESES.forEach(function(k){
+        if(BAL[k]){
+          keys.push(k);
+          labels.push(BAL[k].tit.replace(' / ','/'));
+        }
+      });
+    } else {
+      /* Fallback: lê pills do DOM */
+      var btns=Array.prototype.slice.call(pillsDiv.querySelectorAll('button.pill'));
+      btns.forEach(function(btn){
+        var oc=btn.getAttribute('onclick')||'';
+        var m=oc.match(/selMes\('([^']+)'/);
+        if(m){keys.push(m[1]);labels.push(btn.textContent.trim());}
+      });
+    }
+    if(!keys.length)return;
+
+    var sel=document.createElement('select');
+    sel.id='bal-select-mob';
+    sel.style.display='none';
+
+    /* Último mês selecionado por padrão */
+    keys.forEach(function(k,i){
+      var opt=document.createElement('option');
+      opt.value=k;
+      opt.textContent=labels[i];
+      if(i===keys.length-1)opt.selected=true;
+      sel.appendChild(opt);
+    });
+
+    /* Ao mudar: chama selMes com a chave do mês */
+    sel.addEventListener('change',function(){
+      var key=sel.value;
+      if(!key)return;
+      if(typeof selMes==='function'){
+        selMes(key,null);
+      } else if(typeof renderBal==='function'){
+        renderBal(key);
+      }
+    });
+
+    pillsDiv.parentNode.insertBefore(sel,pillsDiv);
+  }
+
+  /* ── Encadeia com window.onload original ── */
+  var _origLoad=window.onload;
+  window.onload=function(e){
+    if(_origLoad)_origLoad.call(this,e);
+    buildBalSelect();
+  };
+
+  /* ── Backup: garante execução mesmo se wrapping falhou ── */
+  window.addEventListener('load',function(){
+    setTimeout(buildBalSelect,150);
+  });
 
   document.addEventListener('DOMContentLoaded',function(){
     var h2=document.querySelector('.sb-logo h2');
