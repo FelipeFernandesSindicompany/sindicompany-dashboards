@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { injectarMes } from '@/lib/processor';
-import { appendHistory } from '@/lib/history';
 import { getCondominio } from '@/lib/condominios';
 import type { ProcessRequest } from '@/lib/types';
+import { triggerWorkflow, getLatestWorkflowRun } from '@/lib/github';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,35 +21,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Condomínio '${condominioId}' não encontrado` }, { status: 404 });
     }
 
-    // Validate mes format
     if (!/^\d{4}-\d{2}$/.test(mes)) {
       return NextResponse.json({ error: 'Formato de mês inválido. Use YYYY-MM' }, { status: 400 });
     }
 
-    const result = await injectarMes(condominioId, mes, savedPath);
+    const recordId = uuidv4();
+    const triggeredAt = new Date().toISOString().slice(0, 19) + 'Z';
 
-    const record = {
-      id: uuidv4(),
-      timestamp: new Date().toISOString(),
-      condominioId,
-      condominioNome: condo.nome,
+    // Trigger GitHub Actions workflow
+    await triggerWorkflow({
+      file_path: savedPath,
+      condominio_id: condominioId,
       mes,
-      arquivo: savedPath.split(/[/\\]/).pop() ?? savedPath,
-      status: result.success ? 'success' as const : 'error' as const,
-      operador: 'admin',
-      log: result.log,
-      error: result.error,
-    };
+      record_id: recordId,
+    });
 
-    appendHistory(record);
+    // Wait briefly then find the run ID
+    await new Promise(r => setTimeout(r, 3000));
+    const run = await getLatestWorkflowRun(triggeredAt.slice(0, 10));
+    const runId = run?.id ?? null;
 
-    const resumoLine = result.log.find(l => l.includes('[RESUMO]'));
-    const resumo = resumoLine
-      ? (() => { try { return JSON.parse(resumoLine.split('[RESUMO]')[1].trim()); } catch { return null; } })()
-      : null;
-
-    return NextResponse.json({ success: result.success, log: result.log, record, resumo });
+    return NextResponse.json({
+      success: true,
+      status: 'running',
+      runId,
+      recordId,
+      condominioNome: condo.nome,
+      log: [`Processamento iniciado via GitHub Actions`],
+    });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('[process] erro:', err?.message ?? err);
+    return NextResponse.json({ error: err.message ?? 'Erro interno' }, { status: 500 });
   }
 }

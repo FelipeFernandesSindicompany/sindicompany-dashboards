@@ -288,6 +288,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
     setFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'processing' as const } : f));
 
     try {
+      // Trigger the processing
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -300,18 +301,54 @@ export function DropZone({ condominios, onImportDone }: Props) {
       });
       const data = await res.json();
 
-      setFiles(prev => prev.map(f =>
-        f.id === file.id
-          ? { ...f, status: data.success ? 'done' as const : 'error' as const, error: data.error, resumo: data.resumo }
-          : f
-      ));
+      if (!data.success && !data.runId) {
+        setFiles(prev => prev.map(f =>
+          f.id === file.id ? { ...f, status: 'error' as const, error: data.error } : f
+        ));
+        return;
+      }
 
-      if (data.success && onImportDone) onImportDone();
+      // If runId returned, poll for completion
+      if (data.runId) {
+        await pollForResult(file.id, data.runId);
+      } else {
+        // Synchronous result (local mode)
+        setFiles(prev => prev.map(f =>
+          f.id === file.id
+            ? { ...f, status: data.success ? 'done' as const : 'error' as const, error: data.error, resumo: data.resumo }
+            : f
+        ));
+        if (data.success && onImportDone) onImportDone();
+      }
     } catch (err: any) {
       setFiles(prev => prev.map(f =>
         f.id === file.id ? { ...f, status: 'error' as const, error: err.message } : f
       ));
     }
+  }, [onImportDone]);
+
+  const pollForResult = useCallback(async (fileId: string, runId: number) => {
+    const maxAttempts = 40; // 40 × 5s = 3.3 min
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        const res = await fetch(`/api/process/status?runId=${runId}`);
+        const data = await res.json();
+        if (data.done) {
+          setFiles(prev => prev.map(f =>
+            f.id === fileId
+              ? { ...f, status: data.success ? 'done' as const : 'error' as const, error: data.error, resumo: data.resumo }
+              : f
+          ));
+          if (data.success && onImportDone) onImportDone();
+          return;
+        }
+      } catch {}
+    }
+    // Timeout
+    setFiles(prev => prev.map(f =>
+      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado aguardando processamento' } : f
+    ));
   }, [onImportDone]);
 
   const processAll = useCallback(() => {

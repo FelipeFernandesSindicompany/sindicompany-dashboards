@@ -1,15 +1,23 @@
 import { NextResponse } from 'next/server';
 import { getCondominios } from '@/lib/condominios';
 import { extractBAL } from '@/lib/htmlExtractor';
-import { getLastImportByCondominio } from '@/lib/history';
-import type { CondominioStatus } from '@/lib/types';
+import { readHistoryAsync } from '@/lib/history';
+import type { CondominioStatus, ImportRecord } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     const condominios = getCondominios();
-    const lastImports = getLastImportByCondominio();
+    const allRecords = await readHistoryAsync();
+
+    // Build lastImports map (newest-first is preserved by readHistoryAsync)
+    const lastImports: Record<string, ImportRecord> = {};
+    for (const r of allRecords) {
+      if (!lastImports[r.condominioId]) {
+        lastImports[r.condominioId] = r;
+      }
+    }
 
     const currentMonth = (() => {
       const now = new Date();

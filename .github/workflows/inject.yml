@@ -1,0 +1,92 @@
+name: Injetar Balancete Mensal
+on:
+  workflow_dispatch:
+    inputs:
+      file_path:
+        description: 'Caminho do arquivo no repo (data/uploads/uuid.ext)'
+        required: true
+      condominio_id:
+        description: 'ID do condomínio'
+        required: true
+      mes:
+        description: 'Mês YYYY-MM'
+        required: true
+      record_id:
+        description: 'ID do registro de importação'
+        required: true
+
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      resumo: ${{ steps.run.outputs.resumo }}
+      status: ${{ steps.run.outputs.status }}
+      log: ${{ steps.run.outputs.log }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install pdfplumber openpyxl chardet "beautifulsoup4>=4.12" lxml
+
+      - name: Run injection
+        id: run
+        run: |
+          output=$(python scripts/injetar_mes.py \
+            --condominio "${{ github.event.inputs.condominio_id }}" \
+            --mes "${{ github.event.inputs.mes }}" \
+            --arquivo "${{ github.event.inputs.file_path }}" 2>&1)
+          echo "log<<EOF" >> $GITHUB_OUTPUT
+          echo "$output" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          resumo_line=$(echo "$output" | grep '\[RESUMO\]' | head -1)
+          if [ -n "$resumo_line" ]; then
+            resumo=$(echo "$resumo_line" | sed 's/.*\[RESUMO\] //')
+            echo "resumo=$resumo" >> $GITHUB_OUTPUT
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=error" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update import history
+        if: steps.run.outputs.status == 'success'
+        run: |
+          python - << 'EOF'
+          import json, sys, os
+          from pathlib import Path
+          history_path = Path("data/import_history.json")
+          history_path.parent.mkdir(exist_ok=True)
+          try:
+              records = json.loads(history_path.read_text("utf-8")) if history_path.exists() else []
+          except:
+              records = []
+          import datetime
+          record = {
+              "id": "${{ github.event.inputs.record_id }}",
+              "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+              "condominioId": "${{ github.event.inputs.condominio_id }}",
+              "mes": "${{ github.event.inputs.mes }}",
+              "arquivo": "${{ github.event.inputs.file_path }}".split("/")[-1],
+              "status": "success",
+              "operador": "admin"
+          }
+          records.append(record)
+          history_path.write_text(json.dumps(records, ensure_ascii=False, indent=2), "utf-8")
+          EOF
+
+      - name: Cleanup upload and commit
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "Sindicompany Bot"
+          git rm --ignore-unmatch "${{ github.event.inputs.file_path }}"
+          git add docs/ data/import_history.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "data: ${{ github.event.inputs.mes }} — ${{ github.event.inputs.condominio_id }} [skip ci]"
+          git push
