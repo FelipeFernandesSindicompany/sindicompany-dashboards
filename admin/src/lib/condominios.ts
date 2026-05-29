@@ -1,14 +1,28 @@
-import { readFileSync } from 'fs';
 import type { Condominio } from './types';
-import { CONFIG_PATH } from './paths';
 
+// Em produção (Vercel), lê o JSON bundled no build.
+// Em desenvolvimento local, lê do filesystem.
 let _cache: Condominio[] | null = null;
+
+function loadCondominios(): Condominio[] {
+  try {
+    // Tenta importar o JSON bundled (funciona no Vercel e localmente)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const data = require('../../../../config/condominios.json');
+    return (data.condominios as Condominio[]).filter((c: Condominio) => c.ativo);
+  } catch {
+    // Fallback: lê do filesystem (desenvolvimento local)
+    const { readFileSync } = require('fs');
+    const { CONFIG_PATH } = require('./paths');
+    const raw = readFileSync(CONFIG_PATH, 'utf-8');
+    const parsed = JSON.parse(raw);
+    return (parsed.condominios as Condominio[]).filter((c: Condominio) => c.ativo);
+  }
+}
 
 export function getCondominios(): Condominio[] {
   if (_cache) return _cache;
-  const raw = readFileSync(CONFIG_PATH, 'utf-8');
-  const parsed = JSON.parse(raw);
-  _cache = (parsed.condominios as Condominio[]).filter(c => c.ativo);
+  _cache = loadCondominios();
   return _cache;
 }
 
