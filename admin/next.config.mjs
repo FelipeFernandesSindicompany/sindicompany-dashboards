@@ -5,8 +5,10 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
 
   // Inclui arquivos externos no bundle do Vercel
+  // Inclui os dashboards HTML e config no bundle do Vercel
+  // admin/ está 1 nível abaixo do root do projeto
   outputFileTracingIncludes: {
-    '/**': ['../../config/**', '../../docs/**'],
+    '/**': ['../config/**', '../docs/**'],
   },
 
   async headers() {
