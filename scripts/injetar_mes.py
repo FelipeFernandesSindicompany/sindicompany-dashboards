@@ -463,6 +463,9 @@ def main():
     # ── Auto-publicação no GitHub Pages ───────────────────────────────────────
     if ok > 0 and htmls_atualizados:
         _publicar_github(htmls_atualizados, args.mes)
+        # Em modo produção (next start), reinicia o servidor para
+        # carregar os HTMLs atualizados sem hot-reload
+        _reiniciar_admin()
 
 
 def _publicar_github(htmls: list, mes_str: str):
@@ -511,6 +514,30 @@ def _publicar_github(htmls: list, mes_str: str):
             print(f"\n  [AVISO] Push para GitHub falhou (verifique conexão).")
     except Exception:
         pass  # Silencioso — publicação é opcional
+
+
+def _reiniciar_admin():
+    """
+    Reinicia o processo sindicompany-admin via PM2 para recarregar os HTMLs
+    atualizados no modo produção (next start não tem hot-reload).
+    Silencioso se PM2 não estiver disponível.
+    """
+    import subprocess, os
+    pm2_paths = [
+        os.path.join(os.environ.get("APPDATA", ""), "npm", "pm2.cmd"),
+        "pm2",
+    ]
+    for pm2 in pm2_paths:
+        try:
+            r = subprocess.run(
+                [pm2, "restart", "sindicompany-admin"],
+                capture_output=True, text=True, timeout=15
+            )
+            if r.returncode == 0:
+                print("  [ADMIN] Servidor reiniciado para carregar dashboards atualizados.")
+                return
+        except Exception:
+            continue
 
 
 if __name__ == "__main__":
