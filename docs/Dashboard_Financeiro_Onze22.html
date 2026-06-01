@@ -719,6 +719,15 @@ var BAL = {
       banco: {cc:15912.2, cdb:0.0, priv:0.0}
     }
 };
+// MESES: chaves do BAL ordenadas cronologicamente (gerado automaticamente)
+var MESES = (function() {
+  var mo = {jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12};
+  return Object.keys(BAL).sort(function(a,b){
+    var ya=parseInt(a.slice(3)), yb=parseInt(b.slice(3));
+    var ma=mo[a.slice(0,3)]||0, mb=mo[b.slice(0,3)]||0;
+    return (ya*12+ma)-(yb*12+mb);
+  });
+})();
 
 function getContaSaldo(m, keyword) {
   var found = m.contas.find(function(c){ return c.n.indexOf(keyword) >= 0; });
