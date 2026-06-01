@@ -601,11 +601,11 @@
     ],
     "data": {
       "tit": "Abril / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": 15912.2,
+      "tCred": 73255.99,
+      "tDeb": 80655.65,
+      "inad": 688.69,
+      "tAnt": 23311.86
     }
   },
   "Dashboard_Financeiro_Organy_Residencial.html": {
