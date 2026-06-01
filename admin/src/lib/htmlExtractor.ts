@@ -18,8 +18,16 @@ export function extractBAL(htmlFile: string): ExtractedBAL | null {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const snapshots = require('../data/snapshots.json');
-      const snap = snapshots[htmlFile];
-      if (snap) return snap as ExtractedBAL;
+      // Direct lookup
+      if (snapshots[htmlFile]) return snapshots[htmlFile] as ExtractedBAL;
+      // Fallback: normalize Unicode (NFC/NFD differences between OS)
+      const nfc = htmlFile.normalize('NFC');
+      const nfd = htmlFile.normalize('NFD');
+      for (const key of Object.keys(snapshots)) {
+        if (key.normalize('NFC') === nfc || key.normalize('NFD') === nfd) {
+          return snapshots[key] as ExtractedBAL;
+        }
+      }
       return null;
     } catch {
       return null;
