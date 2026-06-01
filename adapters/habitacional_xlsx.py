@@ -201,17 +201,32 @@ class AdapterHabitacionalXLSX(AdapterBase):
             "REPARACAO DA FACHADA", "PROVISAO", "CLT", "GERAL",
             "SEGURO PROTECAO",                            # conta de seguro opcional
         }
+        # Marcador: ao encontrar "TOTAL DA CONTA CAIXA ORDINARIO", a seção CAIXA encerrou.
+        # Linhas seguintes pertencem a outras contas (CONSUMOS, etc.) e NÃO devem
+        # ser somadas — causaria dupla contagem dos débitos da conta CONSUMOS.
+        caixa_section_done = False
         for row in linhas[70:]:
             desc_e = str(col(row, 4) or "").strip().upper()
             val_h  = _f(col(row, 7))
-            if desc_e.startswith("TOTAL DA CONTA") and val_h > 0:
-                # Mantém UPPERCASE para consistência com os demais meses
-                cat = re.sub(r"^TOTAL DA CONTA\s*", "", desc_e).strip()
-                cat = _normalizar_categoria(cat)
-                if cat and not any(ex in cat for ex in EXCLUIR_DESP):
-                    dados.categorias_despesa[cat] = (
-                        dados.categorias_despesa.get(cat, 0) + val_h
-                    )
+            if not desc_e.startswith("TOTAL DA CONTA"):
+                continue
+            if val_h <= 0:
+                continue
+            # Verifica se chegamos ao total da conta principal (encerra seção CAIXA)
+            if "CAIXA ORDINARIO" in desc_e or "CAIXA ORDINÁRIA" in desc_e:
+                caixa_section_done = True
+                continue  # exclui o total da conta, mas marca fim da seção
+            # Após o TOTAL DA CONTA CAIXA ORDINARIO, ignora tudo
+            # (pertencem a outras contas: CONSUMOS, SEGURO, etc.)
+            if caixa_section_done:
+                continue
+            # Mantém UPPERCASE para consistência com os demais meses
+            cat = re.sub(r"^TOTAL DA CONTA\s*", "", desc_e).strip()
+            cat = _normalizar_categoria(cat)
+            if cat and not any(ex in cat for ex in EXCLUIR_DESP):
+                dados.categorias_despesa[cat] = (
+                    dados.categorias_despesa.get(cat, 0) + val_h
+                )
 
         # Fallback
         if not dados.categorias_despesa and dados.despesa_total > 0:
