@@ -1593,7 +1593,27 @@ function buildCharts() {
     pillsDiv.parentNode.insertBefore(sel,pillsDiv);
   }
 
-  /* ── Encadeia com window.onload original ── */
+  /* ── Inicialização do dashboard ─────────────────────────────────── */
+window.onload = function() {
+  try {
+    // Atualiza info da sidebar
+    var ul = BAL[MESES[MESES.length - 1]];
+    var pr = BAL[MESES[0]];
+    var sbInfo = document.getElementById('sb-info');
+    if (sbInfo) {
+      sbInfo.innerHTML = 'Atualizado: ' + ul.tit.replace(' / ','/') +
+        (typeof CONFIG !== 'undefined' && CONFIG.administradora ? '<br>' + CONFIG.administradora : '');
+    }
+    // Inicializa gráficos
+    buildCharts();
+  } catch(e) {
+    var sbInfo = document.getElementById('sb-info');
+    if (sbInfo) sbInfo.innerHTML = 'Erro: ' + e.message;
+    console.error('Init error:', e);
+  }
+};
+
+/* ── Encadeia com window.onload original ── */
   var _origLoad=window.onload;
   window.onload=function(e){
     if(_origLoad)_origLoad.call(this,e);
