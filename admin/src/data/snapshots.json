@@ -865,8 +865,8 @@
     }
   },
   "Dashboard_Financeiro_PracaSaude_Comercial.html": {
-    "lastKey": "mar26",
-    "lastMonth": "Mar/26",
+    "lastKey": "abr26",
+    "lastMonth": "Abr/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -879,15 +879,16 @@
       "dez25",
       "jan26",
       "fev26",
-      "mar26"
+      "mar26",
+      "abr26"
     ],
     "data": {
-      "tit": "Março / 2026",
-      "tAtual": 10793.76,
-      "tCred": 1012.48,
-      "tDeb": 901.76,
+      "tit": "Abril / 2026",
+      "tAtual": 11274.12,
+      "tCred": 1424.74,
+      "tDeb": 944.38,
       "inad": 823.92,
-      "tAnt": 10683.04
+      "tAnt": 10793.76
     }
   },
   "Dashboard_Financeiro_PracaSaude_Residencial.html": {
@@ -1309,8 +1310,8 @@
     }
   },
   "Dashboard_Praça_Saúde_Moradia.html": {
-    "lastKey": "mar26",
-    "lastMonth": "Mar/26",
+    "lastKey": "abr26",
+    "lastMonth": "Abr/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1323,15 +1324,16 @@
       "dez25",
       "jan26",
       "fev26",
-      "mar26"
+      "mar26",
+      "abr26"
     ],
     "data": {
-      "tit": "Mar\\u00e7o / 2026",
-      "tAtual": 53418.47,
-      "tCred": 52363,
-      "tDeb": 66195.31,
-      "inad": 25112.1,
-      "tAnt": 67250.78
+      "tit": "Abril / 2026",
+      "tAtual": 41313.84,
+      "tCred": 35530.45,
+      "tDeb": 47635.08,
+      "inad": 26443.3,
+      "tAnt": 53418.47
     }
   }
 }
