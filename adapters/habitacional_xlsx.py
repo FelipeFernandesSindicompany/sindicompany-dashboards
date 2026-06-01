@@ -193,8 +193,14 @@ class AdapterHabitacionalXLSX(AdapterBase):
 
         # ── Despesas por categoria ──
         # col E (idx 4) = "TOTAL DA CONTA PESSOAL", col H (idx 7) = valor
-        EXCLUIR_DESP = {"ORDINARIA", "ORDINÁRIA", "MELHORAMENTOS", "FUNDO DE RESERVA",
-                        "REPARACAO DA FACHADA", "PROVISAO", "CLT", "GERAL"}
+        # Nomes de contas/fundos que NÃO são categorias operacionais de despesa
+        EXCLUIR_DESP = {
+            "ORDINARIA", "ORDINÁRIA", "ORDINARIO",       # conta ordinária (qualquer grafia)
+            "CAIXA ORDINARIO", "CAIXA ORDINÁRIA",        # conta principal de caixa
+            "MELHORAMENTOS", "FUNDO DE RESERVA",
+            "REPARACAO DA FACHADA", "PROVISAO", "CLT", "GERAL",
+            "SEGURO PROTECAO",                            # conta de seguro opcional
+        }
         for row in linhas[70:]:
             desc_e = str(col(row, 4) or "").strip().upper()
             val_h  = _f(col(row, 7))
