@@ -50,9 +50,9 @@ th{background:var(--p);color:#fff;padding:10px 12px;text-align:left;font-weight:
 td{padding:9px 12px;border-bottom:1px solid #EEE;}
 tr:last-child td{border-bottom:none;}
 tr:nth-child(even) td{background:#FAFAFA;}
-.nr{text-align:right;font-variant-numeric:tabular-nums;}
+.nr{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .bd{font-weight:700;color:var(--p);}
-.tot td{background:var(--pl)!important;font-weight:700;}
+.tot td{background:var(--pl)!important;font-weight:700;white-space:nowrap;}
 .al{border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;}
 .al .ai{font-size:18px;flex-shrink:0;}
 .al.bad{background:#FDECEA;border-left:4px solid var(--r);color:#8B1A0E;}
@@ -430,7 +430,7 @@ var BAL = {
       {n:'AREA COMUM', a:2579.27, c:1847.44, d:990.00, s:3436.71},
       {n:'CONSUMOS', a:7900.64, c:27911.84, d:40785.22, s:-4972.74}
     ],
-    prev: 42105.80, real: 42105.80, tDesp: 99374.47, fac: 0.00,
+    prev: 42105.80, real: 42105.80, tDesp: 67106.77, fac: 0.00,
     inad: 423.60, inadProc: 0.00,
     banco: {cc:8607.08, cdb:0.00, priv:0.00},
     desp: [{c:"SERVIÇOS CONTRATADOS", v:20175.12}, {c:"TRANSFERÊNCIAS", v:8406.0}, {c:"PESSOAL", v:6084.95}, {c:"MANUTENÇÃO/CONSERV.", v:5881.65}, {c:"CONDOMÍNIO (REPASSE)", v:5159.0}, {c:"MATERIAIS/EQUIPAMENTOS", v:4290.35}, {c:"ISENÇÕES/REMUNERAÇÕES", v:2450.0}, {c:"ENCARGOS SOCIAIS", v:2066.99}, {c:"MANUT. EVENTUAIS", v:1489.54}, {c:"DESPESAS GERAIS", v:636.88}, {c:"CONSUMOS", v:514.97}, {c:"IMPOSTOS E TAXAS", v:443.8}]
@@ -628,7 +628,7 @@ function R(n) {
   if (n === null || n === undefined || isNaN(n)) return '-';
   var a = Math.abs(n).toFixed(2).split('.');
   var i = a[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  var s = 'R$ ' + i + ',' + a[1];
+  var s = 'R$ ' + i + ',' + a[1];
   return n < 0 ? '(' + s + ')' : s;
 }
 function kpi(l, v, c, s) {
