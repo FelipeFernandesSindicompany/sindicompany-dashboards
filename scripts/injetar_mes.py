@@ -180,8 +180,8 @@ def dados_para_bal(dados, mes_str: str) -> dict:
     # prev = orçamento previsto (usa receita_prevista se disponível, senão tCred)
     prev = round(dados.receita_prevista, 2) if dados.receita_prevista > 0 else round(dados.receita_realizada, 2)
     real = round(dados.receita_realizada, 2)
-    # fac = despesas eventuais/extraordinárias (não separadas pelos adapters básicos → 0)
-    fac  = 0.0
+    # fac = faturas anteriores cobradas (juros + multas recebidos de inadimplentes)
+    fac  = round(getattr(dados, 'fac', 0.0), 2)
 
     # ── Contas individuais ──────────────────────────────────────────────────
     if dados.contas_detalhe:

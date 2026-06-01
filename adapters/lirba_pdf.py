@@ -108,6 +108,26 @@ def _num(s) -> float:
         return 0.0
 
 
+def _num_signed(s) -> float:
+    """Converte string monetária BR (1.234,56 ou -1.234,56) para float, preservando sinal."""
+    if s is None:
+        return 0.0
+    if isinstance(s, (int, float)):
+        return float(s)
+    negativo = str(s).strip().startswith('-')
+    s = re.sub(r"[^\d,.\-]", "", str(s).strip())
+    if not s:
+        return 0.0
+    s = s.replace(".", "").replace(",", ".")
+    # remove possível sinal extra após limpeza
+    s = s.lstrip('-')
+    try:
+        v = float(s)
+        return -v if negativo else v
+    except Exception:
+        return 0.0
+
+
 def _e_pagina_dados(txt: str) -> bool:
     """Retorna True se a página tem dados reais (não é o índice)."""
     return bool(re.search(r"Per[íi]odo:\s*\d{2}/\d{2}/\d{4}", txt))
@@ -186,9 +206,9 @@ class AdapterLirbaPDF(AdapterBase):
                     continue
 
                 # Busca 4 números consecutivos na linha (podem ter sinal negativo)
-                nums = re.findall(r"-?[\d.,]{1,}[\d]", l)
+                nums_raw = re.findall(r"-?[\d.,]{1,}[\d]", l)
                 nums_f = []
-                for n in nums:
+                for n in nums_raw:
                     try:
                         v = _num(n)
                         nums_f.append(v)
@@ -202,13 +222,15 @@ class AdapterLirbaPDF(AdapterBase):
                 if not nome:
                     continue
 
-                sa, cr, db, sal = nums_f[0], nums_f[1], nums_f[2], nums_f[3]
+                # Saldo atual preserva sinal (conta corrente pode ser negativa)
+                sa, cr, db = nums_f[0], nums_f[1], nums_f[2]
+                sal = _num_signed(nums_raw[3]) if len(nums_raw) >= 4 else nums_f[3]
 
                 if nome.startswith("TOTAL"):
                     dados.saldo_anterior    = sa
                     dados.receita_realizada = cr
                     dados.despesa_total     = db
-                    dados.saldo_atual       = sal
+                    dados.saldo_atual       = abs(sal)  # total sempre positivo
                     in_resumo = False
                     break
 
@@ -217,24 +239,8 @@ class AdapterLirbaPDF(AdapterBase):
                     "saldo_ant":  sa,
                     "creditos":   cr,
                     "debitos":    db,
-                    "saldo_atual": sal,
+                    "saldo_atual": sal,  # com sinal: conta corrente pode ser negativa
                 })
-
-                # Classifica conta para campos banco_*
-                # Usa ASCII-fold para lidar com encoding quebrado nos PDFs
-                nome_fold = "".join(
-                    c for c in unicodedata.normalize("NFD", nome)
-                    if unicodedata.category(c) != "Mn"
-                ).upper()
-                if "ORDINARI" in nome_fold or "ORDINARIA" in nome_fold:
-                    dados.banco_cc += sal
-                elif any(kw in nome_fold for kw in (
-                    "FUNDO DE RESERVA", "FUNDO RESERVA",
-                    "CDB", "APLICA", "INVESTIMENTO",
-                )):
-                    dados.banco_cdb += sal
-                else:
-                    dados.banco_priv += sal
 
             # CDB externo: linha como "FUNDO DE INVESTIMENTO - ITAU ... 123.328,60"
             for linha in linhas:
@@ -246,6 +252,50 @@ class AdapterLirbaPDF(AdapterBase):
                         if val > 0 and dados.banco_cdb == 0:
                             dados.banco_cdb = val
             break  # Lirba: só há uma página de Resumo Financeiro real
+
+        # ── Banco: tenta "Conta Bancária" primeiro, fallback no Resumo Contábil ──
+        conta_banc = self._extrair_conta_bancaria(textos)
+        if conta_banc:
+            # "Conta Bancária" é a fonte mais precisa — saldos reais de banco
+            account_list = list(conta_banc.items())
+            if len(account_list) == 1:
+                saldo = account_list[0][1]
+                dados.banco_cc   = saldo if saldo > 0 else 0.0
+                dados.banco_cdb  = 0.0
+                dados.banco_priv = 0.0
+            elif len(account_list) >= 2:
+                dados.banco_cc   = account_list[0][1]
+                dados.banco_cdb  = account_list[1][1]
+                dados.banco_priv = round(
+                    sum(v for _, v in account_list[2:]), 2
+                ) if len(account_list) > 2 else 0.0
+        else:
+            # Fallback: classifica a partir do Resumo Financeiro Contábil
+            # (inclui contas negativas na soma de banco_priv para não inflar)
+            dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
+            positivos_priv: list = []
+            negativos_priv: list = []
+            for conta in dados.contas_detalhe:
+                nome_fold = "".join(
+                    c for c in unicodedata.normalize("NFD", conta["nome"])
+                    if unicodedata.category(c) != "Mn"
+                ).upper()
+                sal_real = conta["saldo_atual"]  # mantém sinal
+                if "ORDINARI" in nome_fold:
+                    dados.banco_cc = sal_real
+                elif any(kw in nome_fold for kw in (
+                    "FUNDO DE RESERVA", "FUNDO RESERVA",
+                    "CDB", "APLICA", "INVESTIMENTO",
+                )):
+                    dados.banco_cdb += sal_real
+                else:
+                    if sal_real < 0:
+                        negativos_priv.append(sal_real)
+                    else:
+                        positivos_priv.append(sal_real)
+            dados.banco_priv = round(
+                sum(positivos_priv) + sum(negativos_priv), 2
+            )
 
         # ── 2. Receita Prevista ─────────────────────────────────────────────────
         # Lirba antigo (Gravura): seção "Receita Prevista" por conta com:
@@ -382,6 +432,9 @@ class AdapterLirbaPDF(AdapterBase):
             )
             if total_u > 0:
                 dados.inadimplencia_valor = total_u
+
+        # ── 5. FAC (Faturas Anteriores Cobradas = juros + multas recebidos) ────
+        dados.fac = self._extrair_fac(textos)
 
     # ──────────────────────────────────────────────────────────────────────────
     # SUB-FORMATO B — Webware (NYC Berrini)
@@ -566,6 +619,89 @@ class AdapterLirbaPDF(AdapterBase):
             )
             if total_u > 0:
                 dados.inadimplencia_valor = total_u
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Métodos auxiliares compartilhados (Lirba + Webware)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _extrair_conta_bancaria(self, pages_text: list) -> dict:
+        """
+        Extrai saldos reais da seção 'Conta bancária' do PDF.
+        Retorna {nome_conta: saldo_atual} com sinal (podem ser negativos).
+        Retorna {} se a seção não existir no PDF.
+        """
+        BR_NUM = re.compile(r'-?[\d]{1,3}(?:[.,][\d]{3})*,[\d]{2}')
+
+        def br_to_float(s: str) -> float:
+            return float(s.strip().replace('.', '').replace(',', '.'))
+
+        for text in pages_text:
+            if 'conta banc' not in text.lower():
+                continue
+            lines = [l.strip() for l in text.split('\n') if l.strip()]
+            for i, line in enumerate(lines):
+                if 'conta banc' not in line.lower():
+                    continue
+                # Cabeçalho pode estar na MESMA linha ("Conta bancária Saldo anterior...")
+                # OU na linha seguinte ("Conta bancária\nSaldo anterior Créditos...")
+                header_same_line  = 'saldo' in line.lower()
+                header_next_line  = (i + 1 < len(lines) and
+                                     'saldo' in lines[i + 1].lower())
+                if not header_same_line and not header_next_line:
+                    continue
+                # Se o cabeçalho está na linha seguinte, pula ela antes de parsear
+                parse_start = i + 1 if header_same_line else i + 2
+                # Parse das linhas de conta
+                contas: dict = {}
+                for j in range(parse_start, min(i + 30, len(lines))):
+                    ln = lines[j]
+                    if ln.upper().startswith('TOTAL'):
+                        break
+                    # Ignora linhas de cabeçalho ou de outras seções
+                    if any(kw in ln.lower() for kw in [
+                        'saldo anterior', 'resumo', 'posicao', 'posição',
+                        'ordinaria', 'ordinária', 'demonstrativo', 'creditos',
+                        'débitos', 'debitos',
+                    ]):
+                        continue
+                    nums = BR_NUM.findall(ln)
+                    if len(nums) >= 4:
+                        name = BR_NUM.sub('', ln).strip()
+                        # Remove caracteres residuais de separação
+                        name = re.sub(r'\s{2,}', ' ', name).strip()
+                        saldo_atual = br_to_float(nums[-1])
+                        if name:
+                            contas[name] = saldo_atual
+                if contas:
+                    return contas
+        return {}
+
+    def _extrair_fac(self, pages_text: list) -> float:
+        """
+        Extrai total de JUROS + MULTAS recebidos (FAC = Faturas Anteriores Cobradas).
+        Soma todas as linhas 'JUROS X' e 'MULTAS X' nos detalhes de movimentação.
+        """
+        BR_NUM = re.compile(r'[\d]{1,3}(?:[.,][\d]{3})*,[\d]{2}')
+
+        def br_to_float(s: str) -> float:
+            return float(s.strip().replace('.', '').replace(',', '.'))
+
+        total = 0.0
+        for text in pages_text:
+            lines = [l.strip() for l in text.split('\n') if l.strip()]
+            for line in lines:
+                upper = line.upper()
+                # Linhas como "JUROS 28,24" ou "MULTAS 55,07"
+                # Exclui linhas que são totais ou apenas cabeçalhos
+                if (upper.startswith('JUROS ') or upper.startswith('MULTAS ')) \
+                        and 'TOTAL' not in upper:
+                    nums = BR_NUM.findall(line)
+                    if len(nums) == 1:
+                        total += br_to_float(nums[0])
+                    elif len(nums) >= 2:
+                        # Pega o primeiro número (valor individual, não acumulado)
+                        total += br_to_float(nums[0])
+        return round(total, 2)
 
     # ──────────────────────────────────────────────────────────────────────────
     # ler_xlsx — redireciona para ler_pdf
