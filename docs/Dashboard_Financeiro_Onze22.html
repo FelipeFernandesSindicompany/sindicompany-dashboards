@@ -734,6 +734,18 @@ function getContaSaldo(m, keyword) {
   return found ? found.s : null;
 }
 
+// ── UTILITÁRIOS ───────────────────────────────────────────────────────────────
+function R(n) {
+  if (n === null || n === undefined || isNaN(n)) return '-';
+  var a = Math.abs(n).toFixed(2).split('.');
+  var i = a[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  var s = 'R$ ' + i + ',' + a[1];
+  return n < 0 ? '(' + s + ')' : s;
+}
+function kpi(l, v, c, s) {
+  return '<div class="kc ' + c + '"><div class="kl">' + l + '</div><div class="kv">' + v + '</div><div class="ks">' + s + '</div></div>';
+}
+
 // ── NAVEGAÇÃO ─────────────────────────────────────────────────────────────────
 function nav(id, el) {
   document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
@@ -1596,19 +1608,68 @@ function buildCharts() {
   /* ── Inicialização do dashboard ─────────────────────────────────── */
 window.onload = function() {
   try {
-    // Atualiza info da sidebar
     var ul = BAL[MESES[MESES.length - 1]];
     var pr = BAL[MESES[0]];
+
+    // ── Sidebar info ──────────────────────────────────────────────
     var sbInfo = document.getElementById('sb-info');
     if (sbInfo) {
       sbInfo.innerHTML = 'Atualizado: ' + ul.tit.replace(' / ','/') +
         (typeof CONFIG !== 'undefined' && CONFIG.administradora ? '<br>' + CONFIG.administradora : '');
     }
-    // Inicializa gráficos
+
+    // ── Visão Geral: KPIs ─────────────────────────────────────────
+    var tR = 0, tD = 0;
+    MESES.forEach(function(k){ tR += BAL[k].tCred; tD += BAL[k].tDeb; });
+    var geralKpis = document.getElementById('geral-kpis');
+    if (geralKpis) {
+      geralKpis.innerHTML =
+        kpi('Saldo Total (' + ul.tit.replace(' / ','/') + ')', R(ul.tAtual), '', 'vs ' + pr.tit.replace(' / ','/') + ': ' + R(pr.tAtual)) +
+        kpi('F. Reserva (' + ul.tit.replace(' / ','/') + ')', R(getContaSaldo(ul, 'FUNDO DE RESERVA')), 'o', 'Fundo de Reserva acumulado') +
+        kpi('Inadimpl&ecirc;ncia (' + ul.tit.replace(' / ','/') + ')', R(ul.inad), 'r', 'Devedores em aberto') +
+        kpi('Total Arrecadado', R(tR), 'g', 'Soma de todos os cr&eacute;ditos');
+    }
+
+    // ── Visão Geral: Alerta ───────────────────────────────────────
+    var alertEl = document.getElementById('geral-alert');
+    if (alertEl) {
+      alertEl.innerHTML = ul.inad > 30000
+        ? '<div class="al bad"><span class="ai">&#9888;</span><div><strong>Inadimpl&ecirc;ncia elevada:</strong> ' + R(ul.inad) + ' em aberto em ' + ul.tit.replace(' / ','/') + '. A&ccedil;&atilde;o imediata necess&aacute;ria.</div></div>'
+        : (ul.inad > 15000
+          ? '<div class="al warn"><span class="ai">&#9888;</span><div><strong>Inadimpl&ecirc;ncia:</strong> ' + R(ul.inad) + ' em aberto. Monitorar cobran&ccedil;a.</div></div>'
+          : '<div class="al ok"><span class="ai">&#10003;</span><div><strong>Inadimpl&ecirc;ncia controlada:</strong> ' + R(ul.inad) + ' em aberto em ' + ul.tit.replace(' / ','/') + '.</div></div>');
+    }
+
+    // ── Balanço Mensal: pills ─────────────────────────────────────
+    var pills = document.getElementById('bal-pills');
+    if (pills) {
+      pills.innerHTML = '';
+      MESES.forEach(function(k, i) {
+        var btn = document.createElement('button');
+        btn.className = 'pill' + (i === MESES.length - 1 ? ' on' : '');
+        btn.setAttribute('onclick', "selectMes('" + k + "',this)");
+        btn.textContent = BAL[k].tit.replace(' / ', '/');
+        pills.appendChild(btn);
+      });
+      renderBal(MESES[MESES.length - 1]);
+    }
+
+    // ── Gráficos (Visão Geral + Despesas + PvR + Inadimplência + Banco) ──
     buildCharts();
+
+    // ── Tabelas ───────────────────────────────────────────────────
+    buildTblDesp();
+    buildTblPvr();
+    buildTblInad();
+    buildTblBanco();
+
+    // ── Orçamento ─────────────────────────────────────────────────
+    initOrcFiltros();
+    buildOrcamento();
+
   } catch(e) {
-    var sbInfo = document.getElementById('sb-info');
-    if (sbInfo) sbInfo.innerHTML = 'Erro: ' + e.message;
+    var sbInfo2 = document.getElementById('sb-info');
+    if (sbInfo2) sbInfo2.innerHTML = 'Erro: ' + e.message;
     console.error('Init error:', e);
   }
 };
