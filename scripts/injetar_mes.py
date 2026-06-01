@@ -471,6 +471,7 @@ def main():
 def _publicar_github(htmls: list, mes_str: str):
     """
     Commit e push automático dos dashboards atualizados para o GitHub Pages.
+    Também regenera o snapshot do Vercel para que o admin atualize imediatamente.
     Silencioso se git não estiver disponível ou não houver remote configurado.
     """
     import subprocess
@@ -498,6 +499,29 @@ def _publicar_github(htmls: list, mes_str: str):
         if not diff.stdout.strip():
             return  # Nada novo para commitar
 
+        # ── Regenera o snapshot do Vercel com os dados mais recentes ──────────
+        # Isso garante que o admin.vercel.app atualize imediatamente sem
+        # precisar aguardar o Vercel reconstruir do zero.
+        snapshot_script = ROOT / "admin" / "scripts" / "generate-snapshots.mjs"
+        if snapshot_script.exists():
+            try:
+                node_result = subprocess.run(
+                    ["node", str(snapshot_script)],
+                    capture_output=True, text=True,
+                    cwd=str(ROOT / "admin"), timeout=60
+                )
+                if node_result.returncode == 0:
+                    # Stage o snapshot atualizado junto com os HTMLs
+                    subprocess.run(
+                        ["git", "add", "admin/src/data/snapshots.json"],
+                        capture_output=True, cwd=str(ROOT), timeout=10
+                    )
+                    print(f"  [SNAPSHOT] Regenerado com sucesso.")
+                else:
+                    print(f"  [AVISO] Snapshot: {node_result.stderr[:100]}")
+            except Exception:
+                pass  # Se node falhar, continua sem o snapshot
+
         nomes = ", ".join(h.replace("Dashboard_Financeiro_", "").replace("Dashboard_", "").replace(".html", "") for h in htmls)
         msg = f"data: {mes_str} — {nomes}"
         subprocess.run(
@@ -509,7 +533,7 @@ def _publicar_github(htmls: list, mes_str: str):
             capture_output=True, text=True, cwd=str(ROOT), timeout=30
         )
         if push.returncode == 0:
-            print(f"\n  [GITHUB] Dashboard publicado em GitHub Pages automaticamente.")
+            print(f"\n  [GITHUB] Dashboard publicado automaticamente. Admin Vercel atualizado.")
         else:
             print(f"\n  [AVISO] Push para GitHub falhou (verifique conexão).")
     except Exception:
