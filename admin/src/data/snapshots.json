@@ -582,8 +582,8 @@
     }
   },
   "Dashboard_Financeiro_Onze22.html": {
-    "lastKey": "mar26",
-    "lastMonth": "Mar/26",
+    "lastKey": "abr26",
+    "lastMonth": "Abr/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -596,15 +596,16 @@
       "dez25",
       "jan26",
       "fev26",
-      "mar26"
+      "mar26",
+      "abr26"
     ],
     "data": {
-      "tit": "Março / 2026",
-      "tAtual": 23311.86,
-      "tCred": 103485.08,
-      "tDeb": 109970.96,
-      "inad": 432.55,
-      "tAnt": 29797.74
+      "tit": "Abril / 2026",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
+      "inad": 0,
+      "tAnt": 0
     }
   },
   "Dashboard_Financeiro_Organy_Residencial.html": {
@@ -1335,6 +1336,5 @@
       "inad": 26443.3,
       "tAnt": 53418.47
     }
-  },
-  "__generated": "2026-06-01T13:46:39.247Z"
+  }
 }

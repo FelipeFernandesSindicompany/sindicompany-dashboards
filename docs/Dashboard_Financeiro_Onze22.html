@@ -415,13 +415,13 @@ var CONFIG = {
 //  SÉRIE HISTÓRICA — Evolução do saldo total (adicione o novo mês ao final)
 // ────────────────────────────────────────────────────────────────────────────
 var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26'];
-var EVO_V = [8607.08,15771.07,4884.54,28339.78,19663.74,16712.18,7576.85,11151.03,10046.30,20218.73,29797.74,23311.86,15912.20];
+var EVO_V = [8607.08,15771.07,4884.54,28339.78,19663.74,16712.18,7576.85,11151.03,10046.30,20218.73,29797.74,23311.86,15912.20, 0.0];
 
 // ────────────────────────────────────────────────────────────────────────────
 //  BALANCETES MENSAIS — Onze 22
 // ────────────────────────────────────────────────────────────────────────────
 var BAL = {
-  abr25: {
+    abr25: {
     tit: 'Abril / 2025', per: '01/04/2025 a 30/04/2025',
     tAnt:  -618.43, tCred: 108599.98, tDeb:  99374.47, tAtual:8607.08,
     contas: [
@@ -609,6 +609,34 @@ var BAL = {
       {c:'CONSUMOS (TELEFONE)', v:530.74},{c:'IMPOSTOS E TAXAS', v:412.10}
     ]
   },
+  apr26: {
+    tit: 'Abril / 2026', per: '01/04/2026 a 30/04/2026',
+    tAnt: 23311.86, tCred: 73255.99, tDeb: 80655.65, tAtual: 15912.20,
+    contas: [
+      {n:'CAIXA ORDINARIO',            a:-25902.10, c:45060.88, d:55655.42, s:-36496.64},
+      {n:'FUNDO DE RESERVA',           a: 48666.81, c: 2252.96, d:    0.00, s: 50919.77},
+      {n:'AREA COMUM',                 a:  2939.11, c: 1356.00, d:    0.00, s:  4295.11},
+      {n:'CONSUMOS',                   a: -2427.56, c:24550.55, d:24964.63, s: -2841.64},
+      {n:'SEGURO PROTECAO RES+ OPCL',  a:    35.60, c:   35.60, d:   35.60, s:    35.60}
+    ],
+    prev: 47580.50, real: 43255.00, tDesp: 80655.65, fac: 0.00,
+    inad: 432.55, inadProc: 0.00,
+    banco: {cc:15912.20, cdb:0.00, priv:0.00},
+    desp: [
+      {c:'SERVIÇOS CONTRATADOS',          v:22541.97},
+      {c:'PESSOAL',           v: 6593.76},
+      {c:'TRANSFERÊNCIAS',   v: 8916.81},
+      {c:'MANUTENÇÃO/CONSERV.',       v: 6202.53},
+      {c:'CONSUMOS (TELEFONE)',                       v:  527.56},
+      {c:'MATERIAIS/EQUIPAMENTOS', v:  957.21},
+      {c:'ENCARGOS SOCIAIS',               v:  358.32},
+      {c:'ISENÇÕES/REMUNERAÇÕES',          v: 2450.00},
+      {c:'MANUT. EVENTUAIS', v: 1877.93},
+      {c:'IMPOSTOS E TAXAS',               v:  396.60},
+      {c:'DESPESAS GERAIS',                v:  534.87},
+      {c:'CONDOMÍNIO (REPASSE)',                     v: 4297.86}
+    ]
+  },
   jan26: {
     tit: 'Janeiro / 2026', per: '01/01/2026 a 31/01/2026',
     tAnt:  10046.30, tCred: 144062.05, tDeb:  133889.62, tAtual:20218.73,
@@ -673,119 +701,24 @@ var BAL = {
       {c:'IMPOSTOS E TAXAS', v:363.55},{c:'MANUT. EVENTUAIS', v:208.09}
     ]
   },
+  abr26: {
+      tit: "Abril / 2026",
+      per: "01/04/2026 a 30/04/2026",
+      tAnt: 0.0,
+      tCred: 0.0,
+      tDeb: 0.0,
+      tAtual: 0.0,
+      prev: 0.0,
+      real: 0.0,
+      fac: 0.0,
+      tDesp: 161311.3,
+      inad: 0.0,
+      inadProc: 0,
+      contas: [{n:"CONDOMINOS EM ATRASO EM 31/03/2026", a:0.0, c:0.0, d:432.55, s:432.55}, {n:"EMISSAO DO PERIODO", a:0.0, c:0.0, d:47580.5, s:43255.0}, {n:"COTAS ANTECIPADAS", a:0.0, c:0.0, d:-3892.95, s:0.0}, {n:"CONDOMINOS EM ATRASO EM 30/04/2026", a:0.0, c:0.0, d:0.0, s:432.55}, {n:"SALDO ANTERIOR DEVEDOR 31/03/2026", a:0.0, c:0.0, d:25902.1, s:0.0}, {n:"CONDOMINOS EM ATRASO RECEBIDOS", a:0.0, c:0.0, d:0.0, s:432.55}, {n:"RECEBIMENTOS DO PERIODO", a:0.0, c:0.0, d:0.0, s:43255.0}, {n:"RENDIMENTO DE APLICACOES", a:0.0, c:0.0, d:0.0, s:6.41}, {n:"MULTAS TX.CONDOMINIAL", a:0.0, c:0.0, d:0.0, s:69.27}, {n:"COTAS ANTECIPADAS", a:0.0, c:0.0, d:0.0, s:1297.65}, {n:"DESPESAS COM PESSOAL", a:0.0, c:0.0, d:6593.76, s:0.0}, {n:"ENCARGOS SOCIAIS", a:0.0, c:0.0, d:358.32, s:0.0}, {n:"MANUTENCAO E CONSERVACAO", a:0.0, c:0.0, d:6202.53, s:0.0}, {n:"CONSUMOS", a:0.0, c:0.0, d:527.56, s:0.0}],
+      desp: [{c:"CAIXA ORDINARIO", v:55655.42}, {c:"CONSUMOS", v:25492.19}, {c:"SERVICOS CONTRATADOS", v:22541.97}, {c:"DESPESAS", v:16027.77}, {c:"AGUA", v:8936.86}, {c:"TRANSFERENCIAS DE NUMERARIOS", v:8916.81}, {c:"DESPESAS COM PESSOAL", v:6593.76}, {c:"MANUTENCAO E CONSERVACAO", v:6202.53}, {c:"CONDOMINIO", v:4297.86}, {c:"ISENCOES/REMUNERACOES", v:2450.0}, {c:"MANUT. E CONSERVACAO EVENTUAIS", v:1877.93}, {c:"COMPRA MATERIAIS E EQUIPAMENTO", v:957.21}, {c:"DESPESAS GERAIS", v:534.87}, {c:"IMPOSTOS E TAXAS", v:396.6}, {c:"ENCARGOS SOCIAIS", v:358.32}, {c:"TRANSFERENCIA DE CREDITOS", v:35.6}, {c:"SEGURO PROTECAO RES+ OPCIONAL", v:35.6}],
+      banco: {cc:0.0, cdb:0.0, priv:89180.98}
+    }
 
-  apr26: {
-    tit: 'Abril / 2026', per: '01/04/2026 a 30/04/2026',
-    tAnt: 23311.86, tCred: 73255.99, tDeb: 80655.65, tAtual: 15912.20,
-    contas: [
-      {n:'CAIXA ORDINARIO',            a:-25902.10, c:45060.88, d:55655.42, s:-36496.64},
-      {n:'FUNDO DE RESERVA',           a: 48666.81, c: 2252.96, d:    0.00, s: 50919.77},
-      {n:'AREA COMUM',                 a:  2939.11, c: 1356.00, d:    0.00, s:  4295.11},
-      {n:'CONSUMOS',                   a: -2427.56, c:24550.55, d:24964.63, s: -2841.64},
-      {n:'SEGURO PROTECAO RES+ OPCL',  a:    35.60, c:   35.60, d:   35.60, s:    35.60}
-    ],
-    prev: 47580.50, real: 43255.00, tDesp: 80655.65, fac: 0.00,
-    inad: 432.55, inadProc: 0.00,
-    banco: {cc:15912.20, cdb:0.00, priv:0.00},
-    desp: [
-      {c:'SERVIÇOS CONTRATADOS',          v:22541.97},
-      {c:'PESSOAL',           v: 6593.76},
-      {c:'TRANSFERÊNCIAS',   v: 8916.81},
-      {c:'MANUTENÇÃO/CONSERV.',       v: 6202.53},
-      {c:'CONSUMOS (TELEFONE)',                       v:  527.56},
-      {c:'MATERIAIS/EQUIPAMENTOS', v:  957.21},
-      {c:'ENCARGOS SOCIAIS',               v:  358.32},
-      {c:'ISENÇÕES/REMUNERAÇÕES',          v: 2450.00},
-      {c:'MANUT. EVENTUAIS', v: 1877.93},
-      {c:'IMPOSTOS E TAXAS',               v:  396.60},
-      {c:'DESPESAS GERAIS',                v:  534.87},
-      {c:'CONDOMÍNIO (REPASSE)',                     v: 4297.86}
-    ]
-  }
-}
-
-// ════════════════════════════════════════════════════════════════════════════════
-//  FIM DA SEÇÃO DE DADOS — não edite abaixo desta linha
-// ════════════════════════════════════════════════════════════════════════════════
-
-var MESES = Object.keys(BAL);
-var chartsBuilt = false;
-
-function R(n) {
-  if (n === null || n === undefined || isNaN(n)) return '-';
-  var a = Math.abs(n).toFixed(2).split('.');
-  var i = a[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  var s = 'R$\u00a0' + i + ',' + a[1];
-  return n < 0 ? '(' + s + ')' : s;
-}
-
-function kpi(lbl, val, cls, sub) {
-  return '<div class="kc ' + cls + '"><div class="kl">' + lbl + '</div><div class="kv">' + val + '</div><div class="ks">' + sub + '</div></div>';
-}
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
-window.onload = function() {
-  var ultimo = BAL[MESES[MESES.length - 1]];
-  var primeiro = BAL[MESES[0]];
-
-  document.getElementById('sb-info').innerHTML =
-    'Atualizado: ' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] +
-    '<br>Administradora: Graiche';
-
-  // Subtítulo
-  document.getElementById('geral-subtitle').innerHTML =
-    'Demonstrativo Financeiro &middot; ' + primeiro.tit + ' &ndash; ' + ultimo.tit +
-    ' &middot; Condom&iacute;nio ' + CONFIG.unidades + ' &ndash; ' + CONFIG.nome;
-
-  // KPIs Visão Geral
-  var totalRec = 0, totalDesp = 0;
-  MESES.forEach(function(k) {
-    var m = BAL[k]; if (k !== MESES[0]) { totalRec += m.tCred; totalDesp += m.tDeb; }
-  });
-  var kg = document.getElementById('geral-kpis');
-  kg.innerHTML =
-    kpi('Saldo Total (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
-        R(ultimo.tAtual), '', '&#8595; vs ' + primeiro.tit.split(' ')[0] + ': ' + R(primeiro.tAtual)) +
-    kpi('F. Reserva (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
-        R(getContaSaldo(ultimo, 'RESERVA')), 'o', 'Fundo de Reserva acumulado') +
-    kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
-        R(totalRec), 'g', 'Cotas + rendimentos') +
-    kpi('Despesas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
-        R(totalDesp), 'r', 'Total de despesas do per&iacute;odo');
-
-  // Alerta
-  var diff = totalRec - totalDesp;
-  var alertEl = document.getElementById('geral-alert');
-  if (diff < 0) {
-    alertEl.innerHTML = '<div class="al warn"><span class="ai">&#9888;</span><div><strong>D&eacute;ficit operacional acumulado:</strong> As despesas totais (' + R(totalDesp) + ') superaram as receitas realizadas (' + R(totalRec) + ') em <strong>' + R(Math.abs(diff)) + '</strong>.</div></div>';
-  } else {
-    alertEl.innerHTML = '<div class="al ok"><span class="ai">&#9989;</span><div><strong>Superávit operacional acumulado:</strong> As receitas (' + R(totalRec) + ') superaram as despesas (' + R(totalDesp) + ') em <strong>' + R(diff) + '</strong>.</div></div>';
-  }
-
-  document.getElementById('pie-title').innerHTML = '&#128176; Distribui&ccedil;&atilde;o do Saldo (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')';
-
-  // Pills balanço
-  var pillsEl = document.getElementById('bal-pills');
-  MESES.forEach(function(k, i) {
-    var m = BAL[k];
-    var label = m.tit.replace(' / ', '/');
-    var btn = document.createElement('button');
-    btn.className = 'pill' + (i === MESES.length - 1 ? ' on' : '');
-    btn.setAttribute('onclick', "selectMes('" + k + "',this)");
-    btn.textContent = label;
-    pillsEl.appendChild(btn);
-  });
-  selectMes(MESES[MESES.length - 1], null);
-
-  buildTblDesp();
-  buildTblPvr();
-  buildTblInad();
-  buildTblBanco();
-  buildCharts();
-  chartsBuilt = true;
-  // Pré-renderizar orçamento com filtro
-  initOrcFiltros();
-  buildOrcamento();
 };
 
 function getContaSaldo(m, keyword) {
