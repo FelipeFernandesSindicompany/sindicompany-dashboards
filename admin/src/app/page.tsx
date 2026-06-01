@@ -16,25 +16,29 @@ function buildStatuses(): CondominioStatus[] {
   const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const currentMonth = `${abbrs[now.getMonth()]}${String(now.getFullYear()).slice(2)}`;
 
-  return condominios.map(condo => {
-    const bal = extractBAL(condo.html_file);
-    const lastImport = lastImports[condo.id] ?? null;
+  return condominios
+    .map(condo => {
+      const bal = extractBAL(condo.html_file);
+      const lastImport = lastImports[condo.id] ?? null;
 
-    let status: CondominioStatus['status'] = 'no_data';
-    if (bal) {
-      status = bal.lastKey === currentMonth ? 'current' : 'pending';
-    }
-    if (lastImport?.status === 'error') status = 'error';
+      let status: CondominioStatus['status'] = 'no_data';
+      if (bal) {
+        status = bal.lastKey === currentMonth ? 'current' : 'pending';
+      }
+      if (lastImport?.status === 'error') status = 'error';
 
-    return {
-      condominio: condo,
-      lastKey: bal?.lastKey ?? null,
-      lastMonth: bal?.lastMonth ?? null,
-      lastData: bal ? (bal.data as any) : null,
-      lastImport,
-      status,
-    };
-  });
+      return {
+        condominio: condo,
+        lastKey: bal?.lastKey ?? null,
+        lastMonth: bal?.lastMonth ?? null,
+        lastData: bal ? (bal.data as any) : null,
+        lastImport,
+        status,
+      };
+    })
+    .sort((a, b) =>
+      a.condominio.nome.localeCompare(b.condominio.nome, 'pt-BR', { sensitivity: 'base' })
+    );
 }
 
 export default function HomePage() {
