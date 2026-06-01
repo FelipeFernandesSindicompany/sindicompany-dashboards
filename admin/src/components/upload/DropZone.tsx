@@ -153,7 +153,7 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
               )}
               {file.status === 'processing' && (
                 <span className="flex items-center gap-1 text-[11px] text-accent font-medium">
-                  <Loader2 size={12} className="animate-spin" /> Processando...
+                  <Loader2 size={12} className="animate-spin" /> Processando PDF... (pode levar 1-3 min)
                 </span>
               )}
               {(file.status === 'ready' || file.status === 'detected') && !condoOk && (
@@ -288,9 +288,12 @@ export function DropZone({ condominios, onImportDone }: Props) {
     setFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'processing' as const } : f));
 
     try {
-      // Trigger the processing
+      // Trigger the processing — PDFs grandes levam até 3 min, usa AbortController longo
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 5 * 60 * 1000); // 5 min
       const res = await fetch('/api/process', {
         method: 'POST',
+        signal: ctrl.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fileId: file.id,
@@ -299,6 +302,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
           savedPath: file.savedPath,
         }),
       });
+      clearTimeout(tid);
       const data = await res.json();
 
       if (!data.success && !data.runId) {

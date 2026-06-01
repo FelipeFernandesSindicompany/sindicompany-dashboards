@@ -6,15 +6,14 @@ module.exports = {
     {
       name: 'sindicompany-admin',
       script: 'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
-      // Modo PRODUÇÃO: sem hot-reload, sem EBUSY do OneDrive
-      // Após cada importação, PM2 reinicia automaticamente o servidor
-      args: 'run start',
+      // Modo desenvolvimento: hot-reload, não precisa de build prévio
+      args: 'run dev',
       cwd: path.resolve(__dirname),
       watch: false,
       autorestart: true,
       max_restarts: 10,
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PATH: 'C:\\Program Files\\nodejs;' + process.env.PATH,
       },
       error_file: path.resolve(__dirname, '..', 'data', 'logs', 'admin-error.log'),
