@@ -102,53 +102,85 @@ class AdapterHabitacionalXLSX(AdapterBase):
         def col(row, idx):
             return row[idx] if len(row) > idx else None
 
-        # ── Resumo por conta (linhas ~1-20, antes do TOTAL) ──
-        # Cada linha representa uma conta; linha com "TOTAL" é o consolidado
+        # ── Resumo por conta ──────────────────────────────────────────────────────
+        # Suporte a dois formatos do software Habitacional:
+        #
+        # Formato A (padrão): "Resumo" nas primeiras ~20 linhas
+        #   col E=saldo_ant  col G=creditos  col I=debitos  col K=saldo_atual
+        #   Linha "TOTAL" consolida todas as contas.
+        #
+        # Formato B ("Demonstrações Por Conta"): resumo na seção específica
+        #   As primeiras seções têm detalhes por conta (colunas I/K apenas).
+        #   O "Resumo Financeiro Contábil" (mais abaixo) tem cols E/G/I/K.
+        #   Linha "TOTAL" nessa seção consolida tudo.
+        #
         CONTAS_CDB  = {"FUNDO DE RESERVA", "FUNDO RESERVA", "RESERVA", "CDB", "POUPANÇA", "POUPANCA"}
-        CONTAS_EXCL = {"TOTAL", "CONTA"}  # linhas de cabeçalho/rodapé a ignorar
+        CONTAS_EXCL = {"TOTAL", "CONTA"}
 
-        for row in linhas[:25]:
-            desc = str(col(row, 0) or "").strip()
-            desc_up = desc.upper()
-            v_ant  = _f(col(row, 4))
-            v_cred = _f(col(row, 6))
-            v_deb  = _f(col(row, 8))
-            v_sal  = _f(col(row, 10))
+        def _processa_resumo(rows):
+            """
+            Lê linhas de resumo no formato E/G/I/K.
+            Retorna True se encontrou o TOTAL consolidado.
+            """
+            for row in rows:
+                desc = str(col(row, 0) or "").strip()
+                desc_up = desc.upper()
+                v_ant  = _f(col(row, 4))
+                v_cred = _f(col(row, 6))
+                v_deb  = _f(col(row, 8))
+                v_sal  = _f(col(row, 10))
 
-            # Linha de totais consolidados — encerra leitura de contas aqui
-            if "TOTAL" in desc_up and (v_ant > 0 or v_cred > 0):
-                dados.saldo_anterior    = v_ant
-                dados.receita_realizada = v_cred
-                dados.despesa_total     = v_deb
-                dados.saldo_atual       = v_sal
-                dados.receita_prevista  = v_cred
-                break  # Para antes da seção "Demonstrações Por Conta" que não tem contas bancárias
+                # TOTAL consolidado: tem "TOTAL" no nome e pelo menos saldo_ant ou cred
+                if "TOTAL" in desc_up and (v_ant != 0 or v_cred != 0):
+                    dados.saldo_anterior    = v_ant
+                    dados.receita_realizada = v_cred
+                    dados.despesa_total     = v_deb
+                    dados.saldo_atual       = v_sal
+                    dados.receita_prevista  = v_cred
+                    return True
 
-            # Linha de conta individual (tem nome + pelo menos um valor)
-            if not desc or any(ex in desc_up for ex in CONTAS_EXCL):
-                continue
-            if not any([v_ant, v_cred, v_deb, v_sal]):
-                continue
+                # Conta individual: tem nome, tem pelo menos um valor, e tem E ou G preenchido
+                if not desc or any(ex in desc_up for ex in CONTAS_EXCL):
+                    continue
+                if not any([v_ant, v_cred, v_deb, v_sal]):
+                    continue
+                if v_ant == 0 and v_cred == 0:
+                    continue  # Formato B: linhas com só I/K são detalhes, não contas
 
-            conta = {
-                "nome":       desc.upper(),
-                "saldo_ant":  v_ant,
-                "creditos":   v_cred,
-                "debitos":    v_deb,
-                "saldo_atual": v_sal,
-            }
-            dados.contas_detalhe.append(conta)
+                conta = {
+                    "nome": desc.upper(),
+                    "saldo_ant": v_ant,
+                    "creditos":  v_cred,
+                    "debitos":   v_deb,
+                    "saldo_atual": v_sal,
+                }
+                dados.contas_detalhe.append(conta)
+                nome_up = desc.upper()
+                if "ORDINARI" in nome_up:
+                    dados.banco_cc  += v_sal
+                elif any(kw in nome_up for kw in CONTAS_CDB):
+                    dados.banco_cdb += v_sal
+                else:
+                    dados.banco_priv += v_sal
+            return False
 
-            # Classifica para o objeto banco
-            nome_up = desc.upper()
-            if "ORDINARI" in nome_up:
-                dados.banco_cc  += v_sal
-            elif any(kw in nome_up for kw in CONTAS_CDB):
-                dados.banco_cdb += v_sal
-            else:
-                dados.banco_priv += v_sal
+        # Tenta Formato A: primeiras 25 linhas
+        found = _processa_resumo(linhas[:25])
 
-        # Fallback: se não extraiu contas individuais, usa totais como ORDINÁRIA
+        # Formato B: procura seção "Resumo Financeiro Contábil" no resto do arquivo
+        if not found or dados.saldo_atual == 0:
+            dados.contas_detalhe.clear()
+            dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
+            resumo_start = None
+            for i, row in enumerate(linhas):
+                desc = str(col(row, 0) or col(row, 1) or "").strip()
+                if "RESUMO FINANCEIRO CONT" in desc.upper():
+                    resumo_start = i
+                    break
+            if resumo_start is not None:
+                _processa_resumo(linhas[resumo_start:resumo_start + 30])
+
+        # Fallback: se ainda não extraiu, usa totais como ORDINÁRIA
         if not dados.contas_detalhe and dados.saldo_atual:
             dados.contas_detalhe = [{
                 "nome": "ORDINÁRIA",
@@ -180,8 +212,9 @@ class AdapterHabitacionalXLSX(AdapterBase):
             dados.categorias_despesa["DESPESAS GERAIS"] = dados.despesa_total
 
         # ── Inadimplência ──
-        # Linha "TOTAL" da seção Resumo de Recebimentos / cotas em atraso
-        # Tipicamente na faixa 290-334
+        # Formato A: "COTAS EM ATRASO" na faixa 250+ com valor na col F (idx 5)
+        # Formato B: linhas "CONDOMINOS EM ATRASO EM 30/MM" e "COTAS EM ABERTO EM 30/MM"
+        #            com valor na col K (idx 10) — somadas por conta
         inad = 0.0
         in_inad = False
         for row in linhas[250:]:
@@ -197,7 +230,23 @@ class AdapterHabitacionalXLSX(AdapterBase):
                     inad = v
                     break
 
-        # Fallback: procura em col K as inadimplências por conta
+        # Formato B: linhas "... EM 30/MM" ou "... EM 31/MM" do fim do período atual
+        # (não do período anterior). Valor em col K (idx 10).
+        if inad == 0:
+            # Determina o mês de fim do período (ex: "2026-04" → "04")
+            mes_num = mes_referencia.split("-")[1].lstrip("0") if "-" in mes_referencia else ""
+            # Padrões do dia de fim de mês para o mês atual: "30/04" ou "31/04" etc.
+            fim_mes_patterns = [f"/{mes_num}/", f"/0{mes_num}/"] if mes_num else []
+            for row in linhas:
+                desc = str(col(row, 0) or "").upper().strip()
+                is_overdue = "ATRASO" in desc or "ABERTO" in desc
+                has_fim_mes = any(p in desc for p in fim_mes_patterns)
+                if is_overdue and has_fim_mes:
+                    v = _f(col(row, 10))
+                    if v > 0:
+                        inad += v
+
+        # Fallback padrão
         if inad == 0:
             for row in linhas[10:30]:
                 desc = str(col(row, 0) or "").upper()
