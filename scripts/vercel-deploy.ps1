@@ -1,64 +1,70 @@
-# scripts/vercel-deploy.ps1
-# Deploy automático para Vercel + promoção automática do alias de produção.
-# Chamado pelo git pre-push hook após push para main.
-# DEVE rodar da raiz do repositório (não de dentro de admin/).
-
+param()
 $ErrorActionPreference = "SilentlyContinue"
 
-$VERCEL_TOKEN = "vca_0ZQVXzv8hVxk3GrfnjCzPmM8CRdcNZ1WiqCMKJcDVSMyLmTXnd31ghE5"
-$PROD_ALIAS   = "sindicompany-dashboards.vercel.app"
+$TOKEN     = "vca_1983vyzyT3nMOoH00LXVbdSw8VtVVdQTEz9WDhc9HYMp5HsKsT06RwA0"
+$ALIAS     = "sindicompany-dashboards.vercel.app"
+$NODE      = "C:\Program Files\nodejs\node.exe"
+$VCLI      = "C:\Users\MF PRINTER\AppData\Roaming\npm\node_modules\vercel\dist\vc.js"
+$env:PATH  = "C:\Users\MF PRINTER\AppData\Roaming\npm;C:\Program Files\nodejs;$env:PATH"
 
-$REPO_ROOT = Split-Path -Parent $PSScriptRoot
-$ADMIN_DIR = Join-Path $REPO_ROOT "admin"
-$LOG_FILE  = Join-Path $REPO_ROOT "data\logs\vercel-deploy.log"
+$ROOT      = Split-Path -Parent $PSScriptRoot
+$ADMIN     = Join-Path $ROOT "admin"
+$LOG       = Join-Path $ROOT "data\logs\vercel-deploy.log"
 
-# Garante que o log dir existe
-$logDir = Split-Path $LOG_FILE
+$logDir = Split-Path $LOG
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Force $logDir | Out-Null }
 
-function Log($msg) {
-    $ts = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-    "$ts  $msg" | Out-File -Append -FilePath $LOG_FILE -Encoding utf8
-    Write-Host "$ts  $msg"
+function L($m) {
+    $t = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    ("$t  $m") | Out-File -Append -FilePath $LOG -Encoding utf8
+    Write-Host "$t  $m"
 }
 
-Log "=== Deploy Vercel iniciado ==="
+L "Deploy iniciado"
 
-# 1. Gera snapshots com os dados mais recentes dos dashboards
-Log "Gerando snapshots..."
-Set-Location $ADMIN_DIR
-$snapOut = node scripts/generate-snapshots.mjs 2>&1
-Log ($snapOut -join " ")
+# 1. Gera snapshots
+Set-Location $ADMIN
+L "Gerando snapshots..."
+$s = & $NODE scripts/generate-snapshots.mjs 2>&1
+L ($s -join " ")
 
-# 2. Deploy da raiz do repositório (evita path duplication admin/admin)
-Set-Location $REPO_ROOT
-Log "Fazendo deploy (aguarde ~30s)..."
-
-# Remove variáveis que causam duplicação de caminho
+# 2. Deploy do diretorio admin/
 Remove-Item Env:VERCEL_ORG_ID     -ErrorAction SilentlyContinue
 Remove-Item Env:VERCEL_PROJECT_ID  -ErrorAction SilentlyContinue
 
-$deployOut = vercel deploy --prod --token=$VERCEL_TOKEN --yes 2>&1
-$exitCode  = $LASTEXITCODE
+L "Fazendo deploy..."
+$out  = & $NODE $VCLI deploy --prod --token=$TOKEN --yes 2>&1
+$code = $LASTEXITCODE
+$out | ForEach-Object { L ("  > " + $_) }
 
-# Extrai URL do deploy
-$deployUrl = ($deployOut | Where-Object { $_ -match "^https://sindicompany-dashboards" } | Select-Object -Last 1)
-$aliased   = ($deployOut | Where-Object { $_ -match "Aliased" }) -ne $null
-
-if ($exitCode -ne 0 -or -not $deployUrl) {
-    Log "ERRO no deploy (exit $exitCode):"
-    $deployOut | ForEach-Object { Log "  $_" }
+if ($code -ne 0) {
+    L "ERRO deploy (exit $code) - rodar: vercel login"
     exit 1
 }
 
-Log "Deploy OK: $deployUrl"
-
-# O Vercel CLI promove o alias automaticamente com --prod
-# mas garante explicitamente caso não tenha sido feito
-if (-not $aliased) {
-    $deployHost = $deployUrl -replace "^https://", ""
-    Log "Promovendo alias $deployHost -> $PROD_ALIAS ..."
-    vercel alias set $deployHost $PROD_ALIAS --token=$VERCEL_TOKEN --yes 2>&1 | Out-Null
+# Tenta extrair URL do deploy (dois formatos possiveis)
+# Formato novo (JSON): "url": "https://..."
+# Formato antigo: linha comecando com https://
+$url = $null
+$jsonText = ($out | Where-Object { $_ -match '"url"' } | Select-Object -First 1)
+if ($jsonText -match '"url"\s*:\s*"(https://[^"]+)"') {
+    $url = $Matches[1]
+}
+if (-not $url) {
+    $url = ($out | Where-Object { $_ -match "^https://sindicompany" } | Select-Object -Last 1)
 }
 
-Log "=== Concluído: https://$PROD_ALIAS ==="
+if (-not $url) {
+    L "Deploy OK mas URL nao extraida - alias manual necessario"
+    exit 0
+}
+
+L ("Deploy OK: " + $url)
+
+# Promove alias de producao
+$host2 = $url -replace "^https://", ""
+L ("Promovendo " + $host2 + " -> " + $ALIAS)
+$aOut = & $NODE $VCLI alias set $host2 $ALIAS --token=$TOKEN --yes 2>&1
+L ($aOut -join " ")
+
+L ("Concluido: https://" + $ALIAS)
