@@ -298,8 +298,10 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
     """
     texto = html_path.read_text(encoding="utf-8", errors="ignore")
 
-    # ── 1. Verifica se o mês já existe ──
-    if re.search(rf'\b{re.escape(chave)}\s*:', texto):
+    # ── 1. Verifica se o mês já existe (apenas dentro do bloco BAL) ──
+    bal_match = re.search(r'var\s+BAL\s*[=\s]*\{(.*?)\n\s*\};', texto, re.DOTALL)
+    search_area = bal_match.group(1) if bal_match else texto
+    if re.search(rf'\b{re.escape(chave)}\s*:', search_area):
         print(f"  [AVISO] Mês '{chave}' já existe em {html_path.name}. Pulando.")
         return False
 
