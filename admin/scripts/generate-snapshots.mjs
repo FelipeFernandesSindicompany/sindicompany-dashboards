@@ -13,10 +13,30 @@ const OUT_FILE = join(OUT_DIR, 'snapshots.json');
 
 const VALID_MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
+/**
+ * Extrai o conteúdo interno de var BAL = { ... } usando brace tracking.
+ * Evita o bug do regex não-greedy que terminava no primeiro }; de qualquer
+ * outro objeto JS (ex: DESP_COLORS) antes do fechamento real do BAL.
+ */
+function extractBalContent(content) {
+  const declMatch = content.match(/var\s+BAL\s*=\s*\{/);
+  if (!declMatch) return null;
+  const openPos = content.indexOf('{', declMatch.index);
+  if (openPos === -1) return null;
+  let depth = 0;
+  for (let i = openPos; i < content.length; i++) {
+    if (content[i] === '{') depth++;
+    else if (content[i] === '}') {
+      depth--;
+      if (depth === 0) return content.slice(openPos + 1, i);
+    }
+  }
+  return null;
+}
+
 function extractBALFromContent(content) {
-  const balBlock = content.match(/var\s+BAL\s*=\s*\{([\s\S]*?)\n\s*\};/);
-  if (!balBlock) return null;
-  const blockText = balBlock[1];
+  const blockText = extractBalContent(content);
+  if (!blockText) return null;
   const keyMatches = [...blockText.matchAll(/\b([a-z]{3}\d{2})\s*:/g)];
   const allKeys = keyMatches.map(m => m[1]).filter(k => VALID_MONTHS.some(v => k.startsWith(v)));
   if (!allKeys.length) return null;

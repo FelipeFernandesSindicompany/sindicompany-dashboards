@@ -44,13 +44,31 @@ export function extractBAL(htmlFile: string): ExtractedBAL | null {
   }
 }
 
+/**
+ * Extrai o conteúdo interno de var BAL = { ... } usando brace tracking.
+ * Evita o bug do regex não-greedy que terminava no primeiro }; de outro
+ * objeto JS (ex: DESP_COLORS) antes do fechamento real do BAL.
+ */
+function extractBalContent(content: string): string | null {
+  const declMatch = content.match(/var\s+BAL\s*=\s*\{/);
+  if (!declMatch || declMatch.index === undefined) return null;
+  const openPos = content.indexOf('{', declMatch.index);
+  if (openPos === -1) return null;
+  let depth = 0;
+  for (let i = openPos; i < content.length; i++) {
+    if (content[i] === '{') depth++;
+    else if (content[i] === '}') {
+      depth--;
+      if (depth === 0) return content.slice(openPos + 1, i);
+    }
+  }
+  return null;
+}
+
 function extractBALFromContent(content: string): ExtractedBAL | null {
-
   // Find all valid month keys inside var BAL = { ... }
-  const balBlock = content.match(/var\s+BAL\s*=\s*\{([\s\S]*?)\n\s*\};/);
-  if (!balBlock) return null;
-
-  const blockText = balBlock[1];
+  const blockText = extractBalContent(content);
+  if (!blockText) return null;
   const keyMatches = [...blockText.matchAll(/\b([a-z]{3}\d{2})\s*:/g)];
   const allKeys = keyMatches
     .map(m => m[1])
