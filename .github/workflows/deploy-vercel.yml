@@ -1,0 +1,62 @@
+name: Deploy Vercel (Produção)
+
+# Dispara em todo push para main — substitui a integração nativa do Vercel
+# que estava falhando com Build [0ms] sem executar o build de fato.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy para Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repositório completo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Instalar Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Instalar dependências do admin
+        working-directory: admin
+        run: npm ci
+
+      - name: Gerar snapshots (lê docs/ e cria snapshots.json)
+        working-directory: admin
+        run: node scripts/generate-snapshots.mjs
+
+      - name: Deploy para Vercel (produção)
+        working-directory: admin
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
+          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
+        run: |
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          vercel build --prod --token=$VERCEL_TOKEN
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN > deploy_url.txt
+          echo "Deploy URL: $(cat deploy_url.txt)"
+
+      - name: Promover alias de produção
+        working-directory: admin
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
+          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
+        run: |
+          DEPLOY_URL=$(cat deploy_url.txt)
+          # Extrai apenas o host do URL
+          DEPLOY_HOST=$(echo "$DEPLOY_URL" | sed 's|https://||')
+          echo "Promovendo $DEPLOY_HOST → sindicompany-dashboards.vercel.app"
+          vercel alias set "$DEPLOY_HOST" sindicompany-dashboards.vercel.app --token=$VERCEL_TOKEN
+          echo "✅ Deploy concluído: https://sindicompany-dashboards.vercel.app"
