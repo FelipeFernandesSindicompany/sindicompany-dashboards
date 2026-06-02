@@ -347,8 +347,21 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
     texto = html_path.read_text(encoding="utf-8", errors="ignore")
 
     # ── 1. Verifica se o mês já existe (apenas dentro do bloco BAL) ──
-    bal_match = re.search(r'var\s+BAL\s*[=\s]*\{(.*?)\n\s*\};', texto, re.DOTALL)
-    search_area = bal_match.group(1) if bal_match else texto
+    # Usa brace tracking para garantir que encontra o BAL correto
+    # (regex .*?\}; pode terminar num }; de outro objeto JS antes do BAL)
+    _bal_decl = re.search(r'var\s+BAL\s*=\s*\{', texto)
+    if _bal_decl:
+        _bal_open = _bal_decl.end() - 1
+        _depth, _j = 0, _bal_open
+        while _j < len(texto):
+            if texto[_j] == '{': _depth += 1
+            elif texto[_j] == '}':
+                _depth -= 1
+                if _depth == 0: break
+            _j += 1
+        search_area = texto[_bal_decl.start():_j + 1]
+    else:
+        search_area = texto
     if re.search(rf'\b{re.escape(chave)}\s*:', search_area):
         if not force:
             print(f"  [JA_EXISTE] Mês '{chave}' já existe em {html_path.name}. Use --force para substituir.")
@@ -359,27 +372,35 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
         # Também remove das listas EVO_L / EVO_V se presentes
         # (serão reconstruídas pelo processo de injeção abaixo)
 
-    # ── 2. Injeta no BAL ──
-    # Encontra o último mês dentro do objeto BAL e adiciona depois
-    # Padrão: última chave de mês (ex: mar26: { ... })
-    bal_entry_pattern = r'((\s{2,4}[a-z]{3}\d{2}\s*:\s*\{[^}]*(?:\{[^}]*\}[^}]*)?\})\s*\n)(\s*\})'
-
-    # Estratégia mais robusta: acha o fechamento do var BAL = { ... }
-    # e insere antes do fechamento
-    bal_close = re.search(r'(var\s+BAL\s*=\s*\{.*?)(\n\s*\};)', texto, re.DOTALL)
-    if not bal_close:
+    # ── 2. Injeta no BAL usando brace tracking ──────────────────────────────
+    # NÃO usa regex .*?\}; pois poderia terminar num }; de outro objeto JS
+    # antes do fechamento real do var BAL = { ... };
+    bal_decl = re.search(r'var\s+BAL\s*=\s*\{', texto)
+    if not bal_decl:
         print(f"  [ERRO] Não encontrou var BAL em {html_path.name}")
         return False
 
-    # Insere novo mês antes do fechamento do BAL
-    # Evita vírgula dupla se a última entrada já termina com ","
-    conteudo_bal = bal_close.group(1)
-    if conteudo_bal.rstrip().endswith(','):
+    # brace tracking para encontrar o '}' de fechamento correto do BAL
+    bal_open = bal_decl.end() - 1  # posição do '{' de abertura
+    depth, j = 0, bal_open
+    while j < len(texto):
+        if texto[j] == '{':
+            depth += 1
+        elif texto[j] == '}':
+            depth -= 1
+            if depth == 0:
+                break
+        j += 1
+    # j aponta para o '}' final do BAL
+    bal_close_pos = j
+
+    # Insere o novo bloco antes do '}' final, com vírgula se necessário
+    before_close = texto[:bal_close_pos].rstrip()
+    if before_close.endswith(','):
         separador = "\n"
     else:
         separador = ",\n"
-    novo_bal = conteudo_bal + separador + bloco_js + bal_close.group(2)
-    texto = texto[:bal_close.start()] + novo_bal + texto[bal_close.end():]
+    texto = before_close + separador + bloco_js + "\n" + texto[bal_close_pos:]
 
     # ── 3. Atualiza EVO_L ──
     # EVO_L pode ser declarada como "var EVO_L=[...]" ou junto com outra var "..., EVO_L=[...]"
