@@ -8,13 +8,34 @@ import type { CondominioStatus } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
+/** Calcula o mês esperado (2 meses atrás) como chave "mmmAA", ex: "abr26" */
+function getExpectedMonth(): string {
+  const now = new Date();
+  const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const d = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  return `${abbrs[d.getMonth()]}${String(d.getFullYear()).slice(2)}`;
+}
+
+/** Label legível do mês esperado, ex: "Abr/26" */
+function getExpectedMonthLabel(): string {
+  const now = new Date();
+  const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const labels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const d = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  return `${labels[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;
+}
+
 function buildStatuses(): CondominioStatus[] {
   const condominios = getCondominios();
   const lastImports = getLastImportByCondominio();
 
   const now = new Date();
   const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  const currentMonth = `${abbrs[now.getMonth()]}${String(now.getFullYear()).slice(2)}`;
+
+  // Regra de negócio: prestações chegam com 2 meses de defasagem.
+  // Em junho/2026 o mês esperado é abril/2026 → dashboards em abr26 = "Em dia"
+  const expectedDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  const expectedMonth = `${abbrs[expectedDate.getMonth()]}${String(expectedDate.getFullYear()).slice(2)}`;
 
   return condominios
     .map(condo => {
@@ -23,7 +44,7 @@ function buildStatuses(): CondominioStatus[] {
 
       let status: CondominioStatus['status'] = 'no_data';
       if (bal) {
-        status = bal.lastKey === currentMonth ? 'current' : 'pending';
+        status = bal.lastKey === expectedMonth ? 'current' : 'pending';
       }
       if (lastImport?.status === 'error') status = 'error';
 
@@ -43,6 +64,7 @@ function buildStatuses(): CondominioStatus[] {
 
 export default function HomePage() {
   const statuses = buildStatuses();
+  const expectedLabel = getExpectedMonthLabel();
 
   const total   = statuses.length;
   const current = statuses.filter(s => s.status === 'current').length;
@@ -75,7 +97,7 @@ export default function HomePage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-text-primary">Visão Geral</h1>
           <p className="text-text-muted text-[12px] sm:text-[13px] mt-1">
-            {total} condomínios · {current} atualizados
+            {total} condomínios · {current} atualizados com {expectedLabel}
             {lastImportTime && ` · Última: ${lastImportTime}`}
           </p>
         </div>
