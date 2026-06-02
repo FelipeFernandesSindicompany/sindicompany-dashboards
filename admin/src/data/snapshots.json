@@ -1236,8 +1236,8 @@
     }
   },
   "Dashboard_Financeiro_VistaVerde.html": {
-    "lastKey": "mar26",
-    "lastMonth": "Mar/26",
+    "lastKey": "abr26",
+    "lastMonth": "Abr/26",
     "allKeys": [
       "ago25",
       "set25",
@@ -1246,15 +1246,16 @@
       "dez25",
       "jan26",
       "fev26",
-      "mar26"
+      "mar26",
+      "abr26"
     ],
     "data": {
-      "tit": "Março / 2026",
-      "tAtual": 181170.85,
-      "tCred": 49651.78,
-      "tDeb": 36269.42,
+      "tit": "Abril / 2026",
+      "tAtual": 187054.49,
+      "tCred": 49666.79,
+      "tDeb": 43783.15,
       "inad": 9415.86,
-      "tAnt": 167788.49
+      "tAnt": 181170.85
     }
   },
   "Dashboard_Financeiro_VitaParque.html": {
