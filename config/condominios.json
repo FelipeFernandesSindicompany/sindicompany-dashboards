@@ -8,7 +8,10 @@
       "html_file": "Dashboard_Financeiro_Alvorada.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "barra_viva_i_alegria",
@@ -18,7 +21,10 @@
       "html_file": "Dashboard_Financeiro_BarraVivaI_Alegria.html",
       "ativo": true,
       "cor": "#7c3aed",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "baturite",
@@ -28,7 +34,10 @@
       "html_file": "Dashboard_Financeiro_Baturite.html",
       "ativo": true,
       "cor": "#db2777",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "residencial_blue_sky",
@@ -38,7 +47,12 @@
       "html_file": "Dashboard_Financeiro_BlueSky.html",
       "ativo": true,
       "cor": "#ea580c",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "total_da_conta",
+        "contas_separadas": [],
+        "cat_map": {}
+      }
     },
     {
       "id": "cap_d_antibes",
@@ -48,7 +62,10 @@
       "html_file": "Dashboard_Financeiro_CapDAntibes.html",
       "ativo": true,
       "cor": "#ca8a04",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "cinque_terre_residenza",
@@ -58,7 +75,10 @@
       "html_file": "Dashboard_Financeiro_CinqueTerre.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "club_park_butanta",
@@ -68,7 +88,14 @@
       "html_file": "Dashboard_Financeiro_ClubParkButanta.html",
       "ativo": true,
       "cor": "#0891b2",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "cores",
@@ -78,7 +105,10 @@
       "html_file": "Dashboard_Financeiro_Cores.html",
       "ativo": true,
       "cor": "#4f46e5",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "elo_elo_duo",
@@ -88,7 +118,10 @@
       "html_file": "Dashboard_Financeiro_EloElo.html",
       "ativo": true,
       "cor": "#be185d",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "816_fit_casa_rio_bonito",
@@ -98,17 +131,23 @@
       "html_file": "Dashboard_Financeiro_FITRioBonito.html",
       "ativo": true,
       "cor": "#b45309",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "giardino_d_italia",
-      "nome": "Giardino D’Itália",
+      "nome": "Giardino D'Itália",
       "empresa_gestora": "iello_pdf",
       "pasta_dados": "data/giardino_d_italia",
       "html_file": "Dashboard_Financeiro_GiardinoDItalia.html",
       "ativo": true,
       "cor": "#0d9488",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "go_barra_funda",
@@ -118,7 +157,10 @@
       "html_file": "Dashboard_Financeiro_GoBarra_Funda.html",
       "ativo": true,
       "cor": "#dc2626",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "go_liberdade",
@@ -128,7 +170,10 @@
       "html_file": "Dashboard_Financeiro_GoLiberdade.html",
       "ativo": true,
       "cor": "#9333ea",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "gravura_residencial",
@@ -138,7 +183,12 @@
       "html_file": "Dashboard_Financeiro_GravuraResidencial.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "total_da_conta",
+        "contas_separadas": [],
+        "cat_map": {}
+      }
     },
     {
       "id": "gravura_studio",
@@ -148,7 +198,12 @@
       "html_file": "Dashboard_Financeiro_GravuraStudio.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "total_da_conta",
+        "contas_separadas": [],
+        "cat_map": {}
+      }
     },
     {
       "id": "highlights_dr_nelson_moretti",
@@ -158,7 +213,14 @@
       "html_file": "Dashboard_Financeiro_Highlights_DrNelsonMoretti.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "hub_home_club_tatuape",
@@ -168,7 +230,10 @@
       "html_file": "Dashboard_Financeiro_HubHomeClub_Tatuape.html",
       "ativo": true,
       "cor": "#7c3aed",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "i_gloo_alphaville",
@@ -178,7 +243,14 @@
       "html_file": "Dashboard_Financeiro_IGloo.html",
       "ativo": true,
       "cor": "#db2777",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "living_for_consolacao",
@@ -188,7 +260,10 @@
       "html_file": "Dashboard_Financeiro_LivingForConsolacao.html",
       "ativo": true,
       "cor": "#ea580c",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "maison_du_rhone",
@@ -198,7 +273,10 @@
       "html_file": "Dashboard_Financeiro_MaisonDuRhone.html",
       "ativo": true,
       "cor": "#ca8a04",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "monte_tabor",
@@ -208,7 +286,14 @@
       "html_file": "Dashboard_Financeiro_Monte_Tabor.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "nyc",
@@ -218,7 +303,11 @@
       "html_file": "Dashboard_Financeiro_NYCBerrini.html",
       "ativo": true,
       "cor": "#0891b2",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "webware",
+        "cat_map": {}
+      }
     },
     {
       "id": "onze_22",
@@ -228,7 +317,10 @@
       "html_file": "Dashboard_Financeiro_Onze22.html",
       "ativo": true,
       "cor": "#4f46e5",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "organy_residencial",
@@ -238,7 +330,14 @@
       "html_file": "Dashboard_Financeiro_Organy_Residencial.html",
       "ativo": true,
       "cor": "#be185d",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "organy_studio",
@@ -248,7 +347,14 @@
       "html_file": "Dashboard_Financeiro_Organy_Studio.html",
       "ativo": true,
       "cor": "#b45309",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "730_padre_carvalho",
@@ -258,7 +364,14 @@
       "html_file": "Dashboard_Financeiro_PadreCarvalho.html",
       "ativo": true,
       "cor": "#0d9488",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "palm_beach",
@@ -268,7 +381,14 @@
       "html_file": "Dashboard_Financeiro_PalmBeach.html",
       "ativo": true,
       "cor": "#dc2626",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "patricia",
@@ -278,7 +398,10 @@
       "html_file": "Dashboard_Financeiro_Patricia.html",
       "ativo": true,
       "cor": "#9333ea",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "plano_estacao_campo_limpo",
@@ -288,7 +411,14 @@
       "html_file": "Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "plano_mooca_praca_lion_iii",
@@ -298,7 +428,14 @@
       "html_file": "Dashboard_Financeiro_PlanoMooca.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "plano_rio_bonito",
@@ -308,7 +445,14 @@
       "html_file": "Dashboard_Financeiro_PlanoRioBonito.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "platinum_building_berrini",
@@ -318,7 +462,14 @@
       "html_file": "Dashboard_Financeiro_Platinum.html",
       "ativo": true,
       "cor": "#7c3aed",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "port_saint_tropez",
@@ -328,7 +479,10 @@
       "html_file": "Dashboard_Financeiro_PortSaintTropez.html",
       "ativo": true,
       "cor": "#db2777",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "praca_saude_by_you_comercial",
@@ -338,7 +492,14 @@
       "html_file": "Dashboard_Financeiro_PracaSaude_Comercial.html",
       "ativo": true,
       "cor": "#ea580c",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "praca_saude_residencial",
@@ -348,7 +509,14 @@
       "html_file": "Dashboard_Financeiro_PracaSaude_Residencial.html",
       "ativo": true,
       "cor": "#ca8a04",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "reserva_verde",
@@ -358,7 +526,14 @@
       "html_file": "Dashboard_Financeiro_ReservaVerde.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "residencial_napoleao",
@@ -368,7 +543,14 @@
       "html_file": "Dashboard_Financeiro_ResidencialNapoleao.html",
       "ativo": true,
       "cor": "#0891b2",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "parque_saint_afonso",
@@ -378,7 +560,14 @@
       "html_file": "Dashboard_Financeiro_SaintAfonso.html",
       "ativo": true,
       "cor": "#4f46e5",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "serra_da_mantiqueira",
@@ -388,7 +577,10 @@
       "html_file": "Dashboard_Financeiro_Serra_da_Mantiqueira.html",
       "ativo": true,
       "cor": "#be185d",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "splendor_square",
@@ -398,7 +590,10 @@
       "html_file": "Dashboard_Financeiro_SplendorSquare.html",
       "ativo": true,
       "cor": "#b45309",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "sublime",
@@ -408,7 +603,10 @@
       "html_file": "Dashboard_Financeiro_Sublime.html",
       "ativo": true,
       "cor": "#0d9488",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "top_nine",
@@ -418,7 +616,14 @@
       "html_file": "Dashboard_Financeiro_TopNine.html",
       "ativo": true,
       "cor": "#dc2626",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "upper_itaim",
@@ -428,7 +633,14 @@
       "html_file": "Dashboard_Financeiro_UpperItaim.html",
       "ativo": true,
       "cor": "#9333ea",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "vibra_butanta",
@@ -438,7 +650,23 @@
       "html_file": "Dashboard_Financeiro_VibraButanta.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {
+          "NR'S NORMAS REGULAMENTADORAS": "Normas Reg.",
+          "TERCEIRIZAÇÃO": "Terceirização",
+          "MANUTENÇÃO": "Manutenção",
+          "CONSERVAÇÃO PREDIAL": "Conserv. Predial",
+          "MATERIAL DE CONSUMO": "Mat. de Consumo",
+          "ADMINISTRATIVO": "Administrativo",
+          "DESPESAS OPERACIONAIS": "Desp. Operacionais",
+          "SEGURANÇA": "Segurança"
+        }
+      }
     },
     {
       "id": "victoria",
@@ -448,7 +676,10 @@
       "html_file": "Dashboard_Financeiro_Victoria.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "residencial_villa_park_osasco",
@@ -458,7 +689,10 @@
       "html_file": "Dashboard_Financeiro_VillaPark_Osasco.html",
       "ativo": true,
       "cor": "#2563eb",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "res_villa_sardenha",
@@ -468,7 +702,14 @@
       "html_file": "Dashboard_Financeiro_VillaSardenha.html",
       "ativo": true,
       "cor": "#7c3aed",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     },
     {
       "id": "vista_verde",
@@ -478,7 +719,10 @@
       "html_file": "Dashboard_Financeiro_VistaVerde.html",
       "ativo": true,
       "cor": "#db2777",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "vita_parque",
@@ -488,7 +732,10 @@
       "html_file": "Dashboard_Financeiro_VitaParque.html",
       "ativo": true,
       "cor": "#ea580c",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "vivaz_vila_guilherme",
@@ -498,7 +745,10 @@
       "html_file": "Dashboard_Financeiro_VivazVilaGuilherme.html",
       "ativo": true,
       "cor": "#ca8a04",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     },
     {
       "id": "praca_saude_moradia",
@@ -508,25 +758,27 @@
       "html_file": "Dashboard_Praça_Saúde_Moradia.html",
       "ativo": true,
       "cor": "#16a34a",
-      "unidades": 0
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "consumo_name": "Consumos",
+        "iptu_name": "IPTU",
+        "cat_map": {}
+      }
     }
   ],
   "empresas": {
     "empresa_a": {
       "nome": "Empresa A Administradora",
       "adapter": "adapters.empresa_a",
-      "formatos": [
-        "xlsx"
-      ],
+      "formatos": ["xlsx"],
       "descricao": "Formato padrão com abas: Receitas, Despesas, Inadimplência"
     },
     "empresa_b": {
       "nome": "Empresa B Gestão",
       "adapter": "adapters.empresa_b",
-      "formatos": [
-        "xlsx",
-        "pdf"
-      ],
+      "formatos": ["xlsx", "pdf"],
       "descricao": "Planilha unificada com coluna Tipo (R/D) e PDF de resumo"
     }
   }

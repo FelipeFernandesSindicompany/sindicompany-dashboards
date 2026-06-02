@@ -358,25 +358,45 @@ class AdapterLirbaPDF(AdapterBase):
             dados.receita_prevista = dados.receita_realizada  # último fallback
 
         # ── 3. Despesas por categoria ───────────────────────────────────────────
-        # "TOTAL DA CONTA NOME  valor"
-        # Lirba antigo (Gravura): as contas de nível alto são as categorias
-        #   (MELHORAMENTOS, BENFEITORIAS, CONSUMO etc.)
-        # Lirba novo (Blue Sky): há sub-contas DENTRO de ORDINÁRIA
-        #   (SALÁRIOS, SERVIÇOS TERCEIRIZADOS etc.) e ORDINÁRIA é o agregado
-        # Lirba Vibra/padrão novo: sub-categorias estão na POSIÇÃO FINANCEIRA de
-        #   ORDINÁRIA (linhas após MULTAS e antes de TOTAIS), não no Demonstrativo
+        # O método é determinado pelo campo parser_config.extract_cats do condomínio:
         #
-        # Estratégia:
-        #   1. Tenta "Posição Financeira ORDINÁRIA" — extrai sub-categorias direto do
-        #      resumo da conta (mais confiável, valores corretos)
-        #   2. Coleta "TOTAL DA CONTA" para contas de nível alto (CONSUMO, IPTU etc.)
-        #   3. Fallback clássico: se nenhuma sub-categoria da Posição Financeira,
-        #      usa extração por "TOTAL DA CONTA" (Blue Sky, Gravura etc.)
+        #   "posicao_financeira" → Lê da seção Posição Financeira da conta ORDINÁRIA
+        #       Padrão da maioria dos condomínios Lirba (Vibra, Organy, Palm Beach etc.)
+        #       Linhas entre MULTAS e TOTAIS na Posição Financeira são as categorias.
+        #
+        #   "total_da_conta" → Usa linhas "TOTAL DA CONTA NOME  valor"
+        #       Usado por Blue Sky, Gravura — têm TOTAL DA CONTA individual por sub-cat.
+        #
+        #   "webware" → Formato Webware (NYC Berrini) — detectado automaticamente.
+        #       Já tratado em _parsear_webware().
+        #
+        #   "auto" (padrão quando parser_config ausente) → Tenta posicao_financeira
+        #       e faz fallback para total_da_conta se não encontrar.
 
-        # ── 3a. Posição Financeira ORDINÁRIA → sub-categorias de despesa ──────────
-        posicao_cats = self._extrair_subcats_posicao_financeira(textos)
+        # Lê configuração do condomínio
+        pcfg          = self.parser_config           # dict vazio se não configurado
+        extract_cats  = pcfg.get("extract_cats", "auto")
+        cat_map_extra = pcfg.get("cat_map", {})      # overrides de nome canônico
+        contas_sep    = [c.upper() for c in pcfg.get("contas_separadas",
+                         ["CONSUMO", "CONSUMOS", "I.P.T.U.", "IPTU"])]
+        consumo_name  = pcfg.get("consumo_name", "Consumos")
+        iptu_name     = pcfg.get("iptu_name", "IPTU")
+        excluir_extra = {c.upper() for c in pcfg.get("excluir_contas", [])}
 
-        # ── 3b. TOTAL DA CONTA → contas de nível alto (CONSUMO, IPTU, etc.) ───────
+        # Mapeamento canônico base para contas de nível alto
+        _conta_canonical: dict = {
+            "CONSUMO": consumo_name, "CONSUMOS": consumo_name,
+            "I.P.T.U.": iptu_name, "IPTU": iptu_name, "I P T U": iptu_name,
+            "MELHORAMENTOS": "Melhoramentos",
+            "BENFEITORIAS": "Benfeitorias",
+            "MATERIAL IMPLANTACAO": "Mat. Implantação",
+            "MATERIAL IMPLANTAÇÃO": "Mat. Implantação",
+        }
+        # Aplica overrides do parser_config
+        for k, v in cat_map_extra.items():
+            _conta_canonical[k.upper()] = v
+
+        # ── 3a. TOTAL DA CONTA → contas de nível alto (CONSUMO, IPTU, etc.) ───────
         todos_totais = {}  # conta_upper -> valor
         for m in re.finditer(
             r"TOTAL DA CONTA\s+([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ /\-\.0-9]+?)\s+([\d.,]+)(?:\s|$)",
@@ -387,65 +407,72 @@ class AdapterLirbaPDF(AdapterBase):
             if val > 0:
                 todos_totais[conta] = todos_totais.get(conta, 0) + val
 
-        # Separa: excluídas sempre, agregados (ORDINÁRIA), operacionais
+        # Separa: excluídas sempre, excluídas por config, agregados (ORDINÁRIA),
+        # operacionais (contas de nível alto como CONSUMO, IPTU)
         operacionais = {}
         val_ordinaria = 0.0
         for conta, val in todos_totais.items():
             if any(ex in conta for ex in _EXCLUIR_SEMPRE):
+                continue
+            if conta in excluir_extra:
                 continue
             if any(ag == conta for ag in _CONTAS_AGREGADO):
                 val_ordinaria = val
                 continue
             operacionais[conta] = val
 
-        # ── 3c. Combina fontes ────────────────────────────────────────────────────
-        if posicao_cats:
-            # Sub-categorias da Posição Financeira + contas de nível alto
-            # (CONSUMO, IPTU) que não são sub-categorias de ORDINÁRIA
-            # Mapeamento canônico para contas de nível alto
-            _conta_canonical = {
-                "CONSUMO": "Consumos", "CONSUMOS": "Consumos",
-                "I.P.T.U.": "IPTU", "IPTU": "IPTU",
-                "I P T U": "IPTU",
-                "MELHORAMENTOS": "Melhoramentos",
-                "BENFEITORIAS": "Benfeitorias",
-                "MATERIAL IMPLANTACAO": "Mat. Implantação",
-                "MATERIAL IMPLANTAÇÃO": "Mat. Implantação",
-            }
-            for conta_upper, val in operacionais.items():
-                # Adiciona apenas contas que NÃO são já cobertas pela Posição Financeira
-                cat_title = _conta_canonical.get(conta_upper.upper(), conta_upper.title())
-                if cat_title not in posicao_cats:
-                    posicao_cats[cat_title] = val
-            for cat, val in posicao_cats.items():
-                dados.categorias_despesa[cat] = (
-                    dados.categorias_despesa.get(cat, 0) + val
-                )
+        # ── 3b. Sub-categorias de ORDINÁRIA ──────────────────────────────────────
+        if extract_cats in ("posicao_financeira", "auto"):
+            posicao_cats = self._extrair_subcats_posicao_financeira(textos, cat_map_extra)
         else:
-            # Fallback clássico: usa TOTAL DA CONTA (Blue Sky, Gravura, etc.)
-            if val_ordinaria > 0:
+            posicao_cats = {}
+
+        if extract_cats == "posicao_financeira":
+            # Método explícito: usa apenas Posição Financeira
+            sub_cats = posicao_cats
+
+        elif extract_cats == "total_da_conta":
+            # Método explícito: usa apenas TOTAL DA CONTA (Blue Sky, Gravura)
+            # Sub-cats são as contas que estão dentro de ORDINÁRIA (soma ≈ ORDINÁRIA)
+            soma_op = sum(operacionais.values())
+            if val_ordinaria > 0 and abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
+                sub_cats = {_conta_canonical.get(k.upper(), k.title()): v
+                            for k, v in operacionais.items()}
+                operacionais = {}  # já tratadas em sub_cats
+            else:
+                # Contas de nível alto independentes (Gravura: MELHORAMENTOS, BENFEITORIAS)
+                sub_cats = {}
+
+        else:  # "auto"
+            # Tenta Posição Financeira; se vazia, faz fallback para total_da_conta
+            if posicao_cats:
+                sub_cats = posicao_cats
+            else:
+                sub_cats = {}
+                # Fallback: analisa operacionais vs ORDINÁRIA
                 soma_op = sum(operacionais.values())
-                if abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
-                    pass  # sub-categorias ≈ ORDINÁRIA → são detalhes internos
-                else:
+                if val_ordinaria > 0:
+                    if abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
+                        sub_cats = {_conta_canonical.get(k.upper(), k.title()): v
+                                    for k, v in operacionais.items()}
+                        operacionais = {}
+                    else:
+                        operacionais["ORDINÁRIA"] = val_ordinaria
+                if not operacionais and not sub_cats and val_ordinaria > 0:
                     operacionais["ORDINÁRIA"] = val_ordinaria
 
-            if not operacionais and val_ordinaria > 0:
-                operacionais["ORDINÁRIA"] = val_ordinaria
+        # ── 3c. Combina sub-categorias + contas de nível alto ─────────────────────
+        final_cats: dict = dict(sub_cats)
 
-            # Fallback Vibra: extrai sub-categorias do Demonstrativo se ainda poucas
-            if val_ordinaria > 0 and len(operacionais) <= 3:
-                sub_cats = self._extrair_subcategorias_demonstrativo(texto_completo)
-                if len(sub_cats) > len(operacionais):
-                    operacionais = {k: v for k, v in operacionais.items()
-                                    if k not in _CONTAS_AGREGADO}
-                    operacionais.update(sub_cats)
+        for conta_upper, val in operacionais.items():
+            cat_name = _conta_canonical.get(conta_upper.upper(), conta_upper.title())
+            # Aplica overrides do parser_config se existirem para esta conta
+            cat_name = cat_map_extra.get(conta_upper, cat_map_extra.get(conta_upper.title(), cat_name))
+            if cat_name not in final_cats:
+                final_cats[cat_name] = val
 
-            for conta, val in operacionais.items():
-                cat = conta.title()
-                dados.categorias_despesa[cat] = (
-                    dados.categorias_despesa.get(cat, 0) + val
-                )
+        for cat, val in final_cats.items():
+            dados.categorias_despesa[cat] = dados.categorias_despesa.get(cat, 0) + val
 
         # Fallback final
         if not dados.categorias_despesa and dados.despesa_total > 0:
@@ -715,7 +742,8 @@ class AdapterLirbaPDF(AdapterBase):
         "VIGILÂNCIA":                    "Vigilância",
     }
 
-    def _extrair_subcats_posicao_financeira(self, pages_text: list) -> dict:
+    def _extrair_subcats_posicao_financeira(self, pages_text: list,
+                                              cat_map_extra: dict = None) -> dict:
         """
         Extrai sub-categorias de despesa da seção 'Posição Financeira' da conta ORDINÁRIA.
 
@@ -814,12 +842,16 @@ class AdapterLirbaPDF(AdapterBase):
                     name_raw = m.group(1).strip().upper()
                     val = _num(m.group(2))
                     if val > 0:
-                        # Mapeia para nome canônico
+                        # Prioridade: 1) cat_map do parser_config  2) _POS_CAT_MAP  3) title()
                         name_norm = _norm(name_raw)
-                        canonical = self._POS_CAT_MAP.get(name_raw) or \
-                                    self._POS_CAT_MAP.get(name_norm)
+                        canonical = None
+                        if cat_map_extra:
+                            canonical = cat_map_extra.get(name_raw) or \
+                                        cat_map_extra.get(name_raw.title())
                         if canonical is None:
-                            # Usa title-case como fallback para nomes não mapeados
+                            canonical = self._POS_CAT_MAP.get(name_raw) or \
+                                        self._POS_CAT_MAP.get(name_norm)
+                        if canonical is None:
                             canonical = name_raw.title()
                         found_cats[canonical] = found_cats.get(canonical, 0.0) + val
 

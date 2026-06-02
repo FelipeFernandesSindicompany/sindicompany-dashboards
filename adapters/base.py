@@ -1,5 +1,43 @@
 """
 Adapter base — todo adapter de empresa deve herdar desta classe.
+
+Cada condomínio pode ter um campo "parser_config" no condominios.json com
+regras de extração específicas para o seu formato de arquivo. Isso elimina
+adivinhações genéricas e garante consistência entre os meses.
+
+Estrutura do parser_config (campos suportados por adapter):
+
+  ── Todos os adapters ──────────────────────────────────────────────────────
+  cat_map          dict   Override de nomes canônicos de categorias.
+                          Chave = nome bruto (PDF/XLSX), Valor = nome canônico.
+                          Ex: {"SERVICOS GERAIS": "Serv. Gerais"}
+
+  ── AdapterLirbaPDF ────────────────────────────────────────────────────────
+  extract_cats     str    Método de extração de categorias de despesa:
+                          "posicao_financeira" → lê da seção Posição Financeira
+                              da conta ORDINÁRIA (padrão da maioria dos condos Lirba)
+                          "total_da_conta"     → usa linhas TOTAL DA CONTA
+                              (Blue Sky, Gravura — têm sub-cats explícitos)
+                          "webware"            → formato Webware (NYC Berrini)
+                          "auto"               → detecção automática (fallback)
+
+  contas_separadas list   Contas de nível alto além de ORDINÁRIA que devem
+                          entrar como categorias. Ex: ["CONSUMO", "I.P.T.U."]
+  consumo_name     str    Nome canônico para a conta CONSUMO. Default: "Consumos"
+  iptu_name        str    Nome canônico para a conta I.P.T.U.  Default: "IPTU"
+  excluir_contas   list   Contas adicionais a excluir das categorias.
+
+  ── AdapterHabitacionalXLSX ────────────────────────────────────────────────
+  sheet_name       str    Nome da aba Excel a ler (se diferente do padrão)
+
+  ── AdapterLelloMHTML / LelloXLS ───────────────────────────────────────────
+  (sem campos extras por ora — formato uniforme)
+
+  ── AdapterDatadigitusPDF ──────────────────────────────────────────────────
+  (sem campos extras por ora — formato uniforme)
+
+  ── AdapterIelloPDF ────────────────────────────────────────────────────────
+  (sem campos extras por ora — formato uniforme)
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -27,6 +65,7 @@ class DadosFinanceiros:
     banco_cc: float = 0.0    # conta corrente / ordinária
     banco_cdb: float = 0.0   # fundo de reserva / CDB / poupança
     banco_priv: float = 0.0  # demais fundos (melhorias, obras, etc.)
+    fac: float = 0.0         # faturas anteriores cobradas (juros + multas recebidos)
     historico_meses: list = field(default_factory=list)
     # [{"mes": "2026-04", "receita": ..., "despesa": ..., "saldo": ...}, ...]
     observacoes: str = ""
@@ -37,6 +76,8 @@ class AdapterBase(ABC):
 
     def __init__(self, config: dict):
         self.config = config
+        # Regras específicas do condomínio (lidas de condominios.json → parser_config)
+        self.parser_config: dict = config.get("parser_config", {})
 
     @abstractmethod
     def ler_xlsx(self, caminho: Path, mes_referencia: str) -> DadosFinanceiros:
