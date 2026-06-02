@@ -346,7 +346,7 @@ var CONFIG = {
 };
 
 var EVO_L = ['Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26'];
-var EVO_V = [140282.03, 140379.34, 145858.94, 146935.96, 155976.84, 147225.81, 167788.49, 181170.85, 187054.49];
+var EVO_V = [140282.03, 140379.34, 145858.94, 146935.96, 155976.84, 147225.81, 167788.49, 181170.85, 187054.49, 187054.49];
 
 var BAL = {
   // ── Agosto / 2025 ──────────────────────────────────────────
@@ -548,25 +548,7 @@ var BAL = {
       {c:'DESPESAS ADMINISTRATIVAS', v:5051.99},
       {c:'AJUSTES', v:1438.36}
     ]
-  },
-    abr26: {
-      tit: "Abril / 2026",
-      per: "01/04/2026 a 30/04/2026",
-      tAnt: 181170.85,
-      tCred: 49666.79,
-      tDeb: 43783.15,
-      tAtual: 187054.49,
-      prev: 49666.79,
-      real: 49666.79,
-      fac: 0.0,
-      tDesp: 44420.23,
-      inad: 9415.86,
-      inadProc: 0,
-      contas: [{n:"ORDINARIA", a:83731.1, c:40843.37, d:43146.07, s:81428.4}, {n:"FUNDO DE RESERVA", a:16235.22, c:1657.04, d:0.0, s:17892.26}, {n:"RATEIO PLAUGROUND", a:9324.45, c:0.0, d:0.0, s:9324.45}, {n:"ALUGUEL SL.FESTA/CHURRASQUEIRA", a:840.0, c:0.0, d:0.0, s:840.0}, {n:"EXTRAORDINÁRIAS", a:-192.67, c:0.0, d:0.0, s:-192.67}, {n:"FUNDO DE OBRA ELÉTRICA", a:66496.33, c:7166.38, d:0.0, s:73662.71}],
-      desp: [{c:"MANUTENÇÃO E CONSERVAÇÃO", v:14651.06}, {c:"PESSOAL", v:11280.01}, {c:"CONSUMOS", v:8202.84}, {c:"DESPESAS ADMINISTRATIVAS", v:6147.13}, {c:"AJUSTES", v:1438.33}, {c:"ENCARGOS SOCIAIS/TRABALHISTAS", v:1426.7}, {c:"DESPESAS", v:637.08}, {c:"CONTA PROVISÕES", v:637.08}],
-      banco: {cc:81428.4, cdb:17892.26, priv:83634.49}
-    }
-};
+  }};
 
 var MESES = Object.keys(BAL);
 var chartsBuilt = false;
@@ -638,7 +620,24 @@ window.onload = function() {
   buildTblInad();
   buildTblBanco();
   buildCharts();
-  chartsBuilt = true;
+  chartsBuilt = true;,
+    abr26: {
+      tit: "Abril / 2026",
+      per: "01/04/2026 a 30/04/2026",
+      tAnt: 181170.85,
+      tCred: 49666.79,
+      tDeb: 43783.15,
+      tAtual: 187054.49,
+      prev: 49666.79,
+      real: 49666.79,
+      fac: 0.0,
+      tDesp: 44420.23,
+      inad: 9415.86,
+      inadProc: 0,
+      contas: [{n:"ORDINARIA", a:83731.1, c:40843.37, d:43146.07, s:81428.4}, {n:"FUNDO DE RESERVA", a:16235.22, c:1657.04, d:0.0, s:17892.26}, {n:"RATEIO PLAUGROUND", a:9324.45, c:0.0, d:0.0, s:9324.45}, {n:"ALUGUEL SL.FESTA/CHURRASQUEIRA", a:840.0, c:0.0, d:0.0, s:840.0}, {n:"EXTRAORDINÁRIAS", a:-192.67, c:0.0, d:0.0, s:-192.67}, {n:"FUNDO DE OBRA ELÉTRICA", a:66496.33, c:7166.38, d:0.0, s:73662.71}],
+      desp: [{c:"MANUTENÇÃO E CONSERVAÇÃO", v:14651.06}, {c:"PESSOAL", v:11280.01}, {c:"CONSUMOS", v:8202.84}, {c:"DESPESAS ADMINISTRATIVAS", v:6147.13}, {c:"AJUSTES", v:1438.33}, {c:"ENCARGOS SOCIAIS/TRABALHISTAS", v:1426.7}, {c:"DESPESAS", v:637.08}, {c:"CONTA PROVISÕES", v:637.08}],
+      banco: {cc:81428.4, cdb:17892.26, priv:83634.49}
+    }
 };
 
 function getContaSaldo(m, keyword) {
