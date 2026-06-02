@@ -363,12 +363,20 @@ class AdapterLirbaPDF(AdapterBase):
         #   (MELHORAMENTOS, BENFEITORIAS, CONSUMO etc.)
         # Lirba novo (Blue Sky): há sub-contas DENTRO de ORDINÁRIA
         #   (SALÁRIOS, SERVIÇOS TERCEIRIZADOS etc.) e ORDINÁRIA é o agregado
+        # Lirba Vibra/padrão novo: sub-categorias estão na POSIÇÃO FINANCEIRA de
+        #   ORDINÁRIA (linhas após MULTAS e antes de TOTAIS), não no Demonstrativo
         #
-        # Estratégia: coleta tudo, depois:
-        #   - Remove contas que nunca são despesas (_EXCLUIR_SEMPRE)
-        #   - Se existem sub-contas (não-fundo além de ORDINÁRIA), exclui ORDINÁRIA
-        #   - Se só ORDINÁRIA existe como conta operacional, inclui ela
+        # Estratégia:
+        #   1. Tenta "Posição Financeira ORDINÁRIA" — extrai sub-categorias direto do
+        #      resumo da conta (mais confiável, valores corretos)
+        #   2. Coleta "TOTAL DA CONTA" para contas de nível alto (CONSUMO, IPTU etc.)
+        #   3. Fallback clássico: se nenhuma sub-categoria da Posição Financeira,
+        #      usa extração por "TOTAL DA CONTA" (Blue Sky, Gravura etc.)
 
+        # ── 3a. Posição Financeira ORDINÁRIA → sub-categorias de despesa ──────────
+        posicao_cats = self._extrair_subcats_posicao_financeira(textos)
+
+        # ── 3b. TOTAL DA CONTA → contas de nível alto (CONSUMO, IPTU, etc.) ───────
         todos_totais = {}  # conta_upper -> valor
         for m in re.finditer(
             r"TOTAL DA CONTA\s+([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ /\-\.0-9]+?)\s+([\d.,]+)(?:\s|$)",
@@ -386,34 +394,60 @@ class AdapterLirbaPDF(AdapterBase):
             if any(ex in conta for ex in _EXCLUIR_SEMPRE):
                 continue
             if any(ag == conta for ag in _CONTAS_AGREGADO):
-                val_ordinaria = val  # guarda o valor de ORDINÁRIA para comparação
+                val_ordinaria = val
                 continue
             operacionais[conta] = val
 
-        # Decide se inclui ORDINÁRIA como categoria:
-        # Se a soma das sub-categorias é próxima de ORDINÁRIA → sub-categorias são
-        # itens internos de ORDINÁRIA (Blue Sky), não inclui ORDINÁRIA.
-        # Se a soma é muito menor que ORDINÁRIA → ORDINÁRIA é independente (Gravura),
-        # inclui ORDINÁRIA como categoria adicional.
-        if val_ordinaria > 0:
-            soma_op = sum(operacionais.values())
-            if abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
-                # Sub-categorias somam ≈ ORDINÁRIA → são os detalhes internos
-                pass  # não inclui ORDINÁRIA
-            else:
-                # ORDINÁRIA é uma conta independente → inclui
+        # ── 3c. Combina fontes ────────────────────────────────────────────────────
+        if posicao_cats:
+            # Sub-categorias da Posição Financeira + contas de nível alto
+            # (CONSUMO, IPTU) que não são sub-categorias de ORDINÁRIA
+            # Mapeamento canônico para contas de nível alto
+            _conta_canonical = {
+                "CONSUMO": "Consumos", "CONSUMOS": "Consumos",
+                "I.P.T.U.": "IPTU", "IPTU": "IPTU",
+                "I P T U": "IPTU",
+                "MELHORAMENTOS": "Melhoramentos",
+                "BENFEITORIAS": "Benfeitorias",
+                "MATERIAL IMPLANTACAO": "Mat. Implantação",
+                "MATERIAL IMPLANTAÇÃO": "Mat. Implantação",
+            }
+            for conta_upper, val in operacionais.items():
+                # Adiciona apenas contas que NÃO são já cobertas pela Posição Financeira
+                cat_title = _conta_canonical.get(conta_upper.upper(), conta_upper.title())
+                if cat_title not in posicao_cats:
+                    posicao_cats[cat_title] = val
+            for cat, val in posicao_cats.items():
+                dados.categorias_despesa[cat] = (
+                    dados.categorias_despesa.get(cat, 0) + val
+                )
+        else:
+            # Fallback clássico: usa TOTAL DA CONTA (Blue Sky, Gravura, etc.)
+            if val_ordinaria > 0:
+                soma_op = sum(operacionais.values())
+                if abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
+                    pass  # sub-categorias ≈ ORDINÁRIA → são detalhes internos
+                else:
+                    operacionais["ORDINÁRIA"] = val_ordinaria
+
+            if not operacionais and val_ordinaria > 0:
                 operacionais["ORDINÁRIA"] = val_ordinaria
 
-        if not operacionais and val_ordinaria > 0:
-            operacionais["ORDINÁRIA"] = val_ordinaria
+            # Fallback Vibra: extrai sub-categorias do Demonstrativo se ainda poucas
+            if val_ordinaria > 0 and len(operacionais) <= 3:
+                sub_cats = self._extrair_subcategorias_demonstrativo(texto_completo)
+                if len(sub_cats) > len(operacionais):
+                    operacionais = {k: v for k, v in operacionais.items()
+                                    if k not in _CONTAS_AGREGADO}
+                    operacionais.update(sub_cats)
 
-        for conta, val in operacionais.items():
-            cat = conta.title()
-            dados.categorias_despesa[cat] = (
-                dados.categorias_despesa.get(cat, 0) + val
-            )
+            for conta, val in operacionais.items():
+                cat = conta.title()
+                dados.categorias_despesa[cat] = (
+                    dados.categorias_despesa.get(cat, 0) + val
+                )
 
-        # Fallback
+        # Fallback final
         if not dados.categorias_despesa and dados.despesa_total > 0:
             dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
 
@@ -623,6 +657,330 @@ class AdapterLirbaPDF(AdapterBase):
     # ──────────────────────────────────────────────────────────────────────────
     # Métodos auxiliares compartilhados (Lirba + Webware)
     # ──────────────────────────────────────────────────────────────────────────
+
+    # Linhas que aparecem na Posição Financeira mas NÃO são despesas
+    _POS_NAO_DESPESA = {
+        "SALDO ANTERIOR CREDOR", "SALDO ANTERIOR DEVEDOR", "SALDO ANTERIOR",
+        "CONDOMINOS EM ATRASO", "CONDOMÍNOS EM ATRASO",
+        "RECEBIMENTO DO PERIODO", "RECEBIMENTO DO PERÍODO",
+        "OUTRAS PREVISOES", "OUTRAS PREVISÕES",
+        "OUTRAS RECEITAS",
+        "REEMBOLSO CUSTAS PROCESSUAIS",
+        "RENDIMENTOS APLICACAO", "RENDIMENTOS APLICAÇÃO",
+        "RENDIMENTOS DE APLICACAO", "RENDIMENTOS DE APLICAÇÃO",
+        "JUROS", "MULTAS",
+        "ATUALIZACAO MONETARIA", "ATUALIZAÇÃO MONETÁRIA",
+        "TOTAIS",
+        "SALDO ATUAL CREDOR", "SALDO ATUAL DEVEDOR", "SALDO ATUAL",
+        "CONTASDATA", "CONTAS",
+        "DÉBITO/CRÉDITO NÃO IDENTIFICAD", "DEBITO/CREDITO NAO IDENTIFICAD",
+    }
+
+    # Mapeamento nome_upper → canonical para categorias de despesa na Posição Financeira
+    _POS_CAT_MAP = {
+        "NR'S NORMAS REGULAMENTADORAS":  "Normas Reg.",
+        "NRS NORMAS REGULAMENTADORAS":   "Normas Reg.",
+        "NORMAS REGULAMENTADORAS":       "Normas Reg.",
+        "TERCEIRIZACAO":                 "Terceirização",
+        "TERCEIRIZAÇÃO":                 "Terceirização",
+        "MANUTENCAO":                    "Manutenção",
+        "MANUTENÇÃO":                    "Manutenção",
+        "CONSERVACAO PREDIAL":           "Conserv. Predial",
+        "CONSERVAÇÃO PREDIAL":           "Conserv. Predial",
+        "MATERIAL DE CONSUMO":           "Mat. de Consumo",
+        "ADMINISTRATIVO":                "Administrativo",
+        "DESPESAS OPERACIONAIS":         "Desp. Operacionais",
+        "SEGURANCA":                     "Segurança",
+        "SEGURANÇA":                     "Segurança",
+        "OUTRAS DESPESAS":               "Outras Desp.",
+        "MAT. IMPLANTACAO":              "Mat. Implantação",
+        "MAT. IMPLANTAÇÃO":              "Mat. Implantação",
+        "MATERIAL DE IMPLANTACAO":       "Mat. Implantação",
+        "MATERIAL DE IMPLANTAÇÃO":       "Mat. Implantação",
+        "MATERIAL IMPLANTACAO":          "Mat. Implantação",
+        "MATERIAL IMPLANTAÇÃO":          "Mat. Implantação",
+        "SALARIOS":                      "Salários",
+        "SALÁRIOS":                      "Salários",
+        "SERVICOS TERCEIRIZADOS":        "Serv. Terceirizados",
+        "SERVIÇOS TERCEIRIZADOS":        "Serv. Terceirizados",
+        "UTILIDADES":                    "Utilidades",
+        "AGUA":                          "Água",
+        "ÁGUA":                          "Água",
+        "ENERGIA ELETRICA":              "Energia Elétrica",
+        "ENERGIA ELÉTRICA":              "Energia Elétrica",
+        "GAS":                           "Gás",
+        "GÁS":                           "Gás",
+        "LIMPEZA":                       "Limpeza",
+        "VIGILANCIA":                    "Vigilância",
+        "VIGILÂNCIA":                    "Vigilância",
+    }
+
+    def _extrair_subcats_posicao_financeira(self, pages_text: list) -> dict:
+        """
+        Extrai sub-categorias de despesa da seção 'Posição Financeira' da conta ORDINÁRIA.
+
+        A Posição Financeira de ORDINÁRIA tem o layout:
+          Posição Financeira Débito Crédito
+          SALDO ANTERIOR CREDOR dd/mm/YYYY  value
+          CONDOMINOS EM ATRASO  value            ← créditos (não despesas)
+          RECEBIMENTO DO PERIODO  value
+          ContasData
+          OUTRAS PREVISOES  value
+          ...
+          JUROS  value
+          ATUALIZACAO MONETARIA  value
+          MULTAS  value
+          NR'S NORMAS REGULAMENTADORAS  value    ← ← ← despesas começam aqui
+          TERCEIRIZAÇÃO  value
+          MANUTENÇÃO  value
+          ...
+          DÉBITO/CRÉDITO NÃO IDENTIFICAD  value  ← crédito de ajuste (excluir)
+          TOTAIS  total_deb  total_cred
+
+        Retorna dict {canonical_name: valor} das categorias encontradas.
+        Retorna {} se a seção não for encontrada ou não houver categorias.
+        """
+        import unicodedata
+
+        def _norm(s: str) -> str:
+            s = unicodedata.normalize("NFD", s)
+            return "".join(c for c in s if unicodedata.category(c) != "Mn").upper().strip()
+
+        BR_NUM = re.compile(r"^([\d]{1,3}(?:\.[\d]{3})*,[\d]{2})\s*$")
+        SINGLE_VAL = re.compile(r"^(.+?)\s+([\d]{1,3}(?:\.[\d]{3})*,[\d]{2})\s*$")
+
+        # Linhas a ignorar (não são despesas)
+        not_desp_norm = {_norm(k) for k in self._POS_NAO_DESPESA}
+        # Prefixos de linhas de crédito/data
+        not_desp_prefixes = {
+            "SALDO", "CONDOMINO", "RECEBIMENTO", "OUTRAS", "REEMBOLSO",
+            "RENDIMENTO", "JUROS", "MULTAS", "ATUALIZACAO", "ATUALIZAÇÃO",
+            "TOTAIS", "CONTAS", "PERIOD", "PERÍODO",
+        }
+
+        # Marcadores para entrar na zona de despesas
+        MULTAS_NORM = "MULTAS"
+        ATUALIZACAO_NORM = "ATUALIZACAO MONETARIA"
+
+        results: dict = {}
+
+        for pg_idx, text in enumerate(pages_text):
+            if "Posição Financeira" not in text and "Posicao Financeira" not in text:
+                continue
+            if "Resumo Financeiro" in text:
+                # Página diferente (contém Resumo Financeiro, não Posição Financeira de conta)
+                continue
+
+            lines = [l.strip() for l in text.split("\n") if l.strip()]
+
+            in_pos = False
+            past_multas = False
+            found_cats = {}
+
+            for line in lines:
+                ll_norm = _norm(line)
+
+                # Inicia quando encontra "Posição Financeira"
+                if not in_pos:
+                    if re.match(r"Posi[çc][aã]o Financeira", line, re.IGNORECASE):
+                        in_pos = True
+                    continue
+
+                # Para ao encontrar "TOTAIS" ou nova seção
+                if ll_norm.startswith("TOTAIS"):
+                    break
+
+                # Detecta passagem por MULTAS/ATUALIZACAO → próximas linhas são despesas
+                if ll_norm in (MULTAS_NORM, ATUALIZACAO_NORM) or ll_norm.startswith("MULTAS"):
+                    past_multas = True
+                    continue
+
+                if not past_multas:
+                    continue
+
+                # Pula linhas de ajuste conhecidas
+                if any(ll_norm.startswith(p) for p in not_desp_prefixes):
+                    continue
+                if ll_norm in not_desp_norm:
+                    continue
+
+                # Pula DÉBITO/CRÉDITO NÃO IDENTIFICAD (ajuste de conta, não despesa)
+                if "NÃO IDENTIFICAD" in ll_norm or "NAO IDENTIFICAD" in ll_norm:
+                    continue
+
+                # Linha de categoria: "NOME_CATEGORIA  valor"
+                m = SINGLE_VAL.match(line)
+                if m:
+                    name_raw = m.group(1).strip().upper()
+                    val = _num(m.group(2))
+                    if val > 0:
+                        # Mapeia para nome canônico
+                        name_norm = _norm(name_raw)
+                        canonical = self._POS_CAT_MAP.get(name_raw) or \
+                                    self._POS_CAT_MAP.get(name_norm)
+                        if canonical is None:
+                            # Usa title-case como fallback para nomes não mapeados
+                            canonical = name_raw.title()
+                        found_cats[canonical] = found_cats.get(canonical, 0.0) + val
+
+            if found_cats:
+                results = found_cats
+                break  # Usa apenas a primeira Posição Financeira (ORDINÁRIA)
+
+        return results
+
+    # Mapeamento de cabeçalhos de seção → nome canônico (usado no Demonstrativo
+    # de PDFs Vibra/Lirba que não têm "TOTAL DA CONTA" por sub-seção).
+    # Chaves em maiúsculas sem acentos (normalizado) para match robusto.
+    _DEMO_SECTION_MAP = {
+        # Normalizado (sem acento) : canônico
+        "NR'S NORMAS REGULAMENTADORAS": "Normas Reg.",
+        "NRS NORMAS REGULAMENTADORAS":  "Normas Reg.",
+        "NORMAS REGULAMENTADORAS":      "Normas Reg.",
+        "TERCEIRIZACAO":                "Terceirização",
+        "TERCEIRIZAÇÃO":                "Terceirização",
+        "MANUTENCAO":                   "Manutenção",
+        "MANUTENÇÃO":                   "Manutenção",
+        "MANUTENÇÃO.":                  "Manutenção",    # com ponto no PDF
+        "CONSERVACAO PREDIAL":          "Conserv. Predial",
+        "CONSERVAÇÃO PREDIAL":          "Conserv. Predial",
+        "MATERIAL DE CONSUMO":          "Mat. de Consumo",
+        "ADMINISTRATIVO":               "Administrativo",
+        "DESPESAS OPERACIONAIS":        "Desp. Operacionais",
+        "SEGURANCA":                    "Segurança",
+        "SEGURANÇA":                    "Segurança",
+        "OUTRAS DESPESAS":              "Outras Desp.",
+        "MAT. IMPLANTACAO":             "Mat. Implantação",
+        "MAT. IMPLANTAÇÃO":             "Mat. Implantação",
+        "MATERIAL DE IMPLANTACAO":      "Mat. Implantação",
+        "MATERIAL DE IMPLANTAÇÃO":      "Mat. Implantação",
+        # Contas de nível alto que podem aparecer sem sub-seções:
+        "I.P.T.U.":                     "IPTU",
+        "IPTU":                         "IPTU",
+        "CONSUMO":                      "Consumos",
+        "CONSUMOS":                     "Consumos",
+        # Excluir (retorna None):
+        "DEBITO/CREDITO NAO IDENTIFICAD":  None,
+        "DÉBITO/CRÉDITO NÃO IDENTIFICAD":  None,
+        "ORDINARIA":                       None,
+        "ORDINÁRIA":                       None,
+    }
+
+    def _extrair_subcategorias_demonstrativo(self, texto_completo: str) -> dict:
+        """
+        Extrai sub-categorias do Demonstrativo de Despesas quando os PDFs Lirba
+        não possuem 'TOTAL DA CONTA' individual para cada sub-seção dentro de ORDINÁRIA.
+
+        Algoritmo:
+        - Localiza a seção "Demonstrativo de Despesas" no texto
+        - Rastreia cabeçalhos de seção (linhas ALL-CAPS sem números, match em _DEMO_SECTION_MAP)
+        - O ÚLTIMO número acumulado antes do próximo cabeçalho (ou fim) é o total da seção
+        - Retorna dict {nome_upper: valor} a ser mesclado em operacionais
+
+        Valores de "TOTAL DA CONTA X" explícitos são sempre preferidos; este método
+        é chamado apenas como fallback quando há poucas categorias extraídas.
+        """
+        # Encontra início do Demonstrativo de Despesas
+        demo_start = texto_completo.lower().find("demonstrativo de despesas")
+        if demo_start < 0:
+            return {}
+
+        texto_demo = texto_completo[demo_start:]
+
+        # Cabeçalhos conhecidos (norm key → canonical)
+        smap = self._DEMO_SECTION_MAP
+
+        # Padrão para linha de cabeçalho de seção:
+        # linha ALL-CAPS, sem dígitos no meio, comprimento razoável
+        # Pega o nome normalizado para match
+        def _normalize(s: str) -> str:
+            import unicodedata
+            s = unicodedata.normalize("NFD", s)
+            s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+            return s.upper().strip()
+
+        # Padrão de número monetário com separador de milhar + 2 casas decimais
+        # Formato BR: 86.087,03  ou 1.234,56  ou 42.875,97
+        NUM_RE = re.compile(r"\b(\d{1,3}(?:\.\d{3})*,\d{2})\b")
+        # Linha de transação geralmente termina com: valor_acum  num_lancamento
+        TRANSAC_RE = re.compile(
+            r"(\d{1,3}(?:\.\d{3})*,\d{2})\s+(\d{4})\s*$"
+        )
+        # "TOTAL DA CONTA" e "TOTAL DAS DESPESAS" — parar ao encontrar esses
+        TOTAL_RE = re.compile(r"TOTAL\s+D[AO]S?\s+(CONTA|DESPESAS)", re.IGNORECASE)
+
+        results: dict = {}           # canonical_name -> valor
+        current_section: str = None  # chave em smap (str upper)
+        last_cumul: float = 0.0      # último valor acumulado visto na seção
+
+        skip_lines = {
+            "demonstrativo de despesas", "página:", "periodo:", "condominio:",
+            "nº lancto.", "voltar ao índice", "contasdata", "relatdemon", "panel",
+        }
+
+        for raw_line in texto_demo.split("\n"):
+            line = raw_line.strip()
+            if not line:
+                continue
+
+            # Pula cabeçalhos de página
+            ll = line.lower()
+            if any(sk in ll for sk in skip_lines):
+                continue
+            if re.match(r"^(página|periodo|condominio|nº lancto)", ll, re.IGNORECASE):
+                continue
+
+            # Se encontra TOTAL DA CONTA ou TOTAL DAS DESPESAS, encerra seção atual
+            if TOTAL_RE.search(line):
+                if current_section and last_cumul > 0:
+                    canonical = smap.get(current_section)
+                    if canonical is not None:
+                        results[canonical] = results.get(canonical, 0.0) + last_cumul
+                current_section = None
+                last_cumul = 0.0
+                continue
+
+            # Tenta match de cabeçalho de seção
+            line_norm = _normalize(line)
+            # Só considera cabeçalho se:
+            # 1. Está no mapa de seções
+            # 2. Linha não contém dígitos (além do ponto e vírgula monetários)
+            candidate = line_norm.rstrip(".")
+            is_header = candidate in smap or line_norm in smap
+            if is_header:
+                norm_key = line_norm if line_norm in smap else candidate
+                # Fecha seção anterior
+                if current_section and last_cumul > 0:
+                    canonical = smap.get(current_section)
+                    if canonical is not None:
+                        results[canonical] = results.get(canonical, 0.0) + last_cumul
+                current_section = norm_key
+                last_cumul = 0.0
+                continue
+
+            # Dentro de uma seção: captura valor acumulado em linha de transação
+            if current_section:
+                m_t = TRANSAC_RE.search(line)
+                if m_t:
+                    val = _num(m_t.group(1))
+                    if val > 0:
+                        last_cumul = val
+                else:
+                    # Tenta qualquer número isolado ao final da linha
+                    nums = NUM_RE.findall(line)
+                    if nums:
+                        v = _num(nums[-1])
+                        if v > 0:
+                            last_cumul = v
+
+        # Fecha última seção
+        if current_section and last_cumul > 0:
+            canonical = smap.get(current_section)
+            if canonical is not None:
+                results[canonical] = results.get(canonical, 0.0) + last_cumul
+
+        # Retorna como {UPPER_KEY: valor} para mesclagem no operacionais
+        return {k.upper(): v for k, v in results.items() if v > 0}
 
     def _extrair_conta_bancaria(self, pages_text: list) -> dict:
         """
