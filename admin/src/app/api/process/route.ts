@@ -14,7 +14,7 @@ const IS_CLOUD = !!process.env.GITHUB_TOKEN;
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as ProcessRequest;
-    const { condominioId, mes, savedPath } = body;
+    const { condominioId, mes, savedPath, force } = body;
 
     if (!condominioId || !mes || !savedPath) {
       return NextResponse.json({ error: 'Parâmetros inválidos' }, { status: 400 });
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     } else {
       // ── Modo Local (ngrok / PM2): roda Python direto no servidor ──────────
-      const result = await injectarMes(condominioId, mes, savedPath);
+      const result = await injectarMes(condominioId, mes, savedPath, !!force);
 
       const record = {
         id: uuidv4(),
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         condominioNome: condo.nome,
         mes,
         arquivo: savedPath.split(/[/\\]/).pop() ?? savedPath,
-        status: result.success ? 'success' as const : 'error' as const,
+        status: result.success ? 'success' as const : result.monthExists ? 'warning' as const : 'error' as const,
         operador: 'admin',
         log: result.log,
         error: result.error,
@@ -80,7 +80,13 @@ export async function POST(request: NextRequest) {
         ? (() => { try { return JSON.parse(resumoLine.split('[RESUMO]')[1].trim()); } catch { return null; } })()
         : null;
 
-      return NextResponse.json({ success: result.success, log: result.log, record, resumo });
+      return NextResponse.json({
+        success: result.success,
+        monthExists: result.monthExists ?? false,
+        log: result.log,
+        record,
+        resumo,
+      });
     }
 
   } catch (err: any) {

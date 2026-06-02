@@ -7,6 +7,8 @@ const execAsync = promisify(exec);
 
 export interface ProcessResult {
   success: boolean;
+  /** true quando o mês já existe no dashboard e force não foi usado */
+  monthExists?: boolean;
   log: string[];
   error?: string;
 }
@@ -14,7 +16,8 @@ export interface ProcessResult {
 export async function injectarMes(
   condominioId: string,
   mes: string,
-  arquivoPath: string
+  arquivoPath: string,
+  force = false,
 ): Promise<ProcessResult> {
   const script = path.join(SCRIPTS_DIR, 'injetar_mes.py');
   const cmd = [
@@ -23,6 +26,7 @@ export async function injectarMes(
     `--condominio "${condominioId}"`,
     `--mes "${mes}"`,
     `--arquivo "${arquivoPath}"`,
+    ...(force ? ['--force'] : []),
   ].join(' ');
 
   try {
@@ -35,10 +39,15 @@ export async function injectarMes(
 
     const combined = (stdout + '\n' + stderr).trim();
     const lines = combined.split('\n').map(l => l.trim()).filter(Boolean);
-    const success = lines.some(l => l.includes('[OK]'));
-    const hasError = lines.some(l => l.includes('[ERRO]'));
+    const success    = lines.some(l => l.includes('[OK]'));
+    const hasError   = lines.some(l => l.includes('[ERRO]'));
+    const mesExiste  = lines.some(l => l.includes('[JA_EXISTE]'));
 
-    return { success: success && !hasError, log: lines };
+    return {
+      success: success && !hasError,
+      monthExists: mesExiste,
+      log: lines,
+    };
   } catch (err: any) {
     const stdout = err.stdout ?? '';
     const stderr = err.stderr ?? '';

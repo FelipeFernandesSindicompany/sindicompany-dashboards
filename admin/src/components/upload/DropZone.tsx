@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useState, useRef } from 'react';
-import { Upload, FileText, FileSpreadsheet, X, CheckCircle2, AlertCircle, Loader2, ChevronDown, Send } from 'lucide-react';
+import { Upload, FileText, FileSpreadsheet, X, CheckCircle2, AlertCircle, Loader2, ChevronDown, Send, RefreshCw } from 'lucide-react';
 import type { DetectedFile, Condominio } from '@/lib/types';
 
 const MESES = [
@@ -52,13 +52,13 @@ interface FileItemProps {
   condominios: Condominio[];
   onUpdate: (id: string, patch: Partial<DetectedFile>) => void;
   onRemove: (id: string) => void;
-  onProcess: (file: DetectedFile) => void;
+  onProcess: (file: DetectedFile, force?: boolean) => void;
 }
 
 function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItemProps) {
   const condoOk = !!file.detectedCondominioId;
   const mesOk = !!file.detectedMes;
-  const ready = condoOk && mesOk && file.status !== 'processing' && file.status !== 'done';
+  const ready = condoOk && mesOk && file.status !== 'processing' && file.status !== 'done' && file.status !== 'month_exists';
 
   return (
     <div className={`card p-4 animate-slide-up transition-all duration-200
@@ -140,7 +140,7 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
 
           {/* Status / action */}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {file.status === 'done' && (
                 <span className="flex items-center gap-1 text-[11px] text-success font-medium">
                   <CheckCircle2 size={12} /> Injetado com sucesso
@@ -151,9 +151,14 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
                   <AlertCircle size={12} /> {file.error ?? 'Erro ao processar'}
                 </span>
               )}
+              {file.status === 'month_exists' && (
+                <span className="flex items-center gap-1 text-[11px] text-warning font-medium">
+                  <AlertCircle size={12} /> Mês já importado
+                </span>
+              )}
               {file.status === 'processing' && (
                 <span className="flex items-center gap-1 text-[11px] text-accent font-medium">
-                  <Loader2 size={12} className="animate-spin" /> Processando PDF... (pode levar 1-3 min)
+                  <Loader2 size={12} className="animate-spin" /> Processando... (pode levar 1-3 min)
                 </span>
               )}
               {(file.status === 'ready' || file.status === 'detected') && !condoOk && (
@@ -164,12 +169,26 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
               )}
             </div>
 
-            {ready && (
-              <button onClick={() => onProcess(file)} className="btn-primary text-[12px] px-3 py-1.5">
-                <Send size={12} />
-                Injetar
-              </button>
-            )}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {ready && (
+                <button onClick={() => onProcess(file)} className="btn-primary text-[12px] px-3 py-1.5">
+                  <Send size={12} />
+                  Injetar
+                </button>
+              )}
+              {file.status === 'month_exists' && (
+                <button
+                  onClick={() => onProcess(file, true)}
+                  title="Substituir o mês existente com os novos dados"
+                  className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-xl
+                    border border-warning/40 bg-warning/10 text-warning
+                    hover:bg-warning/20 transition-colors font-medium"
+                >
+                  <RefreshCw size={12} />
+                  Substituir
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Result summary card */}
@@ -282,7 +301,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
     handleFiles(e.dataTransfer.files);
   }, [handleFiles]);
 
-  const onProcess = useCallback(async (file: DetectedFile) => {
+  const onProcess = useCallback(async (file: DetectedFile, force = false) => {
     if (!file.detectedCondominioId || !file.detectedMes) return;
 
     setFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'processing' as const } : f));
@@ -300,10 +319,19 @@ export function DropZone({ condominios, onImportDone }: Props) {
           condominioId: file.detectedCondominioId,
           mes: file.detectedMes,
           savedPath: file.savedPath,
+          force,
         }),
       });
       clearTimeout(tid);
       const data = await res.json();
+
+      // Mês já existe e não foi forçado → status especial com botão "Substituir"
+      if (!data.success && data.monthExists) {
+        setFiles(prev => prev.map(f =>
+          f.id === file.id ? { ...f, status: 'month_exists' as const } : f
+        ));
+        return;
+      }
 
       if (!data.success && !data.runId) {
         setFiles(prev => prev.map(f =>
@@ -357,7 +385,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
 
   const processAll = useCallback(() => {
     const ready = files.filter(f => f.detectedCondominioId && f.detectedMes && f.status === 'ready');
-    ready.forEach(onProcess);
+    ready.forEach(f => onProcess(f));
   }, [files, onProcess]);
 
   const readyCount = files.filter(f => f.detectedCondominioId && f.detectedMes && f.status === 'ready').length;

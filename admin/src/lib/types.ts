@@ -61,7 +61,8 @@ export interface DetectedFile {
   detectedMes: string | null;
   confidence: number;
   adapterSuggestion: AdapterType | null;
-  status: 'detected' | 'ready' | 'processing' | 'done' | 'error';
+  /** 'month_exists' = mês já foi importado; pode ser substituído com --force */
+  status: 'detected' | 'ready' | 'processing' | 'done' | 'error' | 'month_exists';
   error?: string;
   resumo?: Record<string, any> | null;
 }
@@ -71,4 +72,6 @@ export interface ProcessRequest {
   condominioId: string;
   mes: string;
   savedPath: string;
+  /** Quando true, sobrescreve o mês existente em vez de recusar */
+  force?: boolean;
 }

@@ -287,14 +287,62 @@ def bal_para_js(bloco: dict, chave: str, indent: int = 4) -> str:
     return "\n".join(linhas)
 
 
+def _remover_mes_bal(texto: str, chave: str) -> str:
+    """
+    Remove a entrada de um mês do objeto BAL usando brace tracking.
+    Retorna o texto modificado (sem a entrada) ou o texto original se não encontrar.
+    """
+    # Localiza a entrada dentro do BAL: "  chave: { ... }"
+    pat = re.compile(rf'([ \t]*)({re.escape(chave)}\s*:\s*\{{)', re.DOTALL)
+    m = pat.search(texto)
+    if not m:
+        return texto
+
+    entry_start = m.start()         # inclui whitespace antes da chave
+    brace_pos   = m.end() - 1       # posição do '{' de abertura
+
+    # Tracking de chaves para encontrar o '}' final
+    depth, j = 0, brace_pos
+    while j < len(texto):
+        if texto[j] == '{':
+            depth += 1
+        elif texto[j] == '}':
+            depth -= 1
+            if depth == 0:
+                j += 1              # j aponta após o '}'
+                break
+        j += 1
+
+    # Consome vírgula e newline depois do '}' se existirem
+    rest = texto[j:]
+    if rest.startswith(','):
+        j += 1
+    if j < len(texto) and texto[j] == '\n':
+        j += 1
+
+    # Caso a entrada anterior tinha vírgula que agora é a última → limpa
+    before = texto[:entry_start]
+    after  = texto[j:]
+    # Se não sobrou nada depois (entrada era a única/última), remove vírgula anterior
+    after_stripped = after.lstrip('\n')
+    if after_stripped.startswith('}') and before.rstrip().endswith(','):
+        before = before.rstrip()[:-1]   # remove a vírgula final
+
+    return before + after
+
+
 def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
                     evo_label: str, saldo_atual: float,
-                    inad_valor: float = None, orc_valor: float = None) -> bool:
+                    inad_valor: float = None, orc_valor: float = None,
+                    force: bool = False) -> bool:
     """
     Injeta novo mês no HTML:
     1. Adiciona entrada no objeto BAL
     2. Atualiza EVO_L (labels) e EVO_V (valores de saldo)
     Retorna True se modificou o arquivo.
+
+    Se force=True e o mês já existe, remove a entrada antiga antes de injetar.
+    Se force=False e o mês já existe, imprime [JA_EXISTE] e retorna False.
     """
     texto = html_path.read_text(encoding="utf-8", errors="ignore")
 
@@ -302,8 +350,14 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
     bal_match = re.search(r'var\s+BAL\s*[=\s]*\{(.*?)\n\s*\};', texto, re.DOTALL)
     search_area = bal_match.group(1) if bal_match else texto
     if re.search(rf'\b{re.escape(chave)}\s*:', search_area):
-        print(f"  [AVISO] Mês '{chave}' já existe em {html_path.name}. Pulando.")
-        return False
+        if not force:
+            print(f"  [JA_EXISTE] Mês '{chave}' já existe em {html_path.name}. Use --force para substituir.")
+            return False
+        # force=True: remove o mês existente e re-injeta
+        print(f"  [INFO] Substituindo mês '{chave}' em {html_path.name}...")
+        texto = _remover_mes_bal(texto, chave)
+        # Também remove das listas EVO_L / EVO_V se presentes
+        # (serão reconstruídas pelo processo de injeção abaixo)
 
     # ── 2. Injeta no BAL ──
     # Encontra o último mês dentro do objeto BAL e adiciona depois
@@ -401,6 +455,7 @@ def processar_um(cond: dict, mes_str: str, arquivo: Path, config_global: dict) -
         saldo_atual  = dados.saldo_atual,
         inad_valor   = dados.inadimplencia_valor,
         orc_valor    = bloco.get("prev", 0),
+        force        = config_global.get("_force", False),
     )
     if ok:
         print(f"  [OK] Mês '{chave}' injetado em {html_path.name}")
@@ -429,6 +484,8 @@ def main():
     parser.add_argument("--arquivo", "--xlsx", dest="arquivo",
                         help="Caminho para o arquivo XLSX ou PDF (opcional)")
     parser.add_argument("--todos", action="store_true")
+    parser.add_argument("--force", action="store_true",
+                        help="Substitui o mês se já existir no dashboard")
     args = parser.parse_args()
 
     try:
@@ -438,6 +495,9 @@ def main():
 
     with open(ROOT / "config" / "condominios.json", encoding="utf-8") as f:
         config = json.load(f)
+
+    # Propaga --force para o processamento
+    config["_force"] = args.force
 
     condominios = [c for c in config["condominios"] if c.get("ativo", True)]
     if args.condominio:
