@@ -331,8 +331,10 @@ class AdapterLirbaPDF(AdapterBase):
                     previsto_total += v2
                     in_prev = False
 
-        # Tenta padrão Blue Sky: linha de total "X Y" dentro de seção de emissão colunada
-        # A primeira ocorrência de dois números grandes sozinhos em seção colunada
+        # Tenta padrão Blue Sky: busca a linha "CONDOMINIO X Y" dentro da seção
+        # "Resumo de Emissões Colunado" — X é a emissão mensal (previsto real).
+        # ATENÇÃO: NÃO somar múltiplas seções (cada conta tem sua própria seção);
+        # usar apenas a primeira linha "CONDOMINIO" encontrada.
         if previsto_total == 0.0:
             in_col = False
             for linha in texto_completo.split("\n"):
@@ -342,12 +344,16 @@ class AdapterLirbaPDF(AdapterBase):
                     continue
                 if not in_col:
                     continue
-                m = re.match(r"^([\d.,]+)\s+([\d.,]+)$", l)
-                if m:
-                    v1 = _num(m.group(1))
+                # Linha específica: "CONDOMINIO X Y" ou "CONDOMÍNIO X Y"
+                m_condo = re.match(
+                    r"^CONDOM[IÍ]N[IO]+\s+([\d.,]+)\s+([\d.,]+)\s*$",
+                    l, re.IGNORECASE
+                )
+                if m_condo:
+                    v1 = _num(m_condo.group(1))  # previsto da emissão mensal
                     if v1 > 1000:
-                        previsto_total += v1
-                    in_col = False
+                        previsto_total = v1   # usa apenas a emissão do condomínio
+                    break  # para — não somar outras contas (fundo, etc.)
                 # Reset se sair da seção
                 if re.match(r"(Posi[çc][ãa]o Financeira|SALDO ANTERIOR)", l, re.IGNORECASE):
                     in_col = False
@@ -436,8 +442,12 @@ class AdapterLirbaPDF(AdapterBase):
             # Sub-cats são as contas que estão dentro de ORDINÁRIA (soma ≈ ORDINÁRIA)
             soma_op = sum(operacionais.values())
             if val_ordinaria > 0 and abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
-                sub_cats = {_conta_canonical.get(k.upper(), k.title()): v
-                            for k, v in operacionais.items()}
+                # IMPORTANTE: SOMA quando múltiplas contas mapeiam para o mesmo
+                # nome canônico (ex: CONTRATOS + ELEVADORES → MANUT/CONSERV. CONTRAT.)
+                sub_cats = {}
+                for k, v in operacionais.items():
+                    cat_key = _conta_canonical.get(k.upper(), k.title())
+                    sub_cats[cat_key] = sub_cats.get(cat_key, 0.0) + v
                 operacionais = {}  # já tratadas em sub_cats
             else:
                 # Contas de nível alto independentes (Gravura: MELHORAMENTOS, BENFEITORIAS)
@@ -453,8 +463,10 @@ class AdapterLirbaPDF(AdapterBase):
                 soma_op = sum(operacionais.values())
                 if val_ordinaria > 0:
                     if abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
-                        sub_cats = {_conta_canonical.get(k.upper(), k.title()): v
-                                    for k, v in operacionais.items()}
+                        sub_cats = {}
+                        for k, v in operacionais.items():
+                            cat_key = _conta_canonical.get(k.upper(), k.title())
+                            sub_cats[cat_key] = sub_cats.get(cat_key, 0.0) + v
                         operacionais = {}
                     else:
                         operacionais["ORDINÁRIA"] = val_ordinaria

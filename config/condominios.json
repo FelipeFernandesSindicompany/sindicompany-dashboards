@@ -51,7 +51,32 @@
       "parser_config": {
         "extract_cats": "total_da_conta",
         "contas_separadas": [],
-        "cat_map": {}
+        "cat_map": {
+          "SERVIÇOS TERCEIRIZADOS":          "SERV. TERCEIRIZADOS",
+          "SERVICOS TERCEIRIZADOS":          "SERV. TERCEIRIZADOS",
+          "SERV. TERCEIRIZADOS":             "SERV. TERCEIRIZADOS",
+          "CONTAS DE CONSUMO":               "CONSUMOS",
+          "CONTRATOS":                       "MANUT/CONSERV. CONTRAT.",
+          "SERV. PREST/COMPRA/AQUIS/MANUT":  "MANUT/CONSERV. ESPORÁD.",
+          "MATERIAIS CONS/DIVERSOS":         "MANUT/CONSERV. ESPORÁD.",
+          "AQUISIÇÕES":                      "MANUT/CONSERV. ESPORÁD.",
+          "AQUISICOES":                      "MANUT/CONSERV. ESPORÁD.",
+          "SALÁRIOS E ORDENADOS":            "PESSOAL",
+          "SALARIOS E ORDENADOS":            "PESSOAL",
+          "ENCARGOS SOCIAIS":                "ENCARGOS SOCIAIS",
+          "DESPESAS BANCÁRIAS":              "ADMINISTRATIVO",
+          "DESPESAS BANCARIAS":              "ADMINISTRATIVO",
+          "OPERACIONAIS/ADMINISTRATIVAS":    "ADMINISTRATIVO",
+          "REGULARIZAÇÕES CONTABEIS":        "ADMINISTRATIVO",
+          "REGULARIZACOES CONTABEIS":        "ADMINISTRATIVO",
+          "OBRIGAÇÕES LEGAIS":               "ADMINISTRATIVO",
+          "OBRIGACOES LEGAIS":               "ADMINISTRATIVO",
+          "DESPESAS JURÍDICAS":              "ADMINISTRATIVO",
+          "DESPESAS JURIDICAS":              "ADMINISTRATIVO",
+          "PORTAL DE SERVIÇOS":              "ADMINISTRATIVO",
+          "PORTAL DE SERVICOS":              "ADMINISTRATIVO",
+          "ELEVADORES":                      "MANUT/CONSERV. CONTRAT."
+        }
       }
     },
     {
