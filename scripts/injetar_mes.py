@@ -230,8 +230,9 @@ def dados_para_bal(dados, mes_str: str) -> dict:
         "real":   real,
         "fac":    fac,
         "tDesp":  t_desp,
-        "inad":   round(dados.inadimplencia_valor, 2),
-        "inadProc": 0,
+        "inad":     round(dados.inadimplencia_valor, 2),
+        "inadProc": round(getattr(dados, 'inadimplencia_recebida', 0.0), 2),
+        "inadRec":  round(getattr(dados, 'inadimplencia_recebida', 0.0), 2),
         "banco":  banco,
         "contas": contas,
         "desp": [
@@ -263,6 +264,7 @@ def bal_para_js(bloco: dict, chave: str, indent: int = 4) -> str:
     linhas.append(f"{pad}  tDesp: {bloco['tDesp']},")
     linhas.append(f"{pad}  inad: {bloco['inad']},")
     linhas.append(f"{pad}  inadProc: {bloco['inadProc']},")
+    linhas.append(f"{pad}  inadRec: {bloco['inadRec']},")
 
     # contas (suporta múltiplas contas)
     contas_parts = []

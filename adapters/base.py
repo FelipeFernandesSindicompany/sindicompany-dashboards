@@ -55,6 +55,10 @@ class DadosFinanceiros:
     # Quando 0.0, usa receita_realizada como fallback.
     # Formato Blue Sky colunado: linha "CONDOMINIO X Y" → Y = receita_cotas
     receita_cotas: float = 0.0
+    # inadimplencia_recebida: valor efetivamente recebido de cotas em atraso no período
+    # (para campo 'inadRec' no BAL — aba Inadimplência).
+    # Formato Blue Sky colunado: linha "INADIMPLENCIA X Y" → Y = inadimplencia_recebida
+    inadimplencia_recebida: float = 0.0
     despesa_total: float = 0.0
     saldo_anterior: float = 0.0
     saldo_atual: float = 0.0

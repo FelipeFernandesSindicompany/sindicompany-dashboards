@@ -337,9 +337,11 @@ class AdapterLirbaPDF(AdapterBase):
         #   Y = cotas efetivamente recebidas (realizado) → dados.receita_realizada
         # ATENÇÃO: NÃO somar múltiplas seções; usar apenas a primeira linha
         # "CONDOMINIO" encontrada (conta principal, não fundos).
-        realizado_colunado = 0.0
+        realizado_colunado  = 0.0
+        inadimplencia_rec   = 0.0
         if previsto_total == 0.0:
             in_col = False
+            found_condo = False
             for linha in texto_completo.split("\n"):
                 l = linha.strip()
                 if re.search(r"Resumo de Emiss[oõ]es Colunado", l, re.IGNORECASE):
@@ -352,23 +354,41 @@ class AdapterLirbaPDF(AdapterBase):
                     r"^CONDOM[IÍ]N[IO]+\s+([\d.,]+)\s+([\d.,]+)\s*$",
                     l, re.IGNORECASE
                 )
-                if m_condo:
+                if m_condo and not found_condo:
                     v1 = _num(m_condo.group(1))  # previsto mensal (emissão)
                     v2 = _num(m_condo.group(2))  # realizado (cotas recebidas)
                     if v1 > 1000:
                         previsto_total     = v1
                         realizado_colunado = v2   # para receita_cotas
-                    break  # para — não somar outras contas (fundo, etc.)
-                # Reset se sair da seção
+                        found_condo        = True
+                    continue  # continua para capturar INADIMPLENCIA
+
+                # Linha: "INADIMPLENCIA X Y" → Y = recebido de cotas em atraso
+                m_inad = re.match(
+                    r"^INADIMP\w*\s+([\d.,]+)\s+([\d.,]+)\s*$",
+                    l, re.IGNORECASE
+                )
+                if m_inad:
+                    inadimplencia_rec = _num(m_inad.group(2))  # realizado
+                    if found_condo:
+                        break  # já temos tudo — para
+                    continue
+
+                # Reset se sair da seção (Posição Financeira = próxima seção)
                 if re.match(r"(Posi[çc][ãa]o Financeira|SALDO ANTERIOR)", l, re.IGNORECASE):
+                    if found_condo:
+                        break
                     in_col = False
 
         if previsto_total > 0:
             dados.receita_prevista = previsto_total
-            # receita_cotas = cotas efetivamente recebidas (usado para campo 'real' no BAL)
-            # receita_realizada mantém o total de créditos (para tCred e balanço correto)
+            # receita_cotas = cotas recebidas (para 'real' no BAL)
+            # receita_realizada mantém total de créditos (para 'tCred' e balanço)
             if realizado_colunado > 0:
                 dados.receita_cotas = realizado_colunado
+            # inadimplencia_recebida = recebido de cotas em atraso (para 'inadRec')
+            if inadimplencia_rec > 0:
+                dados.inadimplencia_recebida = inadimplencia_rec
         else:
             dados.receita_prevista = dados.receita_realizada  # último fallback
 
