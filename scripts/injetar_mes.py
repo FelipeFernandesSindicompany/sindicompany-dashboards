@@ -179,7 +179,11 @@ def dados_para_bal(dados, mes_str: str) -> dict:
 
     # prev = orçamento previsto (usa receita_prevista se disponível, senão tCred)
     prev = round(dados.receita_prevista, 2) if dados.receita_prevista > 0 else round(dados.receita_realizada, 2)
-    real = round(dados.receita_realizada, 2)
+    # real = cotas efetivamente recebidas (para Previsto x Realizado).
+    # Usa receita_cotas se disponível (Blue Sky colunado: linha CONDOMINIO X Y),
+    # caso contrário usa receita_realizada (total de créditos).
+    receita_cotas = getattr(dados, 'receita_cotas', 0.0)
+    real = round(receita_cotas, 2) if receita_cotas > 0 else round(dados.receita_realizada, 2)
     # fac = faturas anteriores cobradas (juros + multas recebidos de inadimplentes)
     fac  = round(getattr(dados, 'fac', 0.0), 2)
 

@@ -332,9 +332,12 @@ class AdapterLirbaPDF(AdapterBase):
                     in_prev = False
 
         # Tenta padrão Blue Sky: busca a linha "CONDOMINIO X Y" dentro da seção
-        # "Resumo de Emissões Colunado" — X é a emissão mensal (previsto real).
-        # ATENÇÃO: NÃO somar múltiplas seções (cada conta tem sua própria seção);
-        # usar apenas a primeira linha "CONDOMINIO" encontrada.
+        # "Resumo de Emissões Colunado":
+        #   X = emissão mensal (previsto)  → dados.receita_prevista
+        #   Y = cotas efetivamente recebidas (realizado) → dados.receita_realizada
+        # ATENÇÃO: NÃO somar múltiplas seções; usar apenas a primeira linha
+        # "CONDOMINIO" encontrada (conta principal, não fundos).
+        realizado_colunado = 0.0
         if previsto_total == 0.0:
             in_col = False
             for linha in texto_completo.split("\n"):
@@ -344,15 +347,17 @@ class AdapterLirbaPDF(AdapterBase):
                     continue
                 if not in_col:
                     continue
-                # Linha específica: "CONDOMINIO X Y" ou "CONDOMÍNIO X Y"
+                # Linha: "CONDOMINIO X Y" ou "CONDOMÍNIO X Y"
                 m_condo = re.match(
                     r"^CONDOM[IÍ]N[IO]+\s+([\d.,]+)\s+([\d.,]+)\s*$",
                     l, re.IGNORECASE
                 )
                 if m_condo:
-                    v1 = _num(m_condo.group(1))  # previsto da emissão mensal
+                    v1 = _num(m_condo.group(1))  # previsto mensal (emissão)
+                    v2 = _num(m_condo.group(2))  # realizado (cotas recebidas)
                     if v1 > 1000:
-                        previsto_total = v1   # usa apenas a emissão do condomínio
+                        previsto_total     = v1
+                        realizado_colunado = v2   # para receita_cotas
                     break  # para — não somar outras contas (fundo, etc.)
                 # Reset se sair da seção
                 if re.match(r"(Posi[çc][ãa]o Financeira|SALDO ANTERIOR)", l, re.IGNORECASE):
@@ -360,6 +365,10 @@ class AdapterLirbaPDF(AdapterBase):
 
         if previsto_total > 0:
             dados.receita_prevista = previsto_total
+            # receita_cotas = cotas efetivamente recebidas (usado para campo 'real' no BAL)
+            # receita_realizada mantém o total de créditos (para tCred e balanço correto)
+            if realizado_colunado > 0:
+                dados.receita_cotas = realizado_colunado
         else:
             dados.receita_prevista = dados.receita_realizada  # último fallback
 

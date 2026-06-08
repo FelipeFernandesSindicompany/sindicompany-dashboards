@@ -51,6 +51,10 @@ class DadosFinanceiros:
     mes_referencia: str          # "2026-05"
     receita_prevista: float = 0.0
     receita_realizada: float = 0.0
+    # receita_cotas: cotas efetivamente recebidas no período (para campo 'real' no BAL).
+    # Quando 0.0, usa receita_realizada como fallback.
+    # Formato Blue Sky colunado: linha "CONDOMINIO X Y" → Y = receita_cotas
+    receita_cotas: float = 0.0
     despesa_total: float = 0.0
     saldo_anterior: float = 0.0
     saldo_atual: float = 0.0
