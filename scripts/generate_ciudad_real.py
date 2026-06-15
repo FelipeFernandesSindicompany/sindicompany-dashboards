@@ -492,6 +492,26 @@ html = html.replace(
     '.'
 )
 
+# ── 13. Remove aba Inadimplência (não existe para Ciudad Real) ────────────────
+import re as _re
+html = _re.sub(
+    r"\s*<div class=\"ni\" onclick=\"nav\('inadimp',this\)\">.*?</div>",
+    '', html
+)
+html = _re.sub(
+    r"\s*<!-- INADIMPLÊNCIA -->.*?<div id=\"pg-inadimp\"[^>]*>.*?</div>\s*",
+    '\n', html, flags=_re.DOTALL
+)
+html = html.replace('  buildTblInad();\n', '')
+html = _re.sub(
+    r"\s*function buildTblInad\(\).*?document\.getElementById\('tblInad'\)\.innerHTML = h;\s*\}\s*",
+    '\n', html, flags=_re.DOTALL
+)
+html = _re.sub(
+    r"\s*// ── 8\. Inadimpl.*?mkChart\('cInad'.*?\}\);\s*",
+    '\n', html, flags=_re.DOTALL
+)
+
 with open('docs/Dashboard_Financeiro_CidadReal.html', 'w', encoding='utf-8') as f:
     f.write(html)
 
