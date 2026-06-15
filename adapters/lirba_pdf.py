@@ -141,6 +141,14 @@ def _e_webware(textos: list) -> bool:
     return False
 
 
+def _e_hsa_balancete(textos: list) -> bool:
+    """Detecta sub-formato HSA Condomínios (I-Gloo Alphaville) pelo URL hsacondominios.com.br."""
+    for t in textos:
+        if "hsacondominios.com.br" in t.lower():
+            return True
+    return False
+
+
 class AdapterLirbaPDF(AdapterBase):
     """
     Adapter para PDFs da administradora LIRBA (dois sub-formatos:
@@ -165,7 +173,9 @@ class AdapterLirbaPDF(AdapterBase):
 
         texto_completo = "\n".join(textos)
 
-        if _e_webware(textos):
+        if _e_hsa_balancete(textos):
+            self._parsear_hsa_balancete(textos, texto_completo, dados)
+        elif _e_webware(textos):
             self._parsear_webware(textos, texto_completo, dados)
         else:
             self._parsear_lirba(textos, texto_completo, dados)
@@ -541,6 +551,221 @@ class AdapterLirbaPDF(AdapterBase):
     # ──────────────────────────────────────────────────────────────────────────
     # SUB-FORMATO B — Webware (NYC Berrini)
     # ──────────────────────────────────────────────────────────────────────────
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO C — HSA Condomínios (I-Gloo Alphaville)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _parsear_hsa_balancete(self, textos: list, texto_completo: str,
+                                dados: DadosFinanceiros):
+        """
+        Extrai dados do formato HSA Condomínios (I-Gloo Alphaville).
+
+        Estrutura do PDF:
+        - Pág 19-20: Balancete simplificado (RECEITAS / DESPESAS hierárquicas)
+        - Pág 34:    Resumo Financeiro  (Conta Principal + Aplicação → Saldo final)
+        - Pág 49-56: Inadimplentes → "N unidades inadimplentes (X%) principal total"
+        """
+
+        # ── 1. Resumo Financeiro ──────────────────────────────────────────────
+        # Header HSA: "Conta Saldo ant. Créditos* Débitos* Saldo final"
+        # Total line: "Saldo final  X  X  X  X"  (pode ter parênteses em débitos)
+        for txt in textos:
+            if "Resumo Financeiro" not in txt:
+                continue
+            if "Conta Saldo ant." not in txt:
+                continue
+
+            in_resumo = False
+            for linha in txt.split("\n"):
+                l = linha.strip()
+
+                if re.match(r"^Conta\s+Saldo ant\.", l):
+                    in_resumo = True
+                    continue
+                if re.match(r"^Grupos de saldo", l):
+                    break
+                if not in_resumo:
+                    continue
+                if l.startswith("(*) Inclui"):
+                    continue
+
+                # Extrai todos os números monetários da linha
+                nums_raw = re.findall(r"[\d.,]+", l)
+                nums_f = [_num(n) for n in nums_raw if len(n) >= 4 and "," in n]
+                if len(nums_f) < 4:
+                    continue
+
+                # Linha TOTAL: "Saldo final ..."
+                if l.upper().startswith("SALDO FINAL"):
+                    dados.saldo_anterior    = nums_f[0]
+                    dados.receita_realizada = nums_f[1]
+                    dados.despesa_total     = nums_f[2]
+                    dados.saldo_atual       = nums_f[3]
+                    in_resumo = False
+                    break
+
+                # Linha de conta: "Nome  sa  cr  db  sal"
+                nome_m = re.match(r"^([A-Za-zÀ-ú][A-Za-zÀ-ú\s]+?)\s+[\d.,()]+", l)
+                if not nome_m:
+                    continue
+                nome = nome_m.group(1).strip()
+                sa, cr, db, sal = nums_f[0], nums_f[1], nums_f[2], nums_f[3]
+
+                dados.contas_detalhe.append({
+                    "nome": nome, "saldo_ant": sa, "creditos": cr,
+                    "debitos": db, "saldo_atual": sal,
+                })
+                nome_up = nome.upper()
+                if "PRINCIPAL" in nome_up or "CORRENTE" in nome_up:
+                    dados.banco_cc = sal
+                elif "APLICA" in nome_up or "INVEST" in nome_up or "CDB" in nome_up:
+                    dados.banco_cdb = sal
+                else:
+                    dados.banco_priv = round(dados.banco_priv + sal, 2)
+            break
+
+        # ── 2. Receita Prevista e Cotas ───────────────────────────────────────
+        # Balancete RECEITAS: linha "Condomínio X" = cotas recebidas do mês
+        in_rec = False
+        for linha in texto_completo.split("\n"):
+            l = linha.strip()
+            if re.match(r"^RECEITAS\s*$", l):
+                in_rec = True
+                continue
+            if re.match(r"^Total de RECEITAS", l, re.IGNORECASE):
+                in_rec = False
+                continue
+            if not in_rec:
+                continue
+            m = re.match(r"^Condom[íi]nio\s+([\d.,]+)\s*$", l)
+            if m:
+                v = _num(m.group(1))
+                if v > 0:
+                    dados.receita_prevista = v
+                    dados.receita_cotas    = v
+                in_rec = False
+
+        if dados.receita_prevista == 0 and dados.receita_realizada > 0:
+            dados.receita_prevista = dados.receita_realizada
+
+        # ── 3. Despesas por categoria ─────────────────────────────────────────
+        cat_map_extra = self.parser_config.get("cat_map", {})
+
+        # Usa apenas páginas do Balancete simplificado (não Demonstrativo Analítico)
+        balancete_pages = [
+            txt for txt in textos
+            if "Balancete:" in txt
+            and "Demonstrativo" not in txt
+            and "W020A" not in txt
+            and "W063A" not in txt
+            and "Comparativo" not in txt
+        ]
+        if balancete_pages:
+            cats = self._extrair_cats_hsa_despesas(
+                "\n".join(balancete_pages), cat_map_extra
+            )
+            dados.categorias_despesa.update(cats)
+
+        if not dados.categorias_despesa and dados.despesa_total > 0:
+            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── 4. Inadimplência ──────────────────────────────────────────────────
+        # "N unidades inadimplentes (X,XX%) principal_total total_com_encargos"
+        m_inad = re.search(
+            r"(\d+)\s+unidades\s+inadimplentes\s+\(([^)]+)\)\s+([\d.,]+)\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        )
+        if m_inad:
+            dados.inadimplencia_valor = _num(m_inad.group(4))  # total atualizado
+            pct_str = re.sub(r"[^\d,.]", "", m_inad.group(2))
+            try:
+                dados.inadimplencia_percentual = _num(pct_str)
+            except Exception:
+                pass
+        else:
+            # Fallback: "Total geral" ou soma de devedores individuais
+            m_tg = re.search(r"Total geral:\s*([\d.,]+)", texto_completo, re.IGNORECASE)
+            if m_tg:
+                dados.inadimplencia_valor = _num(m_tg.group(1))
+
+        # ── 5. FAC ────────────────────────────────────────────────────────────
+        dados.fac = self._extrair_fac(textos)
+
+    def _extrair_cats_hsa_despesas(self, texto_balancete: str, cat_map_extra: dict) -> dict:
+        """
+        Extrai categorias top-level do balancete HSA usando rastreamento de pilha.
+
+        Algoritmo: processa o bloco DESPESAS...Total de DESPESAS com uma pilha
+        de seções. "Total de X" fecha a seção X mais recente; quando a pilha fica
+        vazia após o fechamento, X é categoria top-level.
+        """
+        cats: dict = {}
+        stack: list = []
+        in_desp = False
+
+        # Padrões de linhas de cabeçalho de página a ignorar dentro de DESPESAS
+        _SKIP = re.compile(
+            r"^(Condom[íi]nio:|S[íi]ndico|Balancete:|Rua\s|HSA\s|"
+            r"\(\d{2}\)\s+\d|www\.|_{3,}|Saldo [Tt]otal|Saldo\s+[\"\"]\w)",
+            re.IGNORECASE,
+        )
+
+        for raw_linha in texto_balancete.split("\n"):
+            l = raw_linha.strip()
+            # Remove marca d'água SÍNDICO(A) que aparece sobreposta ao texto
+            l = re.sub(r"\s*S[IÍ]NDICO\(A\)\s*", "", l).strip()
+            if not l:
+                continue
+
+            if _SKIP.search(l):
+                continue
+
+            # Entra em modo DESPESAS (linha exata)
+            if re.match(r"^DESPESAS\s*$", l):
+                if not in_desp:
+                    in_desp = True
+                    stack = []
+                continue
+
+            if not in_desp:
+                continue
+
+            # Condições de saída
+            if re.match(r"^(Total de DESPESAS|SALDO ATUAL|_{3,})", l):
+                break
+
+            # "Total de X Y" — fecha seção X
+            m_total = re.match(r"^Total de (.+?)\s+([\d.,]+)\s*$", l)
+            if m_total:
+                cat_name = m_total.group(1).strip()
+                val      = _num(m_total.group(2))
+                cat_up   = cat_name.upper()
+
+                if stack:
+                    matched_idx = None
+                    for idx in range(len(stack) - 1, -1, -1):
+                        s_up = stack[idx].upper()
+                        if s_up == cat_up or s_up.startswith(cat_up):
+                            matched_idx = idx
+                            break
+
+                    if matched_idx is not None:
+                        del stack[matched_idx:]
+                        if len(stack) == 0:  # categoria top-level
+                            display = cat_map_extra.get(cat_name,
+                                      cat_map_extra.get(cat_up, cat_name))
+                            # Normaliza ALL-CAPS para title case
+                            if display == display.upper():
+                                display = display.title()
+                            cats[display] = cats.get(display, 0.0) + val
+                continue
+
+            # Linha sem dígitos = cabeçalho de seção
+            if not re.search(r"\d", l):
+                stack.append(l)
+
+        return cats
 
     def _parsear_webware(self, textos: list, texto_completo: str, dados: DadosFinanceiros):
         """Extrai dados do formato Webware (NYC Berrini)."""

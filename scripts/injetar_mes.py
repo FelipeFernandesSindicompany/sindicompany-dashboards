@@ -248,49 +248,206 @@ def dados_para_bal(dados, mes_str: str) -> dict:
 
 # ── Injeção no HTML ────────────────────────────────────────────────────────
 
-def bal_para_js(bloco: dict, chave: str, indent: int = 4) -> str:
-    """Serializa o bloco como JavaScript formatado."""
-    pad = " " * indent
-    linhas = [f"{pad}{chave}: {{"]
-    linhas.append(f"{pad}  tit: {json.dumps(bloco['tit'], ensure_ascii=False)},")
-    linhas.append(f"{pad}  per: {json.dumps(bloco['per'], ensure_ascii=False)},")
-    linhas.append(f"{pad}  tAnt: {bloco['tAnt']},")
-    linhas.append(f"{pad}  tCred: {bloco['tCred']},")
-    linhas.append(f"{pad}  tDeb: {bloco['tDeb']},")
-    linhas.append(f"{pad}  tAtual: {bloco['tAtual']},")
-    linhas.append(f"{pad}  prev: {bloco['prev']},")
-    linhas.append(f"{pad}  real: {bloco['real']},")
-    linhas.append(f"{pad}  fac: {bloco['fac']},")
-    linhas.append(f"{pad}  tDesp: {bloco['tDesp']},")
-    linhas.append(f"{pad}  inad: {bloco['inad']},")
-    linhas.append(f"{pad}  inadProc: {bloco['inadProc']},")
-    linhas.append(f"{pad}  inadRec: {bloco['inadRec']},")
+def _detectar_formato_bal(html_path: Path) -> dict:
+    """
+    Lê o HTML e detecta o formato das entradas BAL já existentes.
+    Retorna {'compact': bool, 'tem_inadrec': bool}.
+    compact=True  → linha única sem espaços (ex: I-Gloo)
+    compact=False → multi-linha com recuo     (ex: Blue Sky)
+    inadRec só é True em formato expanded que já usava esse campo antes.
+    """
+    try:
+        texto = html_path.read_text(encoding="utf-8", errors="ignore")
+        bal_m = re.search(r'var\s+BAL\s*=\s*\{', texto)
+        if not bal_m:
+            return {"compact": True, "tem_inadrec": False}
+        body_pos = bal_m.end()
+        # Primeiro char após o '{' da primeira entrada revela o estilo
+        entry_m = re.search(r'\s*\w{3}\d{2}\s*:\s*\{(.)', texto[body_pos:])
+        compact = True
+        if entry_m:
+            compact = entry_m.group(1) != '\n'
+        # inadRec só faz sentido em dashboards expanded que já tinham esse campo
+        # Formato compact (linha única) NUNCA inclui inadRec
+        tem_inadrec = (not compact) and bool(re.search(r'[,\s{]inadRec\s*:', texto[body_pos:]))
+        return {"compact": compact, "tem_inadrec": tem_inadrec}
+    except Exception:
+        return {"compact": True, "tem_inadrec": False}
 
-    # contas (suporta múltiplas contas)
-    contas_parts = []
-    for c in bloco["contas"]:
-        contas_parts.append(
-            "{{n:{n}, a:{a}, c:{c}, d:{d}, s:{s}}}".format(
-                n=json.dumps(c["n"], ensure_ascii=False),
-                a=c["a"], c=c["c"], d=c["d"], s=c["s"]
-            )
-        )
-    contas_js = ", ".join(contas_parts)
-    linhas.append(f"{pad}  contas: [{contas_js}],")
 
-    # desp
-    desp_js = ", ".join(
-        "{{c:{c}, v:{v}}}".format(
-            c=json.dumps(d["c"], ensure_ascii=False), v=d["v"]
-        ) for d in bloco["desp"]
-    )
-    linhas.append(f"{pad}  desp: [{desp_js}],")
+def _reconstruir_evo_do_bal(texto: str) -> str:
+    """
+    Reconstrói EVO_L e EVO_V inteiramente a partir dos dados reais do BAL.
+    Garante alinhamento perfeito, eliminando duplicatas geradas por re-injeções.
+    """
+    bal_m = re.search(r'var\s+BAL\s*=\s*\{', texto)
+    if not bal_m:
+        return texto
 
-    # banco
+    # Encontra o fechamento do BAL com brace tracking
+    bal_open = bal_m.end() - 1
+    depth, j = 0, bal_open
+    while j < len(texto):
+        if texto[j] == '{':
+            depth += 1
+        elif texto[j] == '}':
+            depth -= 1
+            if depth == 0:
+                break
+        j += 1
+    body = texto[bal_m.end():j]
+
+    # Extrai chave → tAtual de cada entrada
+    key_re = re.compile(r'\b([a-z]{3}\d{2})\s*:\s*\{')
+    entries_data = {}
+    pos = 0
+    while True:
+        km = key_re.search(body, pos)
+        if not km:
+            break
+        key = km.group(1)
+        brace_s = km.end() - 1
+        depth2, j2 = 0, brace_s
+        while j2 < len(body):
+            if body[j2] == '{':
+                depth2 += 1
+            elif body[j2] == '}':
+                depth2 -= 1
+                if depth2 == 0:
+                    break
+            j2 += 1
+        entry_chunk = body[km.start():j2 + 1]
+        m_tat = re.search(r'tAtual\s*:\s*([\d.]+)', entry_chunk)
+        if m_tat:
+            entries_data[key] = float(m_tat.group(1))
+        pos = j2 + 1
+
+    if not entries_data:
+        return texto
+
+    sorted_keys = sorted(entries_data.keys(), key=chave_para_ordinal)
+
+    def _chave_para_evo_label(k):
+        """'abr26' → 'Abr/26'"""
+        mes_n = MESES_NUM.get(k[:3], 0)
+        if mes_n == 0:
+            return k
+        return f"{MESES_FULL[mes_n][:3]}/{k[3:]}"
+
+    new_labels = ', '.join(f"'{_chave_para_evo_label(k)}'" for k in sorted_keys)
+    new_values = ', '.join(str(round(entries_data[k], 2)) for k in sorted_keys)
+
+    evo_l_m = re.search(r'(\bEVO_L\s*=\s*\[)([^\]]*?)(\])', texto)
+    if evo_l_m:
+        texto = (texto[:evo_l_m.start()] + evo_l_m.group(1)
+                 + new_labels + evo_l_m.group(3) + texto[evo_l_m.end():])
+
+    evo_v_m = re.search(r'(\bEVO_V\s*=\s*\[)([^\]]*?)(\])', texto, re.DOTALL)
+    if evo_v_m:
+        texto = (texto[:evo_v_m.start()] + evo_v_m.group(1)
+                 + new_values + evo_v_m.group(3) + texto[evo_v_m.end():])
+
+    return texto
+
+
+def bal_para_js(bloco: dict, chave: str,
+                compact: bool = True, tem_inadrec: bool = False) -> str:
+    """
+    Serializa o bloco como JavaScript replicando o formato das entradas existentes.
+    compact=True  → linha única, single quotes, sem espaços (estilo I-Gloo)
+    compact=False → multi-linha, single quotes, com recuo   (estilo Blue Sky)
+    tem_inadrec   → inclui campo inadRec somente se o HTML já usa esse campo
+    """
+
+    def _n(v):
+        """0.0 → '0'; demais → repr Python nativo do float."""
+        if v == 0:
+            return "0"
+        return str(v)
+
+    def _q(s):
+        """Envolve em single quotes, escapando barras e aspas simples."""
+        return "'" + str(s).replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+    # ── partes reutilizáveis ──────────────────────────────────────────────────
     b = bloco["banco"]
-    linhas.append(f"{pad}  banco: {{cc:{b['cc']}, cdb:{b['cdb']}, priv:{b['priv']}}}")
-    linhas.append(f"{pad}}}")
-    return "\n".join(linhas)
+    banco_js = f"{{cc:{_n(b['cc'])},cdb:{_n(b['cdb'])},priv:{_n(b['priv'])}}}"
+
+    inad_rec_val = _n(bloco.get("inadRec", 0))
+
+    if compact:
+        # ── Formato linha única (I-Gloo, Organy, etc.) ───────────────────────
+        contas_js = ",".join(
+            f"{{n:{_q(c['n'])},a:{_n(c['a'])},c:{_n(c['c'])},d:{_n(c['d'])},s:{_n(c['s'])}}}"
+            for c in bloco["contas"]
+        )
+        desp_js = ",".join(
+            f"{{c:{_q(d['c'])},v:{_n(d['v'])}}}"
+            for d in bloco["desp"]
+        )
+        inad_part = f"inadProc:{_n(bloco['inadProc'])}"
+        if tem_inadrec:
+            inad_part += f",inadRec:{inad_rec_val}"
+
+        parts = ",".join([
+            f"tit:{_q(bloco['tit'])}",
+            f"per:{_q(bloco['per'])}",
+            f"tAnt:{_n(bloco['tAnt'])}",
+            f"tCred:{_n(bloco['tCred'])}",
+            f"tDeb:{_n(bloco['tDeb'])}",
+            f"tAtual:{_n(bloco['tAtual'])}",
+            f"contas:[{contas_js}]",
+            f"prev:{_n(bloco['prev'])}",
+            f"real:{_n(bloco['real'])}",
+            f"tDesp:{_n(bloco['tDesp'])}",
+            f"fac:{_n(bloco['fac'])}",
+            f"inad:{_n(bloco['inad'])}",
+            inad_part,
+            f"banco:{banco_js}",
+            f"desp:[{desp_js}]",
+        ])
+        return f"  {chave}:{{{parts}}}"
+
+    else:
+        # ── Formato multi-linha (Blue Sky) ────────────────────────────────────
+        contas_inline = ", ".join(
+            f"{{n:{_q(c['n'])}, a:{_n(c['a'])}, c:{_n(c['c'])}, d:{_n(c['d'])}, s:{_n(c['s'])}}}"
+            for c in bloco["contas"]
+        )
+        desp_inline = ", ".join(
+            f"{{c:{_q(d['c'])}, v:{_n(d['v'])}}}"
+            for d in bloco["desp"]
+        )
+
+        inad_field = f"    inad: {_n(bloco['inad'])}, inadProc: {_n(bloco['inadProc'])}"
+        if tem_inadrec:
+            inad_field += f", inadRec: {inad_rec_val},"
+        else:
+            inad_field += ","
+
+        linhas = [
+            f"  {chave}: {{",
+            f"    tit: {_q(bloco['tit'])}, per: {_q(bloco['per'])},",
+            f"    tAnt: {_n(bloco['tAnt'])}, tCred: {_n(bloco['tCred'])}, tDeb: {_n(bloco['tDeb'])}, tAtual: {_n(bloco['tAtual'])},",
+        ]
+        if len(bloco["contas"]) > 2:
+            linhas.append("    contas: [")
+            for i, c in enumerate(bloco["contas"]):
+                sep = "," if i < len(bloco["contas"]) - 1 else ""
+                linhas.append(
+                    f"      {{n:{_q(c['n'])}, a:{_n(c['a'])}, c:{_n(c['c'])}, d:{_n(c['d'])}, s:{_n(c['s'])}}}{sep}"
+                )
+            linhas.append("    ],")
+        else:
+            linhas.append(f"    contas: [{contas_inline}],")
+        linhas += [
+            f"    prev: {_n(bloco['prev'])}, real: {_n(bloco['real'])}, tDesp: {_n(bloco['tDesp'])}, fac: {_n(bloco['fac'])},",
+            inad_field,
+            f"    banco: {banco_js},",
+            f"    desp: [{desp_inline}]",
+            "  }",
+        ]
+        return "\n".join(linhas)
 
 
 def _remover_mes_bal(texto: str, chave: str) -> str:
@@ -444,8 +601,12 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
             novo_orc   = orc_atual.rstrip().rstrip(',') + f",\n  {chave}:{round(orc_valor, 2)},"
             texto = texto[:orc_m.start()] + orc_m.group(1) + novo_orc + orc_m.group(3) + texto[orc_m.end():]
 
-    # ── 7. Reordena BAL e EVO cronologicamente ──
+    # ── 7. Reordena BAL cronologicamente ──
     texto = reordenar_bal_e_evo(texto)
+
+    # ── 8. Reconstrói EVO_L e EVO_V do zero a partir do BAL ──
+    # Elimina acúmulo de duplicatas gerado por re-injeções com --force
+    texto = _reconstruir_evo_do_bal(texto)
 
     html_path.write_text(texto, encoding="utf-8")
     return True
@@ -469,13 +630,15 @@ def processar_um(cond: dict, mes_str: str, arquivo: Path, config_global: dict) -
 
     chave = mes_chave(mes_str)
     bloco = dados_para_bal(dados, mes_str)
-    bloco_js = bal_para_js(bloco, chave)
     evo_label = mes_evo_label(mes_str)
 
     html_path = HTML_DIR / cond["html_file"]
     if not html_path.exists():
         print(f"  [ERRO] HTML não encontrado: {html_path}")
         return False
+
+    fmt = _detectar_formato_bal(html_path)
+    bloco_js = bal_para_js(bloco, chave, compact=fmt["compact"], tem_inadrec=fmt["tem_inadrec"])
 
     ok = injetar_no_html(
         html_path, chave, bloco_js, evo_label,
