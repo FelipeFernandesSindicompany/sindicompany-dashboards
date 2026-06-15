@@ -474,11 +474,11 @@
     ],
     "data": {
       "tit": "Abril / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": 287793,
+      "tCred": 223398.72,
+      "tDeb": 208155.92,
+      "inad": 358951.71,
+      "tAnt": 272550.2
     }
   },
   "Dashboard_Financeiro_LivingForConsolacao.html": {
