@@ -89,6 +89,12 @@ for (const condo of condominios) {
   }
 }
 
+// Guard: if docs/ was inaccessible (e.g. Vercel remote build), keep existing snapshots
+if (found === 0) {
+  console.log(`AVISO: Nenhum HTML encontrado em ${DOCS_DIR} — snapshots.json mantido sem alteração.`);
+  process.exit(0);
+}
+
 // Write snapshot
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(OUT_FILE, JSON.stringify(snapshots, null, 2), 'utf-8');
