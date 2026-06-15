@@ -469,6 +469,29 @@ html = html.replace('"Cinque Terre"', '"Ciudad Real"')
 html = html.replace('Amanda Accioli', 'Amanda Renata Morsani Accioli Marti')
 html = html.replace('Cinque Terre', 'Ciudad Real')
 
+# ── 10. Remove card F. Fachada da Visão Geral ────────────────────────────────
+html = re.sub(
+    r"kpi\('Despesas \(excl\.[^']*\)',\s*R\(totalDesp\),\s*'r',\s*'Incl\. Fundo Fachada'\)\s*\+\s*kpi\('F\. Fachada[^;]+;",
+    "kpi('Despesas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',\n        R(totalDesp), 'r', 'Despesas totais do per&iacute;odo');",
+    html
+)
+
+# ── 11. Corrige labels "Privilege (Fachada)" → "Aplic. Ordinária" ─────────────
+html = html.replace(
+    "<th>Privilege (Fachada)</th>",
+    "<th>Aplic. Ordin&aacute;ria</th>"
+)
+html = html.replace(
+    "label: 'Privilege (Fachada)',",
+    "label: 'Aplic. Ordinária',"
+)
+
+# ── 12. Remove referência a Fundo Fachada no alerta de déficit ────────────────
+html = html.replace(
+    ', principalmente pelo desembolso do Fundo Fachada para reforma.',
+    '.'
+)
+
 with open('docs/Dashboard_Financeiro_CidadReal.html', 'w', encoding='utf-8') as f:
     f.write(html)
 

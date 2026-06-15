@@ -814,15 +814,13 @@ window.onload = function() {
     kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
         R(totalRec), 'g', 'Cotas + rendimentos') +
     kpi('Despesas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
-        R(totalDesp), 'r', 'Incl. Fundo Fachada') +
-    kpi('F. Fachada (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
-        R(getContaSaldo(ultimo, 'FACHADA')), 'y', '');
+        R(totalDesp), 'r', 'Despesas totais do per&iacute;odo');
 
   // Alerta
   var diff = totalRec - totalDesp;
   var alertEl = document.getElementById('geral-alert');
   if (diff < 0) {
-    alertEl.innerHTML = '<div class="al warn"><span class="ai">&#9888;</span><div><strong>D&eacute;ficit operacional acumulado:</strong> As despesas totais (' + R(totalDesp) + ') superaram as receitas realizadas (' + R(totalRec) + ') em <strong>' + R(Math.abs(diff)) + '</strong>, principalmente pelo desembolso do Fundo Fachada para reforma.</div></div>';
+    alertEl.innerHTML = '<div class="al warn"><span class="ai">&#9888;</span><div><strong>D&eacute;ficit operacional acumulado:</strong> As despesas totais (' + R(totalDesp) + ') superaram as receitas realizadas (' + R(totalRec) + ') em <strong>' + R(Math.abs(diff)) + '</strong>.</div></div>';
   } else {
     alertEl.innerHTML = '<div class="al ok"><span class="ai">&#9989;</span><div><strong>Superávit operacional acumulado:</strong> As receitas (' + R(totalRec) + ') superaram as despesas (' + R(totalDesp) + ') em <strong>' + R(diff) + '</strong>.</div></div>';
   }
@@ -1203,7 +1201,7 @@ function buildTblInad() {
 }
 
 function buildTblBanco() {
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Privilege (Fachada)</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Aplic. Ordin&aacute;ria</th><th>Total</th></tr>';
   MESES.forEach(function(k) {
     var m = BAL[k];
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
@@ -1615,7 +1613,7 @@ function buildCharts() {
           borderSkipped: false
         },
         {
-          label: 'Privilege (Fachada)',
+          label: 'Aplic. Ordinária',
           data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
           backgroundColor: 'rgba(39,174,96,0.82)',
           borderColor: '#1A6B3C',
