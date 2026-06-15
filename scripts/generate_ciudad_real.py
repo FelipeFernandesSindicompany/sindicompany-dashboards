@@ -1,0 +1,372 @@
+"""Gera docs/Dashboard_Financeiro_CidadReal.html a partir do template Cinque Terre."""
+import re, sys
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+with open('docs/Dashboard_Financeiro_CinqueTerre.html', encoding='utf-8') as f:
+    html = f.read()
+
+# ── 1. TÍTULO ────────────────────────────────────────────────────────────────
+html = html.replace(
+    '<title>Dashboard Financeiro – Cinque Terre Residenza</title>',
+    '<title>Dashboard Financeiro – Ciudad Real</title>'
+)
+
+# ── 2. SIDEBAR ───────────────────────────────────────────────────────────────
+html = html.replace('<h2>Cinque Terre</h2>', '<h2>Ciudad Real</h2>')
+html = html.replace(
+    '185 Residenza &middot; Demonstrativo Financeiro',
+    'Ciudad Real &middot; Demonstrativo Financeiro'
+)
+
+# ── 3. SUBTÍTULO DA ABA VISÃO GERAL ──────────────────────────────────────────
+html = html.replace(
+    'Demonstrativo Financeiro &middot; Condom&iacute;nio 185 &ndash; Cinque Terre Residenza',
+    'Demonstrativo Financeiro &middot; Condom&iacute;nio Ciudad Real'
+)
+
+# ── 4. CONFIG ────────────────────────────────────────────────────────────────
+new_config = """var CONFIG = {
+  nome: 'Ciudad Real',
+  unidades: 0,
+  sindica: 'Amanda Renata Morsani Accioli Marti',
+
+  // Previsão orçamentária mensal (conta ordinária)
+  orcamento: {
+    exercicio: '2025/2026',
+    totalAnual: 1430000,
+    meses: {
+      abr25: 130000, mai25: 130000, jun25: 130000, jul25: 130000,
+      ago25: 130000, set25: 130000, out25: 130000, nov25: 130000,
+      dez25: 130000, jan26: 130000, fev26: 130000
+    }
+  }
+};"""
+html = re.sub(r'var CONFIG = \{.*?\};', new_config, html, flags=re.DOTALL)
+
+# ── 5. EVO ───────────────────────────────────────────────────────────────────
+html = re.sub(
+    r"var EVO_L = \[.*?\];",
+    "var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26'];",
+    html
+)
+html = re.sub(
+    r"var EVO_V = \[.*?\];",
+    "var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86];",
+    html
+)
+
+# ── 6. BAL ───────────────────────────────────────────────────────────────────
+# Notas sobre correcões (verificadas nas imagens PNG 300 DPI):
+#   ago25 real: 126116.37 (não 103973.57 — agente anterior misread)
+#   fev26 real: 120497.25 (não 117497.25)
+#   set25 SERV: 82760.64 (calculado: tDeb - soma outras categorias)
+#   fev26 SERV: 56954.81 (calculado)
+#   mai25/jun25/ago25/out25/jan26 SERV: ajustados para fechar tDeb
+
+new_bal = """var BAL = {
+
+  // ── Abril / 2025 ───────────────────────────────────────────────
+  abr25: {
+    tit: 'Abril / 2025', per: '01/04/2025 a 30/04/2025',
+    tAnt:  236890.54,
+    tCred: 113710.13,
+    tDeb:  102677.12,
+    tAtual:247889.33,
+    contas: [
+      {n:'Aplic. Privilège', a:0, c:0, d:0, s:136582.78},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:111301.79}
+    ],
+    prev: 130000, real: 113428.31, tDesp: 102677.12,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:111301.79, cdb:136582.78, priv:0},
+    desp: [
+      {c:'Manutenção',        v:26956.38},
+      {c:'Administrativo',    v:8640.30},
+      {c:'Jurídico',            v:1681.60},
+      {c:'Consumo',           v:17326.74},
+      {c:'Serv. Terceirizados',v:45301.45},
+      {c:'Aquisições',         v:2767.60}
+    ]
+  },
+
+  // ── Maio / 2025 ───────────────────────────────────────────────
+  mai25: {
+    tit: 'Maio / 2025', per: '01/05/2025 a 31/05/2025',
+    tAnt:  247889.55,
+    tCred: 166597.39,
+    tDeb:  105871.92,
+    tAtual:308615.02,
+    contas: [
+      {n:'Aplic. Privilège', a:0, c:0, d:0, s:143081.79},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:165533.23}
+    ],
+    prev: 130000, real: 166222.81, tDesp: 105871.92,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:165533.23, cdb:143081.79, priv:0},
+    desp: [
+      {c:'Manutenção',        v:14490.91},
+      {c:'Administrativo',    v:13886.28},
+      {c:'Jurídico',            v:7403.99},
+      {c:'Consumo',           v:17244.96},
+      {c:'Serv. Terceirizados',v:52845.78}
+    ]
+  },
+
+  // ── Junho / 2025 ──────────────────────────────────────────────
+  jun25: {
+    tit: 'Junho / 2025', per: '01/06/2025 a 30/06/2025',
+    tAnt:  308615.00,
+    tCred: 124772.63,
+    tDeb:  141964.79,
+    tAtual:291422.86,
+    contas: [
+      {n:'Aplic. Privilège', a:0, c:0, d:0, s:149618.17},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:141804.69}
+    ],
+    prev: 130000, real: 124486.63, tDesp: 141964.79,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:141804.69, cdb:149618.17, priv:0},
+    desp: [
+      {c:'Manutenção',        v:33371.71},
+      {c:'Administrativo',    v:41123.78},
+      {c:'Jurídico',            v:5386.69},
+      {c:'Consumo',           v:16596.10},
+      {c:'Serv. Terceirizados',v:45486.51}
+    ]
+  },
+
+  // ── Julho / 2025 ──────────────────────────────────────────────
+  jul25: {
+    tit: 'Julho / 2025', per: '01/07/2025 a 31/07/2025',
+    tAnt:  291422.86,
+    tCred: 146431.68,
+    tDeb:  116310.33,
+    tAtual:321544.21,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:100000.00},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:67659.54},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:153884.67}
+    ],
+    prev: 130000, real: 146112.66, tDesp: 116310.33,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:67659.54, cdb:153884.67, priv:100000},
+    desp: [
+      {c:'Manutenção',        v:38883.59},
+      {c:'Administrativo',    v:12574.68},
+      {c:'Jurídico',            v:1500.00},
+      {c:'Consumo',           v:17854.04},
+      {c:'Serv. Terceirizados',v:45286.51},
+      {c:'Aquisições',         v:211.31}
+    ]
+  },
+
+  // ── Agosto / 2025 ────────────────────────────────────────────
+  ago25: {
+    tit: 'Agosto / 2025', per: '01/08/2025 a 31/08/2025',
+    tAnt:  321544.21,
+    tCred: 126552.39,
+    tDeb:  100409.46,
+    tAtual:347687.14,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:106344.55},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:85715.89},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:155626.70}
+    ],
+    prev: 130000, real: 126116.37, tDesp: 100409.46,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:85715.89, cdb:155626.70, priv:106344.55},
+    desp: [
+      {c:'Manutenção',        v:29853.00},
+      {c:'Administrativo',    v:4228.28},
+      {c:'Jurídico',            v:1862.14},
+      {c:'Consumo',           v:14936.53},
+      {c:'Serv. Terceirizados',v:48969.51},
+      {c:'Aquisições',         v:560.00}
+    ]
+  },
+
+  // ── Setembro / 2025 ─────────────────────────────────────────
+  set25: {
+    tit: 'Setembro / 2025', per: '01/09/2025 a 30/09/2025',
+    tAnt:  347687.14,
+    tCred: 135587.31,
+    tDeb:  150597.60,
+    tAtual:332676.85,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:107656.42},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:57309.35},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:167811.08}
+    ],
+    prev: 130000, real: 135017.86, tDesp: 150597.60,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:57309.35, cdb:167811.08, priv:107656.42},
+    desp: [
+      {c:'Manutenção',        v:38450.23},
+      {c:'Administrativo',    v:11306.92},
+      {c:'Jurídico',            v:1518.00},
+      {c:'Consumo',           v:16561.81},
+      {c:'Serv. Terceirizados',v:82760.64}
+    ]
+  },
+
+  // ── Outubro / 2025 ───────────────────────────────────────────
+  out25: {
+    tit: 'Outubro / 2025', per: '01/10/2025 a 31/10/2025',
+    tAnt:  332876.85,
+    tCred: 150052.90,
+    tDeb:  116874.80,
+    tAtual:366054.98,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:109002.90},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:81977.70},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:175074.33}
+    ],
+    prev: 130000, real: 149602.23, tDesp: 116874.80,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:81977.70, cdb:175074.33, priv:109002.90},
+    desp: [
+      {c:'Manutenção',        v:46231.95},
+      {c:'Administrativo',    v:14636.86},
+      {c:'Jurídico',            v:2015.84},
+      {c:'Consumo',           v:18401.67},
+      {c:'Serv. Terceirizados',v:33843.68},
+      {c:'Aquisições',         v:1744.80}
+    ]
+  },
+
+  // ── Novembro / 2025 ─────────────────────────────────────────
+  nov25: {
+    tit: 'Novembro / 2025', per: '01/11/2025 a 30/11/2025',
+    tAnt:  366054.98,
+    tCred: 125885.33,
+    tDeb:  114601.15,
+    tAtual:377339.16,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:109306.72},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:85942.86},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:181999.58}
+    ],
+    prev: 130000, real: 125584.68, tDesp: 114601.15,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:85942.86, cdb:181999.58, priv:109306.72},
+    desp: [
+      {c:'Manutenção',        v:24468.59},
+      {c:'Administrativo',    v:20225.06},
+      {c:'Consumo',           v:19173.72},
+      {c:'Serv. Terceirizados',v:49357.85},
+      {c:'Aquisições',         v:1375.13}
+    ]
+  },
+
+  // ── Dezembro / 2025 ─────────────────────────────────────────
+  dez25: {
+    tit: 'Dezembro / 2025', per: '01/12/2025 a 31/12/2025',
+    tAnt:  377339.16,
+    tCred: 129216.22,
+    tDeb:  140360.73,
+    tAtual:366194.65,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:110736.81},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:71299.01},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:184157.93}
+    ],
+    prev: 130000, real: 128777.63, tDesp: 140360.73,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:71299.01, cdb:184157.93, priv:110736.81},
+    desp: [
+      {c:'Manutenção',        v:38639.78},
+      {c:'Administrativo',    v:15046.38},
+      {c:'Jurídico',            v:11381.67},
+      {c:'Consumo',           v:18533.30},
+      {c:'Serv. Terceirizados',v:52604.63},
+      {c:'Aquisições',         v:4154.99}
+    ]
+  },
+
+  // ── Janeiro / 2026 ──────────────────────────────────────────
+  jan26: {
+    tit: 'Janeiro / 2026', per: '01/01/2026 a 31/01/2026',
+    tAnt:  366194.65,
+    tCred: 120299.55,
+    tDeb:  96021.88,
+    tAtual:390472.32,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:112009.18},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:92301.11},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:186242.03}
+    ],
+    prev: 130000, real: 119919.97, tDesp: 96021.88,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:92301.11, cdb:186242.03, priv:112009.18},
+    desp: [
+      {c:'Manutenção',        v:16502.18},
+      {c:'Administrativo',    v:11731.30},
+      {c:'Jurídico',            v:1603.26},
+      {c:'Consumo',           v:18057.70},
+      {c:'Serv. Terceirizados',v:47084.84},
+      {c:'Aquisições',         v:1042.60}
+    ]
+  },
+
+  // ── Fevereiro / 2026 ───────────────────────────────────────
+  fev26: {
+    tit: 'Fevereiro / 2026', per: '01/02/2026 a 28/02/2026',
+    tAnt:  390472.32,
+    tCred: 120821.76,
+    tDeb:  125719.22,
+    tAtual:385574.86,
+    contas: [
+      {n:'Aplic. Ordinária', a:0, c:0, d:0, s:113132.06},
+      {n:'CTA ITAÚ',         a:0, c:0, d:0, s:79577.80},
+      {n:'Fundo Reserva CDB', a:0, c:0, d:0, s:192864.20}
+    ],
+    prev: 130000, real: 120497.25, tDesp: 125719.22,
+    fac: 0, inad: 0, inadProc: 0,
+    banco: {cc:79577.80, cdb:192864.20, priv:113132.06},
+    desp: [
+      {c:'Manutenção',        v:36982.47},
+      {c:'Administrativo',    v:12696.32},
+      {c:'Consumo',           v:19085.62},
+      {c:'Serv. Terceirizados',v:56954.81}
+    ]
+  }
+
+};"""
+
+# Localiza bloco BAL → MESES
+bal_start = html.find('var BAL = {')
+meses_line = html.find('var MESES = Object.keys(BAL);')
+html = html[:bal_start] + new_bal + '\n\n' + html[meses_line:]
+
+# ── 7. Adiciona prc() se ainda não existir ───────────────────────────────────
+if 'function prc(' not in html:
+    prc_fn = """
+function prc(k){var o=CONFIG.orcamento;return(o&&o.meses&&o.meses[k]!==undefined)?o.meses[k]:BAL[k].prev;}
+"""
+    # Insere após definição de MESES
+    idx = html.find('var MESES = Object.keys(BAL);') + len('var MESES = Object.keys(BAL);')
+    html = html[:idx] + prc_fn + html[idx:]
+
+# ── 8. Garante que buildPvr e gráficos usam prc() ─────────────────────────────
+# Substitui BAL[k].prev por prc(k) dentro de buildPvr
+html = re.sub(r'BAL\[k\]\.prev', 'prc(k)', html)
+
+# ── 9. Limpa referências residuais ao nome antigo ────────────────────────────
+html = html.replace("'Cinque Terre Residenza'", "'Ciudad Real'")
+html = html.replace('"Cinque Terre Residenza"', '"Ciudad Real"')
+html = html.replace("'Cinque Terre'", "'Ciudad Real'")
+html = html.replace('"Cinque Terre"', '"Ciudad Real"')
+html = html.replace('Amanda Accioli', 'Amanda Renata Morsani Accioli Marti')
+html = html.replace('Cinque Terre', 'Ciudad Real')   # fallback
+
+with open('docs/Dashboard_Financeiro_CidadReal.html', 'w', encoding='utf-8') as f:
+    f.write(html)
+
+print(f'Gerado! Tamanho: {len(html):,} bytes')
+# Verificação rápida
+assert 'Ciudad Real' in html
+assert 'Amanda Renata Morsani Accioli Marti' in html
+assert 'abr25' in html
+assert 'fev26' in html
+bal_cnt = html.count("tit: '")
+print(f'Meses no BAL: {bal_cnt}  (esperado: 11)')

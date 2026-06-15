@@ -106,6 +106,20 @@
       }
     },
     {
+      "id": "ciudad_real",
+      "nome": "Ciudad Real",
+      "empresa_gestora": "verticce_pdf",
+      "pasta_dados": "data/ciudad_real",
+      "html_file": "Dashboard_Financeiro_CidadReal.html",
+      "ativo": true,
+      "cor": "#c026d3",
+      "unidades": 0,
+      "parser_config": {
+        "observacao": "PDFs digitalizados (sem texto) — injeção manual necessária",
+        "cat_map": {}
+      }
+    },
+    {
       "id": "club_park_butanta",
       "nome": "Club Park Butantã",
       "empresa_gestora": "lirba_pdf",
