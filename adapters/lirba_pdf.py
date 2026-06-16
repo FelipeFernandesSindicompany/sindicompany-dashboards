@@ -231,6 +231,10 @@ class AdapterLirbaPDF(AdapterBase):
                 nome = re.sub(r"[\s\d.,\-]+$", "", l).strip().upper()
                 if not nome:
                     continue
+                # Exclui carimbos de emissão que têm data/hora no nome
+                # Ex: "EMITIDO EM 12/06/2026 13:36:" aparece no rodapé dos PDFs Lirba
+                if re.search(r'\d{2}/\d{2}/\d{4}', nome) or re.search(r'\d{2}:\d{2}', nome):
+                    continue
 
                 # Saldo atual preserva sinal (conta corrente pode ser negativa)
                 sa, cr, db = nums_f[0], nums_f[1], nums_f[2]
@@ -563,66 +567,84 @@ class AdapterLirbaPDF(AdapterBase):
 
         Estrutura do PDF:
         - Pág 19-20: Balancete simplificado (RECEITAS / DESPESAS hierárquicas)
-        - Pág 34:    Resumo Financeiro  (Conta Principal + Aplicação → Saldo final)
+        - Pág 34:    Resumo Financeiro — DUAS tabelas na mesma página:
+            Tabela 1 (Conta Principal / Aplicação): totais e banco_cc/banco_cdb
+            Tabela 2 (Grupos de saldo): Ordinária, Fundo Reserva, etc. → contas_detalhe
         - Pág 49-56: Inadimplentes → "N unidades inadimplentes (X%) principal total"
         """
 
+        def _parse_signed_nums(linha: str) -> list:
+            """Extrai valores monetários preservando sinal: (X.XXX,XX) = negativo."""
+            result = []
+            for m in re.finditer(r'\(([\d.,]+)\)|([\d.,]+)', linha):
+                if m.group(1) and len(m.group(1)) >= 4 and ',' in m.group(1):
+                    result.append(-_num(m.group(1)))
+                elif m.group(2) and len(m.group(2)) >= 4 and ',' in m.group(2):
+                    result.append(_num(m.group(2)))
+            return result
+
         # ── 1. Resumo Financeiro ──────────────────────────────────────────────
-        # Header HSA: "Conta Saldo ant. Créditos* Débitos* Saldo final"
-        # Total line: "Saldo final  X  X  X  X"  (pode ter parênteses em débitos)
+        # Tabela 1 — header: "Conta Saldo ant. Créditos* Débitos* Saldo final"
+        #   Conta Principal + Aplicação → banco_cc, banco_cdb, totais
+        # Tabela 2 — header: "Grupos de saldo Saldo ant. Créditos* Débitos* Saldo final"
+        #   Ordinária, Fundo Reserva, Benfeitorias, Gás, Água → contas_detalhe
         for txt in textos:
             if "Resumo Financeiro" not in txt:
                 continue
             if "Conta Saldo ant." not in txt:
                 continue
 
-            in_resumo = False
+            # 'primeira' = tabela Conta Principal/Aplicação; 'segunda' = Grupos de saldo
+            table = None
             for linha in txt.split("\n"):
                 l = linha.strip()
 
                 if re.match(r"^Conta\s+Saldo ant\.", l):
-                    in_resumo = True
+                    table = "primeira"
                     continue
                 if re.match(r"^Grupos de saldo", l):
-                    break
-                if not in_resumo:
+                    table = "segunda"
                     continue
                 if l.startswith("(*) Inclui"):
                     continue
-
-                # Extrai todos os números monetários da linha
-                nums_raw = re.findall(r"[\d.,]+", l)
-                nums_f = [_num(n) for n in nums_raw if len(n) >= 4 and "," in n]
-                if len(nums_f) < 4:
+                if table is None:
                     continue
 
-                # Linha TOTAL: "Saldo final ..."
-                if l.upper().startswith("SALDO FINAL"):
-                    dados.saldo_anterior    = nums_f[0]
-                    dados.receita_realizada = nums_f[1]
-                    dados.despesa_total     = nums_f[2]
-                    dados.saldo_atual       = nums_f[3]
-                    in_resumo = False
-                    break
+                nums = _parse_signed_nums(l)
+                if len(nums) < 4:
+                    continue
 
-                # Linha de conta: "Nome  sa  cr  db  sal"
+                if l.upper().startswith("SALDO FINAL"):
+                    if table == "primeira":
+                        dados.saldo_anterior    = abs(nums[0])
+                        dados.receita_realizada = abs(nums[1])
+                        dados.despesa_total     = abs(nums[2])
+                        dados.saldo_atual       = abs(nums[3])
+                    # Saldo final da segunda tabela = fim do bloco
+                    table = None
+                    continue
+
                 nome_m = re.match(r"^([A-Za-zÀ-ú][A-Za-zÀ-ú\s]+?)\s+[\d.,()]+", l)
                 if not nome_m:
                     continue
                 nome = nome_m.group(1).strip()
-                sa, cr, db, sal = nums_f[0], nums_f[1], nums_f[2], nums_f[3]
+                sa, cr, db, sal = abs(nums[0]), abs(nums[1]), abs(nums[2]), nums[3]
 
-                dados.contas_detalhe.append({
-                    "nome": nome, "saldo_ant": sa, "creditos": cr,
-                    "debitos": db, "saldo_atual": sal,
-                })
-                nome_up = nome.upper()
-                if "PRINCIPAL" in nome_up or "CORRENTE" in nome_up:
-                    dados.banco_cc = sal
-                elif "APLICA" in nome_up or "INVEST" in nome_up or "CDB" in nome_up:
-                    dados.banco_cdb = sal
-                else:
-                    dados.banco_priv = round(dados.banco_priv + sal, 2)
+                if table == "primeira":
+                    # Classifica banco (não adiciona em contas_detalhe)
+                    nome_up = nome.upper()
+                    if "PRINCIPAL" in nome_up or "CORRENTE" in nome_up:
+                        dados.banco_cc = sal
+                    elif "APLICA" in nome_up or "INVEST" in nome_up or "CDB" in nome_up:
+                        dados.banco_cdb = sal
+                    else:
+                        dados.banco_priv = round(dados.banco_priv + sal, 2)
+                elif table == "segunda":
+                    # Contas detalhadas (Ordinária, Fundo Reserva, Benfeitorias, Gás, Água)
+                    dados.contas_detalhe.append({
+                        "nome": nome, "saldo_ant": sa, "creditos": cr,
+                        "debitos": db, "saldo_atual": sal,
+                    })
             break
 
         # ── 2. Receita Prevista e Cotas ───────────────────────────────────────

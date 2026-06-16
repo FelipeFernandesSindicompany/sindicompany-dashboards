@@ -340,11 +340,13 @@ export function DropZone({ condominios, onImportDone }: Props) {
         return;
       }
 
-      // If runId returned, poll for completion
+      // Poll for completion: runId = GitHub Actions (Vercel), jobId = background local
       if (data.runId) {
         await pollForResult(file.id, data.runId);
+      } else if (data.jobId) {
+        await pollLocalJob(file.id, data.jobId);
       } else {
-        // Synchronous result (local mode)
+        // Resultado síncrono (fallback)
         setFiles(prev => prev.map(f =>
           f.id === file.id
             ? { ...f, status: data.success ? 'done' as const : 'error' as const, error: data.error, resumo: data.resumo }
@@ -377,7 +379,36 @@ export function DropZone({ condominios, onImportDone }: Props) {
         }
       } catch {}
     }
-    // Timeout
+    setFiles(prev => prev.map(f =>
+      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado aguardando processamento' } : f
+    ));
+  }, [onImportDone]);
+
+  // Polling para modo local (PM2/ngrok) — /api/process/local-status?jobId=...
+  const pollLocalJob = useCallback(async (fileId: string, jobId: string) => {
+    const maxAttempts = 60; // 60 × 5s = 5 min
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        const res = await fetch(`/api/process/local-status?jobId=${jobId}`);
+        const data = await res.json();
+        if (data.done) {
+          if (!data.success && data.monthExists) {
+            setFiles(prev => prev.map(f =>
+              f.id === fileId ? { ...f, status: 'month_exists' as const } : f
+            ));
+            return;
+          }
+          setFiles(prev => prev.map(f =>
+            f.id === fileId
+              ? { ...f, status: data.success ? 'done' as const : 'error' as const, error: data.error, resumo: data.resumo }
+              : f
+          ));
+          if (data.success && onImportDone) onImportDone();
+          return;
+        }
+      } catch {}
+    }
     setFiles(prev => prev.map(f =>
       f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado aguardando processamento' } : f
     ));

@@ -360,8 +360,8 @@ tr.tot td{font-weight:700;background:var(--pl);border-top:2px solid var(--p);}
 </main>
 <script>
 var CONFIG={nome:"Condomínio 730 Padre Carvalho",unidades:"44",sindica:"Loan",orcamento:{exercicio:"2025/2026",totalAnual:899496.00,meses:{abr25:75208.63,mai25:75054.25,jun25:75245.80,jul25:75032.32,ago25:75579.13,set25:75030.06,out25:76292.69,nov25:75799.54,dez25:74436.39,jan26:75054.16,fev26:73676.20,mar26:73087.83,abr26:74437.32}}};
-var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26'];
-var EVO_V=[167029.04, 158462.7, 161411.21, 162951.84, 165641.68, 170689.33, 168726.22, 164415.62, 158345.81, 160863.95, 156436.35, 150609.28, 148077.57, 0.0];
+var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26'];
+var EVO_V=[167029.04, 158462.7, 161411.21, 162951.84, 165641.68, 170689.33, 168726.22, 164415.62, 158345.81, 160863.95, 156436.35, 150609.28, 148077.57];
 var BAL={
 abr25:{tit:"Abril / 2025",per:"01/04/2025 a 30/04/2025",tAnt:185013.34,tCred:76095.88,tDeb:94080.18,tAtual:167029.04,contas:[{n:"ORDINÁRIA",a:117089.38,c:75459.06,d:94080.18,s:98468.26},{n:"FUNDO DE RESERVA",a:60253.24,c:636.82,d:0.00,s:60890.06},{n:"OBRAS/MELHORIAS",a:7670.72,c:0.00,d:0.00,s:7670.72}],prev:75208.63,real:75459.06,tDesp:94080.18,fac:0,inad:0.00,inadProc:0.00,banco:{cc:106138.98,cdb:60890.06,priv:0.00},desp:[{c:"Pessoal",v:4791.87},{c:"Encargos Sociais",v:5143.34},{c:"Serviços Prestados",v:47315.08},{c:"Consumos",v:15130.63},{c:"Conserv./Manut.",v:8658.69},{c:"Materiais",v:2985.32},{c:"Impostos/Taxas",v:3764.33},{c:"Honorários/Adm.",v:5082.62},{c:"Desp. Bancárias",v:140.80},{c:"Despesas Diversas",v:1067.50}]},
 mai25:{tit:"Maio / 2025",per:"01/05/2025 a 31/05/2025",tAnt:167029.04,tCred:75478.85,tDeb:84045.19,tAtual:158462.70,contas:[{n:"ORDINÁRIA",a:98468.26,c:75318.31,d:84045.19,s:89741.38},{n:"FUNDO DE RESERVA",a:60890.06,c:160.54,d:0.00,s:61050.60},{n:"OBRAS/MELHORIAS",a:7670.72,c:0.00,d:0.00,s:7670.72}],prev:75054.25,real:75318.31,tDesp:84045.19,fac:0,inad:0.00,inadProc:0.00,banco:{cc:97412.10,cdb:61050.60,priv:0.00},desp:[{c:"Pessoal",v:4789.40},{c:"Encargos Sociais",v:5160.76},{c:"Serviços Prestados",v:38119.15},{c:"Consumos",v:12937.25},{c:"Conserv./Manut.",v:9647.71},{c:"Materiais",v:3145.37},{c:"Impostos/Taxas",v:2727.69},{c:"Honorários/Adm.",v:5229.32},{c:"Desp. Bancárias",v:140.80},{c:"Despesas Diversas",v:536.00},{c:"Seguros",v:1611.74}]},
@@ -387,9 +387,7 @@ mar26:{tit:"Março / 2026",per:"01/03/2026 a 31/03/2026",tAnt:156436.35,tCred:75
               {c:"Impostos/Taxas",v:2738.67},{c:"Serviços Prestados",v:37692.65},
               {c:"Consumos",v:12619.77},{c:"Conserv./Manut.",v:9596.86},
               {c:"Materiais",v:2068.58},{c:"Honorários/Adm.",v:2074.31},
-              {c:"Desp. Bancárias",v:151.36},{c:"Despesas Diversas",v:963.44}]},
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINÁRIA',a:64867.6,c:75496.11,d:76950.42,s:63413.29},{n:'FUNDO DE RESERVA',a:68539.25,c:71.5,d:0,s:68610.75},{n:'OBRAS/MELHORIAS',a:7670.72,c:0,d:0,s:7670.72},{n:'EMITIDO EM 12/06/2026 13:36:',a:12.0,c:6.0,d:2026.0,s:13.0}],prev:68099.96,real:68099.96,tDesp:76950.42,fac:0,inad:0,inadProc:0,banco:{cc:78334.01,cdb:68610.75,priv:0},desp:[{c:'SERVIÇOS PRESTADOS',v:32361.17},{c:'CONSUMOS',v:13120.28},{c:'CONSERVAÇÃO/MANUTENÇÃO',v:8796.86},{c:'ENCARGOS SOCIAIS',v:5502.25},{c:'PESSOAL',v:5128.38},{c:'REPASSE SÍNDICO',v:3155.0},{c:'MATERIAIS DE CONSUMO',v:2314.19},{c:'DESP. ADMINISTRATIVA',v:2074.31},{c:'IMPOSTOS FEDERAIS',v:1992.67},{c:'SEGUROS',v:1421.85},{c:'TAXAS',v:780.91},{c:'DESPESAS BANCARIAS',v:151.36},{c:'DESPESAS DIVS.',v:80.0},{c:'MATERIAL DE EXPEDIENTE',v:71.19}]}
-};
+              {c:"Desp. Bancárias",v:151.36},{c:"Despesas Diversas",v:963.44}]}};
 var MESES=Object.keys(BAL);
 function R(n){
   if(n===null||n===undefined||isNaN(n))return'-';

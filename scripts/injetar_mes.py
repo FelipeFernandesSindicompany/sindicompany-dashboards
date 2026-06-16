@@ -251,28 +251,147 @@ def dados_para_bal(dados, mes_str: str) -> dict:
 def _detectar_formato_bal(html_path: Path) -> dict:
     """
     Lê o HTML e detecta o formato das entradas BAL já existentes.
+    Usa a ENTRADA MAIS RECENTE (maior ordinal) para determinar o formato —
+    não a primeira — pois dashboards podem ter migrado de compact para expanded.
     Retorna {'compact': bool, 'tem_inadrec': bool}.
-    compact=True  → linha única sem espaços (ex: I-Gloo)
-    compact=False → multi-linha com recuo     (ex: Blue Sky)
-    inadRec só é True em formato expanded que já usava esse campo antes.
     """
     try:
         texto = html_path.read_text(encoding="utf-8", errors="ignore")
         bal_m = re.search(r'var\s+BAL\s*=\s*\{', texto)
         if not bal_m:
             return {"compact": True, "tem_inadrec": False}
-        body_pos = bal_m.end()
-        # Primeiro char após o '{' da primeira entrada revela o estilo
-        entry_m = re.search(r'\s*\w{3}\d{2}\s*:\s*\{(.)', texto[body_pos:])
+
+        # Isola o corpo do BAL via brace tracking
+        bal_open = bal_m.end() - 1
+        depth, j = 0, bal_open
+        while j < len(texto):
+            if texto[j] == '{':
+                depth += 1
+            elif texto[j] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        body = texto[bal_m.end():j]
+
+        # Encontra TODAS as entradas e usa a mais recente para detectar o formato
+        entry_re = re.compile(r'[ \t]*([a-z]{3}\d{2})\s*:\s*\{(.)')
+        all_matches = list(entry_re.finditer(body))
         compact = True
-        if entry_m:
-            compact = entry_m.group(1) != '\n'
-        # inadRec só faz sentido em dashboards expanded que já tinham esse campo
-        # Formato compact (linha única) NUNCA inclui inadRec
-        tem_inadrec = (not compact) and bool(re.search(r'[,\s{]inadRec\s*:', texto[body_pos:]))
+        if all_matches:
+            last_match = max(all_matches, key=lambda m: chave_para_ordinal(m.group(1)))
+            compact = last_match.group(2) != '\n'
+
+        tem_inadrec = (not compact) and bool(re.search(r'[,\s{]inadRec\s*:', body))
         return {"compact": compact, "tem_inadrec": tem_inadrec}
     except Exception:
         return {"compact": True, "tem_inadrec": False}
+
+
+def _extrair_metodologia_bal(html_path: Path) -> dict:
+    """
+    Lê o dashboard e extrai do mês mais recente:
+    - nomes canônicos das categorias de despesa (desp[].c)
+    - nomes canônicos das contas bancárias (contas[].n)
+
+    Retorna {'desp_cats': [...], 'conta_nomes': [...]}.
+    Usado para reconciliar os nomes que o adapter produz com os já existentes.
+    """
+    try:
+        texto = html_path.read_text(encoding="utf-8", errors="ignore")
+        bal_m = re.search(r'var\s+BAL\s*=\s*\{', texto)
+        if not bal_m:
+            return {'desp_cats': [], 'conta_nomes': []}
+
+        bal_open = bal_m.end() - 1
+        depth, j = 0, bal_open
+        while j < len(texto):
+            if texto[j] == '{':
+                depth += 1
+            elif texto[j] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        body = texto[bal_m.end():j]
+
+        key_re = re.compile(r'[ \t]*([a-z]{3}\d{2})\s*:\s*\{')
+        all_entries = []
+        pos = 0
+        while True:
+            km = key_re.search(body, pos)
+            if not km:
+                break
+            key = km.group(1)
+            brace_s = km.end() - 1
+            d2, j2 = 0, brace_s
+            while j2 < len(body):
+                if body[j2] == '{':
+                    d2 += 1
+                elif body[j2] == '}':
+                    d2 -= 1
+                    if d2 == 0:
+                        break
+                j2 += 1
+            all_entries.append((key, body[km.start():j2 + 1]))
+            pos = j2 + 1
+
+        if not all_entries:
+            return {'desp_cats': [], 'conta_nomes': []}
+
+        _, entry_text = max(all_entries, key=lambda x: chave_para_ordinal(x[0]))
+
+        desp_m = re.search(r'desp\s*:\s*\[(.*?)\]', entry_text, re.DOTALL)
+        desp_cats = []
+        if desp_m:
+            desp_cats = re.findall(r'c\s*:\s*[\'"]([^\'"]+)[\'"]', desp_m.group(1))
+
+        contas_m = re.search(r'contas\s*:\s*\[(.*?)\]', entry_text, re.DOTALL)
+        conta_nomes = []
+        if contas_m:
+            raw = re.findall(r'n\s*:\s*[\'"]([^\'"]+)[\'"]', contas_m.group(1))
+            # Filtra nomes inválidos: carimbos de data/hora, strings muito longas
+            conta_nomes = [
+                n for n in raw
+                if len(n) <= 60
+                and not re.search(r'\d{2}/\d{2}/\d{4}', n)
+                and not re.search(r'\d{2}:\d{2}', n)
+            ]
+
+        return {'desp_cats': desp_cats, 'conta_nomes': conta_nomes}
+    except Exception:
+        return {'desp_cats': [], 'conta_nomes': []}
+
+
+def _normalizar_nome(s: str) -> str:
+    """Remove acentos e converte para uppercase — para comparação fonética."""
+    import unicodedata
+    s = unicodedata.normalize('NFD', s)
+    s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+    return s.upper().strip()
+
+
+def _reconciliar_lista(nova: list, canonicas: list, campo: str) -> list:
+    """
+    Mapeia os nomes produzidos pelo adapter para os nomes canônicos do dashboard.
+    campo: 'c' para desp, 'n' para contas.
+
+    Regras:
+    1. Match exato → usa canônico
+    2. Match normalizado (sem acentos, uppercase) → usa canônico
+    3. Sem match → mantém o nome do adapter (não quebra)
+    """
+    if not canonicas:
+        return nova
+    canon_map = {c: c for c in canonicas}                      # exato
+    canon_norm = {_normalizar_nome(c): c for c in canonicas}   # normalizado
+
+    resultado = []
+    for item in nova:
+        nome = item[campo]
+        canon = canon_map.get(nome) or canon_norm.get(_normalizar_nome(nome))
+        resultado.append({**item, campo: canon if canon else nome})
+    return resultado
 
 
 def _reconstruir_evo_do_bal(texto: str) -> str:
@@ -612,6 +731,35 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
     return True
 
 
+# ── Validação interna ─────────────────────────────────────────────────────
+
+def _validar_bloco(bloco: dict, chave: str) -> None:
+    """
+    Verifica consistência interna do bloco BAL e imprime avisos.
+    Não interrompe a injeção — apenas informa no log.
+    """
+    tAnt  = bloco.get('tAnt',  0)
+    tCred = bloco.get('tCred', 0)
+    tDeb  = bloco.get('tDeb',  0)
+    tAtual = bloco.get('tAtual', 0)
+    tDesp  = bloco.get('tDesp',  0)
+
+    # [1] Equação de saldo
+    esperado = round(tAnt + tCred - tDeb, 2)
+    if abs(esperado - tAtual) > 0.05:
+        print(f"  [AVISO] {chave}: tAnt+tCred-tDeb={esperado} ≠ tAtual={tAtual}")
+
+    # [2] Soma das contas deve bater com tAtual
+    soma_contas = round(sum(c['s'] for c in bloco.get('contas', [])), 2)
+    if bloco.get('contas') and abs(soma_contas - tAtual) > 0.05:
+        print(f"  [AVISO] {chave}: sum(contas.s)={soma_contas} ≠ tAtual={tAtual}")
+
+    # [3] Soma das despesas deve bater com tDesp
+    soma_desp = round(sum(d['v'] for d in bloco.get('desp', [])), 2)
+    if bloco.get('desp') and abs(soma_desp - tDesp) > 0.05:
+        print(f"  [AVISO] {chave}: sum(desp.v)={soma_desp} ≠ tDesp={tDesp}")
+
+
 # ── Processamento principal ────────────────────────────────────────────────
 
 def processar_um(cond: dict, mes_str: str, arquivo: Path, config_global: dict) -> bool:
@@ -637,8 +785,30 @@ def processar_um(cond: dict, mes_str: str, arquivo: Path, config_global: dict) -
         print(f"  [ERRO] HTML não encontrado: {html_path}")
         return False
 
+    # ── Reconcilia nomes com a metodologia já usada no dashboard ─────────────
+    # Lê o mês mais recente existente e usa seus nomes canônicos.
+    # Isso garante que desp[].c e contas[].n não mudem entre meses.
+    metodologia = _extrair_metodologia_bal(html_path)
+    if metodologia['desp_cats']:
+        reconciliadas = _reconciliar_lista(bloco['desp'], metodologia['desp_cats'], 'c')
+        alteradas = [(o['c'], r['c']) for o, r in zip(bloco['desp'], reconciliadas) if o['c'] != r['c']]
+        if alteradas:
+            for antes, depois in alteradas:
+                print(f"  [METODOLOGIA] categoria: '{antes}' → '{depois}'")
+        bloco['desp'] = reconciliadas
+    if metodologia['conta_nomes']:
+        reconciliadas_c = _reconciliar_lista(bloco['contas'], metodologia['conta_nomes'], 'n')
+        alteradas_c = [(o['n'], r['n']) for o, r in zip(bloco['contas'], reconciliadas_c) if o['n'] != r['n']]
+        if alteradas_c:
+            for antes, depois in alteradas_c:
+                print(f"  [METODOLOGIA] conta: '{antes}' → '{depois}'")
+        bloco['contas'] = reconciliadas_c
+
     fmt = _detectar_formato_bal(html_path)
     bloco_js = bal_para_js(bloco, chave, compact=fmt["compact"], tem_inadrec=fmt["tem_inadrec"])
+
+    # ── Validação interna do bloco ────────────────────────────────────────────
+    _validar_bloco(bloco, chave)
 
     ok = injetar_no_html(
         html_path, chave, bloco_js, evo_label,

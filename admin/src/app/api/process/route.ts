@@ -56,36 +56,56 @@ export async function POST(request: NextRequest) {
       });
 
     } else {
-      // ── Modo Local (ngrok / PM2): roda Python direto no servidor ──────────
-      const result = await injectarMes(condominioId, mes, savedPath, !!force);
+      // ── Modo Local (ngrok / PM2): background job para não travar a conexão ──
+      // PDFs grandes (>10MB) levam 2-3 min — ngrok corta conexões longas.
+      // Retorna jobId imediatamente; cliente faz polling em /api/process/local-status
+      const { createJob, completeJob, failJob } = await import('@/lib/local-jobs');
+      const job = createJob();
+      const jobId = job.id;
 
-      const record = {
-        id: uuidv4(),
-        timestamp: new Date().toISOString(),
-        condominioId,
-        condominioNome: condo.nome,
-        mes,
-        arquivo: savedPath.split(/[/\\]/).pop() ?? savedPath,
-        status: result.success ? 'success' as const : result.monthExists ? 'warning' as const : 'error' as const,
-        operador: 'admin',
-        log: result.log,
-        error: result.error,
-      };
+      // Fire-and-forget — não bloqueia o handler
+      (async () => {
+        try {
+          const result = await injectarMes(condominioId, mes, savedPath, !!force);
 
-      appendHistory(record);
+          const record = {
+            id: uuidv4(),
+            timestamp: new Date().toISOString(),
+            condominioId,
+            condominioNome: condo.nome,
+            mes,
+            arquivo: savedPath.split(/[/\\]/).pop() ?? savedPath,
+            status: result.success ? 'success' as const : result.monthExists ? 'warning' as const : 'error' as const,
+            operador: 'admin',
+            log: result.log,
+            error: result.error,
+          };
+          appendHistory(record);
 
-      // Extrai o resumo do log
-      const resumoLine = result.log.find(l => l.includes('[RESUMO]'));
-      const resumo = resumoLine
-        ? (() => { try { return JSON.parse(resumoLine.split('[RESUMO]')[1].trim()); } catch { return null; } })()
-        : null;
+          const resumoLine = result.log.find((l: string) => l.includes('[RESUMO]'));
+          const resumo = resumoLine
+            ? (() => { try { return JSON.parse(resumoLine.split('[RESUMO]')[1].trim()); } catch { return null; } })()
+            : null;
+
+          completeJob(jobId, {
+            success: result.success,
+            monthExists: result.monthExists ?? false,
+            log: result.log,
+            record,
+            resumo,
+          });
+        } catch (err: any) {
+          console.error('[process] background error:', err?.message ?? err);
+          failJob(jobId, err.message ?? 'Erro desconhecido');
+        }
+      })();
 
       return NextResponse.json({
-        success: result.success,
-        monthExists: result.monthExists ?? false,
-        log: result.log,
-        record,
-        resumo,
+        success: true,
+        status: 'running',
+        jobId,
+        condominioNome: condo.nome,
+        log: ['Processamento iniciado em background'],
       });
     }
 
