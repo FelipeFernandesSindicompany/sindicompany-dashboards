@@ -196,7 +196,9 @@ class AdapterLirbaPDF(AdapterBase):
         """Extrai dados do formato Lirba (Gravura, Blue Sky, etc.)."""
 
         # ── 1. Resumo Financeiro Contábil ──────────────────────────────────────
-        # A página real tem "Período:" (o índice na pág 2 não tem)
+        # A página real tem "Período:" (o índice na pág 2 não tem).
+        # A tabela pode ser multi-página: continua até encontrar a linha TOTAL.
+        total_encontrado = False
         for txt in textos:
             if "Resumo Financeiro" not in txt:
                 continue
@@ -246,15 +248,19 @@ class AdapterLirbaPDF(AdapterBase):
                     dados.despesa_total     = db
                     dados.saldo_atual       = abs(sal)  # total sempre positivo
                     in_resumo = False
+                    total_encontrado = True
                     break
 
-                dados.contas_detalhe.append({
-                    "nome":       nome,
-                    "saldo_ant":  sa,
-                    "creditos":   cr,
-                    "debitos":    db,
-                    "saldo_atual": sal,  # com sinal: conta corrente pode ser negativa
-                })
+                # Evita duplicatas quando a página de continuação repete contas já extraídas
+                nomes_ja_vistos = {c["nome"] for c in dados.contas_detalhe}
+                if nome not in nomes_ja_vistos:
+                    dados.contas_detalhe.append({
+                        "nome":       nome,
+                        "saldo_ant":  sa,
+                        "creditos":   cr,
+                        "debitos":    db,
+                        "saldo_atual": sal,  # com sinal: conta corrente pode ser negativa
+                    })
 
             # CDB externo: linha como "FUNDO DE INVESTIMENTO - ITAU ... 123.328,60"
             for linha in linhas:
@@ -265,7 +271,8 @@ class AdapterLirbaPDF(AdapterBase):
                         val = _num(nums[-1])
                         if val > 0 and dados.banco_cdb == 0:
                             dados.banco_cdb = val
-            break  # Lirba: só há uma página de Resumo Financeiro real
+            if total_encontrado:
+                break  # TOTAL encontrado — Resumo Financeiro completo
 
         # ── Banco: tenta "Conta Bancária" primeiro, fallback no Resumo Contábil ──
         conta_banc = self._extrair_conta_bancaria(textos)
