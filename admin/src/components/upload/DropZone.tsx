@@ -386,7 +386,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
 
   // Polling para modo local (PM2/ngrok) — /api/process/local-status?jobId=...
   const pollLocalJob = useCallback(async (fileId: string, jobId: string) => {
-    const maxAttempts = 60; // 60 × 5s = 5 min
+    const maxAttempts = 144; // 144 × 5s = 12 min (PDFs grandes podem demorar)
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 5000));
       try {

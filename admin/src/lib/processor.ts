@@ -33,7 +33,7 @@ export async function injectarMes(
     const { stdout, stderr } = await execAsync(cmd, {
       cwd: PROJECT_ROOT,
       encoding: 'utf-8',
-      timeout: 180_000,
+      timeout: 600_000, // 10 min — PDFs grandes (300+ páginas) podem demorar
       windowsHide: true,
     });
 
