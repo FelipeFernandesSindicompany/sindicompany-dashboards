@@ -842,7 +842,8 @@ window.onload = function() {
 };
 
 function getContaSaldo(m, keyword) {
-  var found = m.contas.find(function(c){ return c.n.indexOf(keyword) >= 0; });
+  var kw = keyword.toUpperCase();
+  var found = m.contas.find(function(c){ return c.n.toUpperCase().indexOf(kw) >= 0; });
   return found ? found.s : null;
 }
 
@@ -1310,7 +1311,7 @@ function buildCharts() {
       label: cn.replace('FUNDO ','F.').replace('ÁREA COMUM','Á.Comum'),
       data: MESES.map(function(k) {
         var keyword = cn === 'FUNDO ÁREA COMUM' ? 'ÁREA' : cn === 'FUNDO FACHADA' ? 'FACHADA' : cn === 'MERCADINHO' ? 'MERCADINHO' : cn.split(' ')[cn.split(' ').length-1];
-        var c = BAL[k].contas.find(function(x){ return x.n.indexOf(keyword) >= 0; });
+        var c = BAL[k].contas.find(function(x){ return x.n.toUpperCase().indexOf(keyword) >= 0; });
         return c ? Math.max(0, c.s) : 0;
       }),
       backgroundColor: contaColorsSt[i],
