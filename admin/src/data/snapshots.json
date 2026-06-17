@@ -702,11 +702,11 @@
     ],
     "data": {
       "tit": "Maio / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
+      "tAtual": 146944.76,
+      "tCred": 75817.61,
+      "tDeb": 76950.42,
       "inad": 0,
-      "tAnt": 0
+      "tAnt": 148077.57
     }
   },
   "Dashboard_Financeiro_PalmBeach.html": {
