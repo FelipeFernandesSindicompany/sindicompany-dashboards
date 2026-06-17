@@ -167,15 +167,34 @@ def reordenar_bal_e_evo(texto: str) -> str:
 
 # ── Conversão DadosFinanceiros → bloco BAL ─────────────────────────────────
 
-def dados_para_bal(dados, mes_str: str) -> dict:
+def dados_para_bal(dados, mes_str: str, parser_config: dict = None) -> dict:
     """
     Converte DadosFinanceiros (do adapter) para o dict no formato BAL
     que os HTMLs reais esperam.
+    parser_config pode conter:
+      cat_map   — {raw_cat  → canonical_cat}  para consolidar categorias de despesa
+      conta_map — {raw_nome → canonical_nome} para normalizar nomes de contas
     """
     from adapters.base import DadosFinanceiros
+    import re as _re
+
+    pcfg      = parser_config or {}
+    # Normaliza chaves para uppercase para comparação case-insensitive
+    cat_map   = {k.upper(): v for k, v in pcfg.get("cat_map",   {}).items()}
+    conta_map = {k.upper(): v for k, v in pcfg.get("conta_map", {}).items()}
+
+    # ── Categorias de despesa com cat_map + consolidação ────────────────────
+    if cat_map:
+        cats_consolidadas: dict = {}
+        for cat, val in dados.categorias_despesa.items():
+            canonical = cat_map.get(cat.upper(), cat.upper())
+            cats_consolidadas[canonical] = cats_consolidadas.get(canonical, 0.0) + val
+        cats_desp = cats_consolidadas
+    else:
+        cats_desp = {k.upper(): v for k, v in dados.categorias_despesa.items()}
 
     # tDesp = total usado para % nas despesas (soma das categorias, == total ordinária)
-    t_desp = round(sum(dados.categorias_despesa.values()), 2) or round(dados.despesa_total, 2)
+    t_desp = round(sum(cats_desp.values()), 2) or round(dados.despesa_total, 2)
 
     # prev = orçamento previsto (usa receita_prevista se disponível, senão tCred)
     prev = round(dados.receita_prevista, 2) if dados.receita_prevista > 0 else round(dados.receita_realizada, 2)
@@ -187,16 +206,24 @@ def dados_para_bal(dados, mes_str: str) -> dict:
     # fac = faturas anteriores cobradas (juros + multas recebidos de inadimplentes)
     fac  = round(getattr(dados, 'fac', 0.0), 2)
 
-    # ── Contas individuais ──────────────────────────────────────────────────
+    # ── Contas individuais com conta_map ────────────────────────────────────
     if dados.contas_detalhe:
-        contas = [
-            {"n": c["nome"],
-             "a": round(c["saldo_ant"],   2),
-             "c": round(c["creditos"],    2),
-             "d": round(c["debitos"],     2),
-             "s": round(c["saldo_atual"], 2)}
-            for c in dados.contas_detalhe
-        ]
+        contas = []
+        for c in dados.contas_detalhe:
+            nome_full  = c["nome"]
+            # nome_curto: remove sufixo de banco " - ..." se o adapter não preencheu
+            nome_curto = c.get("nome_curto") or _re.sub(r"\s*-\s*.*", "", nome_full).strip()
+            # Aplica conta_map: tenta nome completo, depois nome_curto
+            nome = (conta_map.get(nome_full.upper())
+                    or conta_map.get(nome_curto.upper())
+                    or nome_curto)
+            contas.append({
+                "n": nome,
+                "a": round(c["saldo_ant"],   2),
+                "c": round(c["creditos"],    2),
+                "d": round(c["debitos"],     2),
+                "s": round(c["saldo_atual"], 2),
+            })
     else:
         contas = [{"n": "ORDINÁRIA",
                    "a": round(dados.saldo_anterior,    2),
@@ -236,11 +263,8 @@ def dados_para_bal(dados, mes_str: str) -> dict:
         "banco":  banco,
         "contas": contas,
         "desp": [
-            {"c": cat.upper(), "v": round(val, 2)}
-            for cat, val in sorted(
-                dados.categorias_despesa.items(),
-                key=lambda x: x[1], reverse=True
-            )
+            {"c": cat, "v": round(val, 2)}
+            for cat, val in sorted(cats_desp.items(), key=lambda x: x[1], reverse=True)
         ],
     }
     return bloco
@@ -777,7 +801,7 @@ def processar_um(cond: dict, mes_str: str, arquivo: Path, config_global: dict) -
         dados = adapter.ler_xlsx(arquivo, mes_str)
 
     chave = mes_chave(mes_str)
-    bloco = dados_para_bal(dados, mes_str)
+    bloco = dados_para_bal(dados, mes_str, parser_config=cond.get("parser_config", {}))
     evo_label = mes_evo_label(mes_str)
 
     html_path = HTML_DIR / cond["html_file"]

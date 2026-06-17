@@ -52,30 +52,30 @@
         "extract_cats": "total_da_conta",
         "contas_separadas": [],
         "cat_map": {
-          "SERVIÇOS TERCEIRIZADOS":          "SERV. TERCEIRIZADOS",
-          "SERVICOS TERCEIRIZADOS":          "SERV. TERCEIRIZADOS",
-          "SERV. TERCEIRIZADOS":             "SERV. TERCEIRIZADOS",
-          "CONTAS DE CONSUMO":               "CONSUMOS",
-          "CONTRATOS":                       "MANUT/CONSERV. CONTRAT.",
-          "SERV. PREST/COMPRA/AQUIS/MANUT":  "MANUT/CONSERV. ESPORÁD.",
-          "MATERIAIS CONS/DIVERSOS":         "MANUT/CONSERV. ESPORÁD.",
-          "AQUISIÇÕES":                      "MANUT/CONSERV. ESPORÁD.",
-          "AQUISICOES":                      "MANUT/CONSERV. ESPORÁD.",
-          "SALÁRIOS E ORDENADOS":            "PESSOAL",
-          "SALARIOS E ORDENADOS":            "PESSOAL",
-          "ENCARGOS SOCIAIS":                "ENCARGOS SOCIAIS",
-          "DESPESAS BANCÁRIAS":              "ADMINISTRATIVO",
-          "DESPESAS BANCARIAS":              "ADMINISTRATIVO",
-          "OPERACIONAIS/ADMINISTRATIVAS":    "ADMINISTRATIVO",
-          "REGULARIZAÇÕES CONTABEIS":        "ADMINISTRATIVO",
-          "REGULARIZACOES CONTABEIS":        "ADMINISTRATIVO",
-          "OBRIGAÇÕES LEGAIS":               "ADMINISTRATIVO",
-          "OBRIGACOES LEGAIS":               "ADMINISTRATIVO",
-          "DESPESAS JURÍDICAS":              "ADMINISTRATIVO",
-          "DESPESAS JURIDICAS":              "ADMINISTRATIVO",
-          "PORTAL DE SERVIÇOS":              "ADMINISTRATIVO",
-          "PORTAL DE SERVICOS":              "ADMINISTRATIVO",
-          "ELEVADORES":                      "MANUT/CONSERV. CONTRAT."
+          "SERVIÇOS TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "SERVICOS TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "SERV. TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "CONTAS DE CONSUMO": "CONSUMOS",
+          "CONTRATOS": "MANUT/CONSERV. CONTRAT.",
+          "SERV. PREST/COMPRA/AQUIS/MANUT": "MANUT/CONSERV. ESPORÁD.",
+          "MATERIAIS CONS/DIVERSOS": "MANUT/CONSERV. ESPORÁD.",
+          "AQUISIÇÕES": "MANUT/CONSERV. ESPORÁD.",
+          "AQUISICOES": "MANUT/CONSERV. ESPORÁD.",
+          "SALÁRIOS E ORDENADOS": "PESSOAL",
+          "SALARIOS E ORDENADOS": "PESSOAL",
+          "ENCARGOS SOCIAIS": "ENCARGOS SOCIAIS",
+          "DESPESAS BANCÁRIAS": "ADMINISTRATIVO",
+          "DESPESAS BANCARIAS": "ADMINISTRATIVO",
+          "OPERACIONAIS/ADMINISTRATIVAS": "ADMINISTRATIVO",
+          "REGULARIZAÇÕES CONTABEIS": "ADMINISTRATIVO",
+          "REGULARIZACOES CONTABEIS": "ADMINISTRATIVO",
+          "OBRIGAÇÕES LEGAIS": "ADMINISTRATIVO",
+          "OBRIGACOES LEGAIS": "ADMINISTRATIVO",
+          "DESPESAS JURÍDICAS": "ADMINISTRATIVO",
+          "DESPESAS JURIDICAS": "ADMINISTRATIVO",
+          "PORTAL DE SERVIÇOS": "ADMINISTRATIVO",
+          "PORTAL DE SERVICOS": "ADMINISTRATIVO",
+          "ELEVADORES": "MANUT/CONSERV. CONTRAT."
         }
       }
     },
@@ -89,7 +89,34 @@
       "cor": "#ca8a04",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "SALÁRIOS E ORDENADOS": "PESSOAL",
+          "SALARIOS E ORDENADOS": "PESSOAL",
+          "ENCARGOS TRABALHISTAS": "ENCARGOS SOCIAIS",
+          "TARIFAS PÚBLICAS": "CONSUMOS",
+          "TARIFAS PUBLICAS": "CONSUMOS",
+          "MATERIAIS DE CONSUMO": "CONSUMOS",
+          "MANUTENÇÃO/CONSERVAÇÃO": "MANUT/CONSERV. CONTRAT.",
+          "MANUTENCAO/CONSERVACAO": "MANUT/CONSERV. CONTRAT.",
+          "HONORÁRIOS E EXPEDIENTE": "ADMINISTRATIVO",
+          "HONORARIOS E EXPEDIENTE": "ADMINISTRATIVO",
+          "IMPOSTOS E TAXAS": "ADMINISTRATIVO",
+          "SEGUROS CONTRATADOS": "ADMINISTRATIVO",
+          "SERVIÇOS PRESTADOS": "SERV. TERCEIRIZADOS",
+          "SERVICOS PRESTADOS": "SERV. TERCEIRIZADOS"
+        },
+        "conta_map": {
+          "CONTA ORDINÁRIA": "ORDINÁRIA",
+          "CONTA ORDINARIA": "ORDINÁRIA",
+          "CONTA FUNDO DE RESERVA": "FUNDO DE RESERVA",
+          "CONTA PROVISÃO P/ 13o. SALÁRIO": "PROVISÃO 13º SAL.",
+          "CONTA PROVISAO P/ 13o. SALARIO": "PROVISÃO 13º SAL.",
+          "CONTA APLICAÇÃO /CDB ORDINÁRIA": "CDB ORDINÁRIA",
+          "CONTA APLICACAO /CDB ORDINARIA": "CDB ORDINÁRIA",
+          "CONTA APLICAÇÃO /ITAU VEST": "ITAÚ VEST RESERVA",
+          "CONTA APLICACAO /ITAU VEST": "ITAÚ VEST RESERVA",
+          "CONTA I.P.T.U.": "I.P.T.U."
+        }
       }
     },
     {
@@ -130,7 +157,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -255,7 +285,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -285,7 +318,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -328,7 +364,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -372,7 +411,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -389,7 +431,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -406,7 +451,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {
@@ -440,7 +488,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -470,7 +521,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -487,7 +541,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -504,7 +561,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -521,7 +581,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -551,7 +614,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -568,7 +634,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -585,7 +654,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -602,7 +674,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -619,7 +694,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -675,7 +753,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -692,7 +773,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -709,7 +793,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {
@@ -761,7 +848,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -817,7 +907,10 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
-        "contas_separadas": ["CONSUMO", "I.P.T.U."],
+        "contas_separadas": [
+          "CONSUMO",
+          "I.P.T.U."
+        ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
         "cat_map": {}
@@ -828,13 +921,18 @@
     "empresa_a": {
       "nome": "Empresa A Administradora",
       "adapter": "adapters.empresa_a",
-      "formatos": ["xlsx"],
+      "formatos": [
+        "xlsx"
+      ],
       "descricao": "Formato padrão com abas: Receitas, Despesas, Inadimplência"
     },
     "empresa_b": {
       "nome": "Empresa B Gestão",
       "adapter": "adapters.empresa_b",
-      "formatos": ["xlsx", "pdf"],
+      "formatos": [
+        "xlsx",
+        "pdf"
+      ],
       "descricao": "Planilha unificada com coluna Tipo (R/D) e PDF de resumo"
     }
   }
