@@ -7,8 +7,12 @@ const LOGIN_PATH  = '/login';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rotas sempre liberadas (login + API de autenticação)
-  if (pathname === LOGIN_PATH || pathname.startsWith('/api/auth')) {
+  // Rotas sempre liberadas (login + auth + dashboards públicos)
+  if (
+    pathname === LOGIN_PATH ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/dashboard/')
+  ) {
     return NextResponse.next();
   }
 
