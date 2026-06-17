@@ -13,11 +13,19 @@ export interface ExtractedBAL {
 }
 
 export function extractBAL(htmlFile: string): ExtractedBAL | null {
-  // On Vercel: use pre-generated snapshot (HTML files are not accessible at runtime)
+  // On Vercel or local production (PM2): use pre-generated snapshot
   if (process.env.GITHUB_TOKEN || process.env.VERCEL) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const snapshots = require('../data/snapshots.json');
+      let snapshots: Record<string, ExtractedBAL>;
+      if (process.env.VERCEL) {
+        // Vercel: use bundled snapshot (HTML files not accessible at runtime)
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        snapshots = require('../data/snapshots.json');
+      } else {
+        // Local PM2 production: read fresh from disk so pm2 restart picks up changes
+        const snapshotsPath = path.join(process.cwd(), 'src', 'data', 'snapshots.json');
+        snapshots = JSON.parse(readFileSync(snapshotsPath, 'utf-8'));
+      }
       // Direct lookup
       if (snapshots[htmlFile]) return snapshots[htmlFile] as ExtractedBAL;
       // Fallback: normalize Unicode (NFC/NFD differences between OS)
