@@ -449,10 +449,39 @@ var BAL = {
     banco: {"cc": 798.91, "cdb": 86581.74, "priv": 0.0},
     desp:  [{"c": "SERV. TERCEIRIZADOS", "v": 7125.04}, {"c": "CONSUMOS", "v": 5248.02}, {"c": "ENCARGOS SOCIAIS", "v": 6790.57}, {"c": "MANUT/CONSERV. CONTRAT.", "v": 913.95}, {"c": "MANUT/CONSERV. ESPORÁD.", "v": 8119.35}, {"c": "ADMINISTRATIVO", "v": 4884.39}, {"c": "PESSOAL", "v": 11247.439999999999}]
   },
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINÁRIA',a:0,c:0,d:0,s:0}],prev:0,real:0,tDesp:0,fac:390.27,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]}
+  mai26: {
+    tit: "Maio / 2026",
+    per: "01/05/2026 a 31/05/2026",
+    tAnt:  86788.38,
+    tCred: 63663.07,
+    tDeb:  41328.27,
+    tAtual:109123.18,
+    contas: [{"n": "ORDINÁRIA",                 "a": 798.91,    "c": 39243.92,  "d": -37881.76, "s": 2161.07},
+             {"n": "FUNDO DE RESERVA",                "a": 3816.78,   "c": 1781.08,   "d": 0.00,      "s": 5597.86},
+             {"n": "OBRAS",                           "a": 0.00,      "c": 130.17,    "d": 0.00,      "s": 130.17},
+             {"n": "FUNDO PESSOAL PROV.",              "a": 16624.11,  "c": 3081.84,   "d": -432.51,   "s": 19273.44},
+             {"n": "BENFEITORIAS",                    "a": 45480.74,  "c": 10611.61,  "d": 0.00,      "s": 56092.35},
+             {"n": "ELEVADORES",                      "a": -592.27,   "c": 2977.36,   "d": -3014.00,  "s": -628.91},
+             {"n": "FUNDO RESCISÃO\/INDE.",    "a": 14592.75,  "c": 432.51,    "d": 0.00,      "s": 15025.26},
+             {"n": "IMPERMEABILIZAÇÃO",   "a": 6067.36,   "c": 5404.58,   "d": 0.00,      "s": 11471.94}],
+    prev:  40885.53,
+    real:  39243.92,
+    tDesp: 37881.76,
+    fac:   0.00,
+    inad:  2061.73,
+    inadProc: 0.00,
+    banco: {"cc": 2161.07, "cdb": 107591.02, "priv": 0.0},
+    desp:  [{"c": "PESSOAL",                   "v": 10731.60},
+            {"c": "ENCARGOS SOCIAIS",           "v": 7276.92},
+            {"c": "SERV. TERCEIRIZADOS",        "v": 7125.04},
+            {"c": "CONSUMOS",                   "v": 4684.38},
+            {"c": "ADMINISTRATIVO",             "v": 4915.16},
+            {"c": "MANUT\/CONSERV. CONTRAT.",  "v": 907.43},
+            {"c": "MANUT\/CONSERV. ESPORÁD.", "v": 2241.23}]
+  }],prev:0,real:0,tDesp:0,fac:390.27,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]}
 };
 
-var CONFIG={nome:"Condomínio Monte Tabor",sindica:"Síndico Profissional",administradora:"ALLIZ Administração de Bens e Condomínios",orcamento:{exercicio:"2025/2026",totalAnual:442025.42,meses:{out25:33062.9, nov25:36426.51, dez25:37604.63, jan26:35837.45, fev26:36426.51, mar26:37604.63, abr26:40885.53}}};
+var CONFIG={nome:"Condomínio Monte Tabor",sindica:"Síndico Profissional",administradora:"ALLIZ Administração de Bens e Condomínios",orcamento:{exercicio:"2025/2026",totalAnual:442025.42,meses:{out25:33062.9, nov25:36426.51, dez25:37604.63, jan26:35837.45, fev26:36426.51, mar26:37604.63, abr26:40885.53, mai26:40885.53}}};
 
 var MESES=Object.keys(BAL);
 

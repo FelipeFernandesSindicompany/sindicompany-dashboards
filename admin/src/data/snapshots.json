@@ -575,11 +575,11 @@
     ],
     "data": {
       "tit": "Maio / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": 109123.18,
+      "tCred": 63663.07,
+      "tDeb": 41328.27,
+      "inad": 2061.73,
+      "tAnt": 86788.38
     }
   },
   "Dashboard_Financeiro_NYCBerrini.html": {
