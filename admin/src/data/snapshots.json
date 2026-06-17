@@ -561,8 +561,8 @@
     }
   },
   "Dashboard_Financeiro_Monte_Tabor.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "out25",
       "nov25",
@@ -570,15 +570,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 86788.38,
-      "tCred": 70692.67,
-      "tDeb": 47905.44,
-      "inad": 2061.73,
-      "tAnt": 64001.15
+      "tit": "Maio / 2026",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
+      "inad": 0,
+      "tAnt": 0
     }
   },
   "Dashboard_Financeiro_NYCBerrini.html": {
