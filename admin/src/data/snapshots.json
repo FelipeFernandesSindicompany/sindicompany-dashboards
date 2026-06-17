@@ -109,8 +109,8 @@
     }
   },
   "Dashboard_Financeiro_CapDAntibes.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -124,15 +124,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 425387.52,
-      "tCred": 80249.99,
-      "tDeb": 74530.4,
-      "inad": 48210.66,
-      "tAnt": 419667.93
+      "tit": "Maio / 2026",
+      "tAtual": 441899.86,
+      "tCred": 102744.25,
+      "tDeb": 86231.91,
+      "inad": 49576.69,
+      "tAnt": 425387.52
     }
   },
   "Dashboard_Financeiro_CinqueTerre.html": {
