@@ -409,7 +409,24 @@
         "contas_separadas": ["CONSUMO", "I.P.T.U."],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
-        "cat_map": {}
+        "cat_map": {
+          "IMPOSTOS FEDERAIS": "Impostos/Taxas",
+          "TAXAS": "Impostos/Taxas",
+          "CONSERVAÇÃO/MANUTENÇÃO": "Conserv./Manut.",
+          "CONSERVACAO/MANUTENCAO": "Conserv./Manut.",
+          "MATERIAIS DE CONSUMO": "Materiais",
+          "MATERIAL DE EXPEDIENTE": "Materiais",
+          "DESP. ADMINISTRATIVA": "Honorários/Adm.",
+          "DESP ADMINISTRATIVA": "Honorários/Adm.",
+          "DESPESAS ADMINISTRATIVAS": "Honorários/Adm.",
+          "DESPESAS BANCARIAS": "Desp. Bancárias",
+          "DESPESAS BANCÁRIAS": "Desp. Bancárias",
+          "REPASSE SÍNDICO": "Despesas Diversas",
+          "REPASSE SINDICO": "Despesas Diversas",
+          "SEGUROS": "Despesas Diversas",
+          "DESPESAS DIVS.": "Despesas Diversas",
+          "DESPESAS DIVERSAS": "Despesas Diversas"
+        }
       }
     },
     {
