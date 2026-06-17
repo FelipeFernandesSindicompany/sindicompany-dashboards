@@ -8,34 +8,45 @@ import type { CondominioStatus } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-/** Calcula o mês esperado (2 meses atrás) como chave "mmmAA", ex: "abr26" */
-function getExpectedMonth(): string {
-  const now = new Date();
-  const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  const d = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  return `${abbrs[d.getMonth()]}${String(d.getFullYear()).slice(2)}`;
+const ABBRS  = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+/** Converte chave "mmmAA" em número comparável (ex: "mai26" → 26*12+4 = 316) */
+function monthKeyToNum(key: string): number {
+  const m = ABBRS.indexOf(key.slice(0, 3));
+  const y = parseInt(key.slice(3), 10);
+  return y * 12 + m;
 }
 
-/** Label legível do mês esperado, ex: "Abr/26" */
+/**
+ * Regra: até o dia 14 → mês esperado = 2 meses atrás
+ *        a partir do dia 15 → mês esperado = mês anterior
+ * Prazo para carregar o mês M é o dia 15 do mês M+1.
+ */
+function getMonthsBack(): number {
+  return new Date().getDate() >= 15 ? 1 : 2;
+}
+
+/** Chave do mês esperado, ex: "mai26" */
+function getExpectedMonth(): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - getMonthsBack(), 1);
+  return `${ABBRS[d.getMonth()]}${String(d.getFullYear()).slice(2)}`;
+}
+
+/** Label legível do mês esperado, ex: "Mai/26" */
 function getExpectedMonthLabel(): string {
   const now = new Date();
-  const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  const labels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const d = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  return `${labels[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;
+  const d = new Date(now.getFullYear(), now.getMonth() - getMonthsBack(), 1);
+  return `${LABELS[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;
 }
 
 function buildStatuses(): CondominioStatus[] {
   const condominios = getCondominios();
   const lastImports = getLastImportByCondominio();
 
-  const now = new Date();
-  const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-
-  // Regra de negócio: prestações chegam com 2 meses de defasagem.
-  // Em junho/2026 o mês esperado é abril/2026 → dashboards em abr26 = "Em dia"
-  const expectedDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  const expectedMonth = `${abbrs[expectedDate.getMonth()]}${String(expectedDate.getFullYear()).slice(2)}`;
+  const expectedMonth = getExpectedMonth();
+  const expectedNum   = monthKeyToNum(expectedMonth);
 
   return condominios
     .map(condo => {
@@ -44,7 +55,8 @@ function buildStatuses(): CondominioStatus[] {
 
       let status: CondominioStatus['status'] = 'no_data';
       if (bal) {
-        status = bal.lastKey === expectedMonth ? 'current' : 'pending';
+        // "Em dia" se o dashboard tem dados do mês esperado OU mais recente
+        status = monthKeyToNum(bal.lastKey) >= expectedNum ? 'current' : 'pending';
       }
       if (lastImport?.status === 'error') status = 'error';
 
