@@ -341,7 +341,8 @@ var CONFIG={nome:'Hub Home Club Tatuapé',unidades:'GK Premium',sindica:'Síndic
       jan26:87432.83,
       fev26:87182.83,
       mar26:87182.83,
-      abr26:106817.74,}}};
+      abr26:106817.74,
+      mai26:106817.74,}}};
 
 var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26'];
 var EVO_V=[88705.68, 93952.07, 113596.43, 111631.12, 115864.61, 132129.61, 144610.78, 156221.21, 184555.89, 189651.41, 195528.74, 202183.88, 204793.99, 200799.08];
@@ -555,9 +556,27 @@ var BAL={  abr25:{tit:'Abril / 2025',per:'01/04/2025 a 30/04/2025',
       {c:'MANUT/CONSERV. CONTRAT.',v:14019.90},
       {c:'MANUT/CONSERV. ESPORÁD.',v:38961.77},
       {c:'ADMINISTRATIVO',v:13852.03}]},
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:204793.99,tCred:160432.69,tDeb:162966.92,tAtual:200799.08,contas:[{n:'ORDINÁRIA',a:30882.12,c:100780.05,d:95357.3,s:36304.87},{n:'FUNDO DE RESERVA',a:109764.61,c:4886.27,d:0,s:114650.88},{n:'Tarifas Concessionárias',a:77807.23,c:43360.89,d:50883.21,s:85329.55},{n:'Salão De Festas/Churrasqueira',a:95909.25,c:2442.0,d:12669.0,s:85682.25},{n:'Melhorias/Benfeitorias',a:16668.02,c:5573.65,d:0,s:22241.67},{n:'Provisão Trabalhista',a:3158.04,c:1230.19,d:0,s:4388.23},{n:'MINI MERCADO',a:26374.22,c:1909.64,d:5506.47,s:22777.39},{n:'Despesas Reembolsáveis',a:155.04,c:250.0,d:11.62,s:83.34}],prev:146827.3,real:160432.69,tDesp:162966.92,fac:0,inad:83608.85,inadProc:0,banco:{cc:36304.87,cdb:114650.88,priv:220502.43},desp:[{c:'CONSUMOS',v:51321.64},{c:'SERV. TERCEIRIZADOS',v:42250.46},{c:'MANUT/CONSERV. ESPORÁD.',v:15967.92},{c:'MANUT/CONSERV. CONTRAT.',v:14056.49},{c:'ADMINISTRATIVO',v:13133.75},{c:'DESP. DIVERSAS',v:12680.62},{c:'PESSOAL',v:8049.57},{c:'MINI MERCADO',v:5506.47}]}
+  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',
+    tAnt:204793.99,tCred:160432.69,tDeb:164427.60,tAtual:200799.08,
+    contas:[{n:'ORDINÁRIA',a:30882.12,c:100780.05,d:95357.30,s:36304.87},
+      {n:'FUNDO DE RESERVA',a:109764.61,c:4886.27,d:0.00,s:114650.88},
+      {n:'TARIFAS CONCESS.',a:-77807.23,c:43360.89,d:50883.21,s:-85329.55},
+      {n:'SALÃO DE FESTAS',a:95909.25,c:2442.00,d:12669.00,s:85682.25},
+      {n:'MELHORIAS/BENF.',a:16668.02,c:5573.65,d:0.00,s:22241.67},
+      {n:'PROVISÃO TRAB.',a:3158.04,c:1230.19,d:0.00,s:4388.23},
+      {n:'MINI MERCADO',a:26374.22,c:1909.64,d:5506.47,s:22777.39},
+      {n:'DESP. REEMBOLSÁV.',a:-155.04,c:250.00,d:11.62,s:83.34}],
+    prev:106817.74,real:79800.75,tDesp:95357.30,fac:0.00,
+    inad:83608.85,inadProc:0.00,
+    banco:{cc:36304.87,cdb:114650.88,priv:85682.25},
+    desp:[{c:'PESSOAL',v:8049.57},
+      {c:'SERV. TERCEIRIZADOS',v:42250.46},
+      {c:'CONSUMOS',v:438.43},
+      {c:'MANUT/CONSERV. CONTRAT.',v:14056.49},
+      {c:'MANUT/CONSERV. ESPORÁD.',v:15967.92},
+      {c:'ADMINISTRATIVO',v:13133.75}]}
 };
-var MESES=['abr25', 'mai25', 'jun25', 'jul25', 'ago25', 'set25', 'out25', 'nov25', 'dez25', 'jan26', 'fev26', 'mar26', 'abr26'];
+var MESES=['abr25', 'mai25', 'jun25', 'jul25', 'ago25', 'set25', 'out25', 'nov25', 'dez25', 'jan26', 'fev26', 'mar26', 'abr26', 'mai26'];
 
 function R(n){
   if(n===null||n===undefined||isNaN(n))return'-';
