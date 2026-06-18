@@ -275,6 +275,20 @@
       }
     },
     {
+      "id": "guaratambe",
+      "nome": "Guaratambé",
+      "empresa_gestora": "lfc_xlsx",
+      "pasta_dados": "data/guaratambe",
+      "html_file": "Dashboard_Financeiro_Guaratambe.html",
+      "ativo": true,
+      "cor": "#0f766e",
+      "unidades": 118,
+      "parser_config": {
+        "observacao": "Prestação de contas LFC — injeção via extract_guaratambe.py",
+        "cat_map": {}
+      }
+    },
+    {
       "id": "highlights_dr_nelson_moretti",
       "nome": "Highlights Dr. Nelson Moretti",
       "empresa_gestora": "lirba_pdf",
