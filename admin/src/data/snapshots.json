@@ -455,8 +455,8 @@
     }
   },
   "Dashboard_Financeiro_HubHomeClub_Tatuape.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -470,15 +470,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 204793.99,
-      "tCred": 179081.61,
-      "tDeb": 176471.5,
-      "inad": 74320.63,
-      "tAnt": 202183.88
+      "tit": "Maio / 2026",
+      "tAtual": 200799.08,
+      "tCred": 160432.69,
+      "tDeb": 162966.92,
+      "inad": 83608.85,
+      "tAnt": 204793.99
     }
   },
   "Dashboard_Financeiro_IGloo.html": {
