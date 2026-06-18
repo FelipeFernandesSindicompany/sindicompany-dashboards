@@ -397,7 +397,8 @@ var CONFIG = {
       jan26: 203826.43,
       fev26: 204925.31,
       mar26: 218776.62,
-      abr26: 215227.27
+      abr26: 215227.27,
+      mai26: 216583.80
     }
   }
 };
@@ -763,7 +764,30 @@ var BAL = {
       {c:'MANUT/CONSERV. ESPORÁD.',v:547.90}
     ]
   },
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:5181.53,tCred:175053.4,tDeb:174454.92,tAtual:5780.01,contas:[{n:'ORDINÁRIA',a:221059.27,c:175053.4,d:174454.92,s:-220460.79},{n:'FUNDO DE OBRAS',a:225709.91,c:0,d:0,s:225709.91},{n:'FUNDO DE FUNCIONÁRIOS',a:530.89,c:0,d:0,s:530.89}],prev:175053.4,real:175053.4,tDesp:174454.92,fac:199.01,inad:0,inadProc:0,banco:{cc:5780.01,cdb:0,priv:0},desp:[{c:'CONTRATOS',v:87801.86},{c:'CONSUMOS',v:48701.94},{c:'PESSOAL',v:24285.15},{c:'MANUTENCAO',v:9816.95},{c:'OUTROS',v:3706.23},{c:'IMPOSTOS E TAXAS',v:142.79}]}
+  mai26: {
+    tit: 'Maio / 2026', per: '01/05/2026 a 31/05/2026',
+    tAnt:  5181.53,
+    tCred: 175053.40,
+    tDeb:  174454.92,
+    tAtual:5780.01,
+    contas: [
+      {n:'ORDINÁRIA',              a:-221059.27, c:175053.40, d:174454.92, s:-220460.79},
+      {n:'FUNDO DE OBRAS',         a:225709.91,  c:0.00,      d:0.00,      s:225709.91},
+      {n:'FUNDO DE FUNCIONÁRIOS',  a:530.89,     c:0.00,      d:0.00,      s:530.89}
+    ],
+    prev: 216583.80, real: 165244.33, tDesp: 174454.92, fac: 199.01,
+    inad: 51339.47, inadProc: 0,
+    banco: {cc:1.00, cdb:5779.01, priv:0.00},
+    desp: [
+      {c:'PESSOAL',               v:17600.86},
+      {c:'ENCARGOS SOCIAIS',      v:6684.29},
+      {c:'SERV. TERCEIRIZADOS',   v:87801.86},
+      {c:'CONSUMOS',              v:48701.94},
+      {c:'MANUTENCAO',            v:9816.95},
+      {c:'IMPOSTOS E TAXAS',      v:142.79},
+      {c:'OUTROS',                v:3706.23}
+    ]
+  }
 };
 
 // ════════════════════════════════════════════════════════════════════════════════
