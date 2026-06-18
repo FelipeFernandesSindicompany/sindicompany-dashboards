@@ -404,6 +404,7 @@ var CONFIG = {
       fev26: 88048.91,
       mar26: 85895.05,
       abr26: 62071.22,
+      mai26: 62071.22,
     }
   }
 };
@@ -771,7 +772,37 @@ var BAL = {
       {c:'Honorários/Administrativo', v:8588.03}
     ]
   },
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:67874.61,tCred:115715.93,tDeb:88487.99,tAtual:95102.55,contas:[{n:'ORDINÁRIA',a:-53166.38,c:111190.51,d:88408.09,s:-30383.96},{n:'FUNDO DE RESERVA',a:101117.93,c:3035.59,d:0,s:104153.52},{n:'OBRAS/MELHORIAS',a:-3688.75,c:0,d:0,s:-3688.75},{n:'IMPOSTOS/TAXAS',a:269.84,c:0,d:0,s:269.84},{n:'ESPACO DE FESTAS',a:15726.96,c:343.88,d:79.9,s:15990.94},{n:'FUNDO MANUTENÇÃO',a:23.91,c:0,d:0,s:23.91},{n:'LOCACOES',a:7591.1,c:1145.95,d:0,s:8737.05}],prev:115715.93,real:115715.93,tDesp:88567.89,fac:0,inad:0,inadProc:0,banco:{cc:95102.55,cdb:0,priv:0},desp:[{c:'PESSOAL CONTRATADO',v:30518.07},{c:'Consumos',v:26307.87},{c:'HONORARIOS / ADMINISTRATIVO',v:7731.04},{c:'CONSERV/MANUT/CONTRATOS',v:7149.53},{c:'CONSERVAÇÃO/MANUTENÇÃO',v:6180.0},{c:'PESSOAL PROPRIO',v:4913.04},{c:'Impostos/Taxas',v:2469.93},{c:'SEGUROS',v:2162.19},{c:'Bancárias',v:931.77},{c:'ESPACO DE FESTAS',v:159.8},{c:'Despesas Diversas',v:44.65}]}
+  // ── Maio / 2026 ──────────────────────────────────────────────────────
+  mai26: {
+    tit: 'Maio / 2026', per: '01/05/2026 a 31/05/2026',
+    tAnt:  67874.61,
+    tCred: 115715.93,
+    tDeb:  88487.99,
+    tAtual:95102.55,
+    contas: [
+      {n:'ORDINÁRIA',      a:-53166.38, c:111190.51, d:88408.09, s:-30383.96},
+      {n:'FUNDO DE RESERVA', a:101117.93, c:3035.59,  d:0.00,    s:104153.52},
+      {n:'OBRAS/MELHORIAS',  a:-3688.75,  c:0.00,    d:0.00,    s:-3688.75},
+      {n:'IMPOSTOS/TAXAS',   a:269.84,    c:0.00,    d:0.00,    s:269.84},
+      {n:'ESPACO DE FESTAS', a:15726.96,  c:343.88,  d:79.90,   s:15990.94},
+      {n:'FUNDO MANUTENÇÃO', a:23.91,     c:0.00,    d:0.00,    s:23.91},
+      {n:'LOCACOES',         a:7591.10,   c:1145.95, d:0.00,    s:8737.05}
+    ],
+    prev: 62071.22, real: 111190.51, tDesp: 88408.09, fac: 0.00,
+    inad: 80582.41, inadProc: 32668.24,
+    banco: {cc:95102.55, cdb:0.00, priv:0.00},
+    desp: [
+      {c:'Pessoal/Terceirização',       v:35431.11},
+      {c:'Conserv./Manut. Avulsa',      v:6180.00},
+      {c:'Conserv./Manut. Contratos',   v:7149.53},
+      {c:'Consumos',                    v:26307.87},
+      {c:'Impostos/Taxas',              v:2469.93},
+      {c:'Bancárias',                   v:931.77},
+      {c:'Despesas Diversas',           v:44.65},
+      {c:'Honorários/Administrativo',   v:7731.04},
+      {c:'Seguros',                     v:2162.19}
+    ]
+  }
 };
 
 var MESES = Object.keys(BAL);
