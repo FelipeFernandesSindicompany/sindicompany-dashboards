@@ -585,8 +585,8 @@
     }
   },
   "Dashboard_Financeiro_NYCBerrini.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "mar25",
       "abr25",
@@ -601,15 +601,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 5181.53,
-      "tCred": 185113.33,
-      "tDeb": 186938.69,
-      "inad": 47174.43,
-      "tAnt": 7006.89
+      "tit": "Maio / 2026",
+      "tAtual": 5780.01,
+      "tCred": 175053.4,
+      "tDeb": 174454.92,
+      "inad": 0,
+      "tAnt": 5181.53
     }
   },
   "Dashboard_Financeiro_Onze22.html": {
