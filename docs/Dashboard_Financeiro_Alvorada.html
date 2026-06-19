@@ -333,7 +333,7 @@ var BAL={
 };
 var MESES=Object.keys(BAL);
 
-function R(n){if(n===null||n===undefined||isNaN(n))return'-';var a=Math.abs(n).toFixed(2).split('.');var i=a[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');var s='R$ '+i+','+a[1];return n<0?'('+s+')':s;}
+function R(n){if(n===null||n===undefined||isNaN(n))return'-';var a=Math.abs(n).toFixed(2).split('.');var i=a[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');var s='R$ '+i+','+a[1];return n<0?'-'+s:s;}
 function kpi(l,v,c,s){return '<div class="kc '+c+'"><div class="kl">'+l+'</div><div class="kv">'+v+'</div><div class="ks">'+s+'</div></div>';}
 function gc(m,kw){var f=m.contas.find(function(c){return c.n.indexOf(kw)>=0;});return f?f.s:null;}
 function ab(t){var A={'Janeiro':'Jan','Fevereiro':'Fev','Março':'Mar','Abril':'Abr','Maio':'Mai','Junho':'Jun','Julho':'Jul','Agosto':'Ago','Setembro':'Set','Outubro':'Out','Novembro':'Nov','Dezembro':'Dez'};var p=t.split(' / ');return(A[p[0]]||p[0].substring(0,3))+'/'+p[1].slice(-2);}
@@ -379,8 +379,9 @@ function renderBal(id){
   h+='</table></div></div>';
   h+='<div class="cc"><h3>💸 Despesas – '+m.tit+'</h3><div class="tw"><table>';
   h+='<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participação</th></tr>';
-  m.desp.forEach(function(d){var p=m.tDesp>0?(d.v/m.tDesp*100).toFixed(1):'0.0';h+='<tr><td>'+d.c+'</td><td class="nr">'+R(d.v)+'</td><td class="nr">'+p+'%</td><td style="min-width:120px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';});
-  h+='<tr class="tot"><td>TOTAL DESPESAS ORDINÁRIAS</td><td class="nr">'+R(m.tDesp)+'</td><td colspan="2"></td></tr>';
+  var totDesp=m.desp.reduce(function(s,d){return s+d.v;},0);
+  m.desp.forEach(function(d){var p=totDesp>0?(d.v/totDesp*100).toFixed(1):'0.0';h+='<tr><td>'+d.c+'</td><td class="nr">'+R(d.v)+'</td><td class="nr">'+p+'%</td><td style="min-width:120px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';});
+  h+='<tr class="tot"><td>TOTAL DESPESAS</td><td class="nr">'+R(totDesp)+'</td><td colspan="2"></td></tr>';
   h+='</table></div></div>';
   h+='<div class="cc"><h3>📍 Inadimplência – '+m.tit+'</h3>';
   h+='<div class="kg">';
@@ -395,7 +396,7 @@ function buildDespTbl(){
   var catL=Object.keys(cats);
   var h='<tr><th>Categoria</th>'+MESES.map(function(k){return '<th style="text-align:right">'+ab(BAL[k].tit)+'</th>';}).join('')+'</tr>';
   catL.forEach(function(cat){var vals=MESES.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});if(vals.every(function(v){return v===0;}))return;h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';});
-  h+='<tr class="tot"><td>TOTAL</td>'+MESES.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
+  h+='<tr class="tot"><td>TOTAL</td>'+MESES.map(function(k){var tot=BAL[k].desp.reduce(function(s,d){return s+d.v;},0);return '<td class="nr">'+R(tot)+'</td>';}).join('')+'</tr>';
   document.getElementById('tblDesp').innerHTML=h;
   var sel=document.getElementById('dms');sel.innerHTML='';
   MESES.forEach(function(k){var o=document.createElement('option');o.value=k;o.text=ab(BAL[k].tit);sel.appendChild(o);});
