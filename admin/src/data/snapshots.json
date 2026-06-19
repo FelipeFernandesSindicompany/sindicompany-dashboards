@@ -1,7 +1,7 @@
 {
   "Dashboard_Financeiro_Alvorada.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "mar25",
       "abr25",
@@ -16,15 +16,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 197869.69,
-      "tCred": 90235.74,
-      "tDeb": 69186.3,
-      "inad": 20108.88,
-      "tAnt": 176820.25
+      "tit": "Maio / 2026",
+      "tAtual": 207421.02,
+      "tCred": 85220.41,
+      "tDeb": 75669.08,
+      "inad": 2229.51,
+      "tAnt": 197869.69
     }
   },
   "Dashboard_Financeiro_BarraVivaI_Alegria.html": {
