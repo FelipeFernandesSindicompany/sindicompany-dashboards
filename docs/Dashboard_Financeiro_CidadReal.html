@@ -382,7 +382,7 @@ var CONFIG = {
     meses: {
       abr25: 130000, mai25: 130000, jun25: 130000, jul25: 130000,
       ago25: 130000, set25: 130000, out25: 130000, nov25: 130000,
-      dez25: 130000, jan26: 130000, fev26: 130000
+      dez25: 130000, jan26: 130000, fev26: 130000, mai26: 196883.46
     }
   }
 };
@@ -390,8 +390,8 @@ var CONFIG = {
 // ────────────────────────────────────────────────────────────────────────────
 //  SÉRIE HISTÓRICA — Evolução do saldo total (adicione o novo mês ao final)
 // ────────────────────────────────────────────────────────────────────────────
-var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26'];
-var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86];
+var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mai/26'];
+var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86,459281.32];
 
 // ────────────────────────────────────────────────────────────────────────────
 //  BALANCETES MENSAIS
@@ -756,6 +756,38 @@ var BAL = {
       {c:'Administrativo',      v:12696.32},
       {c:'Consumo',             v:19085.62},
       {c:'Serv. Terceirizados', v:64954.81}
+    ]
+  },
+
+  // ── Maio / 2026 (GK ADM) ───────────────────────────────────────
+  mai26: {
+    tit: 'Maio / 2026', per: '01/05/2026 a 31/05/2026',
+    tAnt: 447874.13, tCred: 123878.87, tDeb: 112471.68, tAtual: 459281.32,
+    contas: [
+      {n:'ORDINÁRIA',                 a:240495.24, c:111971.84, d:112471.68, s:239995.40},
+      {n:'FUNDO DE RESERVA',          a:207378.89, c:7194.65,   d:0,         s:214573.54},
+      {n:'SALÃO DE FESTAS/CHURRASQ.', a:0,         c:656.00,    d:0,         s:656.00},
+      {n:'CRÉDITOS A IDENTIFICAR',    a:0,         c:4056.38,   d:0,         s:4056.38}
+    ],
+    prev: 196883.46, real: 116150.19, tDesp: 112471.68,
+    fac: 0, inad: 80733.27, inadProc: 4187.40,
+    banco: {cc:239995.40, cdb:214573.54, priv:4712.38},
+    rec: [
+      {c:'TX Condomínio',         v:96270.57},
+      {c:'Reemb. Consumo Água',   v:10020.59},
+      {c:'Fundo Reserva',         v:4813.42},
+      {c:'Cotas em Aberto',       v:4319.61},
+      {c:'Churrasqueira/Salão',   v:656.00},
+      {c:'Outras Receitas',       v:70.00}
+    ],
+    desp: [
+      {c:'Serv. Terceirizados',     v:47084.58},
+      {c:'Tarifas Concessionárias', v:20478.76},
+      {c:'Despesas com Pessoal',    v:12455.19},
+      {c:'Administrativo',          v:10783.65},
+      {c:'Manutenção - Contratos',  v:10504.01},
+      {c:'Eventuais - Extras',      v:9952.43},
+      {c:'Despesas Diversas',       v:1213.06}
     ]
   }
 
