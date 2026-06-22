@@ -250,10 +250,31 @@ tr:nth-child(even) td{background:#FAFAFA;}
   #mob-bar{display:none !important;}
   #mob-ov{display:none !important;}
 }
+#cr-login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a0a2e 0%,#3b1a6b 100%);z-index:99999;display:flex;align-items:center;justify-content:center;}
+#cr-login-box{background:#fff;border-radius:14px;padding:44px 40px 36px;width:380px;box-shadow:0 8px 40px rgba(0,0,0,.45);font-family:inherit;}
+#cr-login-box .cr-logo{text-align:center;font-size:13px;letter-spacing:.12em;color:#c026d3;text-transform:uppercase;margin-bottom:10px;}
+#cr-login-box h2{text-align:center;margin:0 0 6px;font-size:20px;color:#1a1a2e;}
+#cr-login-box p{text-align:center;font-size:13px;color:#666;margin:0 0 24px;}
+#cr-login-box input{display:block;width:100%;box-sizing:border-box;padding:11px 14px;margin-bottom:14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;outline:none;}
+#cr-login-box input:focus{border-color:#c026d3;}
+#cr-login-box button{display:block;width:100%;padding:12px;background:#c026d3;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.03em;}
+#cr-login-box button:hover{background:#a21caf;}
+#cr-login-error{color:#c0392b;font-size:13px;text-align:center;margin-top:10px;min-height:18px;}
 </style>
 
 </head>
 <body>
+<div id="cr-login-overlay">
+  <div id="cr-login-box">
+    <div class="cr-logo">Sindicompany</div>
+    <h2>Ciudad Real</h2>
+    <p>Dashboard Financeiro — Acesso Restrito</p>
+    <input type="text" id="cr-user" placeholder="Usuário" autocomplete="username" />
+    <input type="password" id="cr-pass" placeholder="Senha" autocomplete="current-password" />
+    <button onclick="crDoLogin()">Entrar</button>
+    <div id="cr-login-error"></div>
+  </div>
+</div>
 <div id="mob-ov" onclick="mobClose()"></div>
 <div id="mob-bar">
   <button id="mob-bar-btn" onclick="mobToggle()" aria-label="Menu">&#9776;</button>
@@ -1686,6 +1707,24 @@ function buildCharts() {
     var active=document.querySelector('.ni.on');
     var pg=document.getElementById('mob-bar-page');
     if(active&&pg)pg.textContent=active.textContent.trim();
+  });
+})();
+</script>
+<script>
+(function(){
+  var _u='Q2l1ZGFkUmVhbA==', _p='Q2l1ZGFkMjAyNio=';
+  function crHide(){ var o=document.getElementById('cr-login-overlay'); if(o) o.style.display='none'; }
+  if(sessionStorage.getItem('cr_auth')==='1'){ crHide(); }
+  window.crDoLogin = function(){
+    var u=document.getElementById('cr-user').value.trim();
+    var p=document.getElementById('cr-pass').value;
+    var err=document.getElementById('cr-login-error');
+    if(btoa(u)===_u && btoa(p)===_p){
+      sessionStorage.setItem('cr_auth','1'); crHide();
+    } else { err.textContent='Usuário ou senha incorretos.'; }
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ var o=document.getElementById('cr-login-overlay'); if(o && o.style.display!=='none') crDoLogin(); }
   });
 })();
 </script>
