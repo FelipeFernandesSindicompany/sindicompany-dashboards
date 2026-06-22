@@ -215,11 +215,11 @@
     ],
     "data": {
       "tit": "Maio / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
+      "tAtual": 1824021.84,
+      "tCred": 948982.23,
+      "tDeb": 1077136.2,
       "inad": 0,
-      "tAnt": 0
+      "tAnt": 1952175.81
     }
   },
   "Dashboard_Financeiro_Cores.html": {
@@ -251,8 +251,8 @@
     }
   },
   "Dashboard_Financeiro_EloElo.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -265,15 +265,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 776870.12,
-      "tCred": 298374.31,
-      "tDeb": 260019.16,
-      "inad": 49082.23,
-      "tAnt": 738514.97
+      "tit": "Maio / 2026",
+      "tAtual": 794930.26,
+      "tCred": 261382.46,
+      "tDeb": 248857.51,
+      "inad": 55368.51,
+      "tAnt": 782405.31
     }
   },
   "Dashboard_Financeiro_FITRioBonito.html": {
