@@ -85,7 +85,18 @@ tr:nth-child(even) td{background:#FAFAFA;}
   .g2{grid-template-columns:1fr;}
 }
 </style>
-
+<style>
+#ct-login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#171B2E 0%,#2B3155 100%);z-index:99999;display:flex;align-items:center;justify-content:center;}
+#ct-login-box{background:#fff;border-radius:14px;padding:44px 40px 36px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.45);text-align:center;}
+#ct-login-box .ct-logo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#2B3155;margin-bottom:6px;}
+#ct-login-box h2{font-size:20px;font-weight:700;color:#171B2E;margin-bottom:4px;}
+#ct-login-box p{font-size:12px;color:#888;margin-bottom:28px;}
+#ct-login-box input{width:100%;padding:11px 14px;border:1.5px solid #dde1f0;border-radius:8px;font-size:14px;color:#2C2C2C;margin-bottom:12px;outline:none;transition:border-color .2s;}
+#ct-login-box input:focus{border-color:#2B3155;}
+#ct-login-box button{width:100%;padding:12px;background:#E87722;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;margin-top:4px;}
+#ct-login-box button:hover{opacity:.88;}
+#ct-login-error{color:#C0392B;font-size:12px;margin-top:8px;min-height:18px;}
+</style>
 <style id="mob-css">
 /* ═══════════════════════════════════════════════════
    RESPONSIVO v2 — iOS · Android · Windows · Mac
@@ -254,6 +265,17 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 </head>
 <body>
+<div id="ct-login-overlay">
+  <div id="ct-login-box">
+    <div class="ct-logo">Sindicompany</div>
+    <h2>Cinque Terre Residenza</h2>
+    <p>Dashboard Financeiro — Acesso Restrito</p>
+    <input type="text" id="ct-user" placeholder="Usuário" autocomplete="username" />
+    <input type="password" id="ct-pass" placeholder="Senha" autocomplete="current-password" />
+    <button onclick="ctDoLogin()">Entrar</button>
+    <div id="ct-login-error"></div>
+  </div>
+</div>
 <div id="mob-ov" onclick="mobClose()"></div>
 <div id="mob-bar">
   <button id="mob-bar-btn" onclick="mobToggle()" aria-label="Menu">&#9776;</button>
@@ -1783,5 +1805,32 @@ function buildCharts() {
 })();
 </script>
 
+<script>
+(function(){
+  var _u='Q2lucXVlVGVycmU=', _p='Q2lucXVlMjAyNio=';
+  function ctShow(){ var o=document.getElementById('ct-login-overlay'); if(o) o.style.display='none'; }
+  function ctHide(){ var o=document.getElementById('ct-login-overlay'); if(o) o.style.display='flex'; }
+  if(sessionStorage.getItem('ct_auth')==='1'){ ctShow(); }
+  window.ctDoLogin = function(){
+    var u=document.getElementById('ct-user').value.trim();
+    var p=document.getElementById('ct-pass').value;
+    var err=document.getElementById('ct-login-error');
+    if(btoa(u)===_u && btoa(p)===_p){
+      sessionStorage.setItem('ct_auth','1');
+      ctShow();
+    } else {
+      err.textContent='Usuário ou senha incorretos.';
+      document.getElementById('ct-pass').value='';
+      document.getElementById('ct-pass').focus();
+    }
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      var o=document.getElementById('ct-login-overlay');
+      if(o && o.style.display!=='none') ctDoLogin();
+    }
+  });
+})();
+</script>
 </body>
 </html>
