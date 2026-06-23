@@ -648,7 +648,35 @@ var BAL = {
       {c:'OBRAS/MELHORIAS', v:2420.80},
     ]
   },
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINARIA',a:0,c:0,d:0,s:0}],prev:0,real:0,tDesp:0,fac:434.96,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]}
+  // ── Maio / 2026 ──────────────────────────────────────────────────────────
+  mai26: {
+    tit: 'Maio / 2026', per: '01/05/2026 a 31/05/2026',
+    tAnt:  210899.20,
+    tCred: 186495.76,
+    tDeb:  189632.31,
+    tAtual:207762.65,
+    contas: [
+      {n:'ORDINARIA',                     a:83309.34,  c:156513.37, d:189632.31, s:50190.40},
+      {n:'MELHORIAS',                     a:24932.72,  c:3145.88,   d:0.00,      s:28078.60},
+      {n:'IMPOSTO PREDIAL',               a:-271.13,   c:0.00,      d:0.00,      s:-271.13},
+      {n:'FUNDO DE RESERVA',              a:25517.05,  c:6418.72,   d:0.00,      s:31935.77},
+      {n:'PROJETO SEGURANCA',             a:66356.67,  c:14675.12,  d:0.00,      s:81031.79},
+      {n:'CONSUMO ENERGIA ELETRICA',      a:-2293.45,  c:2792.67,   d:0.00,      s:499.22},
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA',a:13348.00,  c:2950.00,   d:0.00,      s:16298.00},
+    ],
+    prev: 134420.69, real: 156513.37, tDesp: 189632.31, fac: 0.00,
+    inad: 29303.41, inadProc: 0.00,
+    banco: {cc: 130350.50, cdb: 77412.15, priv: 0.00},
+    desp: [
+      {c:'PESSOAL',               v:110354.36},
+      {c:'CONSUMOS',              v:30231.10},
+      {c:'CONTRATOS/MANUT.',      v:32020.95},
+      {c:'SEGUROS',               v:4419.22},
+      {c:'MATERIAIS/SUPRIMENTOS', v:7096.82},
+      {c:'DESP. OPERACIONAIS',    v:1802.36},
+      {c:'OBRAS/MELHORIAS',       v:3707.50},
+    ]
+  }
 };
 
 var CONFIG = {
@@ -669,12 +697,13 @@ var CONFIG = {
       jan26: 134420.69,
       fev26: 134420.69,
       mar26: 134420.69,
-      abr26: 134420.69
+      abr26: 134420.69,
+      mai26: 134420.69
     }
   }
 };
 
-var CONFIG={nome:"Highlights Dr. Nelson Moretti",sindica:"Síndico Profissional",administradora:"Habita",orcamento:{exercicio:"2025/2026",totalAnual:1478627.59,meses:{jun25:134420.69,jul25:134420.69,ago25:134420.69,set25:134420.69,out25:134420.69,nov25:134420.69,dez25:134420.69,jan26:134420.69,fev26:134420.69,mar26:134420.69,abr26:134420.69}}};
+var CONFIG={nome:"Highlights Dr. Nelson Moretti",sindica:"Síndico Profissional",administradora:"Habita",orcamento:{exercicio:"2025/2026",totalAnual:1478627.59,meses:{jun25:134420.69,jul25:134420.69,ago25:134420.69,set25:134420.69,out25:134420.69,nov25:134420.69,dez25:134420.69,jan26:134420.69,fev26:134420.69,mar26:134420.69,abr26:134420.69,mai26:134420.69}}};
 
 var MESES=Object.keys(BAL);
 
