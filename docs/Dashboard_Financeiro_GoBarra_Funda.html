@@ -415,7 +415,8 @@ var CONFIG = {
       jan26: 60965.50,
       fev26: 60965.50,
       mar26: 60965.50,
-      abr26: 60965.50
+      abr26: 60965.50,
+      mai26: 60965.50
     }
   }
 };
@@ -845,7 +846,38 @@ var BAL = {
       {c:'SEGUROS',           v:2486.13}
     ]
   },
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:35324.63,tCred:91780.95,tDeb:112277.0,tAtual:14828.58,contas:[{n:'ORDINARIA',a:-55831.49,c:69060.02,d:91335.65,s:-78107.12},{n:'FUNDO DE RESERVA',a:71961.13,c:3452.68,d:0,s:75413.81},{n:'OBRAS/MELHORIAS',a:-6267.66,c:0,d:0,s:-6267.66},{n:'IMPOSTOS/TAXAS',a:4618.98,c:0,d:0,s:4618.98},{n:'ESPACO DE FESTAS',a:7739.68,c:0,d:0,s:7739.68},{n:'CONSUMOS',a:-2349.13,c:18223.8,d:20941.35,s:-5066.68},{n:'LOCACOES',a:14871.79,c:1044.45,d:0,s:15916.24},{n:'FUNDO DE BENFEITORIAS',a:581.33,c:0,d:0,s:581.33}],prev:91780.95,real:91780.95,tDesp:133218.35,fac:0,inad:0,inadProc:0,banco:{cc:14828.58,cdb:0,priv:0},desp:[{c:'CONSUMOS',v:42402.17},{c:'CONSERVAÇÃO/MANUTENÇÃO',v:22020.21},{c:'PESSOAL',v:22012.73},{c:'HONORARIOS / ADMINISTRATIVO',v:12400.57},{c:'PESSOAL CONTRATADO',v:10171.33},{c:'IMPOSTOS/TAXAS',v:8605.22},{c:'CONSERV/MANUT/CONTRATOS',v:6650.85},{c:'PESSOAL PROPRIO',v:5972.14},{c:'SEGUROS',v:2512.98},{c:'BANCÁRIAS',v:425.5},{c:'DESPESAS DIVERSAS',v:44.65}]}
+  // ── Maio / 2026 ──────────────────────────────────────────────────────────
+  mai26: {
+    tit: 'Maio / 2026', per: '01/05/2026 a 31/05/2026',
+    tAnt:  35324.63,
+    tCred: 91780.95,
+    tDeb:  112277.00,
+    tAtual:14828.58,
+    contas: [
+      {n:'ORDINARIA',             a:-55831.49, c:69060.02,  d:91335.65,  s:-78107.12},
+      {n:'FUNDO DE RESERVA',      a:71961.13,  c:3452.68,   d:0.00,      s:75413.81},
+      {n:'OBRAS/MELHORIAS',       a:-6267.66,  c:0.00,      d:0.00,      s:-6267.66},
+      {n:'IMPOSTOS/TAXAS',        a:4618.98,   c:0.00,      d:0.00,      s:4618.98},
+      {n:'ESPACO DE FESTAS',      a:7739.68,   c:0.00,      d:0.00,      s:7739.68},
+      {n:'CONSUMOS',              a:-2349.13,  c:18223.80,  d:20941.35,  s:-5066.68},
+      {n:'LOCACOES',              a:14871.79,  c:1044.45,   d:0.00,      s:15916.24},
+      {n:'FUNDO DE BENFEITORIAS', a:581.33,    c:0.00,      d:0.00,      s:581.33}
+    ],
+    prev: 60965.50, real: 69060.02, tDesp: 91335.65, fac: 0.00,
+    inad: 16043.82, inadProc: 2543.40,
+    banco: {cc: 14828.58, cdb: 0.00, priv: 0.00},
+    desp: [
+      {c:'PESSOAL',           v:38156.20},
+      {c:'CONSERV. ESPORÁD.', v:22020.21},
+      {c:'CONSERV. CONTRAT.', v:6650.85},
+      {c:'CONSUMOS',          v:519.47},
+      {c:'IMPOSTOS/TAXAS',    v:8605.22},
+      {c:'BANCÁRIAS',         v:425.50},
+      {c:'DESP. DIVERSAS',    v:44.65},
+      {c:'HONORÁRIOS/ADM',    v:12400.57},
+      {c:'SEGUROS',           v:2512.98}
+    ]
+  }
 };
 
 // ════════════════════════════════════════════════════════════════════════════════
