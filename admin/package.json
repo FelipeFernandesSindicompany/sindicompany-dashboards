@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3500 --hostname 0.0.0.0",
-    "build": "node scripts/generate-snapshots.mjs && next build",
+    "build": "next build",
     "start": "next start --port 3500 --hostname 0.0.0.0"
   },
   "dependencies": {

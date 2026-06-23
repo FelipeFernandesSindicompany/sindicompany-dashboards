@@ -1,0 +1,19 @@
+# Dependencias Node (nao enviar para Vercel)
+admin/node_modules
+admin/.next
+admin/tsconfig.tsbuildinfo
+admin/start-dev.cmd
+admin/*.log
+
+# Scripts internos / ferramentas locais
+scripts/
+output/
+
+# Arquivos binarios e logs
+*.log
+*.xlsx
+*.xls
+*.pdf
+*.PDF
+*.webp
+*.png
