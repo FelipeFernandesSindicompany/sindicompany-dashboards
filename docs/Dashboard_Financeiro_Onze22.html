@@ -731,14 +731,13 @@ function buildInad(){
 }
 
 function buildBanco(){
-  var h='<tr><th>M\u00eas</th><th>Conta Ordin\u00e1ria</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>M\u00eas</th><th>C/C Ita\u00fa</th><th>Demais Fundos</th><th>Total</th></tr>';
   MESES.forEach(function(k){
     var m=BAL[k];
     var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
     var pvCls=m.banco.priv<0?' style="color:var(--r)"':'';
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
     h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
     h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
     h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
   });
