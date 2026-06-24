@@ -775,11 +775,11 @@
     ],
     "data": {
       "tit": "Maio / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": 313198.21,
+      "tCred": 74033.88,
+      "tDeb": 66906.89,
+      "inad": 127123.94,
+      "tAnt": 306071.22
     }
   },
   "Dashboard_Financeiro_Patricia.html": {
