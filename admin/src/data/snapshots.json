@@ -575,8 +575,8 @@
     }
   },
   "Dashboard_Financeiro_MaisonDuRhone.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -589,15 +589,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 344053.66,
-      "tCred": 89141.43,
-      "tDeb": 72690.8,
-      "inad": 5000,
-      "tAnt": 327603.03
+      "tit": "Maio / 2026",
+      "tAtual": 366582.7,
+      "tCred": 93441.33,
+      "tDeb": 70912.29,
+      "inad": 0,
+      "tAnt": 344053.66
     }
   },
   "Dashboard_Financeiro_Monte_Tabor.html": {
