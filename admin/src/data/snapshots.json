@@ -919,8 +919,8 @@
     }
   },
   "Dashboard_Financeiro_PortSaintTropez.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -934,15 +934,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 267555.66,
-      "tCred": 103858.97,
-      "tDeb": 78805.44,
-      "inad": 129761.35,
-      "tAnt": 242502.13
+      "tit": "Maio / 2026",
+      "tAtual": 273523.75,
+      "tCred": 103161.22,
+      "tDeb": 97193.13,
+      "inad": 158209.35,
+      "tAnt": 267555.66
     }
   },
   "Dashboard_Financeiro_PracaSaude_Comercial.html": {
