@@ -863,8 +863,8 @@
     }
   },
   "Dashboard_Financeiro_PlanoRioBonito.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -878,15 +878,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 184405.41,
-      "tCred": 165835.47,
-      "tDeb": 166341.86,
-      "inad": 61690.53,
-      "tAnt": 184911.8
+      "tit": "Maio / 2026",
+      "tAtual": 166148,
+      "tCred": 160293.6,
+      "tDeb": 178551.01,
+      "inad": 10417.7,
+      "tAnt": 184405.41
     }
   },
   "Dashboard_Financeiro_Platinum.html": {
