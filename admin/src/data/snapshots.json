@@ -836,8 +836,8 @@
     }
   },
   "Dashboard_Financeiro_PlanoMooca.html": {
-    "lastKey": "fev26",
-    "lastMonth": "Fev/26",
+    "lastKey": "mar26",
+    "lastMonth": "Mar/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -849,15 +849,16 @@
       "nov25",
       "dez25",
       "jan26",
-      "fev26"
+      "fev26",
+      "mar26"
     ],
     "data": {
-      "tit": "Fevereiro / 2026",
-      "tAtual": 485800.25,
-      "tCred": 157798.92,
-      "tDeb": 166769.77,
-      "inad": 76416.21,
-      "tAnt": 494771.1
+      "tit": "Março / 2026",
+      "tAtual": 478912.22,
+      "tCred": 177833.82,
+      "tDeb": 184721.85,
+      "inad": 116016.8,
+      "tAnt": 485800.25
     }
   },
   "Dashboard_Financeiro_PlanoRioBonito.html": {
