@@ -1228,14 +1228,13 @@ function buildTblInad() {
 }
 
 function buildTblBanco() {
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Privilege (Fachada)</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Total</th></tr>';
   MESES.forEach(function(k) {
     var m = BAL[k];
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
     h += '<tr><td class="bd">' + lbl + '</td>';
     h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
     h += '<td class="nr">' + (m.banco.cdb !== null ? R(m.banco.cdb) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
-    h += '<td class="nr">' + R(m.banco.priv) + '</td>';
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
   });
   document.getElementById('tblBanco').innerHTML = h;
@@ -1634,7 +1633,7 @@ function buildCharts() {
           borderSkipped: false
         },
         {
-          label: 'Apl. Privilege',
+          label: 'Apl. CDB',
           data: bancoMeses.map(function(k){ return BAL[k].banco.cdb; }),
           backgroundColor: 'rgba(232,119,34,0.82)',
           borderColor: '#C05A10',
