@@ -379,12 +379,15 @@ var CONFIG = {
       dez25: 22671.53,
       jan26: 22821.53,
       fev26: 37149.50,
+      mar26: 26664.01,
+      abr26: 26877.82,
+      mai26: 27284.29,
     }
   }
 };
 
 var EVO_L = ['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26'];
-var EVO_V = [6997.61, 7385.11, 1088.43, 4983.36, 8347.98, 2571.13, 1310.8, 8952.43, 13919.45, 17109.97, 22229.99, 0.0, 0.0, 0.0];
+var EVO_V = [6997.61, 7385.11, 1088.43, 4983.36, 8347.98, 2571.13, 1310.8, 8952.43, 13919.45, 17109.97, 22229.99, 24624.47, 30683.16, 32896.97];
 
 var BAL = {
 
@@ -684,9 +687,9 @@ var BAL = {
       {c:'DESPESA FINANCEIRA', v:1643.42}
     ]
   },
-  mar26:{tit:'Março / 2026',per:'01/03/2026 a 31/03/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINÁRIA',a:0,c:0,d:0,s:0}],prev:0,real:0,tDesp:0,fac:0,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]},
-  abr26:{tit:'Abril / 2026',per:'01/04/2026 a 30/04/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINÁRIA',a:0,c:0,d:0,s:0}],prev:0,real:0,tDesp:0,fac:0,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]},
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINÁRIA',a:0,c:0,d:0,s:0}],prev:0,real:0,tDesp:0,fac:1.57,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]}
+  mar26:{tit:'Março / 2026',per:'01/03/2026 a 31/03/2026',tAnt:22229.99,tCred:26664.01,tDeb:24269.53,tAtual:24624.47,contas:[{n:'CONTA CORRENTE (Banco Inter)',a:145.78,c:0,d:0,s:672.37},{n:'APLICAÇÃO F. RESERVA',a:22084.21,c:0,d:0,s:23952.10}],prev:26664.01,real:26664.01,tDesp:24269.53,fac:0,inad:0,inadProc:0,banco:{cc:672.37,cdb:23952.10,priv:0},desp:[{c:'MANUTENÇÃO',v:5440.58},{c:'ADMINISTRATIVO',v:10068.89},{c:'CONSUMOS',v:1880.62},{c:'TARIFAS E IMPOSTOS',v:2806.46},{c:'CONTRATOS',v:4072.98}]},
+  abr26:{tit:'Abril / 2026',per:'01/04/2026 a 30/04/2026',tAnt:24624.47,tCred:26877.82,tDeb:20819.13,tAtual:30683.16,contas:[{n:'CONTA CORRENTE (Banco Inter)',a:672.37,c:0,d:0,s:18644.33},{n:'APLICAÇÃO F. RESERVA',a:23952.10,c:0,d:0,s:12038.83}],prev:26877.82,real:26877.82,tDesp:20819.13,fac:0,inad:0,inadProc:0,banco:{cc:18644.33,cdb:12038.83,priv:0},desp:[{c:'MANUTENÇÃO',v:4169.70},{c:'ADMINISTRATIVO',v:9344.00},{c:'CONSUMOS',v:1788.84},{c:'TARIFAS E IMPOSTOS',v:1121.71},{c:'CONTRATOS',v:4394.88}]},
+  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:30683.16,tCred:27284.29,tDeb:25070.48,tAtual:32896.97,contas:[{n:'CONTA CORRENTE (Banco Inter)',a:18644.33,c:0,d:0,s:20728.92},{n:'APLICAÇÃO F. RESERVA',a:12038.83,c:0,d:0,s:12168.05}],prev:27284.29,real:27284.29,tDesp:25070.48,fac:0,inad:0,inadProc:0,banco:{cc:20728.92,cdb:12168.05,priv:0},desp:[{c:'MANUTENÇÃO',v:5693.13},{c:'ADMINISTRATIVO',v:11481.74},{c:'CONSUMOS',v:2060.55},{c:'TARIFAS E IMPOSTOS',v:1387.98},{c:'CONTRATOS',v:4447.08}]}
 };
 
 var MESES = Object.keys(BAL);
