@@ -1001,8 +1001,8 @@
     }
   },
   "Dashboard_Financeiro_ReservaVerde.html": {
-    "lastKey": "mar26",
-    "lastMonth": "Mar/26",
+    "lastKey": "abr26",
+    "lastMonth": "Abr/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1015,10 +1015,11 @@
       "dez25",
       "jan26",
       "fev26",
-      "mar26"
+      "mar26",
+      "abr26"
     ],
     "data": {
-      "tit": "Março / 2026",
+      "tit": "Abril / 2026",
       "tAtual": 0,
       "tCred": 0,
       "tDeb": 0,
