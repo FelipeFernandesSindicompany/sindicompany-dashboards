@@ -1291,8 +1291,8 @@
     }
   },
   "Dashboard_Financeiro_VillaSardenha.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1306,15 +1306,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 37520.4,
-      "tCred": 92024.09,
-      "tDeb": 128296.65,
-      "inad": 57561.47,
-      "tAnt": 73792.96
+      "tit": "Maio / 2026",
+      "tAtual": 973.54,
+      "tCred": 97029.06,
+      "tDeb": 133575.92,
+      "inad": 58039.7,
+      "tAnt": 37520.4
     }
   },
   "Dashboard_Financeiro_VistaVerde.html": {
