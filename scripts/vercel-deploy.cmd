@@ -15,4 +15,8 @@ echo Fazendo deploy Vercel (aguarde ~60s)...
 vercel deploy --prod --yes
 
 echo.
+echo Reiniciando PM2 local (sincroniza com Vercel)...
+pm2 restart dashboard-admin --silent 2>nul || pm2 start "%REPO_ROOT%\admin\ecosystem.config.js" 2>nul
+
+echo.
 echo Concluido! https://sindicompany-dashboards.vercel.app

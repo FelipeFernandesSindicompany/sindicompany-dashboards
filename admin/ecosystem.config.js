@@ -1,42 +1,12 @@
-const path = require('path');
-
 module.exports = {
-  apps: [
-    /* ── Next.js Admin (porta 3500) ─────────────────────────────── */
-    {
-      name: 'sindicompany-admin',
-      script: 'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
-      // Modo desenvolvimento: hot-reload, não precisa de build prévio
-      args: 'run dev',
-      cwd: path.resolve(__dirname),
-      watch: false,
-      autorestart: true,
-      max_restarts: 10,
-      env: {
-        NODE_ENV: 'development',
-        PATH: 'C:\\Program Files\\nodejs;' + process.env.PATH,
-      },
-      error_file: path.resolve(__dirname, '..', 'data', 'logs', 'admin-error.log'),
-      out_file:   path.resolve(__dirname, '..', 'data', 'logs', 'admin-out.log'),
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-    },
-
-    /* ── Cloudflare Tunnel (URL pública) ────────────────────────── */
-    {
-      name: 'sindicompany-tunnel',
-      script: path.resolve(__dirname, '..', 'scripts', 'start-tunnel.js'),
-      cwd: path.resolve(__dirname, '..'),
-      watch: false,
-      autorestart: true,
-      max_restarts: 20,
-      restart_delay: 5000,
-      env: {
-        PATH: 'C:\\Program Files\\nodejs;' + process.env.PATH,
-        NODE_ENV: 'production',
-      },
-      error_file: path.resolve(__dirname, '..', 'data', 'logs', 'tunnel-error.log'),
-      out_file:   path.resolve(__dirname, '..', 'data', 'logs', 'tunnel-out.log'),
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-    },
-  ],
-};
+  apps: [{
+    name: 'dashboard-admin',
+    script: 'node_modules/next/dist/bin/next',
+    args: 'start -p 3500 -H 0.0.0.0',
+    cwd: 'C:\\Users\\MF PRINTER\\OneDrive - Perfil de E-mail\\Área de Trabalho\\Projeto Automatização Dashboard\\admin',
+    interpreter: 'node',
+    env: {
+      SINDICOMPANY_PM2: '1'
+    }
+  }]
+}

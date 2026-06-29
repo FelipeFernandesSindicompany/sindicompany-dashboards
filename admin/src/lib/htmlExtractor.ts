@@ -14,7 +14,7 @@ export interface ExtractedBAL {
 
 export function extractBAL(htmlFile: string): ExtractedBAL | null {
   // On Vercel or local production (PM2): use pre-generated snapshot
-  if (process.env.GITHUB_TOKEN || process.env.VERCEL) {
+  if (process.env.GITHUB_TOKEN || process.env.VERCEL || process.env.SINDICOMPANY_PM2) {
     try {
       let snapshots: Record<string, ExtractedBAL>;
       if (process.env.VERCEL) {
