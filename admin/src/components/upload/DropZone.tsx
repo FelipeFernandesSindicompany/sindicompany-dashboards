@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { Upload, FileText, FileSpreadsheet, X, CheckCircle2, AlertCircle, Loader2, ChevronDown, Send, RefreshCw } from 'lucide-react';
 import type { DetectedFile, Condominio } from '@/lib/types';
 
@@ -55,10 +55,29 @@ interface FileItemProps {
   onProcess: (file: DetectedFile, force?: boolean) => void;
 }
 
+function fmtElapsed(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m > 0 ? `${m}m ${String(sec).padStart(2,'0')}s` : `${sec}s`;
+}
+
 function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItemProps) {
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (file.status === 'processing') {
+      setElapsedSec(0);
+      timerRef.current = setInterval(() => setElapsedSec(s => s + 1), 1000);
+    } else {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [file.status]);
+
   const condoOk = !!file.detectedCondominioId;
   const mesOk = !!file.detectedMes;
-  const ready = condoOk && mesOk && file.status !== 'processing' && file.status !== 'done' && file.status !== 'month_exists';
+  const ready = condoOk && mesOk && file.status !== 'processing' && file.status !== 'done' && file.status !== 'month_exists' && file.status !== 'error';
 
   return (
     <div className={`card p-4 animate-slide-up transition-all duration-200
@@ -143,7 +162,7 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {file.status === 'done' && (
                 <span className="flex items-center gap-1 text-[11px] text-success font-medium">
-                  <CheckCircle2 size={12} /> Injetado com sucesso
+                  <CheckCircle2 size={12} /> Dados inseridos com sucesso!
                 </span>
               )}
               {file.status === 'error' && (
@@ -158,7 +177,12 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
               )}
               {file.status === 'processing' && (
                 <span className="flex items-center gap-1 text-[11px] text-accent font-medium">
-                  <Loader2 size={12} className="animate-spin" /> Processando... (pode levar 1-3 min)
+                  <Loader2 size={12} className="animate-spin" />
+                  {elapsedSec < 30
+                    ? `Processando... (${fmtElapsed(elapsedSec)})`
+                    : elapsedSec < 120
+                    ? `Ainda processando... ${fmtElapsed(elapsedSec)}`
+                    : `Processando há ${fmtElapsed(elapsedSec)} — aguarde`}
                 </span>
               )}
               {(file.status === 'ready' || file.status === 'detected') && !condoOk && (
@@ -174,6 +198,12 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
                 <button onClick={() => onProcess(file)} className="btn-primary text-[12px] px-3 py-1.5">
                   <Send size={12} />
                   Injetar
+                </button>
+              )}
+              {file.status === 'error' && (
+                <button onClick={() => onProcess(file)} className="btn-secondary text-[12px] px-3 py-1.5">
+                  <RefreshCw size={12} />
+                  Tentar novamente
                 </button>
               )}
               {file.status === 'month_exists' && (
@@ -386,11 +416,23 @@ export function DropZone({ condominios, onImportDone }: Props) {
 
   // Polling para modo local (PM2/ngrok) — /api/process/local-status?jobId=...
   const pollLocalJob = useCallback(async (fileId: string, jobId: string) => {
-    const maxAttempts = 144; // 144 × 5s = 12 min (PDFs grandes podem demorar)
+    const maxAttempts = 60; // 60 × 5s = 5 min
+    let errorsInARow = 0;
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 5000));
       try {
         const res = await fetch(`/api/process/local-status?jobId=${jobId}`);
+        if (!res.ok) {
+          errorsInARow++;
+          if (errorsInARow >= 4) {
+            setFiles(prev => prev.map(f =>
+              f.id === fileId ? { ...f, status: 'error' as const, error: `Servidor não respondeu (HTTP ${res.status}). Clique em "Tentar novamente".` } : f
+            ));
+            return;
+          }
+          continue;
+        }
+        errorsInARow = 0;
         const data = await res.json();
         if (data.done) {
           if (!data.success && data.monthExists) {
@@ -407,10 +449,18 @@ export function DropZone({ condominios, onImportDone }: Props) {
           if (data.success && onImportDone) onImportDone();
           return;
         }
-      } catch {}
+      } catch {
+        errorsInARow++;
+        if (errorsInARow >= 4) {
+          setFiles(prev => prev.map(f =>
+            f.id === fileId ? { ...f, status: 'error' as const, error: 'Sem conexão com o servidor. Verifique se o serviço está rodando e clique em "Tentar novamente".' } : f
+          ));
+          return;
+        }
+      }
     }
     setFiles(prev => prev.map(f =>
-      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado aguardando processamento' } : f
+      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado (5 min). Clique em "Tentar novamente".' } : f
     ));
   }, [onImportDone]);
 
