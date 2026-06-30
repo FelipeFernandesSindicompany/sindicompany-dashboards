@@ -1030,8 +1030,8 @@
     }
   },
   "Dashboard_Financeiro_ResidencialNapoleao.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1045,15 +1045,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 57993.23,
-      "tCred": 67576.1,
-      "tDeb": 66597.9,
+      "tit": "Maio / 2026",
+      "tAtual": 55857.12,
+      "tCred": 61576.76,
+      "tDeb": 63712.87,
       "inad": 0,
-      "tAnt": 57015.03
+      "tAnt": 57993.23
     }
   },
   "Dashboard_Financeiro_SaintAfonso.html": {
