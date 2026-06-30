@@ -391,7 +391,7 @@ var CONFIG = {
     meses: {
       mai25: 44364.35, jun25: 44364.35, jul25: 44364.35, ago25: 44364.35,
       set25: 44364.35, out25: 44364.35, nov25: 44364.35, dez25: 44364.35,
-      jan26: 44700.00, fev26: 44700.00, mar26: 44700.00
+      jan26: 44700.00, fev26: 44700.00, mar26: 44700.00, abr26: 44700.00, mai26: 44700.00
     }
   }
 };
@@ -399,8 +399,8 @@ var CONFIG = {
 // ────────────────────────────────────────────────────────────────────────────
 //  SÉRIE HISTÓRICA — Evolução do saldo total (adicione o novo mês ao final)
 // ────────────────────────────────────────────────────────────────────────────
-var EVO_L = ['Jul/25', 'Nov/25', 'Abr/26', 'Mai/26'];
-var EVO_V = [2213.32, 2664.78, 0.0, 0.0];
+var EVO_L = ['Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26'];
+var EVO_V = [-7137.63,-7773.5,2213.32,-559.26,-5251.19,-7789.7,2664.78,-7334.29,-4832.91,-3826.99,-6488.75,-7777.52,-7635.53];
 
 // ────────────────────────────────────────────────────────────────────────────
 //  BALANCETES MENSAIS
@@ -474,8 +474,8 @@ var BAL = {
     prev:44700.00,real:51324.84,tDesp:56255.28,fac:0.00,inad:24243.68,inadProc:0.00,
     banco:{cc:-6488.75,cdb:0.00,priv:0.00},
     desp:[{c:'PESSOAL ORG\u00c2NICO',v:25957.95},{c:'TERCEIRIZA\u00c7\u00c3O',v:6861.18},{c:'CONCESSION\u00c1RIAS',v:9316.73},{c:'MANUTEN\u00c7\u00d5ES PREVENTIVAS',v:7558.17},{c:'SERV. T\u00c9CNICOS/REPAROS',v:0.00},{c:'GEST\u00c3O ADMINISTRATIVA',v:3561.00},{c:'ENCARGOS/TAXAS/OUTROS',v:3000.25}]},
-  abr26:{tit:'Abril / 2026',per:'01/04/2026 a 30/04/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'CONTA PRINCIPAL',a:0,c:71753.81,d:71753.81,s:0}],prev:0,real:0,tDesp:0,fac:0,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]},
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'CONTA PRINCIPAL',a:0,c:83270.1,d:83270.1,s:0}],prev:0,real:0,tDesp:0,fac:0,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]}
+  abr26:{tit:'Abril / 2026',per:'01/04/2026 a 30/04/2026',tAnt:-6488.75,tCred:70465.04,tDeb:71753.81,tAtual:-7777.52,contas:[{n:'ORDINÁRIO',a:-23584.27,c:53432.12,d:63186.56,s:-33338.71},{n:'FUNDO DE RESERVA',a:10144.94,c:2469.02,d:0,s:12613.96},{n:'PROVISÃO 13º/FÉRIAS',a:20162.87,c:3854.72,d:0,s:24017.59},{n:'FUNDO DE OBRAS',a:-41903.39,c:8982.98,d:8567.25,s:-41487.66},{n:'LOCAÇÃO / OUTROS',a:9933.68,c:1726.20,d:0,s:11659.88}],prev:44700,real:53267.40,tDesp:63186.56,fac:0,inad:15358.16,inadProc:0,banco:{cc:-7777.52,cdb:0,priv:0},desp:[{c:'PESSOAL ORGÂNICO',v:36846.92},{c:'TERCEIRIZAÇÃO',v:6514.18},{c:'CONCESSIONÁRIAS',v:5512.73},{c:'MANUTENÇÕES PREVENTIVAS',v:9095.62},{c:'SERV. TÉCNICOS/REPAROS',v:600.00},{c:'GESTÃO ADMINISTRATIVA',v:1596.66},{c:'ENCARGOS/TAXAS/OUTROS',v:3020.45}]},
+  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:-7777.52,tCred:111012.61,tDeb:110870.62,tAtual:-7635.53,contas:[{n:'ORDINÁRIO',a:-33338.71,c:95601.91,d:58302.29,s:3960.91},{n:'FUNDO DE RESERVA',a:12613.96,c:2486.46,d:12000,s:3100.42},{n:'PROVISÃO 13º/FÉRIAS',a:24017.59,c:3882.15,d:20000,s:7899.74},{n:'FUNDO DE OBRAS',a:-41487.66,c:9042.09,d:8908.45,s:-41354.02},{n:'LOCAÇÃO / OUTROS',a:11659.88,c:0,d:11659.88,s:0}],prev:44700,real:50184.24,tDesp:58302.29,fac:0,inad:9219.04,inadProc:0,banco:{cc:-7635.53,cdb:0,priv:0},desp:[{c:'PESSOAL ORGÂNICO',v:37319.00},{c:'TERCEIRIZAÇÃO',v:351.15},{c:'CONCESSIONÁRIAS',v:6313.05},{c:'MANUTENÇÕES PREVENTIVAS',v:4772.93},{c:'SERV. TÉCNICOS/REPAROS',v:492.00},{c:'GESTÃO ADMINISTRATIVA',v:2800.00},{c:'ENCARGOS/TAXAS/OUTROS',v:6254.16}]}
 };
 
 // ════════════════════════════════════════════════════════════════════════════════
