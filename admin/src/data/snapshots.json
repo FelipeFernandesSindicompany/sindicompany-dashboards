@@ -1081,8 +1081,8 @@
     }
   },
   "Dashboard_Financeiro_Serra_da_Mantiqueira.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -1095,10 +1095,11 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
+      "tit": "Maio / 2026",
       "tAtual": 0,
       "tCred": 0,
       "tDeb": 0,
