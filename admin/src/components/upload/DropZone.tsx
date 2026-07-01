@@ -282,8 +282,8 @@ export function DropZone({ condominios, onImportDone }: Props) {
       ? `Enviando ${totalMB} MB... (arquivos grandes podem demorar alguns minutos via ngrok)`
       : `Enviando arquivo...`);
 
-    // 5 min timeout for large files (PDFs de 300+ páginas podem ser grandes)
-    const TIMEOUT_MS = 5 * 60 * 1000;
+    // 8 min timeout for large files (PDFs de 300+ páginas podem ser grandes)
+    const TIMEOUT_MS = 8 * 60 * 1000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -316,7 +316,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
       clearTimeout(timeoutId);
       setUploadProgress(null);
       const msg = err.name === 'AbortError'
-        ? `Tempo esgotado (${Math.round(TIMEOUT_MS / 60000)} min). Arquivo muito grande para envio via ngrok. Tente acessar o admin direto em http://localhost:3500`
+        ? `Tempo esgotado (${Math.round(TIMEOUT_MS / 60000)} min) no upload. Arquivo muito grande. Tente acessar o admin direto em http://localhost:3500`
         : (err.message ?? 'Erro ao enviar arquivo');
       setUploadError(msg);
       console.error('Upload error:', err);
@@ -416,7 +416,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
 
   // Polling para modo local (PM2/ngrok) — /api/process/local-status?jobId=...
   const pollLocalJob = useCallback(async (fileId: string, jobId: string) => {
-    const maxAttempts = 60; // 60 × 5s = 5 min
+    const maxAttempts = 140; // 140 × 5s = ~12 min (PDFs grandes de 300+ pág levam até 10 min)
     let errorsInARow = 0;
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 5000));
@@ -460,7 +460,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
       }
     }
     setFiles(prev => prev.map(f =>
-      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado (5 min). Clique em "Tentar novamente".' } : f
+      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado (12 min). Clique em "Tentar novamente".' } : f
     ));
   }, [onImportDone]);
 
