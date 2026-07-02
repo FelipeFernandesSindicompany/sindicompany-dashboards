@@ -538,15 +538,12 @@ function buildInad(){
 }
 
 function buildBanco(){
-  var h='<tr><th>Mês</th><th>Conta Condomínio</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th>Total</th></tr>';
   MESES.forEach(function(k){
     var m=BAL[k];
-    var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
+    var cls=m.tAtual<0?' style="color:var(--r)"':'';
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
-    h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
-    h+='<td class="nr">'+R(m.banco.priv)+'</td>';
-    h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
+    h+='<td class="nr bd"'+cls+'>'+R(m.tAtual)+'</td></tr>';
   });
   document.getElementById('tblBanco').innerHTML=h;
 }
