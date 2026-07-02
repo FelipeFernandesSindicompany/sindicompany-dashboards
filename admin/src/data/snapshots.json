@@ -710,8 +710,8 @@
     }
   },
   "Dashboard_Financeiro_Organy_Studio.html": {
-    "lastKey": "dez25",
-    "lastMonth": "Dez/25",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -721,15 +721,20 @@
       "set25",
       "out25",
       "nov25",
-      "dez25"
+      "dez25",
+      "jan26",
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Dezembro / 2025",
-      "tAtual": 26863.06,
-      "tCred": 76428.01,
-      "tDeb": 46208.04,
-      "inad": 44313.93,
-      "tAnt": -3356.91
+      "tit": "Maio / 2026",
+      "tAtual": 24362.32,
+      "tCred": 33266.24,
+      "tDeb": 29348.37,
+      "inad": 41539.88,
+      "tAnt": 20444.45
     }
   },
   "Dashboard_Financeiro_PadreCarvalho.html": {
