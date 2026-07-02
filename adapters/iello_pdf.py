@@ -51,18 +51,25 @@ class AdapterIelloPDF(AdapterBase):
 
         linhas = texto.split("\n")
 
-        # ── Resumo Financeiro: linha "SALDO FINAL" com 4 números ──
+        # ── Resumo Financeiro: "SALDO FINAL" = totais gerais; "CONTA CONDOMINIO" = ordinária ──
+        conta_condominio_c = None
         for linha in linhas:
             l = linha.strip()
+            if re.match(r"CONTA CONDOMINIO\b", l, re.IGNORECASE):
+                nums = re.findall(r"-?[\d.,]+", re.sub(r"CONTA CONDOMINIO", "", l, flags=re.IGNORECASE))
+                nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
+                if len(nums_f) >= 4:
+                    conta_condominio_c = nums_f[1]
             if l.upper().startswith("SALDO FINAL"):
                 nums = re.findall(r"-?[\d.,]+", l.replace("SALDO FINAL", ""))
                 nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
                 if len(nums_f) >= 4:
                     dados.saldo_anterior    = nums_f[0]
-                    dados.receita_realizada = nums_f[1]
+                    dados.receita_realizada = conta_condominio_c if conta_condominio_c else nums_f[1]
                     dados.despesa_total     = nums_f[2]
                     dados.saldo_atual       = nums_f[3]
-                    dados.receita_prevista  = nums_f[1]
+                    # receita_prevista is set externally via CONFIG.orcamento; leave as 0
+                    dados.receita_prevista  = 0.0
                     break
 
         # ── Despesas por categoria ──
