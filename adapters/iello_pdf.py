@@ -104,6 +104,11 @@ class AdapterIelloPDF(AdapterBase):
                         dados.categorias_despesa.get(cat, 0) + val
                     )
 
+        # ── Acordos recebidos (faturas em atraso cobradas no período) ──
+        m_acordos = re.search(r"ACORDOS RECEBIDOS\s+([\d.,]+)", texto, re.IGNORECASE)
+        if m_acordos:
+            dados.inadimplencia_recebida = _num(m_acordos.group(1))
+
         # ── Inadimplência ──
         m_inad = re.search(
             r"TOTAL GERAL DE DEVEDORES\s+([\d.,]+)", texto, re.IGNORECASE
