@@ -1353,8 +1353,8 @@
     }
   },
   "Dashboard_Financeiro_VitaParque.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1368,15 +1368,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 132487.94,
-      "tCred": 324582.35,
-      "tDeb": 341339.16,
-      "inad": 250527.27,
-      "tAnt": 149244.75
+      "tit": "Maio / 2026",
+      "tAtual": 122537.01,
+      "tCred": 251177.98,
+      "tDeb": 261128.91,
+      "inad": 292899.87,
+      "tAnt": 132487.94
     }
   },
   "Dashboard_Financeiro_VivazVilaGuilherme.html": {
