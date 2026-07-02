@@ -367,12 +367,12 @@ window.onload=function(){
   document.getElementById('gs').innerHTML='Demonstrativo · '+pr.tit+' – '+ul.tit;
   document.getElementById('pt').innerHTML='&#128176; Distribuição do Saldo ('+ab(ul.tit)+')';
 
-  var tD=0;
-  MESES.forEach(function(k){if(k!==MESES[0]){tD+=BAL[k].tDeb;}});
+  var tR=0,tD=0;
+  MESES.forEach(function(k){if(k!==MESES[0]){tR+=BAL[k].tCred;tD+=BAL[k].tDeb;}});
   document.getElementById('geral-kpis').innerHTML=
     kpi('Saldo Total ('+ab(ul.tit)+')',R(ul.tAtual),'','↑ vs '+ab(pr.tit)+': '+R(pr.tAtual))+
     kpi('F. Reserva ('+ab(ul.tit)+')',R(ul.banco.cdb),'o','Fundo de Reserva acumulado')+
-    kpi('Inadimplência ('+ab(ul.tit)+')',R(ul.inad),'r','Devedores em aberto')+
+    kpi('Receitas (excl. '+ab(pr.tit)+')',R(tR),'g','Total do período')+
     kpi('Despesas Acumuladas',R(tD),'y','Total do período');
 
   var alertEl=document.getElementById('geral-alert');
