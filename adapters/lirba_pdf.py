@@ -333,10 +333,13 @@ class AdapterLirbaPDF(AdapterBase):
         previsto_total = 0.0
 
         # Tenta padrão Lirba antigo: "RECEBIMENTO DO PERIODO  X  Y" em seção Receita Prevista
+        # Captura apenas a PRIMEIRA seção (ORDINÁRIA) e usa o grupo 1 (X = emissão do
+        # período sem cotas em atraso), evitando inflar previsto com FUNDO/SALAO/CONSUMO.
         in_prev = False
+        previsto_capturado = False
         for linha in texto_completo.split("\n"):
             l = linha.strip()
-            if re.match(r"Receita Prevista$", l, re.IGNORECASE):
+            if not previsto_capturado and re.match(r"Receita Prevista$", l, re.IGNORECASE):
                 in_prev = True
                 continue
             if re.match(r"Receita Realizada", l, re.IGNORECASE):
@@ -344,13 +347,14 @@ class AdapterLirbaPDF(AdapterBase):
                 continue
             if not in_prev:
                 continue
-            # "RECEBIMENTO DO PERIODO  X  Y" ou "RECEBIMENTO CONSUMO - AGUA  X  Y"
+            # "RECEBIMENTO DO PERIODO  X  Y" — usa X (emissão do período, sem atrasos)
             m = re.match(r"^RECEBIMENTO.+?\s+([\d.,]+)\s+([\d.,]+)\s*$", l, re.IGNORECASE)
             if m:
-                v2 = _num(m.group(2))
-                if v2 > 0:
-                    previsto_total += v2
+                v1 = _num(m.group(1))
+                if v1 > 0:
+                    previsto_total = v1
                     in_prev = False
+                    previsto_capturado = True
 
         # Tenta padrão Blue Sky: busca a linha "CONDOMINIO X Y" dentro da seção
         # "Resumo de Emissões Colunado":
