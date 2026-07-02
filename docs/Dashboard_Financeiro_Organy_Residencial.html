@@ -324,8 +324,8 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <div id="pg-banco" class="pg">
   <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Posi&ccedil;&atilde;o nas contas e aplica&ccedil;&otilde;es financeiras</p></div>
-  <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
-  <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
+  <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o do Saldo Total</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
+  <div class="cc"><h3>&#128203; Saldo Total por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
 </div>
 </main>
 
@@ -920,16 +920,12 @@ function buildInad(){
 }
 
 function buildBanco(){
-  var h='<tr><th>Mês</th><th>Conta Ordinária (C/C)</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th style="text-align:right">Total</th></tr>';
   MESES.forEach(function(k){
     var m=BAL[k];
-    var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
-    var pvCls=m.banco.priv<0?' style="color:var(--r)"':'';
+    var cls=m.tAtual<0?' style="color:var(--r)"':'';
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
-    h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
-    h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
-    h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
+    h+='<td class="nr bd"'+cls+'>'+R(m.tAtual)+'</td></tr>';
   });
   document.getElementById('tblBanco').innerHTML=h;
 }
@@ -991,10 +987,8 @@ function buildCharts(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
-    {label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'Fundo de Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+    {label:'Saldo Total',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:MESES.map(function(k){return BAL[k].tAtual<0?'rgba(192,57,43,.82)':'rgba(91,45,142,.82)';}),borderColor:MESES.map(function(k){return BAL[k].tAtual<0?'#922B21':'#5B2D8E';}),borderWidth:1,borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  Saldo Total: '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 }
 </script>
 <script id="mob-js">
