@@ -894,7 +894,27 @@
       "cor": "#ea580c",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "DESPESAS COM PESSOAL": "Pessoal",
+          "ENCARGOS SOCIAIS": "Encargos Sociais",
+          "MANUTENCAO CONSERV.PREVENTIVA": "Manut. Preventiva",
+          "MANUTENCAO CONSERV. PREVENTIVA": "Manut. Preventiva",
+          "MANUTENCAO CONSERV. CORRETIVA": "Manut. Corretiva",
+          "MATERIAIS P/CONSERV. E MANUT.": "Materiais Manut.",
+          "SERVICOS ADVOCATICIOS": "Serv. Advocatícios",
+          "CONCESSAO DE SERVICOS": "Concessão Serviços",
+          "TAXAS E LICENCIAMENTOS": "Taxas e Licenças",
+          "TRIBUTOS FISCAIS": "Tributos/Taxas",
+          "DESPESAS OPERACIONAIS": "Desp. Operacionais",
+          "DESPESAS GERAIS": "Desp. Gerais",
+          "BENS/ACESSORIOS E EQUIPAMENTOS": "Bens/Equipamentos",
+          "NORMAS REGULAMENTADORAS": "Normas Regulam.",
+          "SEGUROS": "Seguros",
+          "DESCONTOS": "Descontos",
+          "ADMINISTRATIVO": "Administrativo",
+          "SINDICO PROFISSIONAL": "Síndico Profissional",
+          "CAIXA LOCAL": "Caixa Local"
+        }
       }
     },
     {
