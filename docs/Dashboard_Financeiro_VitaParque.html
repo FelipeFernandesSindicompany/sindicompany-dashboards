@@ -538,7 +538,7 @@ function buildInad(){
 }
 
 function buildBanco(){
-  var h='<tr><th>Mês</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th class="nr">Total</th></tr>';
   MESES.forEach(function(k){
     var m=BAL[k];
     var cls=m.tAtual<0?' style="color:var(--r)"':'';
