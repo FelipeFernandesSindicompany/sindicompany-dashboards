@@ -835,7 +835,22 @@
       "cor": "#16a34a",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "MÃO DE OBRA TERCEIRIZADA": "SERV. TERCEIRIZADOS",
+          "MAO DE OBRA TERCEIRIZADA": "SERV. TERCEIRIZADOS",
+          "SERVIÇOS TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "SERVICOS TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "ADMINISTRATIVAS E GERAIS": "ADMINISTRATIVO",
+          "DESP. ADMINISTRATIVAS": "ADMINISTRATIVO",
+          "MANUTENÇÃO DE EQUIPAMENTOS": "MANUT/CONSERV. CONTRAT.",
+          "MANUTENCAO DE EQUIPAMENTOS": "MANUT/CONSERV. CONTRAT.",
+          "CONSERVAÇÃO E LIMPEZA": "MANUT/CONSERV. ESPORÁD.",
+          "CONSERVACAO E LIMPEZA": "MANUT/CONSERV. ESPORÁD.",
+          "MÃO DE OBRA PRÓPRIA": "OUTROS",
+          "MAO DE OBRA PROPRIA": "OUTROS",
+          "CONSUMO": "CONSUMOS",
+          "CONSUMOS": "CONSUMOS"
+        }
       }
     },
     {
