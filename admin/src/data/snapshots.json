@@ -767,8 +767,8 @@
     }
   },
   "Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -781,15 +781,17 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 31516.81,
-      "tCred": 167874.41,
-      "tDeb": 153941.13,
+      "tit": "Junho / 2026",
+      "tAtual": 67811.92,
+      "tCred": 152194.86,
+      "tDeb": 135393.73,
       "inad": 0,
-      "tAnt": 17583.53
+      "tAnt": 51010.79
     }
   },
   "Dashboard_Financeiro_PlanoMooca.html": {
