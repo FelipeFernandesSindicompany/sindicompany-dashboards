@@ -245,36 +245,6 @@
       }
     },
     {
-      "id": "gravura_residencial",
-      "nome": "Gravura Residencial",
-      "empresa_gestora": "lirba_pdf",
-      "pasta_dados": "data/gravura_residencial",
-      "html_file": "Dashboard_Financeiro_GravuraResidencial.html",
-      "ativo": true,
-      "cor": "#2563eb",
-      "unidades": 0,
-      "parser_config": {
-        "extract_cats": "total_da_conta",
-        "contas_separadas": [],
-        "cat_map": {}
-      }
-    },
-    {
-      "id": "gravura_studio",
-      "nome": "Gravura Studio",
-      "empresa_gestora": "lirba_pdf",
-      "pasta_dados": "data/gravura_studio",
-      "html_file": "Dashboard_Financeiro_GravuraStudio.html",
-      "ativo": true,
-      "cor": "#16a34a",
-      "unidades": 0,
-      "parser_config": {
-        "extract_cats": "total_da_conta",
-        "contas_separadas": [],
-        "cat_map": {}
-      }
-    },
-    {
       "id": "guaratambe",
       "nome": "Guaratambé",
       "empresa_gestora": "lfc_xlsx",
@@ -618,46 +588,6 @@
       }
     },
     {
-      "id": "praca_saude_by_you_comercial",
-      "nome": "Praça Saúde BY YOU - Comercial",
-      "empresa_gestora": "lirba_pdf",
-      "pasta_dados": "data/praca_saude_by_you_comercial",
-      "html_file": "Dashboard_Financeiro_PracaSaude_Comercial.html",
-      "ativo": true,
-      "cor": "#ea580c",
-      "unidades": 0,
-      "parser_config": {
-        "extract_cats": "posicao_financeira",
-        "contas_separadas": [
-          "CONSUMO",
-          "I.P.T.U."
-        ],
-        "consumo_name": "Consumos",
-        "iptu_name": "IPTU",
-        "cat_map": {}
-      }
-    },
-    {
-      "id": "praca_saude_residencial",
-      "nome": "Praça Saúde Residencial",
-      "empresa_gestora": "lirba_pdf",
-      "pasta_dados": "data/praca_saude_residencial",
-      "html_file": "Dashboard_Financeiro_PracaSaude_Residencial.html",
-      "ativo": true,
-      "cor": "#ca8a04",
-      "unidades": 0,
-      "parser_config": {
-        "extract_cats": "posicao_financeira",
-        "contas_separadas": [
-          "CONSUMO",
-          "I.P.T.U."
-        ],
-        "consumo_name": "Consumos",
-        "iptu_name": "IPTU",
-        "cat_map": {}
-      }
-    },
-    {
       "id": "reserva_verde",
       "nome": "Reserva Verde",
       "empresa_gestora": "lirba_pdf",
@@ -930,39 +860,6 @@
           "SINDICO PROFISSIONAL": "Síndico Profissional",
           "CAIXA LOCAL": "Caixa Local"
         }
-      }
-    },
-    {
-      "id": "vivaz_vila_guilherme",
-      "nome": "Vivaz Vila Guilherme",
-      "empresa_gestora": "habitacional_xlsx",
-      "pasta_dados": "data/vivaz_vila_guilherme",
-      "html_file": "Dashboard_Financeiro_VivazVilaGuilherme.html",
-      "ativo": true,
-      "cor": "#ca8a04",
-      "unidades": 0,
-      "parser_config": {
-        "cat_map": {}
-      }
-    },
-    {
-      "id": "praca_saude_moradia",
-      "nome": "Praça Saúde - Moradia",
-      "empresa_gestora": "lirba_pdf",
-      "pasta_dados": "data/praca_saude_moradia",
-      "html_file": "Dashboard_Praça_Saúde_Moradia.html",
-      "ativo": true,
-      "cor": "#16a34a",
-      "unidades": 0,
-      "parser_config": {
-        "extract_cats": "posicao_financeira",
-        "contas_separadas": [
-          "CONSUMO",
-          "I.P.T.U."
-        ],
-        "consumo_name": "Consumos",
-        "iptu_name": "IPTU",
-        "cat_map": {}
       }
     }
   ],

@@ -385,60 +385,6 @@
       "tAnt": 33419.08
     }
   },
-  "Dashboard_Financeiro_GravuraResidencial.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26"
-    ],
-    "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 188074.32,
-      "tCred": 300485.52,
-      "tDeb": 225743.53,
-      "inad": 19089.92,
-      "tAnt": 113332.33
-    }
-  },
-  "Dashboard_Financeiro_GravuraStudio.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26"
-    ],
-    "data": {
-      "tit": "Abril / 2026",
-      "tAtual": -33129.88,
-      "tCred": 120102.69,
-      "tDeb": 96939.26,
-      "inad": 20548.06,
-      "tAnt": -56293.31
-    }
-  },
   "Dashboard_Financeiro_Guaratambe.html": {
     "lastKey": "mai26",
     "lastMonth": "Mai/26",
@@ -957,60 +903,6 @@
       "tAnt": 267555.66
     }
   },
-  "Dashboard_Financeiro_PracaSaude_Comercial.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26"
-    ],
-    "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 11274.12,
-      "tCred": 1424.74,
-      "tDeb": 944.38,
-      "inad": 823.92,
-      "tAnt": 10793.76
-    }
-  },
-  "Dashboard_Financeiro_PracaSaude_Residencial.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26"
-    ],
-    "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 331308.15,
-      "tCred": 201356.65,
-      "tDeb": 180768.41,
-      "inad": 40993.4,
-      "tAnt": 310719.91
-    }
-  },
   "Dashboard_Financeiro_ReservaVerde.html": {
     "lastKey": "mai26",
     "lastMonth": "Mai/26",
@@ -1389,60 +1281,6 @@
       "tDeb": 261128.91,
       "inad": 292899.87,
       "tAnt": 132487.94
-    }
-  },
-  "Dashboard_Financeiro_VivazVilaGuilherme.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26"
-    ],
-    "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 286177.14,
-      "tCred": 322148.13,
-      "tDeb": 315938.06,
-      "inad": 114923.89,
-      "tAnt": 279967.07
-    }
-  },
-  "Dashboard_Praça_Saúde_Moradia.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26"
-    ],
-    "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 41313.84,
-      "tCred": 35530.45,
-      "tDeb": 47635.08,
-      "inad": 26443.3,
-      "tAnt": 53418.47
     }
   }
 }
