@@ -681,8 +681,8 @@ window.onload = function() {
   kg.innerHTML =
     kpi('Saldo Total (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
         R(ultimo.tAtual), '', '&#8595; vs ' + primeiro.tit.split(' ')[0] + ': ' + R(primeiro.tAtual)) +
-    kpi('F. Reserva (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
-        R(getContaSaldo(ultimo, 'RESERVA')), 'o', 'Fundo de Reserva acumulado') +
+    kpi('F. de Obras (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
+        R(getContaSaldo(ultimo, 'OBRAS')), 'o', 'Fundo de Obras acumulado') +
     kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
         R(totalRec), 'g', 'Cotas + rendimentos') +
     kpi('Despesas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
