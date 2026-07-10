@@ -1070,7 +1070,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
     <div id="dl-pass-wrap">
 
-      <input type="password" id="dl-pass" placeholder="Senha" autocomplete="new-password" />
+      <input type="password" id="dl-pass" placeholder="Senha" autocomplete="new-password" readonly />
 
       <button type="button" id="dl-eye" onclick="dlTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
 
@@ -6876,7 +6876,10 @@ function buildCharts() {
   if(sessionStorage.getItem('dl_auth_ClubParkButanta')==='1'){dlHide();return;}
   document.getElementById('dl-pass').value='';document.getElementById('dl-user').value='';
   document.getElementById('dl-eye').innerHTML=EON;
-  setTimeout(function(){document.getElementById('dl-pass').value='';},200);
+  var dlPEl=document.getElementById('dl-pass');
+  dlPEl.addEventListener('focus',function(){this.removeAttribute('readonly');},true);
+  dlPEl.addEventListener('click',function(){this.removeAttribute('readonly');},true);
+  window.addEventListener('load',function(){setTimeout(function(){dlPEl.value='';},50);});
   setTimeout(function(){document.getElementById('dl-pass').value='';document.getElementById('dl-user').value='';try{var sv=localStorage.getItem('dl_auth_ClubParkButanta_sv');if(sv){var cv=JSON.parse(sv);document.getElementById('dl-user').value=cv.u||'';document.getElementById('dl-remember').checked=true;}}catch(e){}},200);
 
   window.dlTogglePass=function(){var i=document.getElementById('dl-pass');var b=document.getElementById('dl-eye');if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}};

@@ -278,7 +278,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <p>Dashboard Financeiro — Acesso Restrito</p>
     <input type="text" id="ct-user" placeholder="Usuário" autocomplete="off" />
     <div id="ct-pass-wrap">
-      <input type="password" id="ct-pass" placeholder="Senha" autocomplete="new-password" />
+      <input type="password" id="ct-pass" placeholder="Senha" autocomplete="new-password" readonly />
       <button type="button" id="ct-eye" onclick="ctTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <label id="ct-remember-wrap">
@@ -1833,7 +1833,10 @@ function buildCharts() {
       document.getElementById('ct-remember').checked=true;}
   }catch(e){}
   document.getElementById('ct-eye').innerHTML=EON;
-  setTimeout(function(){document.getElementById('ct-pass').value='';},200);
+  var ctPEl=document.getElementById('ct-pass');
+  ctPEl.addEventListener('focus',function(){this.removeAttribute('readonly');},true);
+  ctPEl.addEventListener('click',function(){this.removeAttribute('readonly');},true);
+  window.addEventListener('load',function(){setTimeout(function(){ctPEl.value='';},50);});
   window.ctTogglePass=function(){
     var i=document.getElementById('ct-pass');var b=document.getElementById('ct-eye');
     if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}

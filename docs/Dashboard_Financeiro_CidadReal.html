@@ -277,7 +277,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <p>Dashboard Financeiro — Acesso Restrito</p>
     <input type="text" id="cr-user" placeholder="Usuário" autocomplete="off" />
     <div id="cr-pass-wrap">
-      <input type="password" id="cr-pass" placeholder="Senha" autocomplete="new-password" />
+      <input type="password" id="cr-pass" placeholder="Senha" autocomplete="new-password" readonly />
       <button type="button" id="cr-eye" onclick="crTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <label id="cr-remember-wrap">
@@ -1737,7 +1737,10 @@ function buildCharts() {
       document.getElementById('cr-remember').checked=true;}
   }catch(e){}
   document.getElementById('cr-eye').innerHTML=EON;
-  setTimeout(function(){document.getElementById('cr-pass').value='';},200);
+  var crPEl=document.getElementById('cr-pass');
+  crPEl.addEventListener('focus',function(){this.removeAttribute('readonly');},true);
+  crPEl.addEventListener('click',function(){this.removeAttribute('readonly');},true);
+  window.addEventListener('load',function(){setTimeout(function(){crPEl.value='';},50);});
   window.crTogglePass=function(){
     var i=document.getElementById('cr-pass');var b=document.getElementById('cr-eye');
     if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
