@@ -251,15 +251,15 @@ tr:nth-child(even) td{background:#FAFAFA;}
   #mob-ov{display:none !important;}
 }
 #cr-login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#171B2E 0%,#2B3155 100%);z-index:99999;display:flex;align-items:center;justify-content:center;}
-#cr-login-box{background:#fff;border-radius:14px;padding:44px 40px 36px;width:380px;box-shadow:0 8px 40px rgba(0,0,0,.45);font-family:inherit;}
-#cr-login-box .cr-logo{text-align:center;font-size:13px;letter-spacing:.12em;color:#171B2E;text-transform:uppercase;margin-bottom:10px;}
-#cr-login-box h2{text-align:center;margin:0 0 6px;font-size:20px;color:#171B2E;}
-#cr-login-box p{text-align:center;font-size:13px;color:#666;margin:0 0 24px;}
-#cr-login-box input{display:block;width:100%;box-sizing:border-box;padding:11px 14px;margin-bottom:14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;outline:none;}
-#cr-login-box input:focus{border-color:#171B2E;}
-#cr-login-box button{display:block;width:100%;padding:12px;background:#171B2E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.03em;}
-#cr-login-box button:hover{background:#2B3155;}
-#cr-login-error{color:#c0392b;font-size:13px;text-align:center;margin-top:10px;min-height:18px;}
+#cr-login-box{background:#fff;border-radius:14px;padding:44px 40px 36px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.45);text-align:center;}
+#cr-login-box .cr-logo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#2B3155;margin-bottom:6px;}
+#cr-login-box h2{font-size:20px;font-weight:700;color:#171B2E;margin-bottom:4px;}
+#cr-login-box p{font-size:12px;color:#888;margin-bottom:28px;}
+#cr-login-box input{width:100%;padding:11px 14px;border:1.5px solid #dde1f0;border-radius:8px;font-size:14px;color:#2C2C2C;margin-bottom:12px;outline:none;transition:border-color .2s;}
+#cr-login-box input:focus{border-color:#2B3155;}
+#cr-login-box button{width:100%;padding:12px;background:#E87722;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;margin-top:4px;}
+#cr-login-box button:hover{opacity:.88;}
+#cr-login-error{color:#C0392B;font-size:12px;margin-top:8px;min-height:18px;}
 #cr-pass-wrap{position:relative;margin-bottom:12px;}
 #cr-pass-wrap input{margin-bottom:0;padding-right:42px;}
 #cr-pass-wrap #cr-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#aaa;line-height:0;width:24px;height:24px;margin:0;outline:none;display:flex;align-items:center;justify-content:center;}
