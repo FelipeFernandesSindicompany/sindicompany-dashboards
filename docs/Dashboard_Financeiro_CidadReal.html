@@ -277,7 +277,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <p>Dashboard Financeiro — Acesso Restrito</p>
     <input type="text" id="cr-user" placeholder="Usuário" autocomplete="off" />
     <div id="cr-pass-wrap">
-      <input type="password" id="cr-pass" placeholder="Senha" autocomplete="off" />
+      <input type="password" id="cr-pass" placeholder="Senha" autocomplete="new-password" />
       <button type="button" id="cr-eye" onclick="crTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <label id="cr-remember-wrap">
@@ -1733,10 +1733,11 @@ function buildCharts() {
   try{var sv=localStorage.getItem('cr_auth_sv');
     if(sv){var cv=JSON.parse(sv);
       document.getElementById('cr-user').value=cv.u||'';
-      document.getElementById('cr-pass').value=cv.p||'';
+      
       document.getElementById('cr-remember').checked=true;}
   }catch(e){}
   document.getElementById('cr-eye').innerHTML=EON;
+  setTimeout(function(){document.getElementById('cr-pass').value='';},200);
   window.crTogglePass=function(){
     var i=document.getElementById('cr-pass');var b=document.getElementById('cr-eye');
     if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
@@ -1748,7 +1749,7 @@ function buildCharts() {
     if(btoa(u)===_u&&btoa(pw)===_p){
       sessionStorage.setItem('cr_auth','1');
       var rem=document.getElementById('cr-remember');
-      if(rem&&rem.checked){localStorage.setItem('cr_auth_sv',JSON.stringify({u:u,p:pw}));}
+      if(rem&&rem.checked){localStorage.setItem('cr_auth_sv',JSON.stringify({u:u}));}
       else{localStorage.removeItem('cr_auth_sv');}
       crHide();
     }else{err.textContent='Usuário ou senha incorretos.';

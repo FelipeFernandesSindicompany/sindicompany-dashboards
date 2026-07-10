@@ -278,7 +278,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <p>Dashboard Financeiro — Acesso Restrito</p>
     <input type="text" id="ct-user" placeholder="Usuário" autocomplete="off" />
     <div id="ct-pass-wrap">
-      <input type="password" id="ct-pass" placeholder="Senha" autocomplete="off" />
+      <input type="password" id="ct-pass" placeholder="Senha" autocomplete="new-password" />
       <button type="button" id="ct-eye" onclick="ctTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <label id="ct-remember-wrap">
@@ -1829,10 +1829,11 @@ function buildCharts() {
   try{var sv=localStorage.getItem('ct_auth_sv');
     if(sv){var cv=JSON.parse(sv);
       document.getElementById('ct-user').value=cv.u||'';
-      document.getElementById('ct-pass').value=cv.p||'';
+      
       document.getElementById('ct-remember').checked=true;}
   }catch(e){}
   document.getElementById('ct-eye').innerHTML=EON;
+  setTimeout(function(){document.getElementById('ct-pass').value='';},200);
   window.ctTogglePass=function(){
     var i=document.getElementById('ct-pass');var b=document.getElementById('ct-eye');
     if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
@@ -1844,7 +1845,7 @@ function buildCharts() {
     if(btoa(u)===_u&&btoa(pw)===_p){
       sessionStorage.setItem('ct_auth','1');
       var rem=document.getElementById('ct-remember');
-      if(rem&&rem.checked){localStorage.setItem('ct_auth_sv',JSON.stringify({u:u,p:pw}));}
+      if(rem&&rem.checked){localStorage.setItem('ct_auth_sv',JSON.stringify({u:u}));}
       else{localStorage.removeItem('ct_auth_sv');}
       ctHide();
     }else{err.textContent='Usuário ou senha incorretos.';
