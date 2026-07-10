@@ -260,6 +260,12 @@ tr:nth-child(even) td{background:#FAFAFA;}
 #cr-login-box button{display:block;width:100%;padding:12px;background:#171B2E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.03em;}
 #cr-login-box button:hover{background:#2B3155;}
 #cr-login-error{color:#c0392b;font-size:13px;text-align:center;margin-top:10px;min-height:18px;}
+#cr-pass-wrap{position:relative;margin-bottom:12px;}
+#cr-pass-wrap input{margin-bottom:0;padding-right:42px;}
+#cr-pass-wrap #cr-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#aaa;line-height:0;width:24px;height:24px;margin:0;outline:none;display:flex;align-items:center;justify-content:center;}
+#cr-pass-wrap #cr-eye:hover{opacity:1;color:#2B3155;}
+#cr-remember-wrap{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:#666;cursor:pointer;text-align:left;}
+#cr-remember-wrap input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#2B3155;flex-shrink:0;margin-bottom:0;padding:0;}
 </style>
 
 </head>
@@ -269,8 +275,14 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div class="cr-logo">Sindicompany</div>
     <h2>Ciudad Real</h2>
     <p>Dashboard Financeiro — Acesso Restrito</p>
-    <input type="text" id="cr-user" placeholder="Usuário" autocomplete="username" />
-    <input type="password" id="cr-pass" placeholder="Senha" autocomplete="current-password" />
+    <input type="text" id="cr-user" placeholder="Usuário" autocomplete="off" />
+    <div id="cr-pass-wrap">
+      <input type="password" id="cr-pass" placeholder="Senha" autocomplete="off" />
+      <button type="button" id="cr-eye" onclick="crTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+    <label id="cr-remember-wrap">
+      <input type="checkbox" id="cr-remember" /> Lembrar minhas credenciais
+    </label>
     <button onclick="crDoLogin()">Entrar</button>
     <div id="cr-login-error"></div>
   </div>
@@ -1712,19 +1724,40 @@ function buildCharts() {
 </script>
 <script>
 (function(){
-  var _u='Q2l1ZGFkUmVhbA==', _p='Q2l1ZGFkMjAyNio=';
-  function crHide(){ var o=document.getElementById('cr-login-overlay'); if(o) o.style.display='none'; }
-  if(sessionStorage.getItem('cr_auth')==='1'){ crHide(); }
-  window.crDoLogin = function(){
+  var _u='Q2l1ZGFkUmVhbA==',_p='Q2l1ZGFkMjAyNio=';
+  var EON='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',EOFF='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  function crHide(){var o=document.getElementById('cr-login-overlay');if(o)o.style.display='none';}
+  if(sessionStorage.getItem('cr_auth')==='1'){crHide();return;}
+  document.getElementById('cr-pass').value='';
+  document.getElementById('cr-user').value='';
+  try{var sv=localStorage.getItem('cr_auth_sv');
+    if(sv){var cv=JSON.parse(sv);
+      document.getElementById('cr-user').value=cv.u||'';
+      document.getElementById('cr-pass').value=cv.p||'';
+      document.getElementById('cr-remember').checked=true;}
+  }catch(e){}
+  document.getElementById('cr-eye').innerHTML=EON;
+  window.crTogglePass=function(){
+    var i=document.getElementById('cr-pass');var b=document.getElementById('cr-eye');
+    if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
+  };
+  window.crDoLogin=function(){
     var u=document.getElementById('cr-user').value.trim();
-    var p=document.getElementById('cr-pass').value;
+    var pw=document.getElementById('cr-pass').value;
     var err=document.getElementById('cr-login-error');
-    if(btoa(u)===_u && btoa(p)===_p){
-      sessionStorage.setItem('cr_auth','1'); crHide();
-    } else { err.textContent='Usuário ou senha incorretos.'; }
+    if(btoa(u)===_u&&btoa(pw)===_p){
+      sessionStorage.setItem('cr_auth','1');
+      var rem=document.getElementById('cr-remember');
+      if(rem&&rem.checked){localStorage.setItem('cr_auth_sv',JSON.stringify({u:u,p:pw}));}
+      else{localStorage.removeItem('cr_auth_sv');}
+      crHide();
+    }else{err.textContent='Usuário ou senha incorretos.';
+      document.getElementById('cr-pass').value='';
+      document.getElementById('cr-pass').focus();}
   };
   document.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){ var o=document.getElementById('cr-login-overlay'); if(o && o.style.display!=='none') crDoLogin(); }
+    if(e.key==='Enter'){var o=document.getElementById('cr-login-overlay');
+      if(o&&o.style.display!=='none')crDoLogin();}
   });
 })();
 </script>

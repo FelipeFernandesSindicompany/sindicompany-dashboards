@@ -517,6 +517,12 @@ tr:nth-child(even) td{background:#FAFAFA;}
 #dl-login-box button{width:100%;padding:12px;background:#E87722;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;margin-top:4px;}
 #dl-login-box button:hover{opacity:.88;}
 #dl-login-error{color:#C0392B;font-size:12px;margin-top:8px;min-height:18px;}
+#dl-pass-wrap{position:relative;margin-bottom:12px;}
+#dl-pass-wrap input{margin-bottom:0;padding-right:42px;}
+#dl-pass-wrap #dl-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#aaa;line-height:0;width:24px;height:24px;margin:0;outline:none;display:flex;align-items:center;justify-content:center;}
+#dl-pass-wrap #dl-eye:hover{opacity:1;color:#2B3155;}
+#dl-remember-wrap{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:#666;cursor:pointer;text-align:left;}
+#dl-remember-wrap input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#2B3155;flex-shrink:0;margin-bottom:0;padding:0;}
 </style>
 </head>
 
@@ -526,8 +532,14 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div class="dl-logo">Sindicompany</div>
     <h2>Cond. Baturité</h2>
     <p>Dashboard Financeiro &mdash; Acesso Restrito</p>
-    <input type="text" id="dl-user" placeholder="Usu&aacute;rio" autocomplete="username" />
-    <input type="password" id="dl-pass" placeholder="Senha" autocomplete="current-password" />
+    <input type="text" id="dl-user" placeholder="Usuário" autocomplete="off" />
+    <div id="dl-pass-wrap">
+      <input type="password" id="dl-pass" placeholder="Senha" autocomplete="off" />
+      <button type="button" id="dl-eye" onclick="dlTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+    <label id="dl-remember-wrap">
+      <input type="checkbox" id="dl-remember" /> Lembrar minhas credenciais
+    </label>
     <button onclick="dlDoLogin()">Entrar</button>
     <div id="dl-login-error"></div>
   </div>
@@ -2760,23 +2772,40 @@ function buildCharts() {
 
 <script>
 (function(){
-  var _u='QmF0dXJpdGU=', _p='QmF0dXJpdGUyMDI2Kg==';
-  function dlHide(){ var o=document.getElementById('dl-login-overlay'); if(o) o.style.display='none'; }
-  if(sessionStorage.getItem('dl_auth_Baturite')==='1'){ dlHide(); }
-  window.dlDoLogin = function(){
+  var _u='QmF0dXJpdGU=',_p='QmF0dXJpdGUyMDI2Kg==';
+  var EON='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',EOFF='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  function dlHide(){var o=document.getElementById('dl-login-overlay');if(o)o.style.display='none';}
+  if(sessionStorage.getItem('dl_auth_Baturite')==='1'){dlHide();return;}
+  document.getElementById('dl-pass').value='';
+  document.getElementById('dl-user').value='';
+  try{var sv=localStorage.getItem('dl_auth_Baturite_sv');
+    if(sv){var cv=JSON.parse(sv);
+      document.getElementById('dl-user').value=cv.u||'';
+      document.getElementById('dl-pass').value=cv.p||'';
+      document.getElementById('dl-remember').checked=true;}
+  }catch(e){}
+  document.getElementById('dl-eye').innerHTML=EON;
+  window.dlTogglePass=function(){
+    var i=document.getElementById('dl-pass');var b=document.getElementById('dl-eye');
+    if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
+  };
+  window.dlDoLogin=function(){
     var u=document.getElementById('dl-user').value.trim();
-    var p=document.getElementById('dl-pass').value;
+    var pw=document.getElementById('dl-pass').value;
     var err=document.getElementById('dl-login-error');
-    if(btoa(u)===_u && btoa(p)===_p){
-      sessionStorage.setItem('dl_auth_Baturite','1'); dlHide();
-    } else {
-      err.textContent='Usuário ou senha incorretos.';
+    if(btoa(u)===_u&&btoa(pw)===_p){
+      sessionStorage.setItem('dl_auth_Baturite','1');
+      var rem=document.getElementById('dl-remember');
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_Baturite_sv',JSON.stringify({u:u,p:pw}));}
+      else{localStorage.removeItem('dl_auth_Baturite_sv');}
+      dlHide();
+    }else{err.textContent='Usuário ou senha incorretos.';
       document.getElementById('dl-pass').value='';
-      document.getElementById('dl-pass').focus();
-    }
+      document.getElementById('dl-pass').focus();}
   };
   document.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){ var o=document.getElementById('dl-login-overlay'); if(o && o.style.display!=='none') dlDoLogin(); }
+    if(e.key==='Enter'){var o=document.getElementById('dl-login-overlay');
+      if(o&&o.style.display!=='none')dlDoLogin();}
   });
 })();
 </script>
