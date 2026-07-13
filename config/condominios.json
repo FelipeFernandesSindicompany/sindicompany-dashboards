@@ -167,6 +167,19 @@
       }
     },
     {
+      "id": "fatto_morumbi",
+      "nome": "Fatto Morumbi",
+      "empresa_gestora": "manager_adm_pdf",
+      "pasta_dados": "data/fatto_morumbi",
+      "html_file": "Dashboard_Financeiro_FattoMorumbi.html",
+      "ativo": true,
+      "cor": "#171B2E",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
+    },
+    {
       "id": "cores",
       "nome": "Cores",
       "empresa_gestora": "habitacional_xlsx",

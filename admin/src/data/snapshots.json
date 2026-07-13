@@ -223,6 +223,33 @@
       "tAnt": 1952175.81
     }
   },
+  "Dashboard_Financeiro_FattoMorumbi.html": {
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
+    "allKeys": [
+      "mai25",
+      "jun25",
+      "jul25",
+      "ago25",
+      "set25",
+      "out25",
+      "nov25",
+      "dez25",
+      "jan26",
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26"
+    ],
+    "data": {
+      "tit": "Maio / 2026",
+      "tAtual": 306512.91,
+      "tCred": 339695.56,
+      "tDeb": 214236.3,
+      "inad": 148743.99,
+      "tAnt": 181053.65
+    }
+  },
   "Dashboard_Financeiro_Cores.html": {
     "lastKey": "mai26",
     "lastMonth": "Mai/26",
