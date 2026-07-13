@@ -895,8 +895,8 @@
     }
   },
   "Dashboard_Financeiro_ReservaVerde.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -911,15 +911,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 32896.97,
-      "tCred": 27284.29,
-      "tDeb": 25070.48,
+      "tit": "Junho / 2026",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
       "inad": 0,
-      "tAnt": 30683.16
+      "tAnt": 0
     }
   },
   "Dashboard_Financeiro_ResidencialNapoleao.html": {
