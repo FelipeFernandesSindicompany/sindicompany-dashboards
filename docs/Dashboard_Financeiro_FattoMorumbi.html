@@ -12,6 +12,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
 <style>
 
 :root {
@@ -2105,7 +2107,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C It&aacute;u</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2114,8 +2116,6 @@ function buildTblBanco() {
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
 
     h += '<tr><td class="bd">' + lbl + '</td>';
-
-    h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
 
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
@@ -2877,15 +2877,17 @@ function buildCharts() {
 
 
 
-  // ── 9. Posição bancária (barras empilhadas) ───────────────────────────────────────────────
+  // ── 9. Posição bancária (total consolidado) ──────────────────────────────────────────────
 
-  var bancoMeses = MESES.filter(function(k){ return BAL[k].banco.cc !== null; });
+  var bancoMeses = MESES;
 
   var bancoML    = bancoMeses.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
 
   mkChart('cBanco', {
 
     type: 'bar',
+
+    plugins: [ChartDataLabels],
 
     data: {
 
@@ -2895,9 +2897,9 @@ function buildCharts() {
 
         {
 
-          label: 'C/C Itáu',
+          label: 'Total Consolidado',
 
-          data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
+          data: bancoMeses.map(function(k){ return BAL[k].tAtual; }),
 
           backgroundColor: 'rgba(23,27,46,0.82)',
 
@@ -2905,7 +2907,7 @@ function buildCharts() {
 
           borderWidth: 1,
 
-          borderRadius: 3,
+          borderRadius: 4,
 
           borderSkipped: false
 
@@ -2927,15 +2929,31 @@ function buildCharts() {
 
           callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
 
-        })
+        }),
+
+        datalabels: {
+
+          anchor: 'end',
+
+          align: 'end',
+
+          offset: 2,
+
+          color: '#2C3038',
+
+          font: { size: 9, weight: '600' },
+
+          formatter: function(v){ return fmtK(v); }
+
+        }
 
       },
 
       scales: {
 
-        x: { stacked: true, ticks: TICK, grid: GRID_X },
+        x: { ticks: TICK, grid: GRID_X },
 
-        y: { stacked: true, ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y }
+        y: { ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y }
 
       }
 
