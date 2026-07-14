@@ -12,8 +12,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-
 <style>
 
 :root {
@@ -2887,8 +2885,6 @@ function buildCharts() {
 
     type: 'bar',
 
-    plugins: [ChartDataLabels],
-
     data: {
 
       labels: bancoML,
@@ -2929,23 +2925,7 @@ function buildCharts() {
 
           callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
 
-        }),
-
-        datalabels: {
-
-          anchor: 'end',
-
-          align: 'end',
-
-          offset: 2,
-
-          color: '#2C3038',
-
-          font: { size: 9, weight: '600' },
-
-          formatter: function(v){ return fmtK(v); }
-
-        }
+        })
 
       },
 
