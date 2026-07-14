@@ -2622,7 +2622,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C It&aacute;u</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2631,8 +2631,6 @@ function buildTblBanco() {
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
 
     h += '<tr><td class="bd">' + lbl + '</td>';
-
-    h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
 
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
@@ -3412,9 +3410,9 @@ function buildCharts() {
 
         {
 
-          label: 'C/C Itáu',
+          label: 'Saldo Total',
 
-          data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
+          data: bancoMeses.map(function(k){ return BAL[k].tAtual; }),
 
           backgroundColor: 'rgba(23,27,46,0.82)',
 
