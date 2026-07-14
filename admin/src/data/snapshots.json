@@ -251,8 +251,8 @@
     }
   },
   "Dashboard_Financeiro_Cores.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -267,15 +267,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 95102.55,
-      "tCred": 115715.93,
-      "tDeb": 88487.99,
-      "inad": 80582.41,
-      "tAnt": 67874.61
+      "tit": "Junho / 2026",
+      "tAtual": 89039.32,
+      "tCred": 96509.15,
+      "tDeb": 102572.38,
+      "inad": 0,
+      "tAnt": 95102.55
     }
   },
   "Dashboard_Financeiro_EloElo.html": {
