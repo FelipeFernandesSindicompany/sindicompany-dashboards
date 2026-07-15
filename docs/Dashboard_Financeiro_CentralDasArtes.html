@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard Financeiro – Condomínio Central das Artes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+
+:root {
+
+  --p:#171B2E; --p2:#2B3155; --pl:#E8EAF0;
+
+  --o:#E87722; --g:#27AE60; --r:#C0392B; --y:#F39C12;
+
+  --bg:#F0F2F8; --card:#FFFFFF; --sw:230px;
+
+  --text:#2C2C2C; --muted:#888888;
+
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+#sb{width:var(--sw);background:var(--p);color:#fff;position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;}
+
+.sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.15);}
+
+.sb-logo h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#EDE5F5;}
+
+.sb-logo p{font-size:10px;color:rgba(255,255,255,0.6);margin-top:3px;}
+
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto;}
+
+.ni{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.8);transition:all .2s;border-left:3px solid transparent;}
+
+.ni:hover{background:rgba(255,255,255,0.1);color:#fff;}
+
+.ni.on{background:rgba(232,119,34,0.2);color:#fff;border-left-color:var(--o);font-weight:600;}
+
+.ni .ic{font-size:16px;width:20px;text-align:center;}
+
+.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,0.15);font-size:10px;color:rgba(255,255,255,0.5);}
+
+.sb-foot button{margin-top:8px;padding:5px 12px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:#fff;cursor:pointer;font-size:11px;}
+
+#mn{margin-left:var(--sw);flex:1;padding:24px;min-height:100vh;}
+
+.pg{display:none;animation:fi .3s;}
+
+.pg.on{display:block;}
+
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.ph{margin-bottom:20px;}
+
+.ph h1{font-size:22px;font-weight:700;color:var(--p);}
+
+.ph p{font-size:13px;color:var(--muted);margin-top:4px;}
+
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px;}
+
+.kc{background:var(--card);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-top:4px solid var(--p);transition:transform .2s;}
+
+.kc:hover{transform:translateY(-2px);}
+
+.kc.o{border-top-color:var(--o);} .kc.g{border-top-color:var(--g);} .kc.r{border-top-color:var(--r);} .kc.y{border-top-color:var(--y);}
+
+.kl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+
+.kv{font-size:19px;font-weight:700;color:var(--p);}
+
+.kc.o .kv{color:var(--o);} .kc.g .kv{color:var(--g);} .kc.r .kv{color:var(--r);} .kc.y .kv{color:var(--y);}
+
+.ks{font-size:11px;color:var(--muted);margin-top:4px;}
+
+.cc{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;}
+
+.cc h3{font-size:14px;font-weight:600;color:var(--p);margin-bottom:16px;}
+
+.cw{position:relative;height:260px;} .cws{position:relative;height:200px;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+
+.tw{overflow-x:auto;}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+
+th{background:var(--p);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px;}
+
+td{padding:9px 12px;border-bottom:1px solid #EEE;}
+
+tr:last-child td{border-bottom:none;}
+
+tr:nth-child(even) td{background:#FAFAFA;}
+
+.nr{text-align:right;font-variant-numeric:tabular-nums;}
+
+.bd{font-weight:700;color:var(--p);}
+
+.tot td{background:var(--pl)!important;font-weight:700;}
+
+.al{border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;}
+
+.al .ai{font-size:18px;flex-shrink:0;}
+
+.al.bad{background:#FDECEA;border-left:4px solid var(--r);color:#8B1A0E;}
+
+.al.warn{background:#FEF9EC;border-left:4px solid var(--y);color:#7D4A00;}
+
+.al.ok{background:#EBF5F0;border-left:4px solid var(--g);color:#1A6635;}
+
+.al.inf{background:#EDE5F5;border-left:4px solid var(--p);color:var(--p);}
+
+.pg-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+
+.pill{padding:7px 16px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;}
+
+.pill:hover,.pill.on{background:var(--p);color:#fff;}
+
+.pb{height:8px;background:#EEE;border-radius:4px;overflow:hidden;margin-top:4px;}
+
+.pbf{height:100%;border-radius:4px;background:var(--o);}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+
+.bok{background:#EBF5F0;color:#1A6635;} .bwarn{background:#FEF9EC;color:#7D4A00;} .bbad{background:#FDECEA;color:#8B1A0E;}
+
+.val-card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;border-left:5px solid var(--p);}
+
+.val-card.ok{border-left-color:var(--g);} .val-card.warn{border-left-color:var(--y);} .val-card.bad{border-left-color:var(--r);}
+
+.val-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:14px;}
+
+.val-item{text-align:center;padding:12px;background:#F8F8F8;border-radius:8px;}
+
+.val-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+
+.val-value{font-size:20px;font-weight:700;margin-top:4px;}
+
+.val-pct{font-size:12px;margin-top:2px;color:var(--muted);}
+
+.progress-wrap{margin-top:12px;}
+
+.progress-bar{height:20px;background:#EEE;border-radius:10px;overflow:hidden;position:relative;}
+
+.progress-fill{height:100%;border-radius:10px;transition:width .5s;}
+
+.progress-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff;mix-blend-mode:difference;}
+
+@media print{#sb{display:none;}#mn{margin-left:0;}}
+
+@media (max-width:768px){
+
+  #sb{width:60px;} .sb-logo p,.ni span:not(.ic),.sb-foot div,.sb-foot button{display:none;}
+
+  .ni{justify-content:center;padding:14px 0;}
+
+  #mn{margin-left:60px;padding:16px;}
+
+  .g2{grid-template-columns:1fr;}
+
+}
+
+</style>
+
+
+
+<style id="mob-css">
+
+/* ═══════════════════════════════════════════════════
+
+   RESPONSIVO v2 — iOS · Android · Windows · Mac
+
+   ═══════════════════════════════════════════════════ */
+
+
+
+/* ── Overlay escuro ────────────────────────────────── */
+
+#mob-ov{
+
+  display:none;position:fixed;inset:0;
+
+  background:rgba(0,0,0,.55);z-index:1000;
+
+  -webkit-tap-highlight-color:transparent;
+
+}
+
+#mob-ov.show{display:block;}
+
+
+
+/* ── Barra superior mobile ─────────────────────────── */
+
+#mob-bar{
+
+  display:none;
+
+  position:fixed;top:0;left:0;right:0;height:52px;
+
+  background:var(--p);z-index:1002;
+
+  align-items:center;padding:0 14px;gap:10px;
+
+  border-bottom:2px solid var(--o);
+
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+
+}
+
+#mob-bar-btn{
+
+  background:none;border:none;color:#fff;
+
+  font-size:24px;cursor:pointer;
+
+  padding:2px 8px;line-height:1;flex-shrink:0;
+
+  -webkit-tap-highlight-color:transparent;
+
+}
+
+#mob-bar-title{
+
+  color:#fff;font-size:13px;font-weight:700;
+
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;
+
+  letter-spacing:.3px;
+
+}
+
+#mob-bar-page{
+
+  color:var(--o);font-size:11px;font-weight:600;
+
+  white-space:nowrap;flex-shrink:0;max-width:120px;
+
+  overflow:hidden;text-overflow:ellipsis;
+
+}
+
+
+
+/* ════════════════════════════════════════════════════
+
+   MOBILE  (< 768 px)
+
+   ════════════════════════════════════════════════════ */
+
+@media(max-width:767px){
+
+
+
+  /* Barra topo visível */
+
+  #mob-bar{display:flex !important;}
+
+
+
+  /* ── Sidebar: width mantida em 230px, escondida via transform ── */
+
+  #sb{
+
+    width:230px !important;
+
+    transform:translateX(-230px) !important;
+
+    transition:transform .26s cubic-bezier(.4,0,.2,1);
+
+    z-index:1003 !important;
+
+    box-shadow:none;
+
+    top:0 !important;
+
+  }
+
+  #sb.mob-open{
+
+    transform:translateX(0) !important;
+
+    box-shadow:6px 0 28px rgba(0,0,0,.5);
+
+  }
+
+
+
+  /* ── Restaura texto da sidebar (overrides CSS interno que esconde texto) ── */
+
+  .ni{
+
+    display:flex !important;
+
+    justify-content:flex-start !important;
+
+    padding:11px 18px !important;
+
+    gap:10px !important;
+
+  }
+
+  .ni span:not(.ic){display:inline !important;}
+
+  .ni .ic{width:20px !important;text-align:center !important;flex-shrink:0;}
+
+  .sb-logo p{display:block !important;}
+
+  .sb-foot div{display:block !important;}
+
+  .sb-foot button{display:inline-block !important;}
+
+
+
+  /* ── Main: largura total, padding acima da barra ── */
+
+  #mn{
+
+    margin-left:0 !important;
+
+    padding:62px 10px 24px !important;
+
+    min-width:0 !important;
+
+    width:100% !important;
+
+    box-sizing:border-box !important;
+
+  }
+
+
+
+  /* ── Grids ── */
+
+  .g2{grid-template-columns:1fr !important;gap:12px !important;}
+
+  .kg{grid-template-columns:repeat(2,1fr) !important;gap:8px !important;}
+
+
+
+  /* ── KPI cards ── */
+
+  .kc{padding:10px 12px !important;}
+
+  .kv{font-size:16px !important;}
+
+  .kl{font-size:10px !important;}
+
+  .ks{font-size:10px !important;}
+
+
+
+  /* ── Content cards ── */
+
+  .cc{padding:14px 12px !important;}
+
+  .cc h3{font-size:13px !important;}
+
+
+
+  /* ── Gráficos ── */
+
+  .cw{height:200px !important;}
+
+  .cws{height:160px !important;}
+
+
+
+  /* ── Tabelas com scroll horizontal ── */
+
+  .tw{overflow-x:auto !important;-webkit-overflow-scrolling:touch;}
+
+  .tw table{min-width:460px;}
+
+  th{font-size:11px !important;padding:8px 10px !important;}
+
+  td{font-size:12px !important;padding:8px 10px !important;}
+
+
+
+  /* ── Cabeçalho de página ── */
+
+  .ph{margin-bottom:12px !important;}
+
+  .ph h1{font-size:17px !important;}
+
+  .ph p{font-size:11px !important;}
+
+
+
+  /* ── Alertas ── */
+
+  .al{font-size:12px !important;padding:10px 12px !important;}
+
+  .al .ai{font-size:16px !important;}
+
+
+
+  /* ── Select / input: sem zoom no iOS ── */
+
+  select,input,textarea{font-size:16px !important;}
+
+
+
+  /* ── Filtro de meses: oculta pills, mostra select ── */
+
+  .pg-pills{display:none !important;}
+
+  #bal-select-mob{
+
+    display:block !important;
+
+    width:100%;
+
+    padding:10px 36px 10px 16px;
+
+    border-radius:24px;
+
+    border:2px solid var(--p);
+
+    background:var(--card);
+
+    color:var(--p);
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    outline:none;
+
+    margin-bottom:16px;
+
+    appearance:none;
+
+    -webkit-appearance:none;
+
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Cpath fill='%23171B2E' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+
+    background-repeat:no-repeat;
+
+    background-position:right 12px center;
+
+  }
+
+}
+
+
+
+/* ── Desktop: oculta select mobile ── */
+
+@media(min-width:768px){
+
+  #bal-select-mob{display:none !important;}
+
+}
+
+
+
+/* ════════════════════════════════════════════════════
+
+   TABLET  (768–1023 px)
+
+   ════════════════════════════════════════════════════ */
+
+@media(min-width:768px) and (max-width:1023px){
+
+  :root{--sw:185px;}
+
+  #sb{width:185px !important;}
+
+  #mn{padding:18px !important;}
+
+  .kg{grid-template-columns:repeat(2,1fr);}
+
+  .cw{height:220px !important;}
+
+  .g2{gap:12px;}
+
+}
+
+
+
+/* ── Desktop: oculta elementos mobile ─────────────── */
+
+@media(min-width:768px){
+
+  #mob-bar{display:none !important;}
+
+  #mob-ov{display:none !important;}
+
+}
+
+</style>
+
+
+
+<style>
+#dl-login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#171B2E 0%,#2B3155 100%);z-index:99999;display:flex;align-items:center;justify-content:center;}
+#dl-login-box{background:#fff;border-radius:14px;padding:44px 40px 36px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.45);text-align:center;}
+#dl-login-box .dl-logo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#2B3155;margin-bottom:6px;}
+#dl-login-box h2{font-size:20px;font-weight:700;color:#171B2E;margin-bottom:4px;}
+#dl-login-box p{font-size:12px;color:#888;margin-bottom:28px;}
+#dl-login-box input{width:100%;padding:11px 14px;border:1.5px solid #dde1f0;border-radius:8px;font-size:14px;color:#2C2C2C;margin-bottom:12px;outline:none;transition:border-color .2s;}
+#dl-login-box input:focus{border-color:#2B3155;}
+#dl-login-box button{width:100%;padding:12px;background:#E87722;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;margin-top:4px;}
+#dl-login-box button:hover{opacity:.88;}
+#dl-login-error{color:#C0392B;font-size:12px;margin-top:8px;min-height:18px;}
+#dl-pass-wrap{position:relative;margin-bottom:12px;}
+#dl-pass-wrap input{margin-bottom:0;padding-right:42px;}
+#dl-pass-wrap #dl-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#aaa;line-height:0;width:24px;height:24px;margin:0;outline:none;display:flex;align-items:center;justify-content:center;}
+#dl-pass-wrap #dl-eye:hover{opacity:1;color:#2B3155;}
+#dl-remember-wrap{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:#666;cursor:pointer;text-align:left;}
+#dl-remember-wrap input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#2B3155;flex-shrink:0;margin-bottom:0;padding:0;}
+</style>
+</head>
+
+<body>
+<div id="dl-login-overlay">
+  <div id="dl-login-box">
+    <div class="dl-logo">Sindicompany</div>
+    <h2>Condomínio Central das Artes</h2>
+    <p>Dashboard Financeiro &mdash; Acesso Restrito</p>
+    <input type="text" id="dl-user" placeholder="Usuário" autocomplete="off" />
+    <div id="dl-pass-wrap">
+      <input type="password" id="dl-pass" placeholder="Senha" autocomplete="new-password" readonly />
+      <button type="button" id="dl-eye" onclick="dlTogglePass()" title="Mostrar/ocultar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+    <label id="dl-remember-wrap">
+      <input type="checkbox" id="dl-remember" /> Lembrar minhas credenciais
+    </label>
+    <button onclick="dlDoLogin()">Entrar</button>
+    <div id="dl-login-error"></div>
+  </div>
+</div>
+
+
+<div id="mob-ov" onclick="mobClose()"></div>
+
+<div id="mob-bar">
+
+  <button id="mob-bar-btn" onclick="mobToggle()" aria-label="Menu">&#9776;</button>
+
+  <span id="mob-bar-title">Dashboard Financeiro</span>
+
+  <span id="mob-bar-page"></span>
+
+</div>
+
+
+
+
+
+<nav id="sb">
+
+  <div class="sb-logo">
+
+<img src="data:image/png;base64,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" style="max-width:160px;max-height:44px;object-fit:contain;margin-bottom:6px;" alt="Sindicompany">
+
+<h2>Central das Artes</h2>
+
+<p>Rua Apinaj&eacute;s, 1081 &middot; Perdizes &middot; S&atilde;o Paulo - SP</p>
+
+</div>
+
+  <div class="sb-nav">
+
+    <div class="ni on" onclick="nav('geral',this)"><span class="ic">&#128202;</span> <span>Vis&atilde;o Geral</span></div>
+
+    <div class="ni" onclick="nav('balanco',this)"><span class="ic">&#128203;</span> <span>Balan&ccedil;o Mensal</span></div>
+
+    <div class="ni" onclick="nav('despesas',this)"><span class="ic">&#128184;</span> <span>Despesas</span></div>
+
+    <div class="ni" onclick="nav('pvr',this)"><span class="ic">&#9878;</span> <span>Previsto &times; Realizado</span></div>
+
+    <div class="ni" onclick="nav('inadimp',this)"><span class="ic">&#9888;</span> <span>Inadimpl&ecirc;ncia</span></div>
+
+    <div class="ni" onclick="nav('orcamento',this)"><span class="ic">&#127919;</span> <span>Or&ccedil;amento</span></div>
+
+    <div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Banc&aacute;rio</span></div>
+
+  </div>
+
+  <div class="sb-foot">
+
+    <div id="sb-info">Carregando...</div>
+
+    <button onclick="window.print()">&#128424; Imprimir</button>
+
+  </div>
+
+</nav>
+
+
+
+<main id="mn">
+
+
+
+<!-- VISÃO GERAL -->
+
+<div id="pg-geral" class="pg on">
+
+  <div class="ph">
+
+    <h1>Vis&atilde;o Geral</h1>
+
+    <p id="geral-subtitle">Demonstrativo Financeiro &middot; Condom&iacute;nio Reserva Verde</p>
+
+  </div>
+
+  <div class="kg" id="geral-kpis"></div>
+
+  <div id="geral-alert"></div>
+
+  <div class="cc"><h3>&#128200; Evolu&ccedil;&atilde;o do Saldo Total</h3><div class="cw"><canvas id="cEvo"></canvas></div></div>
+
+  <div class="g2">
+
+    <div class="cc"><h3 id="pie-title">&#128176; Distribui&ccedil;&atilde;o do Saldo (M&ecirc;s Atual)</h3><div class="cws"><canvas id="cPieMar"></canvas></div></div>
+
+    <div class="cc"><h3>&#128202; Saldo por Conta</h3><div class="cws"><canvas id="cContas"></canvas></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- BALANÇO MENSAL -->
+
+<div id="pg-balanco" class="pg">
+
+  <div class="ph"><h1>Balan&ccedil;o Mensal</h1><p>Resumo financeiro cont&aacute;bil por per&iacute;odo</p></div>
+
+  <div class="pg-pills" id="bal-pills"></div>
+
+  <div id="balContent"></div>
+
+</div>
+
+
+
+<!-- DESPESAS -->
+
+<div id="pg-despesas" class="pg">
+
+  <div class="ph"><h1>Despesas por Categoria</h1><p>An&aacute;lise das despesas da conta Ordin&aacute;ria</p></div>
+
+  <div class="cc"><h3>&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><div class="cw"><canvas id="cDespBar"></canvas></div></div>
+
+  <div class="cc">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+
+      <h3 style="margin:0">&#127849; Distribui&ccedil;&atilde;o por Categoria</h3>
+
+      <select id="desp-mes-sel" onchange="updateDespPie(this.value)"
+
+        style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;">
+
+      </select>
+
+    </div>
+
+    <div style="max-width:680px;margin:0 auto;"><div class="cws" style="height:320px;"><canvas id="cPieMes"></canvas></div></div>
+
+  </div>
+
+  <div class="cc"><h3>&#128203; Detalhamento por Categoria e M&ecirc;s</h3><div class="tw"><table id="tblDesp"></table></div></div>
+
+</div>
+
+
+
+<!-- PREVISTO × REALIZADO -->
+
+<div id="pg-pvr" class="pg">
+
+  <div class="ph"><h1>Previsto &times; Realizado</h1><p>Comparativo entre a previs&atilde;o or&ccedil;ament&aacute;ria aprovada em assembleia e os valores realizados</p></div>
+
+  <div class="cc"><h3>&#127919; Previsto &times; Realizado por M&ecirc;s (Conta Ordin&aacute;ria)</h3><div class="cw"><canvas id="cPvr"></canvas></div></div>
+
+  <div class="g2">
+
+    <div class="cc"><h3>&#128203; Tabela Comparativa</h3><div class="tw"><table id="tblPvr"></table></div></div>
+
+    <div class="cc"><h3>&#128202; Gap Previsto vs. Realizado</h3><div class="cws"><canvas id="cPvrGap"></canvas></div></div>
+
+  </div>
+
+  <div class="al inf"><span class="ai">&#8505;</span><div>O <strong>Previsto</strong> representa os valores do Resumo de Emiss&atilde;o aprovados em assembleia na previs&atilde;o or&ccedil;ament&aacute;ria de cada m&ecirc;s.</div></div>
+
+</div>
+
+
+
+<!-- INADIMPLÊNCIA -->
+
+<div id="pg-inadimp" class="pg">
+
+  <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Cotas em aberto e processos de cobran&ccedil;a</p></div>
+
+  <div class="cc"><h3>&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia (R$)</h3><div class="cw"><canvas id="cInad"></canvas></div></div>
+
+  <div class="cc"><h3>&#128203; Detalhamento por M&ecirc;s</h3><div class="tw"><table id="tblInad"></table></div></div>
+
+</div>
+
+
+
+<!-- SALDO BANCÁRIO -->
+
+<div id="pg-banco" class="pg">
+
+  <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Posi&ccedil;&atilde;o nas contas banc&aacute;rias e aplica&ccedil;&otilde;es</p></div>
+
+  <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
+
+  <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
+
+</div>
+
+
+
+
+
+<div id="pg-orcamento" class="pg">
+
+  <div class="ph"><h1>Or&ccedil;amento</h1><p>Valida&ccedil;&atilde;o or&ccedil;ament&aacute;ria &mdash; Receitas &times; Despesas</p></div>
+
+  <div id="orc-content"></div>
+
+</div>
+
+</main>
+
+
+
+<script>
+
+// ════════════════════════════════════════════════════════════════════════════════
+
+//  ★ DADOS DO CONDOMÍNIO — EDITE AQUI PARA ATUALIZAR ★
+
+// ════════════════════════════════════════════════════════════════════════════════
+
+
+
+var CONFIG = {
+  nome: 'Condomínio Central das Artes',
+  unidades: '27',
+  sindica: 'Síndico Profissional',
+  orcamento: {
+    exercicio: '2025/2026',
+    totalAnual: 528211.00,
+    meses: {
+      jun25: 44830.28, jul25: 47096.17, ago25: 48053.03,
+      set25: 48947.13, out25: 49939.20, nov25: 50566.95,
+      jan26: 47126.25, fev26: 43437.54, mar26: 44430.02,
+      abr26: 47091.10, mai26: 56693.33
+    }
+  }
+};
+
+
+
+var EVO_L = ['Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26'];
+
+var EVO_V = [27003.32,28340.34,48883.79,47343.77,50158.43,48494.41,30005.49,30166.57,23414.39,23451.23,25545.20];
+
+
+
+var BAL = {
+
+  jun25: {tit:'Junho / 2025',per:'01/06/2025 a 30/06/2025',tAnt:33240.09,tCred:43700.54,tDeb:49937.31,tAtual:27003.32,contas:[{n:'ORDINÁRIA',a:26913.35,c:41816.50,d:49937.31,s:18792.54},{n:'FUNDO DE RESERVA',a:6326.74,c:1884.04,d:0,s:8210.78}],prev:44830.28,real:41739.15,tDesp:49937.31,fac:0,inad:3233.99,inadProc:0,banco:{cc:27003.32,cdb:18710.81,priv:2293.01},desp:[{c:'Serviços Terceirizados',v:6131.01},{c:'Consumos',v:6398.70},{c:'Contratos',v:24364.72},{c:'Impostos/Taxas',v:453.36},{c:'Seguros',v:2079.84},{c:'Manutenção/Serviços',v:5534.05},{c:'Administrativo',v:415},{c:'Cobrança',v:70},{c:'Compras/Aquisições',v:2150.63},{c:'Outros',v:2340}]},
+
+  jul25: {tit:'Julho / 2025',per:'01/07/2025 a 31/07/2025',tAnt:27003.32,tCred:49227.96,tDeb:47890.94,tAtual:28340.34,contas:[{n:'ORDINÁRIA',a:18792.54,c:47135.82,d:47890.94,s:18037.42},{n:'FUNDO DE RESERVA',a:8210.78,c:2092.14,d:0,s:10302.92}],prev:47096.17,real:47096.17,tDesp:47890.94,fac:0,inad:0,inadProc:0,banco:{cc:28340.34,cdb:18942.32,priv:0.97},desp:[{c:'Serviços Terceirizados',v:21644},{c:'Consumos',v:7681.34},{c:'Contratos',v:13777.20},{c:'Seguros',v:2079.84},{c:'Manutenção/Serviços',v:2070.78},{c:'Administrativo',v:133.05},{c:'Cobrança',v:70},{c:'Compras/Aquisições',v:434.73}]},
+
+  ago25: {tit:'Agosto / 2025',per:'01/08/2025 a 31/08/2025',tAnt:47283.63,tCred:52060.67,tDeb:50460.51,tAtual:48883.79,contas:[{n:'ORDINÁRIA',a:18038.39,c:49344.21,d:50460.51,s:16922.09},{n:'FUNDO DE RESERVA',a:10302.92,c:2102.60,d:0,s:12405.52}],prev:48053.03,real:46318.85,tDesp:50460.51,fac:0,inad:1811.32,inadProc:0,banco:{cc:29410.44,cdb:19156.18,priv:317.17},desp:[{c:'Serviços Terceirizados',v:21875.23},{c:'Consumos',v:8569.94},{c:'Contratos',v:13557.35},{c:'Seguros',v:2079.84},{c:'Manutenção/Serviços',v:2575.49},{c:'Administrativo',v:297.94},{c:'Cobrança',v:70},{c:'Compras/Aquisições',v:434.72}]},
+
+  set25: {tit:'Setembro / 2025',per:'01/09/2025 a 30/09/2025',tAnt:48883.79,tCred:50314.81,tDeb:51854.83,tAtual:47343.77,contas:[{n:'ORDINÁRIA',a:16922.09,c:48058.27,d:51854.83,s:13125.53},{n:'FUNDO DE RESERVA',a:12405.52,c:2029.89,d:0,s:14435.41}],prev:48947.13,real:45349.28,tDesp:51854.83,fac:0,inad:3754.42,inadProc:0,banco:{cc:26934.42,cdb:19382.83,priv:1026.52},desp:[{c:'Serviços Terceirizados',v:13549.72},{c:'Consumos',v:7295.37},{c:'Contratos',v:23198.78},{c:'Seguros',v:2079.84},{c:'Manutenção/Serviços',v:1560.14},{c:'Administrativo',v:44.46},{c:'Cobrança',v:67.50},{c:'Compras/Aquisições',v:2169.02},{c:'Outros',v:890}]},
+
+  out25: {tit:'Outubro / 2025',per:'01/10/2025 a 31/10/2025',tAnt:47343.77,tCred:52755.45,tDeb:49940.79,tAtual:50158.43,contas:[{n:'ORDINÁRIA',a:13125.53,c:50124.05,d:49940.79,s:13308.79},{n:'FUNDO DE RESERVA',a:14435.41,c:2191.58,d:0,s:16626.99}],prev:49939.20,real:48242.01,tDesp:49940.79,fac:0,inad:1771.48,inadProc:0,banco:{cc:30443.39,cdb:19622.65,priv:92.39},desp:[{c:'Serviços Terceirizados',v:14708.30},{c:'Consumos',v:10007.31},{c:'Contratos',v:19683.98},{c:'Seguros',v:2079.93},{c:'Manutenção/Serviços',v:2443.19},{c:'Administrativo',v:43.08},{c:'Cobrança',v:75},{c:'Outros',v:900}]},
+
+  nov25: {tit:'Novembro / 2025',per:'01/11/2025 a 30/11/2025',tAnt:50158.43,tCred:53210.87,tDeb:54874.89,tAtual:48494.41,contas:[{n:'ORDINÁRIA',a:13308.79,c:50899.99,d:54874.89,s:9333.89},{n:'FUNDO DE RESERVA',a:16626.99,c:2110.55,d:0,s:18737.54}],prev:50566.95,real:50566.95,tDesp:54874.89,fac:0,inad:0,inadProc:0,banco:{cc:28655.66,cdb:18822.98,priv:34.17},desp:[{c:'Serviços Terceirizados',v:21796.72},{c:'Consumos',v:9812.31},{c:'Contratos',v:14217.98},{c:'Manutenção/Serviços',v:7118.44},{c:'Administrativo',v:802.94},{c:'Cobrança',v:226.50},{c:'Outros',v:900}]},
+
+  jan26: {tit:'Janeiro / 2026',per:'01/01/2026 a 31/01/2026',tAnt:30672.34,tCred:54046.75,tDeb:54713.60,tAtual:30005.49,contas:[{n:'ORDINÁRIA',a:-11106.14,c:51591.65,d:54713.60,s:-14228.09},{n:'FUNDO DE RESERVA',a:20920.97,c:2228.64,d:0,s:23149.61}],prev:47126.25,real:47126.25,tDesp:54713.60,fac:0,inad:0,inadProc:0,banco:{cc:9641.52,cdb:20383.97,priv:80},desp:[{c:'Serviços Terceirizados',v:21997.80},{c:'Consumos',v:7063.70},{c:'Contratos',v:12539.98},{c:'Manutenção/Serviços',v:12823.36},{c:'Administrativo',v:216.26},{c:'Cobrança',v:72.50}]},
+
+  fev26: {tit:'Fevereiro / 2026',per:'01/02/2026 a 28/02/2026',tAnt:30005.49,tCred:50843.10,tDeb:50682.02,tAtual:30166.57,contas:[{n:'ORDINÁRIA',a:-14228.09,c:48570.55,d:50682.02,s:-16339.56},{n:'FUNDO DE RESERVA',a:23149.61,c:2076.41,d:0,s:25226.02}],prev:43437.54,real:43437.54,tDesp:50682.02,fac:0,inad:0,inadProc:0,banco:{cc:9686.46,cdb:20480.11,priv:0},desp:[{c:'Serviços Terceirizados',v:22892.08},{c:'Consumos',v:8250.55},{c:'Contratos',v:12733.33},{c:'Manutenção/Serviços',v:5203.08},{c:'Administrativo',v:534.24},{c:'Cobrança',v:68.74},{c:'Outros',v:1000}]},
+
+  mar26: {tit:'Março / 2026',per:'01/03/2026 a 31/03/2026',tAnt:30166.57,tCred:94370.78,tDeb:101122.96,tAtual:23414.39,contas:[{n:'ORDINÁRIA',a:-16339.56,c:92427.29,d:53473.34,s:22614.39},{n:'FUNDO DE RESERVA',a:25226.02,c:1943.49,d:27169.51,s:0}],prev:44430.02,real:44430.02,tDesp:53473.34,fac:0,inad:0,inadProc:0,banco:{cc:23414.39,cdb:0,priv:0},desp:[{c:'Serviços Terceirizados',v:22806.18},{c:'Consumos',v:8246.97},{c:'Contratos',v:15772.53},{c:'Manutenção/Serviços',v:6225.31},{c:'Administrativo',v:35.70},{c:'Cobrança',v:66.75},{c:'Outros',v:319.90}]},
+
+  abr26: {tit:'Abril / 2026',per:'01/04/2026 a 30/04/2026',tAnt:23414.39,tCred:51792.71,tDeb:51755.87,tAtual:23451.23,contas:[{n:'ORDINÁRIA',a:22614.39,c:49602.63,d:51755.87,s:20461.15},{n:'FUNDO DE RESERVA',a:0,c:2190.08,d:0,s:2190.08}],prev:47091.10,real:47091.10,tDesp:51755.87,fac:0,inad:0,inadProc:0,banco:{cc:23451.23,cdb:0,priv:0},desp:[{c:'Serviços Terceirizados',v:22758.72},{c:'Consumos',v:10198.76},{c:'Contratos',v:13068.33},{c:'Impostos/Taxas',v:539.10},{c:'Manutenção/Serviços',v:4756.40},{c:'Administrativo',v:39.90},{c:'Cobrança',v:74.76},{c:'Outros',v:319.90}]},
+
+  mai26: {tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:23451.23,tCred:56967.30,tDeb:54873.33,tAtual:25545.20,contas:[{n:'ORDINÁRIA',a:20461.15,c:54813.16,d:54873.33,s:20400.98},{n:'FUNDO DE RESERVA',a:2190.08,c:2154.14,d:0,s:4344.22}],prev:56693.33,real:54618.68,tDesp:54873.33,fac:0,inad:2159.66,inadProc:0,banco:{cc:25545.20,cdb:0,priv:0},desp:[{c:'Serviços Terceirizados',v:22972.32},{c:'Consumos',v:11316.64},{c:'Contratos',v:13859.34},{c:'Impostos/Taxas',v:27.90},{c:'Manutenção/Serviços',v:4985.67},{c:'Administrativo',v:1386.75},{c:'Cobrança',v:324.71}]}
+
+};
+
+
+
+var MESES = Object.keys(BAL);
+
+var chartsBuilt = false;
+
+
+
+function R(n) {
+
+  if (n === null || n === undefined || isNaN(n)) return '-';
+
+  var a = Math.abs(n).toFixed(2).split('.');
+
+  var i = a[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+  var s = 'R$\u00a0' + i + ',' + a[1];
+
+  return n < 0 ? '(' + s + ')' : s;
+
+}
+
+
+
+function kpi(lbl, val, cls, sub) {
+
+  return '<div class="kc ' + cls + '"><div class="kl">' + lbl + '</div><div class="kv">' + val + '</div><div class="ks">' + sub + '</div></div>';
+
+}
+
+
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+window.onload = function() {
+
+  var ultimo = BAL[MESES[MESES.length - 1]];
+
+  var primeiro = BAL[MESES[0]];
+
+
+
+  document.getElementById('sb-info').innerHTML =
+
+    'Atualizado: ' + EVO_L[EVO_L.length - 1] +
+
+    '<br>Administradora: SK Condominios';
+
+
+
+  // Subtítulo
+
+  document.getElementById('geral-subtitle').innerHTML =
+
+    'Demonstrativo Financeiro &middot; ' + primeiro.tit + ' &ndash; ' + ultimo.tit +
+
+    ' &middot; Condom&iacute;nio ' + CONFIG.unidades + ' &ndash; ' + CONFIG.nome;
+
+
+
+  // KPIs Visão Geral
+
+  var totalRec = 0, totalDesp = 0;
+
+  MESES.forEach(function(k) {
+
+    var m = BAL[k]; if (k !== MESES[0]) { totalRec += m.tCred; totalDesp += m.tDeb; }
+
+  });
+
+  var kg = document.getElementById('geral-kpis');
+
+  kg.innerHTML =
+
+    kpi('Saldo Total (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
+
+        R(ultimo.tAtual), '', '&#8595; vs ' + primeiro.tit.split(' ')[0] + ': ' + R(primeiro.tAtual)) +
+
+    kpi('Aplicação F. Reserva',
+
+        R(getContaSaldo(ultimo, 'APLICAÇÃO') || 0), 'o', 'Saldo da aplicação financeira') +
+
+    kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
+
+        R(totalRec), 'g', 'Cotas + rendimentos') +
+
+    kpi('Despesas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
+
+        R(totalDesp), 'r', 'Total de despesas do per&iacute;odo');
+
+
+
+  // Alerta
+
+  var diff = totalRec - totalDesp;
+
+  var alertEl = document.getElementById('geral-alert');
+
+  if (diff < 0) {
+
+    alertEl.innerHTML = '<div class="al warn"><span class="ai">&#9888;</span><div><strong>D&eacute;ficit operacional acumulado:</strong> As despesas totais (' + R(totalDesp) + ') superaram as receitas realizadas (' + R(totalRec) + ') em <strong>' + R(Math.abs(diff)) + '</strong>.</div></div>';
+
+  } else {
+
+    alertEl.innerHTML = '<div class="al ok"><span class="ai">&#9989;</span><div><strong>Superávit operacional acumulado:</strong> As receitas (' + R(totalRec) + ') superaram as despesas (' + R(totalDesp) + ') em <strong>' + R(diff) + '</strong>.</div></div>';
+
+  }
+
+
+
+  document.getElementById('pie-title').innerHTML = '&#128176; Distribui&ccedil;&atilde;o do Saldo (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')';
+
+
+
+  // Pills balanço
+
+  var pillsEl = document.getElementById('bal-pills');
+
+  MESES.forEach(function(k, i) {
+
+    var m = BAL[k];
+
+    var label = m.tit.replace(' / ', '/');
+
+    var btn = document.createElement('button');
+
+    btn.className = 'pill' + (i === MESES.length - 1 ? ' on' : '');
+
+    btn.setAttribute('onclick', "selectMes('" + k + "',this)");
+
+    btn.textContent = label;
+
+    pillsEl.appendChild(btn);
+
+  });
+
+  selectMes(MESES[MESES.length - 1], null);
+
+
+
+  buildTblDesp();
+
+  buildTblPvr();
+
+  buildTblInad();
+
+  buildTblBanco();
+
+  buildCharts();
+
+  buildOrcamento();
+
+  chartsBuilt = true;
+
+};
+
+
+
+function getContaSaldo(m, keyword) {
+
+  var found = m.contas.find(function(c){ return c.n.indexOf(keyword) >= 0; });
+
+  return found ? found.s : null;
+
+}
+
+
+
+// ── NAVEGAÇÃO ─────────────────────────────────────────────────────────────────
+
+function nav(id, el) {
+
+  document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
+
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+
+  document.getElementById('pg-' + id).classList.add('on');
+
+  if (el) el.classList.add('on');
+
+}
+
+
+
+// ── BALANÇO MENSAL ────────────────────────────────────────────────────────────
+
+function selectMes(id, btn) {
+
+  document.querySelectorAll('.pg-pills .pill').forEach(function(p){ p.classList.remove('on'); });
+
+  if (btn) btn.classList.add('on');
+
+  renderBal(id);
+
+}
+
+
+
+function renderBal(id) {
+
+  var m = BAL[id];
+
+  var gap = m.real - m.prev;               // gap = real − prev
+
+  var gcls = gap >= 0 ? 'ok' : 'bad';     // positivo (dentro do orç.) → verde ✓
+
+  var gico = gap >= 0 ? '&#9989;' : '&#10060;';
+
+
+
+  var h = '<div class="kg">';
+
+  h += kpi('Saldo Anterior', R(m.tAnt), '', '');
+
+  h += kpi('Cr&eacute;ditos do M&ecirc;s', R(m.tCred), 'g', 'Entradas');
+
+  h += kpi('D&eacute;bitos do M&ecirc;s', R(m.tDeb), 'r', 'Sa&iacute;das');
+
+  h += kpi('Saldo Atual', R(m.tAtual), m.tAtual > m.tAnt ? 'g' : 'r', m.tAtual > m.tAnt ? '&#8593; acima do anterior' : '&#8595; abaixo do anterior');
+
+  h += '</div>';
+
+
+
+  h += '<div class="cc"><h3>&#128203; Resumo por Conta &ndash; ' + m.tit + ' &nbsp;<small style="color:var(--muted);font-weight:400">' + m.per + '</small></h3>';
+
+  h += '<div class="tw"><table>';
+
+  h += '<tr><th>Conta</th><th>Saldo Anterior</th><th>Cr&eacute;ditos</th><th>D&eacute;bitos</th><th>Saldo Atual</th></tr>';
+
+  m.contas.forEach(function(c) {
+
+    var sc = c.s < 0 ? ' style="color:var(--r)"' : '';
+
+    h += '<tr><td class="bd">' + c.n + '</td>';
+
+    h += '<td class="nr">' + R(c.a) + '</td>';
+
+    h += '<td class="nr" style="color:var(--g)">' + R(c.c) + '</td>';
+
+    h += '<td class="nr" style="color:' + (c.d > 0 ? 'var(--r)' : 'var(--muted)') + '">' + R(c.d) + '</td>';
+
+    h += '<td class="nr"' + sc + '>' + R(c.s) + '</td></tr>';
+
+  });
+
+  h += '<tr class="tot"><td>TOTAL</td><td class="nr">' + R(m.tAnt) + '</td><td class="nr" style="color:var(--g)">' + R(m.tCred) + '</td><td class="nr" style="color:var(--r)">' + R(m.tDeb) + '</td><td class="nr" style="color:var(--p)">' + R(m.tAtual) + '</td></tr>';
+
+  h += '</table></div></div>';
+
+
+
+  h += '<div class="cc"><h3>&#127919; Previsto &times; Realizado (Conta Ordin&aacute;ria)</h3>';
+
+  h += '<div class="al ' + gcls + '"><span class="ai">' + gico + '</span>';
+
+  h += '<div>Previsto: <strong>' + R(m.prev) + '</strong>&nbsp;&nbsp;|&nbsp;&nbsp;Realizado: <strong>' + R(m.real) + '</strong>&nbsp;&nbsp;|&nbsp;&nbsp;Diferen&ccedil;a: <strong>' + R(gap) + '</strong></div></div></div>';
+
+
+
+  h += '<div class="cc"><h3>&#128184; Despesas por Categoria &ndash; ' + m.tit + '</h3><div class="tw"><table>';
+
+  h += '<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participa&ccedil;&atilde;o</th></tr>';
+
+  m.desp.forEach(function(d) {
+
+    var pct = (d.v / m.tDesp * 100).toFixed(1);
+
+    h += '<tr><td>' + d.c + '</td><td class="nr">' + R(d.v) + '</td><td class="nr">' + pct + '%</td>';
+
+    h += '<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:' + pct + '%"></div></div></td></tr>';
+
+  });
+
+  h += '<tr class="tot"><td>TOTAL ORDIN&Aacute;RIA</td><td class="nr">' + R(m.tDesp) + '</td><td colspan="2"></td></tr>';
+
+  if (m.fac > 0) {
+
+    h += '<tr><td style="color:var(--r)"><strong>FUNDO FACHADA</strong> (Colorcryl &ndash; reforma)</td><td class="nr" style="color:var(--r)"><strong>' + R(m.fac) + '</strong></td><td colspan="2" style="font-size:11px;color:var(--muted)">n&atilde;o entra nas despesas ordin&aacute;rias</td></tr>';
+
+  }
+
+  h += '</table></div></div>';
+
+
+
+  document.getElementById('balContent').innerHTML = h;
+
+}
+
+
+
+// ── ORÇAMENTO / VALIDAÇÃO ─────────────────────────────────────────────────────
+
+function buildOrcamento() {
+
+  var orc = CONFIG.orcamento;
+
+  var mesesComOrc = MESES.filter(function(k){ return orc.meses[k] !== undefined; });
+
+
+
+  var totalPrev = 0, totalReal = 0;
+
+  mesesComOrc.forEach(function(k) {
+
+    totalPrev += (orc.meses[k] || 0);
+
+    totalReal += (BAL[k].real || 0);
+
+  });
+
+
+
+  var gap = totalReal - totalPrev;
+
+  var pctExec = totalReal / (orc.totalAnual || 1) * 100;
+
+  var pctPvR = totalReal / totalPrev * 100;
+
+  var statusCls = gap >= 0 ? 'ok' : (gap > -50000 ? 'warn' : 'bad');
+
+  var statusTxt = gap >= 0 ? '&#9989; Arrecadação acima do planejado' : '&#9888; Arrecadação abaixo do planejado';
+
+
+
+  var mesesRestantes = 12 - mesesComOrc.length;
+
+  var projecaoAnual = mesesComOrc.length > 0 ? (totalReal / mesesComOrc.length) * 12 : 0;
+
+
+
+  var h = '';
+
+
+
+  // Card de status geral
+
+  h += '<div class="val-card ' + statusCls + '">';
+
+  h += '<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">&#127919; Valida&ccedil;&atilde;o Or&ccedil;ament&aacute;ria &mdash; Exerc&iacute;cio ' + orc.exercicio + '</h3>';
+
+  h += '<p style="font-size:13px;color:var(--muted)">Compara&ccedil;&atilde;o entre o aprovado em assembleia e o realizado acumulado &bull; ' + mesesComOrc.length + ' meses apurados</p>';
+
+  h += '<div class="val-grid">';
+
+  h += '<div class="val-item"><div class="val-label">Total Arrecadado (Aprovado)</div><div class="val-value" style="color:var(--p)">' + R(orc.totalAnual) + '</div><div class="val-pct">Assembleia ' + orc.exercicio + '</div></div>';
+
+  h += '<div class="val-item"><div class="val-label">Total Arrecadado (' + mesesComOrc.length + ' meses)</div><div class="val-value" style="color:var(--o)">' + R(totalPrev) + '</div><div class="val-pct">' + (totalPrev/orc.totalAnual*100).toFixed(1) + '% do total anual</div></div>';
+
+  h += '<div class="val-item"><div class="val-label">Total Despesas</div><div class="val-value" style="color:' + (gap>=0?'var(--g)':'var(--r)') + '">' + R(totalReal) + '</div><div class="val-pct">' + pctPvR.toFixed(1) + '% do previsto | ' + statusTxt + '</div></div>';
+
+  h += '<div class="val-item"><div class="val-label">Varia&ccedil;&atilde;o Previsto × Realizado</div><div class="val-value" style="color:' + (gap<=0?'var(--g)':'var(--r)') + '">' + R(Math.abs(gap)) + '</div><div class="val-pct">' + (gap>=0?'Economia':'Estouro') + ' de ' + Math.abs(pctPvR-100).toFixed(1) + '%</div></div>';
+
+  h += '</div>';
+
+
+
+  // Barra de execução orçamentária
+
+  var pctBar = Math.min(pctExec, 100);
+
+  var barColor = pctExec >= 100 ? 'var(--g)' : pctExec >= 80 ? 'var(--y)' : 'var(--r)';
+
+  h += '<div class="progress-wrap" style="margin-top:16px">';
+
+  h += '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px">';
+
+  h += '<span>Execu&ccedil;&atilde;o do or&ccedil;amento anual</span><span>' + pctExec.toFixed(1) + '%</span></div>';
+
+  h += '<div class="progress-bar"><div class="progress-fill" style="width:' + pctBar + '%;background:' + barColor + '"><span class="progress-label">' + pctExec.toFixed(1) + '%</span></div></div>';
+
+  h += '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">';
+
+  h += '<span>Jan</span><span>Proje&ccedil;&atilde;o anual: ' + R(projecaoAnual) + '</span><span>Dez</span></div>';
+
+  h += '</div>';
+
+  h += '</div>';
+
+
+
+  // Tabela mensal detalhada
+
+  h += '<div class="cc"><h3>&#128203; Detalhamento Mensal — Previsto &times; Realizado</h3><div class="tw"><table>';
+
+  h += '<tr><th>M&ecirc;s</th><th>Previsto (Assembleia)</th><th>Realizado</th><th>Diferen&ccedil;a</th><th>% Execu&ccedil;&atilde;o</th><th>Status</th></tr>';
+
+
+
+  var cumPrev = 0, cumReal = 0;
+
+  mesesComOrc.forEach(function(k) {
+
+    var m = BAL[k];
+
+    var p = orc.meses[k];
+
+    var r = m.real;
+
+    var g = r - p;
+
+    var pct = (r / p * 100).toFixed(1);
+
+    cumPrev += p; cumReal += r;
+
+    var cs = g >= 0 ? 'color:var(--g)' : 'color:var(--r)';
+
+    var badge = g >= 0 ? '<span class="badge bok">&#10003; Ok</span>' : (g > -20000 ? '<span class="badge bwarn">&#9888; Aten&ccedil;&atilde;o</span>' : '<span class="badge bbad">&#10006; D&eacute;ficit</span>');
+
+    h += '<tr><td class="bd">' + m.tit + '</td><td class="nr">' + R(p) + '</td><td class="nr">' + R(r) + '</td>';
+
+    h += '<td class="nr" style="' + cs + '">' + R(g) + '</td><td class="nr" style="' + cs + '">' + pct + '%</td><td>' + badge + '</td></tr>';
+
+  });
+
+
+
+  var gAcc = cumReal - cumPrev;
+
+  var csAcc = gAcc >= 0 ? 'color:var(--g)' : 'color:var(--r)';
+
+  h += '<tr class="tot"><td>ACUMULADO</td><td class="nr">' + R(cumPrev) + '</td><td class="nr">' + R(cumReal) + '</td>';
+
+  h += '<td class="nr" style="' + csAcc + '">' + R(gAcc) + '</td><td class="nr" style="' + csAcc + '">' + (cumReal/cumPrev*100).toFixed(1) + '%</td><td></td></tr>';
+
+  h += '</table></div></div>';
+
+
+
+  // Alerta de projeção
+
+  var projecaoReceita = mesesComOrc.length > 0 ? (totalPrev / mesesComOrc.length) * 12 : 0;
+
+  if (projecaoAnual < projecaoReceita) {
+
+    var excesso = projecaoReceita - projecaoAnual;
+
+    h += '<div class="al bad"><span class="ai">&#9888;</span><div><strong>Atenção:</strong> A projeção de despesas (' + R(projecaoAnual) + ') supera a receita anualizada projetada (' + R(projecaoReceita) + ') em <strong>' + R(excesso) + '</strong>. Déficit projetado.</div></div>';
+
+  } else {
+
+    var economia = projecaoReceita - projecaoAnual;
+
+    h += '<div class="al ok"><span class="ai">&#9989;</span><div><strong>Projeção favorável:</strong> As despesas projetadas (' + R(projecaoAnual) + ') estão <strong>' + R(economia) + '</strong> abaixo da receita anualizada projetada (' + R(projecaoReceita) + '). Exercício com superávit.</div></div>';
+
+  }
+
+
+
+  document.getElementById('orc-content').innerHTML = h;
+
+}
+
+
+
+// ── TABELAS ───────────────────────────────────────────────────────────────────
+
+function buildTblDesp() {
+
+  // Coleta todas as categorias
+
+  var cats = {};
+
+  MESES.forEach(function(k) {
+
+    BAL[k].desp.forEach(function(d){ cats[d.c] = true; });
+
+  });
+
+  var catList = Object.keys(cats);
+
+  var labels = MESES.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
+
+
+
+  var h = '<tr><th>Categoria</th>' + labels.map(function(l){ return '<th style="text-align:right">' + l + '</th>'; }).join('') + '</tr>';
+
+  catList.forEach(function(cat) {
+
+    var vals = MESES.map(function(k) {
+
+      var d = BAL[k].desp.find(function(x){ return x.c === cat; });
+
+      return d ? d.v : 0;
+
+    });
+
+    if (vals.every(function(v){ return v === 0; })) return;
+
+    h += '<tr><td>' + cat + '</td>' + vals.map(function(v){ return '<td class="nr">' + (v > 0 ? R(v) : '-') + '</td>'; }).join('') + '</tr>';
+
+  });
+
+  var tots = MESES.map(function(k){ return BAL[k].tDesp; });
+
+  h += '<tr class="tot"><td>TOTAL</td>' + tots.map(function(v){ return '<td class="nr">' + R(v) + '</td>'; }).join('') + '</tr>';
+
+  document.getElementById('tblDesp').innerHTML = h;
+
+
+
+  // Popula o select de meses (último mês selecionado por padrão)
+
+  var sel = document.getElementById('desp-mes-sel');
+
+  sel.innerHTML = '';
+
+  MESES.forEach(function(k) {
+
+    var lbl = BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2];
+
+    var opt = document.createElement('option');
+
+    opt.value = k;
+
+    opt.text = lbl;
+
+    sel.appendChild(opt);
+
+  });
+
+  sel.value = MESES[MESES.length - 1];
+
+}
+
+
+
+function updateDespPie(mesKey) {
+
+  if (!mesKey || !BAL[mesKey]) return;
+
+  // Paleta moderna com 9 cores distintas e visualmente harmoniosas
+
+  var DESP_COLORS = {
+
+    'MANUTENÇÃO':          '#1565C0',  // azul escuro
+
+    'ADMINISTRATIVO':      '#E53935',  // vermelho
+
+    'CONTRATOS':           '#2E7D32',  // verde escuro
+
+    'PESSOAL':             '#F57F17',  // âmbar escuro
+
+    'CONSUMOS':            '#6A1B9A',  // roxo escuro
+
+    'TARIFAS E IMPOSTOS':  '#00695C',  // teal escuro
+
+    'DESPESA FINANCEIRA':  '#AD1457',  // rosa escuro
+
+    'OUTROS':              '#37474F',  // cinza escuro
+
+  };
+
+  var DEFAULT_C = ['#1565C0','#E53935','#2E7D32','#F57F17','#6A1B9A','#00695C','#AD1457','#37474F'];
+
+  var m = BAL[mesKey];
+
+  var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+
+  var total = m.desp.reduce(function(a,d){ return a+d.v; }, 0);
+
+  var bgColors  = m.desp.map(function(d,i){ return DESP_COLORS[d.c] || DEFAULT_C[i % DEFAULT_C.length]; });
+
+  var hoverC    = bgColors.map(function(c){
+
+    // versão ligeiramente mais clara no hover
+
+    return c + 'CC';
+
+  });
+
+  mkChart('cPieMes', {
+
+    type: 'doughnut',
+
+    data: {
+
+      labels: m.desp.map(function(d){ return d.c; }),
+
+      datasets: [{
+
+        data: m.desp.map(function(d){ return d.v; }),
+
+        backgroundColor: bgColors,
+
+        hoverBackgroundColor: bgColors,
+
+        borderColor: '#ffffff',
+
+        borderWidth: 3,
+
+        hoverOffset: 10
+
+      }]
+
+    },
+
+    options: {
+
+      responsive: true,
+
+      maintainAspectRatio: false,
+
+      cutout: '62%',
+
+      plugins: {
+
+        legend: {
+
+          position: 'right',
+
+          labels: {
+
+            font: { size: 12, family: 'inherit' },
+
+            boxWidth: 14,
+
+            padding: 12,
+
+            color: '#333',
+
+            generateLabels: function(chart) {
+
+              var data = chart.data;
+
+              return data.labels.map(function(label, i) {
+
+                var val = data.datasets[0].data[i];
+
+                var pct = total > 0 ? (val / total * 100).toFixed(1) : '0.0';
+
+                return {
+
+                  text: label + '  ' + pct + '%',
+
+                  fillStyle: data.datasets[0].backgroundColor[i],
+
+                  strokeStyle: '#fff',
+
+                  lineWidth: 1,
+
+                  index: i
+
+                };
+
+              });
+
+            }
+
+          }
+
+        },
+
+        tooltip: {
+
+          backgroundColor: 'rgba(23,27,46,0.92)',
+
+          titleColor: '#fff',
+
+          bodyColor: '#dde',
+
+          padding: 10,
+
+          cornerRadius: 8,
+
+          callbacks: {
+
+            label: function(ctx) {
+
+              var pct = total > 0 ? (ctx.parsed / total * 100).toFixed(1) : '0.0';
+
+              return '  R$ ' + ctx.parsed.toLocaleString('pt-BR', {minimumFractionDigits:2}) + '  (' + pct + '%)';
+
+            }
+
+          }
+
+        },
+
+        title: {
+
+          display: true,
+
+          text: 'Despesas Ordin\u00e1rias \u2014 ' + lbl,
+
+          font: { size: 14, weight: '700', family: 'inherit' },
+
+          color: '#171B2E',
+
+          padding: { bottom: 12 }
+
+        }
+
+      }
+
+    }
+
+  });
+
+}
+
+
+
+function buildTblPvr() {
+
+  var h = '<tr><th>M&ecirc;s</th><th>Previsto</th><th>Realizado</th><th>Diferen&ccedil;a</th><th>Var. %</th></tr>';
+
+  MESES.forEach(function(k) {
+
+    var m = BAL[k];
+
+    var g = m.real - m.prev;                           // gap = real − prev
+
+    var pct = (g / m.prev * 100).toFixed(1);
+
+    var cs = g >= 0 ? 'color:var(--g)' : 'color:var(--r)';  // positivo → verde ✓
+
+    var ico = g >= 0 ? ' ✓' : ' ✗';
+
+    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+
+    h += '<tr><td class="bd">' + lbl + '</td><td class="nr">' + R(m.prev) + '</td><td class="nr">' + R(m.real) + '</td>';
+
+    h += '<td class="nr" style="' + cs + '"><strong>' + R(g) + ico + '</strong></td><td class="nr" style="' + cs + '">' + pct + '%</td></tr>';
+
+  });
+
+  document.getElementById('tblPvr').innerHTML = h;
+
+}
+
+
+
+function buildTblInad() {
+
+  var h = '<tr><th>M&ecirc;s</th><th>Total em Aberto</th><th>Recebido de Cotas em Atraso</th><th>Status</th></tr>';
+
+  MESES.forEach(function(k) {
+
+    var m = BAL[k];
+
+    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+
+    var b = m.inad > 14000 ? '<span class="badge bbad">Alto</span>' : m.inad > 12000 ? '<span class="badge bwarn">M&eacute;dio</span>' : '<span class="badge bok">Controlado</span>';
+
+    h += '<tr><td class="bd">' + lbl + '</td><td class="nr">' + R(m.inad) + '</td><td class="nr">' + (m.inadProc > 0 ? R(m.inadProc) : '-') + '</td><td>' + b + '</td></tr>';
+
+  });
+
+  document.getElementById('tblInad').innerHTML = h;
+
+}
+
+
+
+function buildTblBanco() {
+
+  var h = '<tr><th>M&ecirc;s</th><th>C/C</th><th>CDB-DI</th><th>C6 Bank</th><th>Total</th></tr>';
+
+  MESES.forEach(function(k) {
+
+    var m = BAL[k];
+
+    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+
+    h += '<tr><td class="bd">' + lbl + '</td>';
+
+    h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
+
+    h += '<td class="nr">' + (m.banco.cdb !== null ? R(m.banco.cdb) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
+
+    h += '<td class="nr">' + R(m.banco.priv) + '</td>';
+
+    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
+
+  });
+
+  document.getElementById('tblBanco').innerHTML = h;
+
+}
+
+
+
+// ── GRÁFICOS ──────────────────────────────────────────────────────────────────
+
+var chartInstances = {};
+
+function mkChart(id, config) {
+
+  if (chartInstances[id]) { chartInstances[id].destroy(); }
+
+  var el = document.getElementById(id);
+
+  if (!el) return;
+
+  chartInstances[id] = new Chart(el, config);
+
+}
+
+
+
+function buildCharts() {
+
+  var P='#171B2E', O='#E87722', G='#27AE60', R2='#C0392B', Y='#F39C12', B='#2980B9';
+
+  var ML = MESES.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
+
+
+
+  // ── Padrão visual compartilhado ──────────────────────────────────────────────
+
+  var TT = { // tooltip base
+
+    backgroundColor: 'rgba(23,27,46,0.93)',
+
+    titleColor: '#fff',
+
+    bodyColor: '#d0d4e8',
+
+    padding: 11,
+
+    cornerRadius: 8,
+
+    displayColors: true,
+
+    boxPadding: 4
+
+  };
+
+  var GRID_Y = { color: 'rgba(0,0,0,0.06)' };
+
+  var GRID_X = { display: false };
+
+  var TICK  = { font: { size: 10 } };
+
+  var LEG   = { font: { size: 11 }, boxWidth: 13, usePointStyle: true, padding: 14 };
+
+  function fmtK(v)  { return 'R$\u00a0' + (v/1000).toFixed(0) + 'k'; }
+
+  function fmtM(v)  { return 'R$\u00a0' + (v/1000000).toFixed(3) + 'M'; }
+
+  function fmtR(v)  { return 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+
+
+  // ── 1. Evolução do saldo (linha com área) ────────────────────────────────────
+
+  var evoData = MESES.map(function(k){ return BAL[k].tAtual; });
+
+  mkChart('cEvo', {
+
+    type: 'line',
+
+    data: { labels: ML, datasets: [{
+
+      label: 'Saldo Total',
+
+      data: evoData,
+
+      borderColor: '#5B2D8E',
+
+      backgroundColor: 'rgba(91,45,142,0.10)',
+
+      borderWidth: 2.5,
+
+      pointRadius: 5,
+
+      pointHoverRadius: 7,
+
+      pointBackgroundColor: '#5B2D8E',
+
+      pointBorderColor: '#fff',
+
+      pointBorderWidth: 2,
+
+      fill: true,
+
+      tension: 0.35
+
+    }]},
+
+    options: {
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins: {
+
+        legend: { display: false },
+
+        tooltip: Object.assign({}, TT, {
+
+          callbacks: { label: function(ctx){ return '  Saldo: ' + fmtR(ctx.raw); } }
+
+        })
+
+      },
+
+      scales: {
+
+        y: {
+
+          ticks: Object.assign({
+
+            callback: function(v){
+
+              return 'R$\u00a0' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+            }
+
+          }, TICK),
+
+          grid: GRID_Y
+
+        },
+
+        x: { ticks: TICK, grid: GRID_X }
+
+      }
+
+    }
+
+  });
+
+
+
+  // ── 2. Doughnut — saldo por conta (último mês) ───────────────────────────────
+
+  var ultimo = BAL[MESES[MESES.length - 1]];
+
+  var pieColors = ['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6'];
+
+  var pieLabels = ultimo.contas.map(function(c){ return c.s < 0 ? c.n + ' (d\u00e9ficit)' : c.n; });
+
+  var pieData   = ultimo.contas.map(function(c){ return Math.abs(c.s); });
+
+  var pieTotalAbs = pieData.reduce(function(a,b){ return a+b; }, 0);
+
+  mkChart('cPieMar', {
+
+    type: 'doughnut',
+
+    data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors, borderColor: '#fff', borderWidth: 3, hoverOffset: 10 }]},
+
+    options: {
+
+      responsive: true, maintainAspectRatio: false,
+
+      cutout: '62%',
+
+      plugins: {
+
+        legend: {
+
+          position: 'right',
+
+          labels: Object.assign({}, LEG, {
+
+            generateLabels: function(chart) {
+
+              return chart.data.labels.map(function(lbl, i) {
+
+                var pct = pieTotalAbs > 0 ? (pieData[i]/pieTotalAbs*100).toFixed(1) : '0.0';
+
+                return { text: lbl + '  ' + pct + '%', fillStyle: pieColors[i], strokeStyle: '#fff', lineWidth: 1, index: i };
+
+              });
+
+            }
+
+          })
+
+        },
+
+        tooltip: Object.assign({}, TT, {
+
+          callbacks: {
+
+            label: function(ctx) {
+
+              var pct = pieTotalAbs > 0 ? (ctx.raw/pieTotalAbs*100).toFixed(1) : '0.0';
+
+              return '  ' + fmtR(ctx.raw) + '  (' + pct + '%)';
+
+            }
+
+          }
+
+        })
+
+      }
+
+    }
+
+  });
+
+
+
+  // ── 3. Barras empilhadas — saldo por conta histórico ────────────────────────
+
+  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)'];
+
+  var contaBorder = ['#171B2E','#C05A10'];
+
+  var contaNames  = ['CONTA CORRENTE (Banco Inter)','APLICA\u00c7\u00c3O F. RESERVA'];
+
+  var contaDatasets = contaNames.map(function(cn, i) {
+
+    return {
+
+      label: cn.replace('FUNDO DE ','F.'),
+
+      data: MESES.map(function(k) {
+
+        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
+
+        return c ? c.s : 0;
+
+      }),
+
+      backgroundColor: contaColors[i],
+
+      borderColor: contaBorder[i],
+
+      borderWidth: 1,
+
+      borderRadius: 3,
+
+      borderSkipped: false
+
+    };
+
+  });
+
+  mkChart('cContas', {
+
+    type: 'bar',
+
+    data: { labels: ML, datasets: contaDatasets },
+
+    options: {
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins: {
+
+        legend: { labels: LEG },
+
+        tooltip: Object.assign({}, TT, {
+
+          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+
+        })
+
+      },
+
+      scales: {
+
+        x: { stacked: true, ticks: TICK, grid: GRID_X },
+
+        y: { stacked: true, ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y }
+
+      }
+
+    }
+
+  });
+
+
+
+  // ── 4. Barras agrupadas — despesas por categoria ─────────────────────────────
+
+  var cats = {};
+
+  MESES.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c] = true; }); });
+
+  var catShort = {'PESSOAL':'Pessoal','MANUTENÇÃO':'Manutenção','ADMINISTRATIVO':'Administrativo','CONSUMOS':'Consumos','CONTRATOS':'Contratos','TARIFAS E IMPOSTOS':'Tarifas/Imp.','DESPESA FINANCEIRA':'D. Financeira','OUTROS':'Outros'};
+
+  var catList = Object.keys(cats);
+
+  var barColors = ['#1A237E','#C62828','#2E7D32','#E87722','#6A1B9A','#00695C','#AD1457','#F57F17','#0277BD','#4E342E','#558B2F','#880E4F','#37474F'];
+
+  var despDatasets = MESES.map(function(k, i) {
+
+    var m = BAL[k];
+
+    var baseColor = barColors[i] || '#888';
+
+    return {
+
+      label: m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2],
+
+      data: catList.map(function(c) {
+
+        var d = m.desp.find(function(x){ return x.c === c; });
+
+        return d ? d.v : 0;
+
+      }),
+
+      backgroundColor: baseColor + 'CC',
+
+      borderColor: baseColor,
+
+      borderWidth: 1,
+
+      borderRadius: 4,
+
+      borderSkipped: false
+
+    };
+
+  });
+
+  mkChart('cDespBar', {
+
+    type: 'bar',
+
+    data: { labels: catList.map(function(c){ return catShort[c] || c; }), datasets: despDatasets },
+
+    options: {
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins: {
+
+        legend: { labels: LEG },
+
+        tooltip: Object.assign({}, TT, {
+
+          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+
+        })
+
+      },
+
+      scales: {
+
+        y: { ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y },
+
+        x: { ticks: TICK, grid: GRID_X }
+
+      }
+
+    }
+
+  });
+
+
+
+  // ── 5. Doughnut despesas — mês selecionado ───────────────────────────────────
+
+  updateDespPie(MESES[MESES.length - 1]);
+
+
+
+  // ── 6. Previsto × Realizado (barras agrupadas + diferença como linha) ─────────
+
+  var prevVals = MESES.map(function(k){ return BAL[k].prev; });
+
+  var realVals = MESES.map(function(k){ return BAL[k].real; });
+
+  var prevAvg  = prevVals.reduce(function(a,b){ return a+b; },0) / prevVals.length;
+
+  mkChart('cPvr', {
+
+    type: 'bar',
+
+    data: {
+
+      labels: ML,
+
+      datasets: [
+
+        {
+
+          label: 'Previsto (Cota)',
+
+          data: prevVals,
+
+          backgroundColor: 'rgba(91,45,142,0.75)',
+
+          borderColor: '#5B2D8E',
+
+          borderWidth: 1.5,
+
+          borderRadius: 5,
+
+          borderSkipped: false,
+
+          order: 2
+
+        },
+
+        {
+
+          label: 'Realizado (Arrecadado)',
+
+          data: realVals,
+
+          backgroundColor: 'rgba(232,119,34,0.75)',
+
+          borderColor: '#C05A10',
+
+          borderWidth: 1.5,
+
+          borderRadius: 5,
+
+          borderSkipped: false,
+
+          order: 2
+
+        },
+
+        {
+
+          label: 'M\u00e9dia prevista',
+
+          data: MESES.map(function(){
+  var _u='Y2VudHJhbGRhc2FydGVz',_p='Q2VudHJhbEAyMDI2';
+  var EON='<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var EOFF='<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  function dlHide(){var o=document.getElementById('dl-login-overlay');if(o)o.style.display='none';}
+  if(sessionStorage.getItem('dl_auth_CentralDasArtes')==='1'){dlHide();return;}
+  document.getElementById('dl-pass').value='';
+  document.getElementById('dl-user').value='';
+  try{var sv=localStorage.getItem('dl_auth_CentralDasArtes_sv');
+    if(sv){var cv=JSON.parse(sv);
+      document.getElementById('dl-user').value=cv.u||'';
+      document.getElementById('dl-remember').checked=true;}
+  }catch(e){}
+  document.getElementById('dl-eye').innerHTML=EON;
+  var dlPEl=document.getElementById('dl-pass');
+  dlPEl.addEventListener('focus',function(){this.removeAttribute('readonly');},true);
+  dlPEl.addEventListener('click',function(){this.removeAttribute('readonly');},true);
+  window.addEventListener('load',function(){setTimeout(function(){dlPEl.value='';},50);});
+  window.dlTogglePass=function(){
+    var i=document.getElementById('dl-pass');var b=document.getElementById('dl-eye');
+    if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
+  };
+  window.dlDoLogin=function(){
+    var u=document.getElementById('dl-user').value.trim();
+    var pw=document.getElementById('dl-pass').value;
+    var err=document.getElementById('dl-login-error');
+    if(btoa(u)===_u&&btoa(pw)===_p){
+      sessionStorage.setItem('dl_auth_CentralDasArtes','1');
+      var rem=document.getElementById('dl-remember');
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_CentralDasArtes_sv',JSON.stringify({u:u}));}
+      else{localStorage.removeItem('dl_auth_CentralDasArtes_sv');}
+      dlHide();
+    }else{err.textContent='Usuário ou senha incorretos.';
+      document.getElementById('dl-pass').value='';
+      document.getElementById('dl-pass').focus();}
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){var o=document.getElementById('dl-login-overlay');
+      if(o&&o.style.display!=='none')dlDoLogin();}
+  });
+})();
+
+</script>
+
+
+
+<script>
+(function(){
+  var _u='UmVzZXJ2YVZlcmRl',_p='UmVzZXJ2YTIwMjYq';
+  var EON='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',EOFF='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  function dlHide(){var o=document.getElementById('dl-login-overlay');if(o)o.style.display='none';}
+  if(sessionStorage.getItem('dl_auth_CentralDasArtes')==='1'){dlHide();return;}
+  document.getElementById('dl-pass').value='';
+  document.getElementById('dl-user').value='';
+  try{var sv=localStorage.getItem('dl_auth_CentralDasArtes_sv');
+    if(sv){var cv=JSON.parse(sv);
+      document.getElementById('dl-user').value=cv.u||'';
+      
+      document.getElementById('dl-remember').checked=true;}
+  }catch(e){}
+  document.getElementById('dl-eye').innerHTML=EON;
+  var dlPEl=document.getElementById('dl-pass');
+  dlPEl.addEventListener('focus',function(){this.removeAttribute('readonly');},true);
+  dlPEl.addEventListener('click',function(){this.removeAttribute('readonly');},true);
+  window.addEventListener('load',function(){setTimeout(function(){dlPEl.value='';},50);});
+  window.dlTogglePass=function(){
+    var i=document.getElementById('dl-pass');var b=document.getElementById('dl-eye');
+    if(i.type==='password'){i.type='text';b.innerHTML=EOFF;}else{i.type='password';b.innerHTML=EON;}
+  };
+  window.dlDoLogin=function(){
+    var u=document.getElementById('dl-user').value.trim();
+    var pw=document.getElementById('dl-pass').value;
+    var err=document.getElementById('dl-login-error');
+    if(btoa(u)===_u&&btoa(pw)===_p){
+      sessionStorage.setItem('dl_auth_CentralDasArtes','1');
+      var rem=document.getElementById('dl-remember');
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_CentralDasArtes_sv',JSON.stringify({u:u}));}
+      else{localStorage.removeItem('dl_auth_CentralDasArtes_sv');}
+      dlHide();
+    }else{err.textContent='Usuário ou senha incorretos.';
+      document.getElementById('dl-pass').value='';
+      document.getElementById('dl-pass').focus();}
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){var o=document.getElementById('dl-login-overlay');
+      if(o&&o.style.display!=='none')dlDoLogin();}
+  });
+})();
+</script>
+</body>
+
+</html>
+

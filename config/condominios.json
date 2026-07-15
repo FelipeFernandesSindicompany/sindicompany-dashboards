@@ -120,6 +120,20 @@
       }
     },
     {
+      "id": "central_das_artes",
+      "nome": "Central das Artes",
+      "empresa_gestora": "base_gestao_pdf",
+      "pasta_dados": "data/central_das_artes",
+      "html_file": "Dashboard_Financeiro_CentralDasArtes.html",
+      "ativo": true,
+      "cor": "#0369a1",
+      "unidades": 27,
+      "parser_config": {
+        "observacao": "PDFs gerados por BASE GESTÃO / Diagrama — sem dez25",
+        "cat_map": {}
+      }
+    },
+    {
       "id": "cinque_terre_residenza",
       "nome": "Cinque Terre Residenza",
       "empresa_gestora": "habitacional_xlsx",
