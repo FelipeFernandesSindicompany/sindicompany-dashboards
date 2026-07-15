@@ -2034,7 +2034,7 @@ function buildCharts() {
   if(sessionStorage.getItem('dl_auth_CentralDasArtes')==='1'){dlHide();return;}
   document.getElementById('dl-pass').value='';
   document.getElementById('dl-user').value='';
-  try{var sv=localStorage.getItem('dl_auth_CentralDasArtes_sv');
+  try{var sv=localStorage.getItem('dl_auth_CentralDasArtes_v2');
     if(sv){var cv=JSON.parse(sv);
       document.getElementById('dl-user').value=cv.u||'';
       document.getElementById('dl-remember').checked=true;}
@@ -2055,8 +2055,8 @@ function buildCharts() {
     if(btoa(u)===_u&&btoa(pw)===_p){
       sessionStorage.setItem('dl_auth_CentralDasArtes','1');
       var rem=document.getElementById('dl-remember');
-      if(rem&&rem.checked){localStorage.setItem('dl_auth_CentralDasArtes_sv',JSON.stringify({u:u}));}
-      else{localStorage.removeItem('dl_auth_CentralDasArtes_sv');}
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_CentralDasArtes_v2',JSON.stringify({u:u}));}
+      else{localStorage.removeItem('dl_auth_CentralDasArtes_v2');}
       dlHide();
     }else{err.textContent='Usuário ou senha incorretos.';
       document.getElementById('dl-pass').value='';
@@ -2080,7 +2080,7 @@ function buildCharts() {
   if(sessionStorage.getItem('dl_auth_CentralDasArtes')==='1'){dlHide();return;}
   document.getElementById('dl-pass').value='';
   document.getElementById('dl-user').value='';
-  try{var sv=localStorage.getItem('dl_auth_CentralDasArtes_sv');
+  try{var sv=localStorage.getItem('dl_auth_CentralDasArtes_v2');
     if(sv){var cv=JSON.parse(sv);
       document.getElementById('dl-user').value=cv.u||'';
       
@@ -2102,8 +2102,8 @@ function buildCharts() {
     if(btoa(u)===_u&&btoa(pw)===_p){
       sessionStorage.setItem('dl_auth_CentralDasArtes','1');
       var rem=document.getElementById('dl-remember');
-      if(rem&&rem.checked){localStorage.setItem('dl_auth_CentralDasArtes_sv',JSON.stringify({u:u}));}
-      else{localStorage.removeItem('dl_auth_CentralDasArtes_sv');}
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_CentralDasArtes_v2',JSON.stringify({u:u}));}
+      else{localStorage.removeItem('dl_auth_CentralDasArtes_v2');}
       dlHide();
     }else{err.textContent='Usuário ou senha incorretos.';
       document.getElementById('dl-pass').value='';
