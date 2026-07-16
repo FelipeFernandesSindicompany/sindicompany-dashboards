@@ -888,6 +888,19 @@
           "CAIXA LOCAL": "Caixa Local"
         }
       }
+    },
+    {
+      "id": "dueto_morumbi",
+      "nome": "Condomínio Dueto Morumbi",
+      "empresa_gestora": "manager_adm_pdf",
+      "pasta_dados": "data/dueto_morumbi",
+      "html_file": "Dashboard_Financeiro_DuetoMorumbi.html",
+      "ativo": true,
+      "cor": "#171B2E",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     }
   ],
   "empresas": {

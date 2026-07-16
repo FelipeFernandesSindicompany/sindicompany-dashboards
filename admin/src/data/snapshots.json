@@ -1331,5 +1331,21 @@
       "inad": 292899.87,
       "tAnt": 132487.94
     }
+  },
+  "Dashboard_Financeiro_DuetoMorumbi.html": {
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
+    "allKeys": [
+      "abr26",
+      "mai26"
+    ],
+    "data": {
+      "tit": "Maio / 2026",
+      "tAtual": 51306.89,
+      "tCred": 171208.98,
+      "tDeb": 141800.6,
+      "inad": 58353.57,
+      "tAnt": 21898.51
+    }
   }
 }
