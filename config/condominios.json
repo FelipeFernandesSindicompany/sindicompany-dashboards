@@ -187,7 +187,7 @@
       "pasta_dados": "data/fatto_morumbi",
       "html_file": "Dashboard_Financeiro_FattoMorumbi.html",
       "ativo": true,
-      "cor": "#171B2E",
+      "cor": "#10b981",
       "unidades": 0,
       "parser_config": {
         "cat_map": {}
@@ -896,7 +896,7 @@
       "pasta_dados": "data/dueto_morumbi",
       "html_file": "Dashboard_Financeiro_DuetoMorumbi.html",
       "ativo": true,
-      "cor": "#171B2E",
+      "cor": "#f59e0b",
       "unidades": 0,
       "parser_config": {
         "cat_map": {}
