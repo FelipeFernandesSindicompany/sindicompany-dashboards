@@ -891,7 +891,7 @@
     },
     {
       "id": "dueto_morumbi",
-      "nome": "Condomínio Dueto Morumbi",
+      "nome": "Dueto Morumbi",
       "empresa_gestora": "manager_adm_pdf",
       "pasta_dados": "data/dueto_morumbi",
       "html_file": "Dashboard_Financeiro_DuetoMorumbi.html",
