@@ -85,6 +85,34 @@
       "tAnt": 64682.22
     }
   },
+  "Dashboard_Financeiro_PlanoCambuci.html": {
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
+    "allKeys": [
+      "mai25",
+      "jun25",
+      "jul25",
+      "ago25",
+      "set25",
+      "out25",
+      "nov25",
+      "dez25",
+      "jan26",
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26"
+    ],
+    "data": {
+      "tit": "Junho / 2026",
+      "tAtual": 42245.97,
+      "tCred": 129821.36,
+      "tDeb": 151842.09,
+      "inad": 46458.91,
+      "tAnt": 64266.7
+    }
+  },
   "Dashboard_Financeiro_BlueSky.html": {
     "lastKey": "mai26",
     "lastMonth": "Mai/26",

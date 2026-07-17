@@ -40,6 +40,19 @@
       }
     },
     {
+      "id": "plano_cambuci",
+      "nome": "Plano Cambuci Independência",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/plano_cambuci",
+      "html_file": "Dashboard_Financeiro_PlanoCambuci.html",
+      "ativo": true,
+      "cor": "#0891b2",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
+    },
+    {
       "id": "residencial_blue_sky",
       "nome": "Residencial Blue Sky",
       "empresa_gestora": "lirba_pdf",
