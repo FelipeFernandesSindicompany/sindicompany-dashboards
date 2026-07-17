@@ -331,8 +331,8 @@
     }
   },
   "Dashboard_Financeiro_FITRioBonito.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -346,15 +346,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 947184.08,
-      "tCred": 411571.35,
-      "tDeb": 364406.78,
+      "tit": "Junho / 2026",
+      "tAtual": 901992.3,
+      "tCred": 360363.31,
+      "tDeb": 406361.87,
       "inad": 0,
-      "tAnt": 900019.51
+      "tAnt": 947990.86
     }
   },
   "Dashboard_Financeiro_GiardinoDItalia.html": {
