@@ -2598,6 +2598,24 @@ function buildCharts() {
 
         {
 
+          label: 'ItaúVest',
+
+          data: bancoMeses.map(function(k){ return BAL[k].banco.itauvest || 0; }),
+
+          backgroundColor: 'rgba(26,111,175,0.82)',
+
+          borderColor: '#1A6FAF',
+
+          borderWidth: 1,
+
+          borderRadius: 3,
+
+          borderSkipped: false
+
+        },
+
+        {
+
           label: 'Demais Contas',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
