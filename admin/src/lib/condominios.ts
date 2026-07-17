@@ -5,14 +5,21 @@ import type { Condominio } from './types';
 let _cache: Condominio[] | null = null;
 
 function loadCondominios(): Condominio[] {
+  // Local PM2: always read from filesystem so pm2 restart picks up changes (no rebuild needed)
+  if (process.env.SINDICOMPANY_PM2) {
+    const { readFileSync } = require('fs');
+    const { CONFIG_PATH } = require('./paths');
+    const raw = readFileSync(CONFIG_PATH, 'utf-8');
+    const parsed = JSON.parse(raw);
+    return (parsed.condominios as Condominio[]).filter((c: Condominio) => c.ativo);
+  }
   try {
-    // Tenta importar o JSON bundled (funciona no Vercel e localmente)
+    // Vercel / CI: use bundled JSON (rebuilt on every push)
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    // admin/src/lib/ → ../../../ → project root → config/condominios.json
     const data = require('../../../config/condominios.json');
     return (data.condominios as Condominio[]).filter((c: Condominio) => c.ativo);
   } catch {
-    // Fallback: lê do filesystem (desenvolvimento local)
+    // Dev fallback
     const { readFileSync } = require('fs');
     const { CONFIG_PATH } = require('./paths');
     const raw = readFileSync(CONFIG_PATH, 'utf-8');
