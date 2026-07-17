@@ -1962,7 +1962,7 @@ function buildCharts() {
 
           position: 'right',
 
-          labels: Object.assign({}, LEG, { font: { size: 10 }, boxWidth: 10, padding: 6,
+          labels: Object.assign({}, LEG, {
 
             generateLabels: function(chart) {
 
@@ -1970,17 +1970,13 @@ function buildCharts() {
 
                 var pct = pieTotalAbs > 0 ? (pieData[i]/pieTotalAbs*100).toFixed(1) : '0.0';
 
-                var short = lbl.length > 13 ? lbl.substring(0, 12) + '…' : lbl;
-
-                return { text: short + ' ' + pct + '%', fillStyle: pieColors[i], strokeStyle: '#fff', lineWidth: 1, index: i };
+                return { text: lbl + '  ' + pct + '%', fillStyle: pieColors[i], strokeStyle: '#fff', lineWidth: 1, index: i };
 
               });
 
             }
 
-          }),
-
-          maxWidth: 160
+          })
 
         },
 
