@@ -1758,7 +1758,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Conta 99782-3</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Aplica&ccedil;&atilde;o Itauvest</th><th>Conta 99552-0</th><th>Saldo Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Ordin&aacute;ria + Extraordin&aacute;ria</th><th>Fundo de Reserva</th><th>ItaúVest</th><th>Demais Contas</th><th>Saldo Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2562,7 +2562,7 @@ function buildCharts() {
 
         {
 
-          label: 'C/C Bradesco',
+          label: 'Ordinária + Extraordinária',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
 
@@ -2580,7 +2580,7 @@ function buildCharts() {
 
         {
 
-          label: 'Invest Fácil',
+          label: 'Fundo de Reserva',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.cdb; }),
 
@@ -2598,7 +2598,7 @@ function buildCharts() {
 
         {
 
-          label: 'Privilege',
+          label: 'Demais Contas',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
 
