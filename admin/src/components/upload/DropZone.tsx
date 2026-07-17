@@ -176,14 +176,21 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
                 </span>
               )}
               {file.status === 'processing' && (
-                <span className="flex items-center gap-1 text-[11px] text-accent font-medium">
-                  <Loader2 size={12} className="animate-spin" />
-                  {elapsedSec < 30
-                    ? `Processando... (${fmtElapsed(elapsedSec)})`
-                    : elapsedSec < 120
-                    ? `Ainda processando... ${fmtElapsed(elapsedSec)}`
-                    : `Processando há ${fmtElapsed(elapsedSec)} — aguarde`}
-                </span>
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <span className="flex items-center gap-1 text-[11px] text-accent font-medium">
+                    <Loader2 size={12} className="animate-spin flex-shrink-0" />
+                    {elapsedSec < 30
+                      ? `Processando... (${fmtElapsed(elapsedSec)})`
+                      : elapsedSec < 120
+                      ? `Ainda processando... ${fmtElapsed(elapsedSec)}`
+                      : `Processando há ${fmtElapsed(elapsedSec)} — aguarde`}
+                  </span>
+                  {file.partialLog && file.partialLog.length > 0 && (
+                    <span className="text-[10px] text-text-muted font-mono truncate" title={file.partialLog[file.partialLog.length - 1]}>
+                      {file.partialLog[file.partialLog.length - 1]}
+                    </span>
+                  )}
+                </div>
               )}
               {(file.status === 'ready' || file.status === 'detected') && !condoOk && (
                 <span className="text-[11px] text-warning">Selecione o condomínio</span>
@@ -220,6 +227,18 @@ function FileItem({ file, condominios, onUpdate, onRemove, onProcess }: FileItem
               )}
             </div>
           </div>
+
+          {/* Log parcial em caso de erro */}
+          {file.status === 'error' && file.partialLog && file.partialLog.length > 0 && (
+            <div className="mt-2 p-2 rounded-lg bg-bg-elevated border border-border overflow-hidden">
+              <p className="text-[10px] text-text-muted mb-1 font-medium">Últimas linhas do processo:</p>
+              <div className="space-y-0.5 max-h-20 overflow-y-auto">
+                {file.partialLog.slice(-8).map((line, i) => (
+                  <p key={i} className="text-[10px] font-mono text-text-secondary truncate">{line}</p>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Result summary card */}
           {file.status === 'done' && file.resumo && (
@@ -374,7 +393,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
       if (data.runId) {
         await pollForResult(file.id, data.runId);
       } else if (data.jobId) {
-        await pollLocalJob(file.id, data.jobId);
+        await pollLocalJob(file.id, data.jobId, file.detectedCondominioId!, file.detectedMes!);
       } else {
         // Resultado síncrono (fallback)
         setFiles(prev => prev.map(f =>
@@ -414,9 +433,39 @@ export function DropZone({ condominios, onImportDone }: Props) {
     ));
   }, [onImportDone]);
 
+  // Verifica no HTML se o mês foi de fato injetado — chamado após qualquer falha
+  const verifyInjection = useCallback(async (fileId: string, condominioId: string, mes: string) => {
+    try {
+      setFiles(prev => prev.map(f =>
+        f.id === fileId ? { ...f, error: 'Verificando se os dados foram inseridos...' } : f
+      ));
+      const res = await fetch(`/api/process/verify?condominioId=${condominioId}&mes=${mes}`);
+      const data = await res.json();
+      if (data.exists) {
+        setFiles(prev => prev.map(f =>
+          f.id === fileId
+            ? { ...f, status: 'done' as const, error: undefined,
+                resumo: { tit: data.tit ?? data.monthKey, tAtual: data.tAtual ?? 0,
+                          html: `Verificado no dashboard`, nContas: 0, nDesp: 0,
+                          tCred: 0, tDeb: 0, tAnt: 0, inad: 0 } }
+            : f
+        ));
+        if (onImportDone) onImportDone();
+      } else {
+        setFiles(prev => prev.map(f =>
+          f.id === fileId
+            ? { ...f, error: `Dados não encontrados no dashboard. Meses disponíveis: ${data.allKeys?.slice(-3).join(', ') ?? '—'}. Clique em Tentar novamente.` }
+            : f
+        ));
+      }
+    } catch {
+      // silently keep previous error message
+    }
+  }, [onImportDone]);
+
   // Polling para modo local (PM2/ngrok) — /api/process/local-status?jobId=...
-  const pollLocalJob = useCallback(async (fileId: string, jobId: string) => {
-    const maxAttempts = 140; // 140 × 5s = ~12 min (PDFs grandes de 300+ pág levam até 10 min)
+  const pollLocalJob = useCallback(async (fileId: string, jobId: string, condominioId: string, mes: string) => {
+    const maxAttempts = 150; // 150 × 5s = 12.5 min
     let errorsInARow = 0;
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 5000));
@@ -434,6 +483,14 @@ export function DropZone({ condominios, onImportDone }: Props) {
         }
         errorsInARow = 0;
         const data = await res.json();
+
+        // Atualiza log parcial enquanto ainda processa
+        if (!data.done && data.log?.length) {
+          setFiles(prev => prev.map(f =>
+            f.id === fileId ? { ...f, partialLog: data.log } : f
+          ));
+        }
+
         if (data.done) {
           if (!data.success && data.monthExists) {
             setFiles(prev => prev.map(f =>
@@ -441,12 +498,18 @@ export function DropZone({ condominios, onImportDone }: Props) {
             ));
             return;
           }
-          setFiles(prev => prev.map(f =>
-            f.id === fileId
-              ? { ...f, status: data.success ? 'done' as const : 'error' as const, error: data.error, resumo: data.resumo }
-              : f
-          ));
-          if (data.success && onImportDone) onImportDone();
+          if (data.success) {
+            setFiles(prev => prev.map(f =>
+              f.id === fileId ? { ...f, status: 'done' as const, error: undefined, resumo: data.resumo } : f
+            ));
+            if (onImportDone) onImportDone();
+          } else {
+            setFiles(prev => prev.map(f =>
+              f.id === fileId ? { ...f, status: 'error' as const, error: data.error, partialLog: data.log } : f
+            ));
+            // Verifica automaticamente se os dados foram inseridos apesar do erro
+            await verifyInjection(fileId, condominioId, mes);
+          }
           return;
         }
       } catch {
@@ -460,9 +523,10 @@ export function DropZone({ condominios, onImportDone }: Props) {
       }
     }
     setFiles(prev => prev.map(f =>
-      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado (12 min). Clique em "Tentar novamente".' } : f
+      f.id === fileId ? { ...f, status: 'error' as const, error: 'Tempo esgotado (12 min).' } : f
     ));
-  }, [onImportDone]);
+    await verifyInjection(fileId, condominioId, mes);
+  }, [onImportDone, verifyInjection]);
 
   const processAll = useCallback(() => {
     const ready = files.filter(f => f.detectedCondominioId && f.detectedMes && f.status === 'ready');

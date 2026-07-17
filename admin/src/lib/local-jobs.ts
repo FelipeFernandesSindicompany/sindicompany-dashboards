@@ -21,13 +21,24 @@ export interface LocalJob {
   status: JobStatus;
   result?: any;
   startedAt: number;
+  heartbeatAt?: number;
+  log?: string[];
 }
 
 export function createJob(): LocalJob {
   ensureDir();
-  const job: LocalJob = { id: randomUUID(), status: 'running', startedAt: Date.now() };
+  const job: LocalJob = { id: randomUUID(), status: 'running', startedAt: Date.now(), log: [] };
   writeFileSync(jobPath(job.id), JSON.stringify(job), 'utf-8');
   return job;
+}
+
+export function updateJobProgress(id: string, line: string) {
+  ensureDir();
+  const existing = getJob(id);
+  if (existing && existing.status === 'running') {
+    const log = [...(existing.log ?? []), line].slice(-100);
+    writeFileSync(jobPath(id), JSON.stringify({ ...existing, heartbeatAt: Date.now(), log }), 'utf-8');
+  }
 }
 
 export function completeJob(id: string, result: any) {

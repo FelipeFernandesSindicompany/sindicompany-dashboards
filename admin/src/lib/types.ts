@@ -65,6 +65,8 @@ export interface DetectedFile {
   status: 'detected' | 'ready' | 'processing' | 'done' | 'error' | 'month_exists';
   error?: string;
   resumo?: Record<string, any> | null;
+  /** linhas de log em tempo real durante processamento */
+  partialLog?: string[];
 }
 
 export interface ProcessRequest {

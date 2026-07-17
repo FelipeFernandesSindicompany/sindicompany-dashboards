@@ -59,14 +59,16 @@ export async function POST(request: NextRequest) {
       // ── Modo Local (ngrok / PM2): background job para não travar a conexão ──
       // PDFs grandes (>10MB) levam 2-3 min — ngrok corta conexões longas.
       // Retorna jobId imediatamente; cliente faz polling em /api/process/local-status
-      const { createJob, completeJob, failJob } = await import('@/lib/local-jobs');
+      const { createJob, completeJob, failJob, updateJobProgress } = await import('@/lib/local-jobs');
       const job = createJob();
       const jobId = job.id;
 
       // Fire-and-forget — não bloqueia o handler
       (async () => {
         try {
-          const result = await injectarMes(condominioId, mes, savedPath, !!force);
+          const result = await injectarMes(condominioId, mes, savedPath, !!force,
+            (line) => updateJobProgress(jobId, line),
+          );
 
           const record = {
             id: uuidv4(),
