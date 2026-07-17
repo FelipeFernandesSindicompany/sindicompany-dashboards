@@ -634,7 +634,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="g2" style="grid-template-columns:3fr 2fr">
 
-    <div class="cc"><h3 id="pie-title">&#128176; Distribui&ccedil;&atilde;o do Saldo (M&ecirc;s Atual)</h3><div class="cws"><canvas id="cPieMar"></canvas></div></div>
+    <div class="cc"><h3 id="pie-title">&#128176; Distribui&ccedil;&atilde;o do Saldo (M&ecirc;s Atual)</h3><div class="cws" style="height:240px"><canvas id="cPieMar"></canvas></div></div>
 
     <div class="cc"><h3>&#128202; Saldo por Conta</h3><div class="cws"><canvas id="cContas"></canvas></div></div>
 
@@ -1963,6 +1963,8 @@ function buildCharts() {
           position: 'right',
 
           labels: Object.assign({}, LEG, {
+
+            padding: 4,
 
             generateLabels: function(chart) {
 
