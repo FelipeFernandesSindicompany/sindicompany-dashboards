@@ -145,8 +145,8 @@
     }
   },
   "Dashboard_Financeiro_CentralDasArtes.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -158,15 +158,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 25545.2,
-      "tCred": 56967.3,
-      "tDeb": 54873.33,
-      "inad": 2159.66,
-      "tAnt": 23451.23
+      "tit": "Junho / 2026",
+      "tAtual": 36811.05,
+      "tCred": 63843.57,
+      "tDeb": 52577.72,
+      "inad": 0,
+      "tAnt": 25545.2
     }
   },
   "Dashboard_Financeiro_CinqueTerre.html": {

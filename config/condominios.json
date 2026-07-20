@@ -135,15 +135,26 @@
     {
       "id": "central_das_artes",
       "nome": "Central das Artes",
-      "empresa_gestora": "base_gestao_pdf",
+      "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/central_das_artes",
       "html_file": "Dashboard_Financeiro_CentralDasArtes.html",
       "ativo": true,
       "cor": "#0369a1",
       "unidades": 27,
       "parser_config": {
-        "observacao": "PDFs gerados por BASE GESTÃO / Diagrama — sem dez25",
-        "cat_map": {}
+        "observacao": "PDFs gerados por Lirba / Blue Sky — formato Resumo de Emissões Colunado",
+        "extract_cats": "total_da_conta",
+        "cat_map": {
+          "SERVIÇOS TERCEIRIZADOS": "Serviços Terceirizados",
+          "RETENÇÕES": "Retenções",
+          "CONTAS DE CONSUMO": "Consumos",
+          "CONTRATOS": "Contratos",
+          "IMPOSTO E TAXAS": "Impostos/Taxas",
+          "MATERIAIS CONS/DIVERSOS": "Materiais/Diversos",
+          "OPERACIONAIS/ADMINISTRATIVAS": "Administrativo",
+          "DESPESAS BANCÁRIAS": "Despesas Bancárias",
+          "DESPESAS EVENTUAIS": "Despesas Eventuais"
+        }
       }
     },
     {
