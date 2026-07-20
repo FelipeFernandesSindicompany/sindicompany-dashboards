@@ -2552,6 +2552,8 @@ function buildCharts() {
 
           labels: Object.assign({}, LEG, {
 
+            font: { size: 9 }, padding: 5, boxWidth: 9, boxHeight: 9,
+
             generateLabels: function(chart) {
 
               return chart.data.labels.map(function(lbl, i) {
