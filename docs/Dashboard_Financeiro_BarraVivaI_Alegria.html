@@ -2544,8 +2544,6 @@ function buildCharts() {
 
       cutout: '62%',
 
-      layout: { padding: { right: 60 } },
-
       plugins: {
 
         legend: {
@@ -2553,6 +2551,8 @@ function buildCharts() {
           position: 'right',
 
           labels: Object.assign({}, LEG, {
+
+            font: { size: 9 }, padding: 8,
 
             generateLabels: function(chart) {
 
