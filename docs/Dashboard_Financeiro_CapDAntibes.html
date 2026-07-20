@@ -1304,13 +1304,10 @@ function buildCharts(){
 
 
 
-  mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
+  var _cNomes=[];MESES.forEach(function(k){BAL[k].contas.forEach(function(c){if(_cNomes.indexOf(c.n)<0)_cNomes.push(c.n);});});
+  var _cPal=[{bg:'rgba(41,128,185,.85)',bd:'#1A5276'},{bg:'rgba(142,68,173,.85)',bd:'#6C3483'},{bg:'rgba(23,27,46,.85)',bd:'#171B2E'},{bg:'rgba(39,174,96,.85)',bd:'#1A6B3C'},{bg:'rgba(232,119,34,.85)',bd:'#C05A10'},{bg:'rgba(192,57,43,.85)',bd:'#7B241C'},{bg:'rgba(22,160,133,.85)',bd:'#0E6655'},{bg:'rgba(127,140,141,.85)',bd:'#5D6D7E'}];
 
-    {label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-    {label:'F. Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+  mkC('cContas',{type:'bar',data:{labels:ML,datasets:_cNomes.map(function(nm,i){var cr=_cPal[i]||{bg:'rgba(127,140,141,.85)',bd:'#5D6D7E'};return{label:nm,data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n===nm;});return c?c.s:0;}),backgroundColor:cr.bg,borderColor:cr.bd,borderWidth:1,borderRadius:3,borderSkipped:false};})},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
