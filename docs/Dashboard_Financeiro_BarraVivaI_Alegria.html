@@ -2524,7 +2524,7 @@ function buildCharts() {
 
   var ultimo = BAL[MESES[MESES.length - 1]];
 
-  var pieColors = ['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6'];
+  var pieColors = ['#1A6FAF','#E87722','#27AE60','#F39C12','#9B59B6','#E74C3C','#16A085','#D35400','#2ECC71','#8E44AD','#1ABC9C','#C0392B'];
 
   var pieLabels = ultimo.contas.map(function(c){ return c.s < 0 ? c.n + ' (d\u00e9ficit)' : c.n; });
 
@@ -2594,11 +2594,11 @@ function buildCharts() {
 
   // ── 3. Barras empilhadas — saldo por conta histórico ────────────────────────
 
-  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'];
+  var contaColors = ['rgba(26,111,175,0.85)','rgba(232,119,34,0.85)'];
 
-  var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
+  var contaBorder = ['#1A6FAF','#C05A10'];
 
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE OBRAS','FUNDO DE FUNCION\u00c1RIOS'];
+  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE RESERVA'];
 
   var contaDatasets = contaNames.map(function(cn, i) {
 
