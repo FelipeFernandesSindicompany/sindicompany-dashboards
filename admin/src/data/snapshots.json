@@ -30,8 +30,8 @@
     }
   },
   "Dashboard_Financeiro_BarraVivaI_Alegria.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -46,15 +46,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 283897.47,
-      "tCred": 108266.75,
-      "tDeb": 114764.04,
-      "inad": 37370.12,
-      "tAnt": 290394.76
+      "tit": "Junho / 2026",
+      "tAtual": 290543.62,
+      "tCred": 124524.26,
+      "tDeb": 112876.76,
+      "inad": 36211.82,
+      "tAnt": 283897.47
     }
   },
   "Dashboard_Financeiro_Baturite.html": {
