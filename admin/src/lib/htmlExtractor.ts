@@ -73,6 +73,58 @@ function extractBalContent(content: string): string | null {
   return null;
 }
 
+/**
+ * Extrai campos de um mês específico do BAL (não necessariamente o último).
+ * Retorna null se o mês não existir ou o arquivo não for encontrado.
+ */
+export function extractBALEntry(htmlFile: string, monthKey: string): Partial<ExtractedBAL['data']> | null {
+  try {
+    let content: string;
+    if (process.env.GITHUB_TOKEN || process.env.VERCEL || process.env.SINDICOMPANY_PM2) {
+      // Em produção usar snapshots (apenas lastKey disponível — fallback para null)
+      return null;
+    }
+    const htmlPath = path.join(DOCS_DIR, htmlFile);
+    if (!existsSync(htmlPath)) return null;
+    content = readFileSync(htmlPath, 'utf-8');
+
+    const blockText = extractBalContent(content);
+    if (!blockText) return null;
+
+    // Localiza o início do bloco do monthKey dentro do BAL
+    const keyStart = blockText.search(new RegExp(`\\b${monthKey}\\s*[:{]`));
+    if (keyStart === -1) return null;
+
+    // Delimita o bloco do mês: avança até o próximo mês-chave de mesmo nível
+    const nextKey = blockText.slice(keyStart + monthKey.length).search(
+      /\b[a-z]{3}\d{2}\s*[:{]/
+    );
+    const entryText = nextKey === -1
+      ? blockText.slice(keyStart)
+      : blockText.slice(keyStart, keyStart + monthKey.length + nextKey);
+
+    const num = (field: string): number => {
+      const m = entryText.match(new RegExp(`\\b${field}\\s*:\\s*([\\d.-]+)`));
+      return m ? parseFloat(m[1]) : 0;
+    };
+    const str = (field: string): string => {
+      const m = entryText.match(new RegExp(`\\b${field}\\s*:\\s*["']([^"']+)["']`));
+      return m ? m[1] : '';
+    };
+
+    return {
+      tit:    str('tit'),
+      tAtual: num('tAtual'),
+      tAnt:   num('tAnt'),
+      tCred:  num('tCred'),
+      tDeb:   num('tDeb'),
+      inad:   num('inad'),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function extractBALFromContent(content: string): ExtractedBAL | null {
   // Find all valid month keys inside var BAL = { ... }
   const blockText = extractBalContent(content);

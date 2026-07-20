@@ -213,7 +213,13 @@ class AdapterHabitacionalXLSX(AdapterBase):
             if val_h <= 0:
                 continue
             # Verifica se chegamos ao total da conta principal (encerra seção CAIXA)
-            if "CAIXA ORDINARIO" in desc_e or "CAIXA ORDINÁRIA" in desc_e:
+            # Aceita tanto "CAIXA ORDINÁRIO" (formato antigo) quanto "ORDINÁRIA"
+            # diretamente (ex: "TOTAL DA CONTA ORDINÁRIA" sem prefixo CAIXA).
+            is_main_account = (
+                "CAIXA ORDINARIO" in desc_e or "CAIXA ORDINÁRIA" in desc_e
+                or desc_e in ("TOTAL DA CONTA ORDINARIA", "TOTAL DA CONTA ORDINÁRIA")
+            )
+            if is_main_account:
                 caixa_section_done = True
                 continue  # exclui o total da conta, mas marca fim da seção
             # Após o TOTAL DA CONTA CAIXA ORDINARIO, ignora tudo

@@ -447,7 +447,8 @@ export function DropZone({ condominios, onImportDone }: Props) {
             ? { ...f, status: 'done' as const, error: undefined,
                 resumo: { tit: data.tit ?? data.monthKey, tAtual: data.tAtual ?? 0,
                           html: `Verificado no dashboard`, nContas: 0, nDesp: 0,
-                          tCred: 0, tDeb: 0, tAnt: 0, inad: 0 } }
+                          tCred: data.tCred ?? 0, tDeb: data.tDeb ?? 0,
+                          tAnt: data.tAnt ?? 0, inad: data.inad ?? 0 } }
             : f
         ));
         if (onImportDone) onImportDone();

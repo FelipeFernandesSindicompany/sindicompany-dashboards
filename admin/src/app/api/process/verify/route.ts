@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCondominio } from '@/lib/condominios';
-import { extractBAL } from '@/lib/htmlExtractor';
+import { extractBAL, extractBALEntry } from '@/lib/htmlExtractor';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,12 +32,25 @@ export async function GET(request: NextRequest) {
   }
 
   const exists = bal.allKeys.includes(monthKey);
+
+  // Para o mês verificado, extrair todos os campos do BAL (não só tAtual/tit)
+  const entryData = exists
+    ? (extractBALEntry(condo.html_file, monthKey) ?? bal.data)
+    : {};
+
   return NextResponse.json({
     exists,
     monthKey,
     allKeys: bal.allKeys,
     lastKey: bal.lastKey,
     lastMonth: bal.lastMonth,
-    ...(exists ? { tAtual: bal.data.tAtual, tit: bal.data.tit } : {}),
+    ...(exists ? {
+      tit:      entryData.tit     ?? bal.data.tit,
+      tAtual:   entryData.tAtual  ?? bal.data.tAtual,
+      tAnt:     entryData.tAnt    ?? 0,
+      tCred:    entryData.tCred   ?? 0,
+      tDeb:     entryData.tDeb    ?? 0,
+      inad:     entryData.inad    ?? 0,
+    } : {}),
   });
 }

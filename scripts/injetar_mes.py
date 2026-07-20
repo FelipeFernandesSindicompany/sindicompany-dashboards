@@ -913,6 +913,11 @@ def main():
     # ── Auto-publicação no GitHub Pages ───────────────────────────────────────
     if ok > 0 and htmls_atualizados:
         _publicar_github(htmls_atualizados, args.mes)
+        # Flush antes de reiniciar: garante que Node.js lê todo o stdout
+        # (incluindo [RESUMO]) antes do processo ser morto pelo PM2.
+        import sys as _sys
+        _sys.stdout.flush()
+        _sys.stderr.flush()
         # Em modo produção (next start), reinicia o servidor para
         # carregar os HTMLs atualizados sem hot-reload
         _reiniciar_admin()
@@ -996,11 +1001,14 @@ def _reiniciar_admin():
     atualizados no modo produção (next start não tem hot-reload).
     Silencioso se PM2 não estiver disponível.
     """
-    import subprocess, os
+    import subprocess, os, time, sys
     pm2_paths = [
         os.path.join(os.environ.get("APPDATA", ""), "npm", "pm2.cmd"),
         "pm2",
     ]
+    # Aguarda 3s para que o Node.js pai leia todo o stdout (incluindo [RESUMO])
+    # antes de ser morto pelo PM2 restart — evita BrokenPipeError e job preso.
+    time.sleep(3)
     for pm2 in pm2_paths:
         try:
             r = subprocess.run(
@@ -1008,7 +1016,11 @@ def _reiniciar_admin():
                 capture_output=True, text=True, timeout=15
             )
             if r.returncode == 0:
-                print("  [ADMIN] Servidor reiniciado para carregar dashboards atualizados.")
+                try:
+                    print("  [ADMIN] Servidor reiniciado para carregar dashboards atualizados.")
+                    sys.stdout.flush()
+                except (BrokenPipeError, OSError):
+                    pass
                 return
         except Exception:
             continue
