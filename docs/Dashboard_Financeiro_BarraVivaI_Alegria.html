@@ -594,13 +594,9 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="cc"><h3>&#128200; Evolu&ccedil;&atilde;o do Saldo Total</h3><div class="cw"><canvas id="cEvo"></canvas></div></div>
 
-  <div class="g2">
+  <div class="cc"><h3 id="pie-title">&#128176; Distribui&ccedil;&atilde;o do Saldo (M&ecirc;s Atual)</h3><div class="cws" id="pie-wrap"><canvas id="cPieMar"></canvas></div></div>
 
-    <div class="cc"><h3 id="pie-title">&#128176; Distribui&ccedil;&atilde;o do Saldo (M&ecirc;s Atual)</h3><div class="cws"><canvas id="cPieMar"></canvas></div></div>
-
-    <div class="cc"><h3>&#128202; Saldo por Conta</h3><div class="cws"><canvas id="cContas"></canvas></div></div>
-
-  </div>
+  <div class="cc"><h3>&#128202; Saldo por Conta</h3><div class="cws"><canvas id="cContas"></canvas></div></div>
 
 </div>
 
@@ -2532,8 +2528,6 @@ function buildCharts() {
 
   var pieTotalAbs = pieData.reduce(function(a,b){ return a+b; }, 0);
 
-  document.getElementById('cPieMar').parentElement.style.height = '310px';
-
   mkChart('cPieMar', {
 
     type: 'doughnut',
@@ -2550,11 +2544,9 @@ function buildCharts() {
 
         legend: {
 
-          position: 'bottom',
+          position: 'right',
 
           labels: Object.assign({}, LEG, {
-
-            font: { size: 10 }, padding: 10, boxWidth: 11,
 
             generateLabels: function(chart) {
 
