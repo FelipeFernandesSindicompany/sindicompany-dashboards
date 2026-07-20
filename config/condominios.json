@@ -45,7 +45,7 @@
       "empresa_gestora": "habitacional_xlsx",
       "pasta_dados": "data/plano_cambuci",
       "html_file": "Dashboard_Financeiro_PlanoCambuci.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#0891b2",
       "unidades": 0,
       "parser_config": {
@@ -560,7 +560,7 @@
       "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/plano_mooca_praca_lion_iii",
       "html_file": "Dashboard_Financeiro_PlanoMooca.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#16a34a",
       "unidades": 0,
       "parser_config": {
@@ -580,7 +580,7 @@
       "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/plano_rio_bonito",
       "html_file": "Dashboard_Financeiro_PlanoRioBonito.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#2563eb",
       "unidades": 0,
       "parser_config": {
