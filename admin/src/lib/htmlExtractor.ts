@@ -80,8 +80,8 @@ function extractBalContent(content: string): string | null {
 export function extractBALEntry(htmlFile: string, monthKey: string): Partial<ExtractedBAL['data']> | null {
   try {
     let content: string;
-    if (process.env.GITHUB_TOKEN || process.env.VERCEL || process.env.SINDICOMPANY_PM2) {
-      // Em produção usar snapshots (apenas lastKey disponível — fallback para null)
+    if (process.env.GITHUB_TOKEN || process.env.VERCEL) {
+      // Vercel: HTML files não estão disponíveis em runtime — sem filesystem
       return null;
     }
     const htmlPath = path.join(DOCS_DIR, htmlFile);

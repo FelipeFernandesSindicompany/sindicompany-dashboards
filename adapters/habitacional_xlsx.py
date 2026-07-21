@@ -28,14 +28,23 @@ _CAT_NORM = {
     "CONSUMO":                  "CONSUMOS",
     "CONSUMOS":                 "CONSUMOS",
     # Contratos e manutenção
-    "CONTRATOS/MANUTENCAO":     "CONTRATOS/MANUT.",
-    "CONTRATOS/MANUTENÇAO":     "CONTRATOS/MANUT.",
-    "CONTRATOS/MANUT":          "CONTRATOS/MANUT.",
-    "CONTRATOS/MANUT.":         "CONTRATOS/MANUT.",
-    "MANUTENCAO":               "CONTRATOS/MANUT.",
-    "MANUT/CONSERV. CONTRAT.":  "CONTRATOS/MANUT.",
-    "MANUT/CONSERV.":           "CONTRATOS/MANUT.",
-    "MANUT. CONTRAT.":          "CONTRATOS/MANUT.",
+    "CONTRATOS/MANUTENCAO":          "CONTRATOS/MANUT.",
+    "CONTRATOS/MANUTENÇAO":          "CONTRATOS/MANUT.",
+    "CONTRATOS/MANUT":               "CONTRATOS/MANUT.",
+    "CONTRATOS/MANUT.":              "CONTRATOS/MANUT.",
+    "MANUTENCAO":                    "CONTRATOS/MANUT.",
+    "MANUT/CONSERV. CONTRAT.":       "CONTRATOS/MANUT.",
+    "MANUT/CONSERV.":                "CONTRATOS/MANUT.",
+    "MANUT. CONTRAT.":               "CONTRATOS/MANUT.",
+    # Manutenção contratada / esporádica (Cinque Terre e similares)
+    "MANUT/CONSERVAÇÃO-CONTRATADAS": "MANUT/CONSERV. CONTRAT.",
+    "MANUT/CONSERVACAO-CONTRATADAS": "MANUT/CONSERV. CONTRAT.",
+    "MANUT/CONSERV.-CONTRATADAS":    "MANUT/CONSERV. CONTRAT.",
+    "MANUT/CONSERV. CONTRAT.":       "MANUT/CONSERV. CONTRAT.",
+    "MANUT/CONSERVAÇÃO-ESPORADICAS": "MANUT/CONSERV. ESPORÁD.",
+    "MANUT/CONSERVACAO-ESPORADICAS": "MANUT/CONSERV. ESPORÁD.",
+    "MANUT/CONSERV.-ESPORADICAS":    "MANUT/CONSERV. ESPORÁD.",
+    "MANUT/CONSERV. ESPORÁD.":       "MANUT/CONSERV. ESPORÁD.",
     # Materiais
     "MATERIAIS/SUPRIMENTOS":    "MATERIAIS",
     "MATERIAIS":                "MATERIAIS",
@@ -44,6 +53,10 @@ _CAT_NORM = {
     "SERVIÇOS PRESTADOS":       "SERV. PRESTADOS",
     "SERV. PRESTADOS":          "SERV. PRESTADOS",
     "SERVICOS":                 "SERV. PRESTADOS",
+    # Serviços terceirizados (Cinque Terre e similares)
+    "SERV.TERCEIRIZADOS":       "SERV. TERCEIRIZADOS",
+    "SERV. TERCEIRIZADOS":      "SERV. TERCEIRIZADOS",
+    "TERCEIRIZADOS":            "SERV. TERCEIRIZADOS",
     # Despesas operacionais / administrativo
     "DESPESAS OPERACIONAIS":    "DESP. OPERACIONAIS",
     "DESP. OPERACIONAIS":       "DESP. OPERACIONAIS",
@@ -140,7 +153,8 @@ class AdapterHabitacionalXLSX(AdapterBase):
                     return True
 
                 # Conta individual: tem nome, tem pelo menos um valor, e tem E ou G preenchido
-                if not desc or any(ex in desc_up for ex in CONTAS_EXCL):
+                # CONTAS_EXCL usa match exato para não excluir contas como "CONTA EVENTOS"
+                if not desc or desc_up in CONTAS_EXCL:
                     continue
                 if not any([v_ant, v_cred, v_deb, v_sal]):
                     continue
