@@ -903,9 +903,7 @@ window.onload = function() {
     kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
         R(totalRec), 'g', 'Cotas + rendimentos') +
     kpi('Despesas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
-        R(totalDesp), 'r', 'Incl. Fundo Fachada') +
-    kpi('F. Fachada (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
-        R(getContaSaldo(ultimo, 'FACHADA')), 'y', '');
+        R(totalDesp), 'r', 'Total acumulado do per&iacute;odo');
 
   // Alerta
   var diff = totalRec - totalDesp;
