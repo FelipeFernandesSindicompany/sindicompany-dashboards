@@ -982,14 +982,6 @@ function renderBal(id) {
     h += '<td class="nr" style="color:var(--g)">' + R(c.c) + '</td>';
     h += '<td class="nr" style="color:' + (c.d > 0 ? 'var(--r)' : 'var(--muted)') + '">' + R(c.d) + '</td>';
     h += '<td class="nr"' + sc + '>' + R(c.s) + '</td></tr>';
-    if ((c.n === 'ORDINÁRIA' || c.n === 'ORDINARIA') && m.desp && m.desp.length) {
-      m.desp.forEach(function(d) {
-        h += '<tr style="font-size:12px"><td class="bd" style="padding-left:22px;color:var(--muted)">&nbsp;&nbsp;&#8627; ' + d.c + '</td>';
-        h += '<td></td><td></td>';
-        h += '<td class="nr" style="color:var(--r);font-size:12px">' + R(d.v) + '</td>';
-        h += '<td></td></tr>';
-      });
-    }
   });
   h += '<tr class="tot"><td>TOTAL</td><td class="nr">' + R(m.tAnt) + '</td><td class="nr" style="color:var(--g)">' + R(m.tCred) + '</td><td class="nr" style="color:var(--r)">' + R(m.tDeb) + '</td><td class="nr" style="color:var(--p)">' + R(m.tAtual) + '</td></tr>';
   h += '</table></div></div>';
