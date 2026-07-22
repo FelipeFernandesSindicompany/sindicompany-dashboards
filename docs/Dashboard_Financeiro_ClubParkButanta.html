@@ -4685,7 +4685,7 @@ function buildTblBanco() {
 
 
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ordin&aacute;ria</th><th>Fundo de Reserva</th><th>Utiliz. &Aacute;reas Comuns</th><th>Total (3 contas)</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>C/C Ordin&aacute;ria</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total (3 contas)</th></tr>';
 
 
 
@@ -6281,7 +6281,7 @@ function buildCharts() {
 
 
 
-        { label: 'Utiliz. Áreas Comuns', data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }), backgroundColor: G, stack: 'banco' }
+        { label: 'Demais Fundos', data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }), backgroundColor: G, stack: 'banco' }
 
 
 
