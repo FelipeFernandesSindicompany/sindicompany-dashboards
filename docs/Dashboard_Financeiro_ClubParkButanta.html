@@ -4685,7 +4685,7 @@ function buildTblBanco() {
 
 
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ordin&aacute;ria</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Utiliz. Áreas Comuns</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>C/C Ordin&aacute;ria</th><th>Fundo de Reserva</th><th>Utiliz. &Aacute;reas Comuns</th><th>Total (3 contas)</th></tr>';
 
 
 
@@ -4717,7 +4717,7 @@ function buildTblBanco() {
 
 
 
-    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
+    h += '<td class="nr bd">' + R(m.banco.cc + m.banco.cdb + m.banco.priv) + '</td></tr>';
 
 
 
@@ -6277,7 +6277,7 @@ function buildCharts() {
 
 
 
-        { label: 'CDB/Fundo de Reserva', data: bancoMeses.map(function(k){ return BAL[k].banco.cdb;  }), backgroundColor: B, stack: 'banco' },
+        { label: 'Fundo de Reserva', data: bancoMeses.map(function(k){ return BAL[k].banco.cdb;  }), backgroundColor: B, stack: 'banco' },
 
 
 
