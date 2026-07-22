@@ -227,8 +227,8 @@
     }
   },
   "Dashboard_Financeiro_ClubParkButanta.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -243,15 +243,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 1824021.84,
-      "tCred": 948982.23,
-      "tDeb": 1077136.2,
+      "tit": "Junho / 2026",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
       "inad": 0,
-      "tAnt": 1952175.81
+      "tAnt": 0
     }
   },
   "Dashboard_Financeiro_FattoMorumbi.html": {
