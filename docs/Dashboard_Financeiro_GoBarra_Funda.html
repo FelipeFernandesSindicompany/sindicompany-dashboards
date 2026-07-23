@@ -2639,7 +2639,8 @@ function buildCharts() {
 
   // 8. Inadimplência
 
-  var inadVals = MESES.map(function(k) { return BAL[k].inad || 0; });
+  var inadVals     = MESES.map(function(k) { return BAL[k].inad     || 0; });
+  var inadProcVals = MESES.map(function(k) { return BAL[k].inadProc || 0; });
 
   mkChart('cInad', {
 
@@ -2650,6 +2651,14 @@ function buildCharts() {
         borderColor: R2, backgroundColor: 'rgba(192,57,43,0.10)', borderWidth: 2.5,
 
         pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: R2, pointBorderColor: '#fff', pointBorderWidth: 2,
+
+        fill: true, tension: 0.35 },
+
+      { label: 'Recebidos em Atraso', data: inadProcVals,
+
+        borderColor: B, backgroundColor: 'rgba(41,128,185,0.10)', borderWidth: 2.5,
+
+        pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: B, pointBorderColor: '#fff', pointBorderWidth: 2,
 
         fill: true, tension: 0.35 }
 
