@@ -1519,7 +1519,7 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>Mês</th><th>Conta Ordinária (C/C)</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th>Conta Ordinária (C/C)</th><th>Fundo de Reserva + Fundo Investimento</th><th>Demais Fundos</th><th>Total</th></tr>';
 
   MESES.forEach(function(k){
 
@@ -1663,7 +1663,7 @@ function buildCharts(){
 
     {label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Fundo de Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Fundo de Reserva + Fundo Investimento',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
     {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
