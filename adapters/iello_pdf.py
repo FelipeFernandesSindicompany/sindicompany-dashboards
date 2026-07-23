@@ -120,28 +120,34 @@ class AdapterIelloPDF(AdapterBase):
                                       "saldo_atual": dados.saldo_atual}]
 
         # ── Despesas por categoria ──
-        # Seção "COMPOSIÇÃO DESPESAS ORDINÁRIA" — termina em "TOTAL"
+        # Seção "COMPOSIÇÃO DESPESAS ORDINÁRIA" — encerra em "RECEBIMENTO DE CONTAS"
+        # Atenção: a linha "TOTAL" aparece no meio da seção (subtotal parcial da pág.);
+        # categorias como CAIXA LOCAL, ADMINISTRATIVO, DESPESAS GERAIS e DESPESAS
+        # OPERACIONAIS surgem DEPOIS do "TOTAL" e devem ser capturadas.
         in_desp = False
         for linha in linhas:
             l = linha.strip()
+            l_up = l.upper()
             if re.search(r"COMPOSI[ÇC][ÃA]O DESPESAS ORDIN", l, re.IGNORECASE):
                 in_desp = True
                 continue
             if not in_desp:
                 continue
-            # Termina a seção quando encontra "TOTAL" sozinho (subtotal da seção)
-            if re.match(r"^TOTAL\b", l, re.IGNORECASE):
+            # Encerra a seção na próxima seção do PDF
+            if re.match(r"^(RECEBIMENTO DE CONTAS|RESUMO DE INAD|MULTAS E CORRE|RESUMO FINANCEIRO)", l_up):
                 in_desp = False
                 continue
-            # Ignora cabeçalhos de página e linhas em branco
-            if not l or re.match(r"^(Per[ií]odo|P[aá]g\.|Balancete)", l, re.IGNORECASE):
+            # Ignora a linha de total acumulado e cabeçalhos de página
+            if re.match(r"^TOTAL\b", l, re.IGNORECASE):
+                continue
+            if not l or re.match(r"^(Per[ií]odo|P[aá]g\.|Balancete|COMPOSI)", l, re.IGNORECASE):
                 continue
             # Linha de categoria: "TEXTO -valor" ou "TEXTO  valor"
             m = re.match(r"^(.+?)\s+-?([\d.,]{4,})\s*$", l)
             if m:
                 cat = m.group(1).strip()
                 val = _num(m.group(2))
-                # Filtra linhas de cabeçalho e totalizadores
+                # Filtra totalizadores e linhas de outras seções
                 if val > 0 and len(cat) > 3 and not re.match(
                     r"^(TOTAL|RECEBIMENTO|RESUMO|SALDO|ACORDOS|CANCELAMENTO|"
                     r"ANTECIPA|COTAS|CONDÔMINO|ARRECADA|MULTAS|CONSUMO|FUNDO|SALÃO)",
