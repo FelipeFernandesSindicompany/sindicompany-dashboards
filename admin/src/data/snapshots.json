@@ -366,8 +366,8 @@
     }
   },
   "Dashboard_Financeiro_GiardinoDItalia.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -380,15 +380,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 184753.02,
-      "tCred": 158842.04,
-      "tDeb": -139137.84,
-      "inad": 556685.66,
-      "tAnt": 165048.82
+      "tit": "Junho / 2026",
+      "tAtual": 179465.36,
+      "tCred": 126670.27,
+      "tDeb": 151688.15,
+      "inad": 573721.95,
+      "tAnt": 184753.02
     }
   },
   "Dashboard_Financeiro_GoBarra_Funda.html": {
