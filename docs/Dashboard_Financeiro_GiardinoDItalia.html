@@ -1177,7 +1177,7 @@ window.onload=function(){
 
     kpi('F. Reserva ('+ab(ul.tit)+')',R(gc(ul,'RESERVA')),'o','Fundo de Reserva acumulado')+
 
-    kpi('Inadimplência ('+ab(ul.tit)+')',R(ul.inad),'r','Devedores em aberto')+
+    kpi('Total Receitas (período)',R(tR),'g','Total de entradas do período')+
 
     kpi('Total Débitos (período)',R(tD),'y','Total de saídas do período');
 
@@ -1303,29 +1303,11 @@ function renderBal(id){
 
   h+=kpi('Emissão Realizada',R(m.real),pos?'g':'r','Efetivamente recebido');
 
+  h+=kpi('Devedores em Aberto',R(m.inad),'r','Total no período');
+
+  h+=kpi('Recebido em Atraso',R(m.inadProc),'y','Cotas de períodos anteriores');
+
   h+='</div></div>';
-
-  h+='<div class="cc-pair">';
-
-  var tRec=m.contas.reduce(function(s,c){return s+(c.c||0);},0);
-
-  h+='<div class="cc"><h3>&#128200; Receitas – '+m.tit+'</h3><div class="tw"><table>';
-
-  h+='<tr><th>Conta</th><th>Créditos</th><th>%</th><th>Participação</th></tr>';
-
-  m.contas.filter(function(c){return c.c>0;}).forEach(function(c){
-
-    var p=tRec>0?(c.c/tRec*100).toFixed(1):'0.0';
-
-    h+='<tr><td>'+c.n+'</td><td class="nr" style="color:var(--g)">'+R(c.c)+'</td><td class="nr">'+p+'%</td>';
-
-    h+='<td style="min-width:80px"><div class="pb"><div class="pbf" style="width:'+p+'%;background:var(--g)"></div></div></td></tr>';
-
-  });
-
-  h+='<tr class="tot"><td>TOTAL</td><td class="nr" style="color:var(--g)">'+R(tRec)+'</td><td colspan="2"></td></tr>';
-
-  h+='</table></div></div>';
 
   h+='<div class="cc"><h3>&#128184; Despesas – '+m.tit+'</h3><div class="tw"><table>';
 
@@ -1337,15 +1319,13 @@ function renderBal(id){
 
     h+='<tr><td>'+d.c+'</td><td class="nr">'+R(d.v)+'</td><td class="nr">'+p+'%</td>';
 
-    h+='<td style="min-width:80px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';
+    h+='<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';
 
   });
 
   h+='<tr class="tot"><td>TOTAL ORDINÁRIA</td><td class="nr">'+R(m.tDesp)+'</td><td colspan="2"></td></tr>';
 
   h+='</table></div></div>';
-
-  h+='</div>';
 
   document.getElementById('balContent').innerHTML=h;
 
