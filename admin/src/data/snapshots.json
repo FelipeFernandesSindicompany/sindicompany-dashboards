@@ -421,8 +421,8 @@
     }
   },
   "Dashboard_Financeiro_GoLiberdade.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -436,15 +436,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "jun26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 35136.49,
-      "tCred": 149383.81,
-      "tDeb": 147666.4,
-      "inad": 76306.75,
-      "tAnt": 33419.08
+      "tit": "Junho / 2026",
+      "tAtual": 1451.76,
+      "tCred": 92358.84,
+      "tDeb": 105735.66,
+      "inad": 0,
+      "tAnt": 14828.58
     }
   },
   "Dashboard_Financeiro_Guaratambe.html": {
