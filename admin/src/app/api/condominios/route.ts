@@ -6,12 +6,30 @@ import type { CondominioStatus, ImportRecord } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
+const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function monthKeyToNum(key: string): number {
+  const m = abbrs.indexOf(key.slice(0, 3));
+  const y = parseInt(key.slice(3), 10);
+  return y * 12 + m;
+}
+
+/** Até o dia 14 → 2 meses atrás; a partir do dia 15 → 1 mês atrás */
+function getMonthsBack(): number {
+  return new Date().getDate() >= 15 ? 1 : 2;
+}
+
+function getExpectedMonth(): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - getMonthsBack(), 1);
+  return `${abbrs[d.getMonth()]}${String(d.getFullYear()).slice(2)}`;
+}
+
 export async function GET() {
   try {
     const condominios = getCondominios();
     const allRecords = await readHistoryAsync();
 
-    // Build lastImports map (newest-first is preserved by readHistoryAsync)
     const lastImports: Record<string, ImportRecord> = {};
     for (const r of allRecords) {
       if (!lastImports[r.condominioId]) {
@@ -19,22 +37,9 @@ export async function GET() {
       }
     }
 
-    // Regra de negócio: prestações de contas chegam com 2 meses de defasagem.
-    // Em junho/2026 o mês esperado (mais recente disponível) é abril/2026.
-    // Dashboard com lastKey === expectedMonth → "current" (atualizado) ✓
-    const abbrs = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-
-    const currentMonth = (() => {
-      const now = new Date();
-      return `${abbrs[now.getMonth()]}${String(now.getFullYear()).slice(2)}`;
-    })();
-
-    const expectedMonth = (() => {
-      const now = new Date();
-      // 2 meses atrás
-      const d = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-      return `${abbrs[d.getMonth()]}${String(d.getFullYear()).slice(2)}`;
-    })();
+    const currentMonth = `${abbrs[new Date().getMonth()]}${String(new Date().getFullYear()).slice(2)}`;
+    const expectedMonth = getExpectedMonth();
+    const expectedNum   = monthKeyToNum(expectedMonth);
 
     const statuses: CondominioStatus[] = condominios.map(condo => {
       const bal = extractBAL(condo.html_file);
@@ -42,8 +47,8 @@ export async function GET() {
 
       let status: CondominioStatus['status'] = 'no_data';
       if (bal) {
-        if (bal.lastKey === expectedMonth) status = 'current';
-        else status = 'pending';
+        // "Em dia" se o dashboard tem dados do mês esperado OU mais recente
+        status = monthKeyToNum(bal.lastKey) >= expectedNum ? 'current' : 'pending';
       }
       if (lastImport?.status === 'error') status = 'error';
 

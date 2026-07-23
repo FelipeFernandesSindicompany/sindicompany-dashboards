@@ -988,7 +988,7 @@ def _publicar_github(htmls: list, mes_str: str):
 
 def _reiniciar_admin():
     """
-    Reinicia o processo sindicompany-admin via PM2 para recarregar os HTMLs
+    Reinicia o processo dashboard-admin via PM2 para recarregar os HTMLs
     atualizados no modo produção (next start não tem hot-reload).
     Silencioso se PM2 não estiver disponível.
     """
@@ -1003,7 +1003,7 @@ def _reiniciar_admin():
     for pm2 in pm2_paths:
         try:
             r = subprocess.run(
-                [pm2, "restart", "sindicompany-admin"],
+                [pm2, "restart", "dashboard-admin"],
                 capture_output=True, text=True, timeout=15
             )
             if r.returncode == 0:
