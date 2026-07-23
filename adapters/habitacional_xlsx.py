@@ -302,5 +302,17 @@ class AdapterHabitacionalXLSX(AdapterBase):
         if dados.receita_realizada > 0 and inad > 0:
             dados.inadimplencia_percentual = round(inad / dados.receita_realizada * 100, 2)
 
+        # ── Recebidos em Atraso (inadProc) ──
+        # Linha "Total Recebido (Com Baixa de Recibo)" — coluna I (idx 8) ou vizinhas
+        for row in linhas:
+            for j, cell in enumerate(row):
+                if cell and "Com Baixa" in str(cell):
+                    for k in range(j + 1, min(len(row), j + 5)):
+                        v = _f(row[k])
+                        if v > 0:
+                            dados.inadimplencia_recebida = v
+                            break
+                    break
+
         wb.close()
         return dados
