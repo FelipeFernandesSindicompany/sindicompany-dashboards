@@ -52,15 +52,23 @@ class AdapterIelloPDF(AdapterBase):
         linhas = texto.split("\n")
 
         # ── Resumo Financeiro: cada linha é uma conta com 4 números (ant/cred/deb/atual) ──
+        # Escopa ao bloco RESUMO FINANCEIRO para evitar capturar linhas de outras seções.
         # "CONTA CONDOMINIO" = ordinária (banco_cc)
-        # "CONTA FUNDO..." / "FUNDO DE RESERVA" = banco_cdb
+        # "FUNDO DE RESERVA" / "FUNDO INVESTIMENTO" = banco_cdb (somados)
+        # Demais contas (SALAO DE FESTAS, BENFEITORIA, LOCACAO, etc.) = banco_priv
         # "SALDO FINAL" = totais consolidados
         _CC_KEYS  = ("CONTA CONDOMINIO", "ORDINARI", "CORRENTE")
         _CDB_KEYS = ("FUNDO", "RESERVA", "CDB", "APLICA", "INVESTIMENTO")
         conta_condominio_c = None
+        in_resumo = False
         for linha in linhas:
             l = linha.strip()
             l_up = l.upper()
+
+            if "RESUMO FINANCEIRO" in l_up:
+                in_resumo = True
+                continue
+
             if l_up.startswith("SALDO FINAL"):
                 nums = re.findall(r"-?[\d.,]+", l.replace("SALDO FINAL", ""))
                 nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
@@ -70,19 +78,40 @@ class AdapterIelloPDF(AdapterBase):
                     dados.despesa_total     = nums_f[2]
                     dados.saldo_atual       = nums_f[3]
                     dados.receita_prevista  = 0.0
+                in_resumo = False
                 continue
-            # Extrai contas individuais para banco
+
+            if not in_resumo:
+                continue
+
             nums = re.findall(r"-?[\d.,]+", l)
             nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
             if len(nums_f) < 4:
                 continue
+
+            # Nome da conta = texto antes do primeiro número; filtra paginação (minúsculas)
+            nome_conta = re.sub(r'\s+-?[\d.,]+.*', '', l).strip()
+            if not nome_conta or nome_conta != nome_conta.upper():
+                continue
+
             saldo_conta = nums_f[3]
+            conta_entry = {
+                "nome":       nome_conta,
+                "saldo_ant":  nums_f[0],
+                "creditos":   nums_f[1],
+                "debitos":    nums_f[2],
+                "saldo_atual": saldo_conta,
+            }
             if any(k in l_up for k in _CC_KEYS):
-                conta_condominio_c = nums_f[1]  # créditos da ordinária
+                conta_condominio_c = nums_f[1]
                 dados.banco_cc = saldo_conta
-            elif any(k in l_up for k in _CDB_KEYS) and not l_up.startswith("SALDO"):
+            elif any(k in l_up for k in _CDB_KEYS):
                 dados.banco_cdb = round(dados.banco_cdb + saldo_conta, 2)
-        # Garante que contas_detalhe tenha pelo menos a conta ordinária
+            else:
+                dados.banco_priv = round(dados.banco_priv + saldo_conta, 2)
+            dados.contas_detalhe.append(conta_entry)
+
+        # Fallback: PDF sem RESUMO FINANCEIRO reconhecível
         if dados.saldo_atual and not dados.contas_detalhe:
             dados.contas_detalhe = [{"nome": "ORDINÁRIA",
                                       "saldo_ant":  dados.saldo_anterior,
