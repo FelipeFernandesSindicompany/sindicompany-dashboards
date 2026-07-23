@@ -742,7 +742,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <div id="pg-inadimp" class="pg">
 
-  <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Cotas em aberto e posi&ccedil;&atilde;o da Provis&atilde;o</p></div>
+  <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Cotas em Aberto e Recebidos em Atraso</p></div>
 
   <div class="cc"><h3>&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia (R$)</h3><div class="cw"><canvas id="cInad"></canvas></div></div>
 
@@ -1794,7 +1794,7 @@ var BAL = {
     ]
 
   },
-  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:14828.58,tCred:92358.84,tDeb:105735.66,tAtual:1451.76,contas:[{n:'ORDINARIA',a:-78107.12,c:69057.36,d:100533.25,s:-109583.01},{n:'FUNDO DE RESERVA',a:75413.81,c:3452.68,d:0,s:78866.49},{n:'OBRAS/MELHORIAS',a:-6267.66,c:0,d:0,s:-6267.66},{n:'IMPOSTOS/TAXAS',a:4618.98,c:0,d:0,s:4618.98},{n:'ESPACO DE FESTAS',a:7739.68,c:0,d:0,s:7739.68},{n:'CONSUMOS',a:-5066.68,c:18580.59,d:5202.41,s:8311.5},{n:'LOCACOES',a:15916.24,c:0,d:0,s:15916.24},{n:'FUNDO DE BENFEITORIAS',a:581.33,c:0,d:0,s:581.33},{n:'MINIMERCADO/FEIRA',a:0,c:1268.21,d:0,s:1268.21}],prev:69058.1,real:92358.84,tDesp:100533.25,fac:0,inad:0,inadProc:0,banco:{cc:-109583.01,cdb:78866.49,priv:32168.28},desp:[{c:'PESSOAL',v:43553.05},{c:'CONSUMOS',v:14579.9},{c:'HONORÁRIOS/ADM',v:12416.63},{c:'CONSERV. CONTRAT.',v:9262.2},{c:'IMPOSTOS/TAXAS',v:8696.54},{c:'CONSERV. ESPORÁD.',v:8565.19},{c:'SEGUROS',v:2506.26},{c:'DESP. DIVERSAS',v:527.98},{c:'BANCÁRIAS',v:425.5}]}
+  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:14828.58,tCred:92358.84,tDeb:105735.66,tAtual:1451.76,contas:[{n:'ORDINARIA',a:-78107.12,c:69057.36,d:100533.25,s:-109583.01},{n:'FUNDO DE RESERVA',a:75413.81,c:3452.68,d:0,s:78866.49},{n:'OBRAS/MELHORIAS',a:-6267.66,c:0,d:0,s:-6267.66},{n:'IMPOSTOS/TAXAS',a:4618.98,c:0,d:0,s:4618.98},{n:'ESPACO DE FESTAS',a:7739.68,c:0,d:0,s:7739.68},{n:'CONSUMOS',a:-5066.68,c:18580.59,d:5202.41,s:8311.5},{n:'LOCACOES',a:15916.24,c:0,d:0,s:15916.24},{n:'FUNDO DE BENFEITORIAS',a:581.33,c:0,d:0,s:581.33},{n:'MINIMERCADO/FEIRA',a:0,c:1268.21,d:0,s:1268.21}],prev:69058.1,real:92358.84,tDesp:100533.25,fac:0,inad:16043.82,inadProc:1179.52,banco:{cc:-109583.01,cdb:78866.49,priv:32168.28},desp:[{c:'PESSOAL',v:43553.05},{c:'CONSUMOS',v:14579.9},{c:'HONORÁRIOS/ADM',v:12416.63},{c:'CONSERV. CONTRAT.',v:9262.2},{c:'IMPOSTOS/TAXAS',v:8696.54},{c:'CONSERV. ESPORÁD.',v:8565.19},{c:'SEGUROS',v:2506.26},{c:'DESP. DIVERSAS',v:527.98},{c:'BANCÁRIAS',v:425.5}]}
 };
 
 
@@ -2305,7 +2305,7 @@ function buildTblPvr() {
 
 function buildTblInad() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Provis&atilde;o p/ Inadimpl.</th><th>Inadimpl&ecirc;ncia Apurada</th><th>Status</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Cotas em Aberto</th><th>Recebidos em Atraso</th><th>Status</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2313,15 +2313,9 @@ function buildTblInad() {
 
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
 
-    // Get PROVISAO INADIMPLENCIA saldo from contas
-
-    var prov = 0;
-
-    m.contas.forEach(function(c){ if (c.n.indexOf('PROVISAO') >= 0 || c.n.indexOf('INADIMPL') >= 0) prov = c.s; });
-
     var b = m.inad > 5000 ? '<span class="badge bbad">Alto</span>' : m.inad > 0 ? '<span class="badge bwarn">Registrado</span>' : '<span class="badge bok">Sem registro</span>';
 
-    h += '<tr><td class="bd">' + lbl + '</td><td class="nr">' + (prov > 0 ? R(prov) : '-') + '</td><td class="nr">' + (m.inad > 0 ? R(m.inad) : '-') + '</td><td>' + b + '</td></tr>';
+    h += '<tr><td class="bd">' + lbl + '</td><td class="nr">' + (m.inad > 0 ? R(m.inad) : '-') + '</td><td class="nr">' + (m.inadProc > 0 ? R(m.inadProc) : '-') + '</td><td>' + b + '</td></tr>';
 
   });
 
@@ -2651,7 +2645,7 @@ function buildCharts() {
 
     type: 'line', data: { labels: ML, datasets: [
 
-      { label: 'Provis\u00e3o p/ Inadimpl.', data: inadVals,
+      { label: 'Cotas em Aberto', data: inadVals,
 
         borderColor: R2, backgroundColor: 'rgba(192,57,43,0.10)', borderWidth: 2.5,
 
