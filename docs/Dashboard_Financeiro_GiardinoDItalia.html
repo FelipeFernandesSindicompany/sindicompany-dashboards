@@ -91,7 +91,7 @@ tr:last-child td{border-bottom:none;}
 
 tr:nth-child(even) td{background:#FAFAFA;}
 
-.nr{text-align:right;font-variant-numeric:tabular-nums;}.bd{font-weight:700;color:var(--p);}
+.nr{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}.bd{font-weight:700;color:var(--p);}
 
 .tot td{background:var(--pl)!important;font-weight:700;}
 
@@ -1133,7 +1133,7 @@ function R(n){
 
   var i=a[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 
-  var s='R$ '+i+','+a[1];
+  var s='R$ '+i+','+a[1];
 
   return n<0?'('+s+')':s;
 
