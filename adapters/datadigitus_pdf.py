@@ -175,16 +175,28 @@ class AdapterDatadigitusPDF(AdapterBase):
             else:
                 dados.banco_priv += sa
 
-        # ── 3. Receita Prevista — soma de totais por conta ──────────────────
-        # Cada seção de conta no Demonstrativo Financeiro por Conta tem uma linha
-        # com dois números isolados: "PREVISTO_TOTAL  REALIZADO_TOTAL"
-        # Somamos todos os PREVISTO_TOTAL para obter a receita prevista consolidada
+        # ── 3. Receita Prevista ──────────────────────────────────────────────
+        # Busca seções "Receita Prevista e Realizada" e, dentro de cada uma,
+        # captura a linha de totais (dois números isolados logo após os sub-itens).
+        # Isso evita capturar pares de números de outras tabelas do PDF.
         previsto_total = 0.0
-        for m in re.finditer(
-            r"^([\d.]+,\d{2})\s+([\d.]+,\d{2})$",
-            texto_total, re.MULTILINE
-        ):
-            previsto_total += _num(m.group(1))
+        in_prev_section = False
+        for linha in linhas:
+            l = linha.strip()
+            if re.search(r"Receita Prevista e Realizada", l, re.IGNORECASE):
+                in_prev_section = True
+                continue
+            if in_prev_section:
+                # Linha de total: exatamente dois números BR isolados
+                m = re.match(r"^([\d.]+,\d{2})\s+([\d.]+,\d{2})$", l)
+                if m:
+                    previsto_total += _num(m.group(1))
+                    in_prev_section = False  # consumiu o total, aguarda próxima seção
+                    continue
+                # Linha com label+valor (sub-item): continua na seção
+                # Linha de nova seção (sem números): encerra seção sem total
+                if l and not re.search(r"[\d.,]", l):
+                    in_prev_section = False
         if previsto_total > 0:
             dados.receita_prevista = previsto_total
         elif dados.receita_realizada > 0:

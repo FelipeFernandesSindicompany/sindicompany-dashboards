@@ -51,16 +51,17 @@ class AdapterIelloPDF(AdapterBase):
 
         linhas = texto.split("\n")
 
-        # ── Resumo Financeiro: "SALDO FINAL" = totais gerais; "CONTA CONDOMINIO" = ordinária ──
+        # ── Resumo Financeiro: cada linha é uma conta com 4 números (ant/cred/deb/atual) ──
+        # "CONTA CONDOMINIO" = ordinária (banco_cc)
+        # "CONTA FUNDO..." / "FUNDO DE RESERVA" = banco_cdb
+        # "SALDO FINAL" = totais consolidados
+        _CC_KEYS  = ("CONTA CONDOMINIO", "ORDINARI", "CORRENTE")
+        _CDB_KEYS = ("FUNDO", "RESERVA", "CDB", "APLICA", "INVESTIMENTO")
         conta_condominio_c = None
         for linha in linhas:
             l = linha.strip()
-            if re.match(r"CONTA CONDOMINIO\b", l, re.IGNORECASE):
-                nums = re.findall(r"-?[\d.,]+", re.sub(r"CONTA CONDOMINIO", "", l, flags=re.IGNORECASE))
-                nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
-                if len(nums_f) >= 4:
-                    conta_condominio_c = nums_f[1]
-            if l.upper().startswith("SALDO FINAL"):
+            l_up = l.upper()
+            if l_up.startswith("SALDO FINAL"):
                 nums = re.findall(r"-?[\d.,]+", l.replace("SALDO FINAL", ""))
                 nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
                 if len(nums_f) >= 4:
@@ -68,9 +69,26 @@ class AdapterIelloPDF(AdapterBase):
                     dados.receita_realizada = conta_condominio_c if conta_condominio_c else nums_f[1]
                     dados.despesa_total     = nums_f[2]
                     dados.saldo_atual       = nums_f[3]
-                    # receita_prevista is set externally via CONFIG.orcamento; leave as 0
                     dados.receita_prevista  = 0.0
-                    break
+                continue
+            # Extrai contas individuais para banco
+            nums = re.findall(r"-?[\d.,]+", l)
+            nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
+            if len(nums_f) < 4:
+                continue
+            saldo_conta = nums_f[3]
+            if any(k in l_up for k in _CC_KEYS):
+                conta_condominio_c = nums_f[1]  # créditos da ordinária
+                dados.banco_cc = saldo_conta
+            elif any(k in l_up for k in _CDB_KEYS) and not l_up.startswith("SALDO"):
+                dados.banco_cdb = round(dados.banco_cdb + saldo_conta, 2)
+        # Garante que contas_detalhe tenha pelo menos a conta ordinária
+        if dados.saldo_atual and not dados.contas_detalhe:
+            dados.contas_detalhe = [{"nome": "ORDINÁRIA",
+                                      "saldo_ant":  dados.saldo_anterior,
+                                      "creditos":   dados.receita_realizada,
+                                      "debitos":    dados.despesa_total,
+                                      "saldo_atual": dados.saldo_atual}]
 
         # ── Despesas por categoria ──
         # Seção "COMPOSIÇÃO DESPESAS ORDINÁRIA" — termina em "TOTAL"

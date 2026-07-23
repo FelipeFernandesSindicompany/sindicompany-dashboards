@@ -212,7 +212,7 @@ class AdapterHabitacionalXLSX(AdapterBase):
             "ORDINARIA", "ORDINÁRIA", "ORDINARIO",       # conta ordinária (qualquer grafia)
             "CAIXA ORDINARIO", "CAIXA ORDINÁRIA",        # conta principal de caixa
             "MELHORAMENTOS", "FUNDO DE RESERVA",
-            "REPARACAO DA FACHADA", "PROVISAO", "CLT", "GERAL",
+            "REPARACAO DA FACHADA", "PROVISAO", "CLT",
             "SEGURO PROTECAO",                            # conta de seguro opcional
         }
         # Marcador: ao encontrar "TOTAL DA CONTA CAIXA ORDINARIO", a seção CAIXA encerrou.
@@ -271,13 +271,14 @@ class AdapterHabitacionalXLSX(AdapterBase):
                     inad = v
                     break
 
-        # Formato B: linhas "... EM 30/MM" ou "... EM 31/MM" do fim do período atual
-        # (não do período anterior). Valor em col K (idx 10).
+        # Formato B: linhas "... EM DD/MM/YYYY" do fim do período atual.
+        # Usa "/MM/AAAA" como padrão para evitar ambiguidade entre meses (ex: /4/ vs /14/).
         if inad == 0:
-            # Determina o mês de fim do período (ex: "2026-04" → "04")
-            mes_num = mes_referencia.split("-")[1].lstrip("0") if "-" in mes_referencia else ""
-            # Padrões do dia de fim de mês para o mês atual: "30/04" ou "31/04" etc.
-            fim_mes_patterns = [f"/{mes_num}/", f"/0{mes_num}/"] if mes_num else []
+            if "-" in mes_referencia:
+                ano_ref, mes_ref = mes_referencia.split("-")[:2]
+                fim_mes_patterns = [f"/{mes_ref}/{ano_ref}"]
+            else:
+                fim_mes_patterns = []
             for row in linhas:
                 desc = str(col(row, 0) or "").upper().strip()
                 is_overdue = "ATRASO" in desc or "ABERTO" in desc

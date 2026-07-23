@@ -277,19 +277,24 @@ class AdapterLirbaPDF(AdapterBase):
         # ── Banco: tenta "Conta Bancária" primeiro, fallback no Resumo Contábil ──
         conta_banc = self._extrair_conta_bancaria(textos)
         if conta_banc:
-            # "Conta Bancária" é a fonte mais precisa — saldos reais de banco
+            # "Conta Bancária" é a fonte mais precisa — saldos reais de banco.
+            # Classifica por nome para evitar CC/CDB trocados quando a ordem no PDF varia.
+            _CC_KEYS  = ("ORDINARI", "CORRENTE", "C/C")
+            _CDB_KEYS = ("FUNDO DE RESERVA", "FUNDO RESERVA", "CDB", "APLICA", "INVESTIMENTO", "POUPAN")
             account_list = list(conta_banc.items())
-            if len(account_list) == 1:
+            dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
+            for nome_conta, saldo_conta in account_list:
+                nome_up = nome_conta.upper()
+                if any(k in nome_up for k in _CC_KEYS):
+                    dados.banco_cc += saldo_conta
+                elif any(k in nome_up for k in _CDB_KEYS):
+                    dados.banco_cdb += saldo_conta
+                else:
+                    dados.banco_priv = round(dados.banco_priv + saldo_conta, 2)
+            # Fallback se nenhuma conta foi classificada por nome
+            if not any([dados.banco_cc, dados.banco_cdb, dados.banco_priv]) and account_list:
                 saldo = account_list[0][1]
-                dados.banco_cc   = saldo if saldo > 0 else 0.0
-                dados.banco_cdb  = 0.0
-                dados.banco_priv = 0.0
-            elif len(account_list) >= 2:
-                dados.banco_cc   = account_list[0][1]
-                dados.banco_cdb  = account_list[1][1]
-                dados.banco_priv = round(
-                    sum(v for _, v in account_list[2:]), 2
-                ) if len(account_list) > 2 else 0.0
+                dados.banco_cc = saldo if saldo > 0 else 0.0
         else:
             # Fallback: classifica a partir do Resumo Financeiro Contábil
             # (inclui contas negativas na soma de banco_priv para não inflar)
@@ -957,18 +962,23 @@ class AdapterLirbaPDF(AdapterBase):
 
         # ── 4. Inadimplência ────────────────────────────────────────────────────
         # Webware: "COTAS EM ATRASO EM dd/mm/yyyy  valor" no Resumo de Emissão
-        # A linha com data do final do período (mês corrente) é a inadimplência
-        # Ex: "COTAS EM ATRASO EM 30/04/2026  47.174,43"
-        # Extrai todas as ocorrências e pega a maior (última = saldo atual)
-        inad_values = []
+        # Filtra pelo mês/ano de referência para não pegar valores de meses anteriores.
+        inad_by_data: dict = {}
         for m in re.finditer(
-            r"COTAS EM ATRASO EM\s+\d{2}/\d{2}/\d{4}\s+([\d.,]+)",
+            r"COTAS EM ATRASO EM\s+(\d{2}/\d{2}/\d{4})\s+([\d.,]+)",
             texto_completo, re.IGNORECASE
         ):
-            inad_values.append(_num(m.group(1)))
+            inad_by_data[m.group(1)] = _num(m.group(2))
 
-        if inad_values:
-            dados.inadimplencia_valor = max(inad_values)
+        if inad_by_data:
+            # Tenta match com o mês/ano de referência ("/MM/AAAA")
+            if "-" in mes_referencia:
+                ano_r, mes_r = mes_referencia.split("-")[:2]
+                sufixo = f"/{mes_r}/{ano_r}"
+                target = next((v for dt, v in inad_by_data.items() if dt.endswith(sufixo)), None)
+            else:
+                target = None
+            dados.inadimplencia_valor = target if target is not None else max(inad_by_data.values())
         else:
             # Fallback: soma "Total da unidade:"
             total_u = sum(

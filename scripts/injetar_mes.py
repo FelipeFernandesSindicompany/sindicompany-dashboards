@@ -232,18 +232,17 @@ def dados_para_bal(dados, mes_str: str, parser_config: dict = None) -> dict:
                    "s": round(dados.saldo_atual,       2)}]
 
     # ── Banco (cc / cdb / priv) ──────────────────────────────────────────────
-    # Gráficos de pizza não suportam valores negativos. Se qualquer conta
-    # está em saldo devedor (cheque especial), usa o saldo líquido total na cc.
-    has_banco = dados.banco_cc or dados.banco_cdb or dados.banco_priv
-    has_negative = dados.banco_cc < 0 or dados.banco_cdb < 0 or dados.banco_priv < 0
-    if has_banco and not has_negative:
+    # Usa os valores extraídos pelo adapter sempre que pelo menos um foi preenchido.
+    # Fallback para saldo_atual só quando o adapter não extraiu nenhum dado bancário.
+    has_banco = dados.banco_cc != 0 or dados.banco_cdb != 0 or dados.banco_priv != 0
+    if has_banco:
         banco = {
             "cc":   round(dados.banco_cc,   2),
             "cdb":  round(dados.banco_cdb,  2),
             "priv": round(dados.banco_priv, 2),
         }
     else:
-        # Saldo líquido total na cc (evita valores negativos nos gráficos)
+        print(f"[AVISO] banco não extraído pelo adapter — usando saldo_atual como banco.cc fallback")
         banco = {"cc": round(dados.saldo_atual, 2), "cdb": 0.0, "priv": 0.0}
 
     bloco = {
