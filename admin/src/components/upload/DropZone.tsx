@@ -446,7 +446,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
           f.id === fileId
             ? { ...f, status: 'done' as const, error: undefined,
                 resumo: { tit: data.tit ?? data.monthKey, tAtual: data.tAtual ?? 0,
-                          html: `Verificado no dashboard`, nContas: 0, nDesp: 0,
+                          html: `Verificado no dashboard`, nContas: data.nContas ?? 0, nDesp: data.nDesp ?? 0,
                           tCred: data.tCred ?? 0, tDeb: data.tDeb ?? 0,
                           tAnt: data.tAnt ?? 0, inad: data.inad ?? 0 } }
             : f
@@ -542,7 +542,7 @@ export function DropZone({ condominios, onImportDone }: Props) {
       {/* Drop area */}
       <div
         onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={() => setIsDragging(false)}
+        onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
         className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed

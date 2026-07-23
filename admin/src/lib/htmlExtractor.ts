@@ -80,8 +80,8 @@ function extractBalContent(content: string): string | null {
 export function extractBALEntry(htmlFile: string, monthKey: string): Partial<ExtractedBAL['data']> | null {
   try {
     let content: string;
-    if (process.env.GITHUB_TOKEN || process.env.VERCEL) {
-      // Vercel: HTML files não estão disponíveis em runtime — sem filesystem
+    if ((process.env.GITHUB_TOKEN || process.env.VERCEL) && !process.env.SINDICOMPANY_PM2) {
+      // Vercel sem PM2: HTML files não estão disponíveis em runtime
       return null;
     }
     const htmlPath = path.join(DOCS_DIR, htmlFile);
@@ -111,14 +111,30 @@ export function extractBALEntry(htmlFile: string, monthKey: string): Partial<Ext
       const m = entryText.match(new RegExp(`\\b${field}\\s*:\\s*["']([^"']+)["']`));
       return m ? m[1] : '';
     };
+    // Conta objetos dentro de um array nomeado (ex: contas, desp)
+    const countArr = (arrName: string): number => {
+      const start = entryText.search(new RegExp(`\\b${arrName}\\s*:\\s*\\[`));
+      if (start === -1) return 0;
+      const arrOpen = entryText.indexOf('[', start);
+      if (arrOpen === -1) return 0;
+      let depth = 0, count = 0;
+      for (let i = arrOpen; i < entryText.length; i++) {
+        if (entryText[i] === '[') depth++;
+        else if (entryText[i] === '{' && depth === 1) count++;
+        else if (entryText[i] === ']') { depth--; if (depth === 0) break; }
+      }
+      return count;
+    };
 
     return {
-      tit:    str('tit'),
-      tAtual: num('tAtual'),
-      tAnt:   num('tAnt'),
-      tCred:  num('tCred'),
-      tDeb:   num('tDeb'),
-      inad:   num('inad'),
+      tit:     str('tit'),
+      tAtual:  num('tAtual'),
+      tAnt:    num('tAnt'),
+      tCred:   num('tCred'),
+      tDeb:    num('tDeb'),
+      inad:    num('inad'),
+      nContas: countArr('contas'),
+      nDesp:   countArr('desp'),
     };
   } catch {
     return null;

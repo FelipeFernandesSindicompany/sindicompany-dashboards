@@ -26,6 +26,8 @@ export interface BALEntry {
   tDesp: number;
   inad: number;
   inadProc: number;
+  nContas?: number;
+  nDesp?: number;
 }
 
 export interface CondominioStatus {

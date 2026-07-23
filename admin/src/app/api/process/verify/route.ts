@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
       tCred:    entryData.tCred   ?? 0,
       tDeb:     entryData.tDeb    ?? 0,
       inad:     entryData.inad    ?? 0,
+      nContas:  entryData.nContas ?? 0,
+      nDesp:    entryData.nDesp   ?? 0,
     } : {}),
   });
 }

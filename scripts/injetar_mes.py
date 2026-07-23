@@ -912,14 +912,6 @@ def main():
     # ── Auto-publicação no GitHub Pages ───────────────────────────────────────
     if ok > 0 and htmls_atualizados:
         _publicar_github(htmls_atualizados, args.mes)
-        # Flush antes de reiniciar: garante que Node.js lê todo o stdout
-        # (incluindo [RESUMO]) antes do processo ser morto pelo PM2.
-        import sys as _sys
-        _sys.stdout.flush()
-        _sys.stderr.flush()
-        # Em modo produção (next start), reinicia o servidor para
-        # carregar os HTMLs atualizados sem hot-reload
-        _reiniciar_admin()
 
 
 def _publicar_github(htmls: list, mes_str: str):
