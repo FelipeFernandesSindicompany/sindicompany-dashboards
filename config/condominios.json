@@ -304,7 +304,26 @@
       "cor": "#dc2626",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "PESSOAL": "PESSOAL",
+          "PESSOAL PROPRIO": "PESSOAL",
+          "PESSOAL CONTRATADO": "PESSOAL",
+          "CONSUMOS": "CONSUMOS",
+          "HONORARIOS / ADMINISTRATIVO": "HONORÁRIOS/ADM",
+          "HONORARIOS/ADM": "HONORÁRIOS/ADM",
+          "HONORÁRIOS/ADM": "HONORÁRIOS/ADM",
+          "CONSERV/MANUT/CONTRATOS": "CONSERV. CONTRAT.",
+          "CONSERV. CONTRAT.": "CONSERV. CONTRAT.",
+          "CONSERVAÇÃO/MANUTENÇÃO": "CONSERV. ESPORÁD.",
+          "CONSERV. ESPORÁD.": "CONSERV. ESPORÁD.",
+          "IMPOSTOS/TAXAS": "IMPOSTOS/TAXAS",
+          "SEGUROS": "SEGUROS",
+          "DESPESAS DIVERSAS": "DESP. DIVERSAS",
+          "DESP. DIVERSAS": "DESP. DIVERSAS",
+          "BANCÁRIAS": "BANCÁRIAS",
+          "BANC. RIAS": "BANCÁRIAS",
+          "OBRAS/MELHORIAS": "OBRAS/MELHORIAS"
+        }
       }
     },
     {
