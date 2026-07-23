@@ -69,6 +69,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 .ks{font-size:11px;color:var(--muted);margin-top:4px;}
 
 .cc{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;}
+.cc-pair{display:flex;gap:20px;margin-bottom:20px;align-items:flex-start;}
+.cc-pair>.cc{flex:1;min-width:0;margin-bottom:0;}
+@media(max-width:700px){.cc-pair{flex-direction:column;}}
 
 .cc h3{font-size:14px;font-weight:600;color:var(--p);margin-bottom:16px;}
 
@@ -1300,11 +1303,29 @@ function renderBal(id){
 
   h+=kpi('Emissão Realizada',R(m.real),pos?'g':'r','Efetivamente recebido');
 
-  h+=kpi('Devedores em Aberto',R(m.inad),'r','Total no período');
-
-  h+=kpi('Recebido em Atraso',R(m.inadProc),'y','Cotas de períodos anteriores');
-
   h+='</div></div>';
+
+  h+='<div class="cc-pair">';
+
+  var tRec=m.contas.reduce(function(s,c){return s+(c.c||0);},0);
+
+  h+='<div class="cc"><h3>&#128200; Receitas – '+m.tit+'</h3><div class="tw"><table>';
+
+  h+='<tr><th>Conta</th><th>Créditos</th><th>%</th><th>Participação</th></tr>';
+
+  m.contas.filter(function(c){return c.c>0;}).forEach(function(c){
+
+    var p=tRec>0?(c.c/tRec*100).toFixed(1):'0.0';
+
+    h+='<tr><td>'+c.n+'</td><td class="nr" style="color:var(--g)">'+R(c.c)+'</td><td class="nr">'+p+'%</td>';
+
+    h+='<td style="min-width:80px"><div class="pb"><div class="pbf" style="width:'+p+'%;background:var(--g)"></div></div></td></tr>';
+
+  });
+
+  h+='<tr class="tot"><td>TOTAL</td><td class="nr" style="color:var(--g)">'+R(tRec)+'</td><td colspan="2"></td></tr>';
+
+  h+='</table></div></div>';
 
   h+='<div class="cc"><h3>&#128184; Despesas – '+m.tit+'</h3><div class="tw"><table>';
 
@@ -1316,13 +1337,15 @@ function renderBal(id){
 
     h+='<tr><td>'+d.c+'</td><td class="nr">'+R(d.v)+'</td><td class="nr">'+p+'%</td>';
 
-    h+='<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';
+    h+='<td style="min-width:80px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';
 
   });
 
   h+='<tr class="tot"><td>TOTAL ORDINÁRIA</td><td class="nr">'+R(m.tDesp)+'</td><td colspan="2"></td></tr>';
 
   h+='</table></div></div>';
+
+  h+='</div>';
 
   document.getElementById('balContent').innerHTML=h;
 
