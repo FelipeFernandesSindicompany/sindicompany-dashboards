@@ -1506,7 +1506,7 @@ window.onload=function(){
 
     kpi('Receitas Acumuladas',R(tR),'g','Total de entradas do período')+
 
-    kpi('Total Débitos (período)',R(tD),'y','Total de saídas do período');
+    kpi('Despesas Acumuladas',R(tD),'y','Total de saídas do período');
 
 
 
@@ -1918,11 +1918,11 @@ function buildCharts(){
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Ordinária',data:MESES.map(function(k){var f=BAL[k].contas.find(function(c){return c.n.indexOf('ORDINA')>=0;});return f?f.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'F. Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Fundo de Reserva',data:MESES.map(function(k){var f=BAL[k].contas.find(function(c){return c.n.indexOf('RESERVA')>=0;});return f?f.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].contas.reduce(function(s,c){return(c.n.indexOf('ORDINA')>=0||c.n.indexOf('RESERVA')>=0)?s:s+(c.s||0);},0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
