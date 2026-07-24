@@ -1713,15 +1713,17 @@ function buildOrc(){
 
   var orc=CONFIG.orcamento;
 
-  var ks=MESES.filter(function(k){return orc.meses[k]!==undefined;});
+  var ks=MESES;
 
   var tP=0,tR=0;
 
-  ks.forEach(function(k){tP+=orc.meses[k];tR+=BAL[k].real;});
+  ks.forEach(function(k){tP+=BAL[k].prev;tR+=BAL[k].real;});
 
   var gap=tR-tP, pos=gap>=0;
 
-  var pct=tP>0?tR/tP*100:0, pctA=tR/(orc.totalAnual||1)*100;
+  var totalPrev=MESES.reduce(function(s,k){return s+BAL[k].prev;},0);
+
+  var pct=tP>0?tR/tP*100:0, pctA=totalPrev>0?tR/totalPrev*100:0;
 
   var sc=pos?'ok':(gap>-50000?'warn':'bad');
 
@@ -1735,7 +1737,7 @@ function buildOrc(){
 
   h+='<div class="val-grid">';
 
-  h+='<div class="val-item"><div class="val-label">Total Previsto</div><div class="val-value" style="color:var(--p)">'+R(orc.totalAnual)+'</div></div>';
+  h+='<div class="val-item"><div class="val-label">Total Previsto</div><div class="val-value" style="color:var(--p)">'+R(totalPrev)+'</div></div>';
 
   h+='<div class="val-item"><div class="val-label">Previsto Acumulado</div><div class="val-value" style="color:var(--o)">'+R(tP)+'</div></div>';
 
@@ -1759,7 +1761,7 @@ function buildOrc(){
 
   ks.forEach(function(k){
 
-    var m=BAL[k],p=orc.meses[k],r=m.real,g=r-p;
+    var m=BAL[k],p=m.prev,r=m.real,g=r-p;
 
     var pct2=p>0?(r/p*100).toFixed(1):'0.0';cP+=p;cR+=r;
 
