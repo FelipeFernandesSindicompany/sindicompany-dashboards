@@ -912,19 +912,6 @@
       }
     },
     {
-      "id": "vista_verde",
-      "nome": "Vista Verde",
-      "empresa_gestora": "habitacional_xlsx",
-      "pasta_dados": "data/vista_verde",
-      "html_file": "Dashboard_Financeiro_VistaVerde.html",
-      "ativo": true,
-      "cor": "#db2777",
-      "unidades": 0,
-      "parser_config": {
-        "cat_map": {}
-      }
-    },
-    {
       "id": "vita_parque",
       "nome": "Vita Parque",
       "empresa_gestora": "iello_pdf",

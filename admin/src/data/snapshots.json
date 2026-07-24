@@ -1236,30 +1236,6 @@
       "tAnt": 37520.4
     }
   },
-  "Dashboard_Financeiro_VistaVerde.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
-    "allKeys": [
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26"
-    ],
-    "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 195118.08,
-      "tCred": 49381.72,
-      "tDeb": 41318.13,
-      "inad": 9415.86,
-      "tAnt": 187054.49
-    }
-  },
   "Dashboard_Financeiro_VitaParque.html": {
     "lastKey": "mai26",
     "lastMonth": "Mai/26",
