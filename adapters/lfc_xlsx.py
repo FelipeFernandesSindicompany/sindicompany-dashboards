@@ -11,8 +11,10 @@ Estrutura (diferente do Habitacional padrão):
     Linha em branco (sem col A) após "Receitas Previstas e Realizadas":
       col I = Previsto total, col K = Realizado total
 
-  Inad:
-    "Cotas em Atraso em DD/MM/YYYY" end-of-month → col K (idx 10)
+  Inad (inadimplencia_valor):
+    Soma de "Cotas em Atraso em {último dia do mês}" col K (idx 10) em TODAS as seções.
+  inadProc (inadimplencia_recebida):
+    "Total Recebido (Com Baixa de Recibo)" do Acompanhamento de Processos → col 9.
 
   Posição Financeira (ORDINÁRIA):
     Categorias de despesa simples (sem prefixo "TOTAL DA CONTA"):
@@ -123,7 +125,10 @@ class AdapterLFCXLSX(AdapterBase):
                 continue
             if found_hdr:
                 # "Emissão do Período" → previsto (col I)
-                if "EMISS" in desc_up and "PERIOD" in desc_up:
+                # Normaliza acentos para não falhar com "PERÍODO" (Í ≠ I)
+                desc_norm = (desc_up.replace("Ã","A").replace("Ô","O")
+                             .replace("Í","I").replace("Â","A").replace("Ó","O"))
+                if "EMISS" in desc_norm and "PERIOD" in desc_norm:
                     dados.receita_prevista = _f(col(row, 8))
                     continue
                 # Linha em branco = total → realizado total (col K)
@@ -137,32 +142,35 @@ class AdapterLFCXLSX(AdapterBase):
         if dados.receita_prevista == 0:
             dados.receita_prevista = dados.receita_realizada
 
-        # ── Inad: soma de "Cotas em Atraso em {último dia do mês anterior}" col I ──
-        # col I (idx 8) = saldo abertura (total inadimplente no início do período)
+        # ── Inad: soma de "Cotas em Atraso em {último dia do mês atual}" col K ──
+        # col K (idx 10) = saldo devedor no fechamento do período
         # Soma TODAS as seções (ORDINÁRIA, FUNDO DE RESERVA, OBRAS, etc.)
         fim_mes_patterns: list[str] = []
         if "-" in mes_referencia:
-            import calendar as _cal
             ano_ref = int(mes_referencia.split("-")[0])
             mes_ref = int(mes_referencia.split("-")[1])
-            prev_mes = mes_ref - 1 if mes_ref > 1 else 12
-            prev_ano = ano_ref if mes_ref > 1 else ano_ref - 1
-            fim_mes_patterns = [f"/{prev_mes:02d}/{prev_ano}"]
+            fim_mes_patterns = [f"/{mes_ref:02d}/{ano_ref}"]
 
         inad = 0.0
-        inadProc = 0.0
         for row in linhas:
             desc = str(col(row, 0) or "").upper().strip()
             is_overdue = "COTAS EM ATRASO" in desc
             has_fim_mes = any(p in desc for p in fim_mes_patterns) if fim_mes_patterns else False
             if is_overdue and (has_fim_mes or not fim_mes_patterns):
-                vi = _f(col(row, 8))   # col I = abertura (inadimplência no início)
-                vk = _f(col(row, 10))  # col K = recebido no período dessas cotas
-                if vi > 0:
-                    inad += vi
-                if vk > 0:
-                    inadProc += vk
+                v = _f(col(row, 10))  # col K = fechamento do mês
+                if v > 0:
+                    inad += v          # acumula todas as seções
         dados.inadimplencia_valor = inad
+
+        # ── inadProc: "Total Recebido (Com Baixa de Recibo)" do Acompanhamento ──
+        inadProc = 0.0
+        for row in linhas:
+            d5 = str(col(row, 5) or "").upper()
+            if "TOTAL RECEBIDO" in d5 and "COM BAIXA" in d5:
+                v = _f(col(row, 9))
+                if v > 0:
+                    inadProc = v
+                    break
         dados.inadimplencia_recebida = inadProc
 
         # ── Categorias de despesa: seção Posição Financeira ────────────────────
