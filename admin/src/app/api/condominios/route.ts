@@ -50,7 +50,8 @@ export async function GET() {
         // "Em dia" se o dashboard tem dados do mês esperado OU mais recente
         status = monthKeyToNum(bal.lastKey) >= expectedNum ? 'current' : 'pending';
       }
-      if (lastImport?.status === 'error') status = 'error';
+      // Só mostra erro se o dashboard NÃO está em dia
+      if (status !== 'current' && lastImport?.status === 'error') status = 'error';
 
       return {
         condominio: condo,
