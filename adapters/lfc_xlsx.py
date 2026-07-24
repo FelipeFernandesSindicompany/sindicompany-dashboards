@@ -137,23 +137,33 @@ class AdapterLFCXLSX(AdapterBase):
         if dados.receita_prevista == 0:
             dados.receita_prevista = dados.receita_realizada
 
-        # ── Inad: "Cotas em Atraso em DD/MM/YYYY" fim do mês ──────────────────
+        # ── Inad: soma de "Cotas em Atraso em {último dia do mês anterior}" col I ──
+        # col I (idx 8) = saldo abertura (total inadimplente no início do período)
+        # Soma TODAS as seções (ORDINÁRIA, FUNDO DE RESERVA, OBRAS, etc.)
         fim_mes_patterns: list[str] = []
         if "-" in mes_referencia:
-            ano_ref, mes_ref = mes_referencia.split("-")[:2]
-            fim_mes_patterns = [f"/{mes_ref}/{ano_ref}"]
+            import calendar as _cal
+            ano_ref = int(mes_referencia.split("-")[0])
+            mes_ref = int(mes_referencia.split("-")[1])
+            prev_mes = mes_ref - 1 if mes_ref > 1 else 12
+            prev_ano = ano_ref if mes_ref > 1 else ano_ref - 1
+            fim_mes_patterns = [f"/{prev_mes:02d}/{prev_ano}"]
 
         inad = 0.0
+        inadProc = 0.0
         for row in linhas:
             desc = str(col(row, 0) or "").upper().strip()
             is_overdue = "COTAS EM ATRASO" in desc
             has_fim_mes = any(p in desc for p in fim_mes_patterns) if fim_mes_patterns else False
             if is_overdue and (has_fim_mes or not fim_mes_patterns):
-                v = _f(col(row, 10))
-                if v > 0:
-                    inad = v
-                    break  # primeira ocorrência = conta ORDINÁRIA (seção principal)
+                vi = _f(col(row, 8))   # col I = abertura (inadimplência no início)
+                vk = _f(col(row, 10))  # col K = recebido no período dessas cotas
+                if vi > 0:
+                    inad += vi
+                if vk > 0:
+                    inadProc += vk
         dados.inadimplencia_valor = inad
+        dados.inadimplencia_recebida = inadProc
 
         # ── Categorias de despesa: seção Posição Financeira ────────────────────
         SKIP_DESCS = {
