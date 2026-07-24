@@ -1424,7 +1424,7 @@ var BAL = {
     ],
 
     prev: 180568.08, real: 148098.15, tDesp: 197058.98, fac: 0.00,
-    inad: 36638.32, inadProc: 0.00,
+    inad: 37099.36, inadProc: 1926.94,
     banco: {cc:100252.18, cdb:0.00, priv:100701.60},
 
     desp: [
@@ -1897,23 +1897,23 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>Mês</th><th>Conta Ordinária (C/C)</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th>Banco Itaú C/C</th><th>Itaú Aplicação Privilege</th><th>Total</th></tr>';
 
   MESES.forEach(function(k){
 
     var m=BAL[k];
 
-    var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
+    var ccVal=m.banco.cc+m.banco.cdb;
+
+    var ccCls=ccVal<0?' style="color:var(--r)"':'';
 
     var pvCls=m.banco.priv<0?' style="color:var(--r)"':'';
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
-    h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
+    h+='<td class="nr"'+ccCls+'>'+R(ccVal)+'</td>';
 
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
-
-    h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
+    h+='<td class="nr"'+pvCls+'>'+(m.banco.priv>0?R(m.banco.priv):'-')+'</td>';
 
     h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
 
