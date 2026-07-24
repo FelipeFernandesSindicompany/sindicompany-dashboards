@@ -814,7 +814,7 @@ var CONFIG = {
 
     meses: {
 
-      abr26: 90394.29, mai26: 89569.97
+      abr26: 90394.29, mai26: 89569.97, jun26: 90895.96
 
     }
 
@@ -992,7 +992,7 @@ var BAL = {
 
 var MESES = Object.keys(BAL);
 
-function prc(k){var o=CONFIG.orcamento;return(o&&o.meses&&o.meses[k]!==undefined)?o.meses[k]:prc(k);}
+function prc(k){var o=CONFIG.orcamento;return(o&&o.meses&&o.meses[k]!==undefined)?o.meses[k]:(BAL[k]&&BAL[k].prev||0);}
 
 
 
