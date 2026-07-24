@@ -1838,7 +1838,7 @@ function buildTblPvr() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Saldo Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th class="nr">Valor</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -1848,7 +1848,7 @@ function buildTblBanco() {
 
     h += '<tr><td class="bd">' + lbl + '</td>';
 
-    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
+    h += '<td class="nr bd"><span style="font-size:10px;font-weight:600;color:var(--muted);margin-right:6px">Saldo Total</span>' + R(m.tAtual) + '</td></tr>';
 
   });
 
@@ -2506,93 +2506,29 @@ function buildCharts() {
 
   // ── 9. Posição bancária (barras empilhadas arredondadas) ──────────────────────
 
-  var bancoMeses = MESES.filter(function(k){ return BAL[k].banco.cc !== null; });
-
-  var bancoML    = bancoMeses.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
-
-  var cBancoLabelPlugin = {
-    id: 'cBancoLabels',
-    afterDatasetsDraw: function(chart) {
-      var ctx = chart.ctx;
-      chart.data.datasets.forEach(function(ds, di) {
-        var meta = chart.getDatasetMeta(di);
-        if (meta.hidden) return;
-        meta.data.forEach(function(bar) {
-          var h = Math.abs(bar.base - bar.y);
-          if (h < 22) return;
-          ctx.save();
-          ctx.fillStyle = 'rgba(255,255,255,0.92)';
-          ctx.font = '600 10px system-ui,sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(ds.label, bar.x, (bar.y + bar.base) / 2);
-          ctx.restore();
-        });
-      });
-    }
-  };
-
   mkChart('cBanco', {
 
     type: 'bar',
 
-    plugins: [cBancoLabelPlugin],
-
     data: {
 
-      labels: bancoML,
+      labels: ML,
 
       datasets: [
 
         {
 
-          label: 'C/C Ordin\u00e1ria',
+          label: 'Saldo Total',
 
-          data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
+          data: MESES.map(function(k){ return BAL[k].tAtual; }),
 
           backgroundColor: 'rgba(23,27,46,0.82)',
 
           borderColor: P,
 
-          borderWidth: 1,
+          borderWidth: 1.5,
 
-          borderRadius: 3,
-
-          borderSkipped: false
-
-        },
-
-        {
-
-          label: 'Fundo de Reserva',
-
-          data: bancoMeses.map(function(k){ return BAL[k].banco.cdb; }),
-
-          backgroundColor: 'rgba(232,119,34,0.82)',
-
-          borderColor: '#C05A10',
-
-          borderWidth: 1,
-
-          borderRadius: 3,
-
-          borderSkipped: false
-
-        },
-
-        {
-
-          label: 'Outros',
-
-          data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
-
-          backgroundColor: 'rgba(39,174,96,0.82)',
-
-          borderColor: '#1A6B3C',
-
-          borderWidth: 1,
-
-          borderRadius: 3,
+          borderRadius: 5,
 
           borderSkipped: false
 
@@ -2612,7 +2548,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ return '  Saldo Total: ' + fmtR(ctx.raw); } }
 
         })
 
@@ -2620,9 +2556,9 @@ function buildCharts() {
 
       scales: {
 
-        x: { stacked: true, ticks: TICK, grid: GRID_X },
+        x: { ticks: TICK, grid: GRID_X },
 
-        y: { stacked: true, ticks: Object.assign({ callback: function(v){ return 'R$\u00a0' + (v/1000000).toFixed(2) + 'M'; } }, TICK), grid: GRID_Y }
+        y: { ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y }
 
       }
 
