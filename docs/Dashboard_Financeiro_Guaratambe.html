@@ -2510,9 +2510,33 @@ function buildCharts() {
 
   var bancoML    = bancoMeses.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
 
+  var cBancoLabelPlugin = {
+    id: 'cBancoLabels',
+    afterDatasetsDraw: function(chart) {
+      var ctx = chart.ctx;
+      chart.data.datasets.forEach(function(ds, di) {
+        var meta = chart.getDatasetMeta(di);
+        if (meta.hidden) return;
+        meta.data.forEach(function(bar) {
+          var h = Math.abs(bar.base - bar.y);
+          if (h < 22) return;
+          ctx.save();
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.font = '600 10px system-ui,sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(ds.label, bar.x, (bar.y + bar.base) / 2);
+          ctx.restore();
+        });
+      });
+    }
+  };
+
   mkChart('cBanco', {
 
     type: 'bar',
+
+    plugins: [cBancoLabelPlugin],
 
     data: {
 
