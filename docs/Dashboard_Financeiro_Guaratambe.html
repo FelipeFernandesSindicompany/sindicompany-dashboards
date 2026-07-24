@@ -1838,7 +1838,7 @@ function buildTblPvr() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th class="nr">Valor</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th class="nr">Saldo Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -1848,7 +1848,7 @@ function buildTblBanco() {
 
     h += '<tr><td class="bd">' + lbl + '</td>';
 
-    h += '<td class="nr bd"><span style="font-size:10px;font-weight:600;color:var(--muted);margin-right:6px">Saldo Total</span>' + R(m.tAtual) + '</td></tr>';
+    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
   });
 
