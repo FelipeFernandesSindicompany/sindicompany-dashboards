@@ -814,7 +814,7 @@ var CONFIG = {
 
     meses: {
 
-      abr26: 90394.29, mai26: 89569.97, jun26: 70377.40
+      abr26: 68997.76, mai26: 70377.40, jun26: 70377.40
 
     }
 
@@ -874,9 +874,9 @@ var BAL = {
 
     ],
 
-    prev: 90394.29, real: 68839.92, tDesp: 69382.13, fac: 0.00,
+    prev: 68997.76, real: 68839.92, tDesp: 69382.13, fac: 0.00,
 
-    inad: 21554.37, inadProc: 0,
+    inad: 28262.36, inadProc: 13560.12,
 
     banco: {cc:22437.72, cdb:94741.75, priv:0.00},
 
@@ -944,9 +944,9 @@ var BAL = {
 
     ],
 
-    prev: 89569.97, real: 65735.94, tDesp: 67183.30, fac: 0.00,
+    prev: 70377.40, real: 65735.94, tDesp: 67183.30, fac: 0.00,
 
-    inad: 23834.03, inadProc: 0,
+    inad: 30039.01, inadProc: 16094.05,
 
     banco: {cc:24773.66, cdb:98156.30, priv:0.00},
 
@@ -985,7 +985,7 @@ var BAL = {
     ]
 
   },
-  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:123797.53,tCred:82659.94,tDeb:78329.19,tAtual:128128.28,contas:[{n:'ORDINÁRIA',a:24773.66,c:72843.59,d:78329.19,s:19288.06},{n:'FUNDO DE RESERVA',a:98156.3,c:3775.93,d:0,s:101932.23},{n:'OBRAS/MELHORIAS',a:-10253.39,c:3671.46,d:0,s:-6581.93},{n:'FÉRIAS / 13º SALÁRIO',a:46.98,c:1870.28,d:0,s:1917.26},{n:'SALÃO DE FESTAS',a:410.87,c:0,d:0,s:410.87},{n:'RATEIO EXTRAORDINÁRIO',a:10663.11,c:498.68,d:0,s:11161.79}],prev:70377.40,real:70207.49,tDesp:78329.19,fac:0,inad:30039.01,inadProc:16094.05,banco:{cc:19288.06,cdb:101932.23,priv:6907.99},desp:[{c:'PESSOAL',v:27508.21},{c:'CONSUMOS PÚBLICOS',v:10956.44},{c:'ENCARGOS SOCIAIS',v:8074.65},{c:'CONSERVAÇÃO/MANUTENÇÃO',v:7620.57},{c:'ADMINISTRATIVAS',v:6717.99},{c:'PESSOAL TERCEIRIZADO',v:6459.59},{c:'DESPESAS EVENTUAIS',v:6263.45},{c:'REPAROS/MANUTENÇÕES',v:3923.54},{c:'PERIÓDICAS',v:804.75}]}
+  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:123797.53,tCred:82659.94,tDeb:78329.19,tAtual:128128.28,contas:[{n:'ORDINÁRIA',a:24773.66,c:72843.59,d:78329.19,s:19288.06},{n:'FUNDO DE RESERVA',a:98156.3,c:3775.93,d:0,s:101932.23},{n:'OBRAS/MELHORIAS',a:-10253.39,c:3671.46,d:0,s:-6581.93},{n:'FÉRIAS / 13º SALÁRIO',a:46.98,c:1870.28,d:0,s:1917.26},{n:'SALÃO DE FESTAS',a:410.87,c:0,d:0,s:410.87},{n:'RATEIO EXTRAORDINÁRIO',a:10663.11,c:498.68,d:0,s:11161.79}],prev:70377.40,real:70207.49,tDesp:78329.19,fac:0,inad:25873.95,inadProc:20679.88,banco:{cc:19288.06,cdb:101932.23,priv:6907.99},desp:[{c:'PESSOAL',v:27508.21},{c:'CONSUMOS PÚBLICOS',v:10956.44},{c:'ENCARGOS SOCIAIS',v:8074.65},{c:'CONSERVAÇÃO/MANUTENÇÃO',v:7620.57},{c:'ADMINISTRATIVAS',v:6717.99},{c:'PESSOAL TERCEIRIZADO',v:6459.59},{c:'DESPESAS EVENTUAIS',v:6263.45},{c:'REPAROS/MANUTENÇÕES',v:3923.54},{c:'PERIÓDICAS',v:804.75}]}
 };
 
 
@@ -1878,7 +1878,7 @@ function mkChart(id, config) {
 
 function buildTblInad() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Cotas em Aberto</th><th>Em Processo/Acordo</th><th>Status</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Cotas em Aberto</th><th>Recebidos em Atraso</th><th>Status</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2612,7 +2612,7 @@ function buildCharts() {
 
         {
 
-          label: 'Em Processo/Acordo',
+          label: 'Recebidos em Atraso',
 
           data: MESES.map(function(k){ return BAL[k].inadProc; }),
 
