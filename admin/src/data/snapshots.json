@@ -466,8 +466,8 @@
     }
   },
   "Dashboard_Financeiro_Highlights_DrNelsonMoretti.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -480,15 +480,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 207762.65,
-      "tCred": 186495.76,
-      "tDeb": 189632.31,
-      "inad": 29303.41,
-      "tAnt": 210899.2
+      "tit": "Junho / 2026",
+      "tAtual": 200953.78,
+      "tCred": 191650.11,
+      "tDeb": 198458.98,
+      "inad": 36638.32,
+      "tAnt": 207762.65
     }
   },
   "Dashboard_Financeiro_HubHomeClub_Tatuape.html": {

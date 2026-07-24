@@ -988,6 +988,8 @@ var BAL = {
 
       {n:'FUNDO DE RESERVA', a:14091.31, c:6519.74, d:5946.32, s:14664.73},
 
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA', a:0.00, c:1200.00, d:0.00, s:1200.00},
+
     ],
 
     prev: 134420.69,
@@ -1047,6 +1049,8 @@ var BAL = {
       {n:'FUNDO DE RESERVA', a:14664.73, c:6628.98, d:4683.08, s:16610.63},
 
       {n:'PROJETO SEGURANCA', a:0.00, c:14799.92, d:0.00, s:14799.92},
+
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA', a:1200.00, c:1416.00, d:0.00, s:2616.00},
 
     ],
 
@@ -1110,6 +1114,8 @@ var BAL = {
 
       {n:'PROJETO SEGURANCA', a:14799.92, c:14940.82, d:10000.00, s:19740.74},
 
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA', a:2616.00, c:2204.00, d:0.00, s:4820.00},
+
     ],
 
     prev: 134420.69,
@@ -1170,6 +1176,8 @@ var BAL = {
 
       {n:'PROJETO SEGURANCA', a:19740.74, c:14939.25, d:0.00, s:34679.99},
 
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA', a:4820.00, c:2550.00, d:0.00, s:7370.00},
+
     ],
 
     prev: 134420.69,
@@ -1184,7 +1192,7 @@ var BAL = {
 
     inadProc: 4816.09,
 
-    banco: {cc:183659.43, cdb:21758.06, priv:0.00},
+    banco: {cc:105224.05, cdb:0.00, priv:100193.44},
 
     desp: [
 
@@ -1234,6 +1242,8 @@ var BAL = {
 
       {n:'CONSUMO ENERGIA ELETRICA', a:0.00, c:581.08, d:0.00, s:581.08},
 
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA', a:7370.00, c:2554.00, d:0.00, s:9924.00},
+
     ],
 
     prev: 134420.69,
@@ -1248,7 +1258,7 @@ var BAL = {
 
     inadProc: 6299.9,
 
-    banco: {cc:187279.91, cdb:23604.76, priv:0.00},
+    banco: {cc:134756.37, cdb:0.00, priv:76128.30},
 
     desp: [
 
@@ -1312,7 +1322,7 @@ var BAL = {
 
     inadProc: 3687.85,
 
-    banco: {cc:185382.15, cdb:25517.05, priv:0.00},
+    banco: {cc:134135.28, cdb:0.00, priv:76763.92},
 
     desp: [
 
@@ -1390,6 +1400,43 @@ var BAL = {
 
     ]
 
+  },
+
+  // ── Junho / 2026 ──────────────────────────────────────────────────────────
+
+  jun26: {
+
+    tit: 'Junho / 2026', per: '01/06/2026 a 30/06/2026',
+
+    tAnt:  207762.65,
+    tCred: 191650.11,
+    tDeb:  198458.98,
+    tAtual:200953.78,
+
+    contas: [
+      {n:'ORDINARIA',                      a:50190.40,  c:164123.77, d:197058.98, s:17255.19},
+      {n:'MELHORIAS',                      a:28078.60,  c:3145.88,   d:1400.00,   s:29824.48},
+      {n:'IMPOSTO PREDIAL',                a:-271.13,   c:79.28,     d:0.00,      s:-191.85},
+      {n:'FUNDO DE RESERVA',               a:31935.77,  c:6594.59,   d:0.00,      s:38530.36},
+      {n:'PROJETO SEGURANCA',              a:81031.79,  c:15077.15,  d:0.00,      s:96108.94},
+      {n:'CONSUMO ENERGIA ELETRICA',       a:499.22,    c:21.44,     d:0.00,      s:520.66},
+      {n:'ALUGUEL S.FESTA /CHURRASQUEIRA', a:16298.00,  c:2608.00,   d:0.00,      s:18906.00},
+    ],
+
+    prev: 134420.69, real: 119342.11, tDesp: 197058.98, fac: 0.00,
+    inad: 36638.32, inadProc: 0.00,
+    banco: {cc:100252.18, cdb:0.00, priv:100701.60},
+
+    desp: [
+      {c:'PESSOAL',               v:109924.46},
+      {c:'CONSUMOS',              v:40298.74},
+      {c:'CONTRATOS/MANUT.',      v:24648.55},
+      {c:'MATERIAIS/SUPRIMENTOS', v:8070.03},
+      {c:'SERV. TERCEIRIZADOS',   v:9244.05},
+      {c:'DESP. OPERACIONAIS',    v:899.42},
+      {c:'OBRAS/MELHORIAS',       v:3973.73},
+    ]
+
   }
 
 };
@@ -1434,7 +1481,9 @@ var CONFIG = {
 
       abr26: 134420.69,
 
-      mai26: 134420.69
+      mai26: 134420.69,
+
+      jun26: 134420.69
 
     }
 
@@ -1444,7 +1493,7 @@ var CONFIG = {
 
 
 
-var CONFIG={nome:"Highlights Dr. Nelson Moretti",sindica:"Síndico Profissional",administradora:"Habita",orcamento:{exercicio:"2025/2026",totalAnual:1613048.28,meses:{jun25:134420.69,jul25:134420.69,ago25:134420.69,set25:134420.69,out25:134420.69,nov25:134420.69,dez25:134420.69,jan26:134420.69,fev26:134420.69,mar26:134420.69,abr26:134420.69,mai26:134420.69}}};
+var CONFIG={nome:"Highlights Dr. Nelson Moretti",sindica:"Síndico Profissional",administradora:"Habita",orcamento:{exercicio:"2025/2026",totalAnual:1613048.28,meses:{jun25:134420.69,jul25:134420.69,ago25:134420.69,set25:134420.69,out25:134420.69,nov25:134420.69,dez25:134420.69,jan26:134420.69,fev26:134420.69,mar26:134420.69,abr26:134420.69,mai26:134420.69,jun26:134420.69}}};
 
 
 
