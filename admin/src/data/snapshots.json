@@ -337,34 +337,6 @@
       "tAnt": 782405.31
     }
   },
-  "Dashboard_Financeiro_FITRioBonito.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
-    "allKeys": [
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26"
-    ],
-    "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 901992.3,
-      "tCred": 360363.31,
-      "tDeb": 406361.87,
-      "inad": 309155.66,
-      "tAnt": 947990.86
-    }
-  },
   "Dashboard_Financeiro_GiardinoDItalia.html": {
     "lastKey": "jun26",
     "lastMonth": "Jun/26",
