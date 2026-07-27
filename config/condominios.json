@@ -244,19 +244,6 @@
       }
     },
     {
-      "id": "816_fit_casa_rio_bonito",
-      "nome": "816 FIT Casa Rio Bonito",
-      "empresa_gestora": "habitacional_xlsx",
-      "pasta_dados": "data/816_fit_casa_rio_bonito",
-      "html_file": "Dashboard_Financeiro_FITRioBonito.html",
-      "ativo": true,
-      "cor": "#b45309",
-      "unidades": 0,
-      "parser_config": {
-        "cat_map": {}
-      }
-    },
-    {
       "id": "giardino_d_italia",
       "nome": "Giardino D'Itália",
       "empresa_gestora": "iello_pdf",
