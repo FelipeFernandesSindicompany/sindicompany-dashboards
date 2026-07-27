@@ -743,7 +743,16 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
             novo_orc   = orc_atual.rstrip().rstrip(',') + f",\n  {chave}:{round(orc_valor, 2)},"
             texto = texto[:orc_m.start()] + orc_m.group(1) + novo_orc + orc_m.group(3) + texto[orc_m.end():]
 
-    # ── 7. Reordena BAL cronologicamente ──
+    # ── 7. Atualiza var MESES = [...] se for array fixo (não Object.keys) ──
+    meses_arr_m = re.search(r"(var\s+MESES\s*=\s*\[)([^\]]*?)(\])", texto)
+    if meses_arr_m and "Object.keys" not in texto[meses_arr_m.start():meses_arr_m.end()+20]:
+        meses_atual = meses_arr_m.group(2)
+        if f"'{chave}'" not in meses_atual and f'"{chave}"' not in meses_atual:
+            nova_lista = meses_atual.rstrip() + (", " if meses_atual.strip() else "") + f"'{chave}'"
+            texto = texto[:meses_arr_m.start()] + meses_arr_m.group(1) + nova_lista + meses_arr_m.group(3) + texto[meses_arr_m.end():]
+            print(f"  [INFO] var MESES atualizado com '{chave}'")
+
+    # ── 8. Reordena BAL cronologicamente ──
     texto = reordenar_bal_e_evo(texto)
 
     # ── 8. Reconstrói EVO_L e EVO_V do zero a partir do BAL ──
