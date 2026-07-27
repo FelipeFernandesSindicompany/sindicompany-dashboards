@@ -1749,7 +1749,7 @@ function buildCharts(){
 
   var ul=BAL[MESES[MESES.length-1]];
 
-  var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#16A085'];
+  var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#16A085','#E74C3C'];
 
   var PD=ul.contas.map(function(c){return Math.abs(c.s);});
 
@@ -1761,7 +1761,7 @@ function buildCharts(){
 
     options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{
 
-      legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){
+      legend:{position:'right',labels:Object.assign({},LG,{font:{size:11},padding:6,generateLabels:function(chart){
 
         return chart.data.labels.map(function(l,i){
 
