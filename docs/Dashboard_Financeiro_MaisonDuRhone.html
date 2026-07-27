@@ -1608,7 +1608,7 @@ window.onload=function(){
 
 
 
-    kpi('Fundo de Reserva ('+ab(ul.tit)+')',R(ul.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0)),'o','Saldo do Fundo de Reserva')+
+    kpi('Fundo de Reserva ('+ab(ul.tit)+')',R((ul.contas.find(function(x){return /F\/RESERVA/i.test(x.n);})||{s:0}).s),'o','Aplic. F/Reserva')+
 
 
 
