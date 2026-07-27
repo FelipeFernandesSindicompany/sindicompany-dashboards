@@ -1370,7 +1370,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 
 
-  <div class="cc"><h3>🏛 Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
+  <div class="cc"><h3>🏛 Evolu&ccedil;&atilde;o do Saldo Total</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
 
 
 
@@ -2303,7 +2303,7 @@ function buildBanco(){
 
 
 
-  var h='<tr><th>Mês</th><th>Disponível (C/C)</th><th>Aplic. Ordinárias</th><th>Aplic. Indenizatória</th><th>Total Geral</th></tr>';
+  var h='<tr><th>Mês</th><th>Saldo Total</th></tr>';
 
 
 
@@ -2315,7 +2315,7 @@ function buildBanco(){
 
 
 
-    var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
+    var cls=m.tAtual<0?' style="color:var(--r)"':'';
 
 
 
@@ -2323,19 +2323,7 @@ function buildBanco(){
 
 
 
-    h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
-
-
-
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
-
-
-
-    h+='<td class="nr">'+R(m.banco.priv)+'</td>';
-
-
-
-    h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
+    h+='<td class="nr bd"'+cls+'>'+R(m.tAtual)+'</td></tr>';
 
 
 
@@ -2554,10 +2542,8 @@ function buildCharts(){
 
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
-    {label:'ORDINÁRIA',data:MESES.map(function(k){var m=BAL[k];return Math.max(m.contas.filter(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0),0);}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];return Math.max(m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0),0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var ordSum=m.contas.filter(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);var frSum=m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);return Math.max(m.tAtual-ordSum-frSum,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+    {label:'Saldo Total',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+fR(c.raw);}}})},scales:{x:{stacked:false,ticks:TK,grid:GX},y:{stacked:false,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 
 
