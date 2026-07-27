@@ -2080,27 +2080,23 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M\u00eas</th><th>Per\u00edodo</th><th>Saldo Anterior</th><th>Cr\u00e9ditos</th><th>D\u00e9bitos</th><th>Patrim\u00f4nio Total</th></tr>';
+  var h = '<tr><th>M\u00eas</th><th>Ordin\u00e1ria</th><th>Fundo de Reserva</th><th>Demais Contas</th><th>Total Patrim\u00f4nio</th></tr>';
 
   MESES.forEach(function(k) {
 
     var m = BAL[k];
 
-    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+    h += '<tr><td class="bd">' + m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2] + '</td>';
 
-    var corTotal = m.tAtual < 0 ? 'color:var(--r)' : 'color:var(--g)';
+    var cOrd = m.contas.find(function(x){ return x.n === 'ORDIN\u00c1RIA'; }) || {s:0};
 
-    h += '<tr><td class="bd">' + lbl + '</td>';
+    var cFr  = m.contas.find(function(x){ return x.n === 'FUNDO DE RESERVA'; }) || {s:0};
 
-    h += '<td style="font-size:11px;color:var(--muted)">' + m.per + '</td>';
+    var cDem = m.tAtual - cOrd.s - cFr.s;
 
-    h += '<td class="nr">' + R(m.tAnt) + '</td>';
+    h += '<td class="nr">' + R(cOrd.s) + '</td><td class="nr">' + R(cFr.s) + '</td><td class="nr">' + R(cDem) + '</td>';
 
-    h += '<td class="nr" style="color:var(--g)">' + R(m.tCred) + '</td>';
-
-    h += '<td class="nr" style="color:var(--r)">' + R(m.tDeb) + '</td>';
-
-    h += '<td class="nr bd" style="' + corTotal + '">' + R(m.tAtual) + '</td></tr>';
+    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
   });
 
@@ -2584,39 +2580,25 @@ function buildCharts() {
 
 
 
-  // 9. Patrimônio total — evolução mensal (linha)
+  // 9. Saldo por conta — barras empilhadas
 
-  mkChart('cBanco', {
+  mkChart('cBanco',{type:'bar',
 
-    type:'line',
+    data:{labels:ML,datasets:[
 
-    data:{ labels:ML, datasets:[{
+      {label:'ORDINÁRIA',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n==="ORDINÁRIA";});return c?Math.max(c.s,0):0;}),backgroundColor:'rgba(23,27,46,0.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-      label:'Patrim\u00f4nio Total',
+      {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n==="FUNDO DE RESERVA";});return c?Math.max(c.s,0):0;}),backgroundColor:'rgba(232,119,34,0.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-      data:MESES.map(function(k){ return BAL[k].tAtual; }),
+      {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return x.n==="ORDINÁRIA";})||{s:0};var f=m.contas.find(function(x){return x.n==="FUNDO DE RESERVA";})||{s:0};return Math.max(m.tAtual-o.s-f.s,0);}),backgroundColor:'rgba(39,174,96,0.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}
 
-      borderColor:'#E87722', backgroundColor:'rgba(232,119,34,0.10)',
+    ]},
 
-      borderWidth:2.5, pointRadius:5, pointHoverRadius:7,
+    options:{responsive:true,maintainAspectRatio:false,
 
-      pointBackgroundColor:'#E87722', pointBorderColor:'#fff', pointBorderWidth:2,
+      plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return'  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},
 
-      fill:true, tension:0.35
-
-    }]},
-
-    options:{ responsive:true, maintainAspectRatio:false,
-
-      plugins:{ legend:{display:false}, tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  Patrim\u00f4nio: '+fmtR(ctx.raw);}}})},
-
-      scales:{
-
-        y:{ ticks:Object.assign({callback:function(v){return 'R$\u00a0'+v.toLocaleString('pt-BR',{minimumFractionDigits:2});}},TICK), grid:GRID_Y },
-
-        x:{ ticks:TICK, grid:GRID_X }
-
-      }
+      scales:{x:{stacked:true,ticks:TICK,grid:GRID_X},y:{stacked:true,ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y}}
 
     }
 
