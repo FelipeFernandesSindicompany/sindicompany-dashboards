@@ -1446,11 +1446,11 @@ function buildOrcamento(){
 
   var orc=CONFIG.orcamento;
 
-  var mesesComOrc=MESES.filter(function(k){return orc.meses[k]!==undefined;});
+  var mesesComOrc=MESES;
 
   var totalPrev=0,totalReal=0;
 
-  mesesComOrc.forEach(function(k){totalPrev+=(orc.meses[k]||0);totalReal+=(BAL[k].real||0);});
+  mesesComOrc.forEach(function(k){totalPrev+=(BAL[k].prev||0);totalReal+=(BAL[k].real||0);});
 
   var gap=totalReal-totalPrev;
 
@@ -1474,7 +1474,7 @@ function buildOrcamento(){
 
   h+='<div class="val-item"><div class="val-label">Total Anual Aprovado</div><div class="val-value" style="color:var(--p)">'+R(orc.totalAnual)+'</div><div class="val-pct">Exercício '+orc.exercicio+'</div></div>';
 
-  h+='<div class="val-item"><div class="val-label">Previsto Acumulado ('+mesesComOrc.length+' meses)</div><div class="val-value" style="color:var(--o)">'+R(totalPrev)+'</div><div class="val-pct">'+(totalPrev/orc.totalAnual*100).toFixed(1)+'% do total anual</div></div>';
+  h+='<div class="val-item"><div class="val-label">Previsto Acumulado ('+mesesComOrc.length+' meses)</div><div class="val-value" style="color:var(--o)">'+R(totalPrev)+'</div><div class="val-pct">'+pctPvR.toFixed(1)+'% do realizado</div></div>';
 
   h+='<div class="val-item"><div class="val-label">Realizado Acumulado</div><div class="val-value" style="color:'+(gap>=0?'var(--g)':'var(--r)')+'">'+R(totalReal)+'</div><div class="val-pct">'+pctPvR.toFixed(1)+'% do previsto | '+statusTxt+'</div></div>';
 
@@ -1490,7 +1490,9 @@ function buildOrcamento(){
 
   h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pctBar+'%;background:'+barColor+'"><span class="progress-label">'+pctExec.toFixed(1)+'%</span></div></div>';
 
-  h+='<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>Abr/25</span><span>Projeção anual: '+R(projecaoAnual)+'</span><span>Mar/26</span></div></div></div>';
+  var lblIni=BAL[MESES[0]].tit.split(' / ')[0]+'/'+BAL[MESES[0]].tit.split(' / ')[1].slice(2);
+  var lblFim=BAL[MESES[MESES.length-1]].tit.split(' / ')[0]+'/'+BAL[MESES[MESES.length-1]].tit.split(' / ')[1].slice(2);
+  h+='<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>'+lblIni+'</span><span>Projeção anual: '+R(projecaoAnual)+'</span><span>'+lblFim+'</span></div></div></div>';
 
   h+='<div class="cc"><h3>&#128203; Detalhamento Mensal — Previsto × Realizado</h3><div class="tw"><table>';
 
@@ -1500,7 +1502,7 @@ function buildOrcamento(){
 
   mesesComOrc.forEach(function(k){
 
-    var m=BAL[k],p=orc.meses[k],r=m.real,g=r-p,pct=(r/p*100).toFixed(1);
+    var m=BAL[k],p=m.prev,r=m.real,g=r-p,pct=(r/p*100).toFixed(1);
 
     cumPrev+=p;cumReal+=r;
 
