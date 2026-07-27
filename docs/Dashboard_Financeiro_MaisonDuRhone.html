@@ -2436,24 +2436,13 @@ function buildCharts(){
 
 
 
-  var GRUPOS=[
-    {label:'ORDINÁRIA',        re:/ORDIN/i,               cor:'#171B2E'},
-    {label:'FUNDO DE RESERVA', re:/FUNDO|RESERVA/i,       cor:'#E87722'},
-    {label:'PROV. 13º/FÉRIAS', re:/PROV|13O|F[EÉ]RIAS/i,  cor:'#F39C12'},
-    {label:'SEGURANÇA',        re:/SEGUR/i,               cor:'#2980B9'},
-    {label:'INDENIZAÇÃO',      re:/INDENIZ/i,             cor:'#9B59B6'}
-  ];
-  var pL=[],pD=[],pC=[];
-  GRUPOS.forEach(function(g){
-    var soma=ul.contas.filter(function(x){return g.re.test(x.n);}).reduce(function(a,c){return a+c.s;},0);
-    if(Math.abs(soma)>0.01){pL.push(soma<0?g.label+' (déficit)':g.label);pD.push(Math.abs(soma));pC.push(g.cor);}
-  });
-  var outros=ul.contas.filter(function(x){return !GRUPOS.some(function(g){return g.re.test(x.n);});}).reduce(function(a,c){return a+c.s;},0);
-  if(Math.abs(outros)>0.01){pL.push('OUTROS');pD.push(Math.abs(outros));pC.push('#607D8B');}
+  var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#E91E63','#00BCD4','#795548','#607D8B'];
+  var pL=ul.contas.map(function(c){var nm=c.n.replace(/^CONTA\s+/i,'').replace(/^APLICACAO-/i,'').replace(/^APLICA[ÇC][ÃA]O\s+/i,'');return c.s<0?nm+' (déficit)':nm;});
+  var pD=ul.contas.map(function(c){return Math.abs(c.s);});
   var pT=pD.reduce(function(a,b){return a+b;},0);
 
-  mkC('cPieMar',{type:'doughnut',data:{labels:pL,datasets:[{data:pD,backgroundColor:pC,borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:pC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}});
+  mkC('cPieMar',{type:'doughnut',data:{labels:pL,datasets:[{data:pD,backgroundColor:PC.slice(0,pD.length),borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}});
 
 
 
