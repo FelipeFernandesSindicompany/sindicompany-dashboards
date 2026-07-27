@@ -1608,7 +1608,7 @@ window.onload=function(){
 
 
 
-    kpi('Fundo de Reserva ('+ab(ul.tit)+')',R((ul.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0}).s),'o','Saldo do Fundo de Reserva')+
+    kpi('Fundo de Reserva ('+ab(ul.tit)+')',R(ul.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0)),'o','Saldo do Fundo de Reserva')+
 
 
 
@@ -2466,8 +2466,8 @@ function buildCharts(){
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
     {label:'ORDINÁRIA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};var f=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(m.tAtual-o.s-f.s,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];return Math.max(m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0),0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};var frSum=m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);return Math.max(m.tAtual-o.s-frSum,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 
@@ -2594,8 +2594,8 @@ function buildCharts(){
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
     {label:'ORDINÁRIA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};var f=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(m.tAtual-o.s-f.s,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];return Math.max(m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0),0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};var frSum=m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);return Math.max(m.tAtual-o.s-frSum,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 
