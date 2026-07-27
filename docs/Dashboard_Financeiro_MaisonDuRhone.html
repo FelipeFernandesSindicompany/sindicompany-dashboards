@@ -1608,11 +1608,11 @@ window.onload=function(){
 
 
 
-    kpi('Disponível ('+ab(ul.tit)+')',R(ul.banco.cc),'o','Contas à vista')+
+    kpi('Fundo de Reserva ('+ab(ul.tit)+')',R((ul.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0}).s),'o','Saldo do Fundo de Reserva')+
 
 
 
-    kpi('Inadimplência ('+ab(ul.tit)+')',R(ul.inad),ul.inad>10000?'r':'y','Devedores em aberto')+
+    kpi('Total Receitas ('+ab(ul.tit)+')',R(ul.tCred),'g','Total de créditos do mês')+
 
 
 
@@ -2440,7 +2440,7 @@ function buildCharts(){
 
 
 
-  var pL=ul.contas.map(function(c){return c.s<0?c.n+' (déficit)':c.n;});
+  var pL=ul.contas.map(function(c){var nm=c.n.replace(/^CONTA\s+/i,'');return c.s<0?nm+' (déficit)':nm;});
 
 
 
@@ -2465,21 +2465,9 @@ function buildCharts(){
 
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
-
-
-
-    {label:'Disponível (C/C)',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-
-
-    {label:'Aplic. Ordinárias',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-
-
-    {label:'Aplic. Indenizatória',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
-
-
-
+    {label:'ORDINÁRIA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};var f=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(m.tAtual-o.s-f.s,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 
@@ -2605,21 +2593,9 @@ function buildCharts(){
 
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
-
-
-
-    {label:'Disponível (C/C)',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-
-
-    {label:'Aplic. Ordinárias',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-
-
-    {label:'Aplic. Indenizatória',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
-
-
-
+    {label:'ORDINÁRIA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'FUNDO DE RESERVA',data:MESES.map(function(k){var m=BAL[k];var c=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(c.s,0);}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'DEMAIS CONTAS',data:MESES.map(function(k){var m=BAL[k];var o=m.contas.find(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);})||{s:0};var f=m.contas.find(function(x){return /FUNDO|RESERVA/i.test(x.n);})||{s:0};return Math.max(m.tAtual-o.s-f.s,0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 
