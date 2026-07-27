@@ -549,8 +549,8 @@
     }
   },
   "Dashboard_Financeiro_LivingForConsolacao.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -565,15 +565,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 189779.06,
-      "tCred": 126342.44,
-      "tDeb": 129462.76,
-      "inad": 39472.02,
-      "tAnt": 192899.38
+      "tit": "Junho / 2026",
+      "tAtual": 174281.11,
+      "tCred": 114881.94,
+      "tDeb": 126834.43,
+      "inad": 47161.28,
+      "tAnt": 186233.6
     }
   },
   "Dashboard_Financeiro_MaisonDuRhone.html": {
