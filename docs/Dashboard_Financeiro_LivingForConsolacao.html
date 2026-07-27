@@ -2058,7 +2058,7 @@ function buildTblPvr() {
 
 function buildTblInad() {
 
-  var h = '<tr><th>M\u00eas</th><th>Total em Aberto</th><th>Status</th></tr>';
+  var h = '<tr><th>M\u00eas</th><th>Inadimpl\u00eancia</th><th>Status</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2068,7 +2068,7 @@ function buildTblInad() {
 
     var b = m.inad > 40000 ? '<span class="badge bbad">Alto</span>' : m.inad > 25000 ? '<span class="badge bwarn">M\u00e9dio</span>' : '<span class="badge bok">Controlado</span>';
 
-    h += '<tr><td class="bd">'+lbl+'</td><td class="nr">'+R(m.inad)+'</td><td>'+b+'</td></tr>';
+    h += '<tr><td class="bd">'+lbl+'</td><td class="nr"><span style="font-size:10px;color:var(--muted);display:block;text-align:right;margin-bottom:2px">Total em Aberto</span>'+R(m.inad)+'</td><td>'+b+'</td></tr>';
 
   });
 
