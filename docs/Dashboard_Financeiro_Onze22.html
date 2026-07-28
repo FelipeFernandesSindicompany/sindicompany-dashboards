@@ -1546,7 +1546,7 @@ function buildCharts(){
 
   function fK(v){return 'R$ '+(v/1000).toFixed(0)+'k';}
 
-  function fR(v){return 'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function fR(v){var s='R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});return v<0?'-'+s:s;}
 
 
 
