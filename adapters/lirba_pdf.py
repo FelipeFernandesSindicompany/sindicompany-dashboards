@@ -944,6 +944,7 @@ class AdapterLirbaPDF(AdapterBase):
             if val > 0:
                 todos_totais_w[conta] = todos_totais_w.get(conta, 0) + val
 
+        cat_map_w = self.parser_config.get("cat_map", {})
         for conta, val in todos_totais_w.items():
             if any(ex in conta for ex in _EXCLUIR_SEMPRE):
                 continue
@@ -951,7 +952,7 @@ class AdapterLirbaPDF(AdapterBase):
                 continue  # ORDINARIA é o agregado
             if "TOTAL DAS DESPESAS" in conta or "TOTAL DESPESAS" in conta:
                 continue
-            cat = conta.title()
+            cat = cat_map_w.get(conta, cat_map_w.get(conta.title(), conta.title()))
             dados.categorias_despesa[cat] = (
                 dados.categorias_despesa.get(cat, 0) + val
             )

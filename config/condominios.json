@@ -450,7 +450,17 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "webware",
-        "cat_map": {}
+        "cat_map": {
+          "CONTRATOS": "SERV. TERCEIRIZADOS",
+          "CONSUMO": "CONSUMOS",
+          "MANUTENCAO": "MANUT/CONSERV. CONTRAT.",
+          "MANUTENÇÃO": "MANUT/CONSERV. CONTRAT.",
+          "OUTROS": "ADMINISTRATIVO",
+          "AQUISICOES": "ADMINISTRATIVO",
+          "AQUISIÇÕES": "ADMINISTRATIVO",
+          "IMPOSTOS E TAXAS": "ADMINISTRATIVO",
+          "ENCARGOS": "ENCARGOS SOCIAIS"
+        }
       }
     },
     {
