@@ -838,7 +838,7 @@ class AdapterLirbaPDF(AdapterBase):
                 # Extrai números: podem ser negativos (conta corrente negativa)
                 # Padrão: "NOME -saldo_ant creditos debitos saldo_atual"
                 nums = re.findall(r"-?[\d.]+,\d{2}", l)
-                nums_f = [_num(n) for n in nums]
+                nums_f = [_num_signed(n) for n in nums]
                 if len(nums_f) < 4:
                     continue
 
