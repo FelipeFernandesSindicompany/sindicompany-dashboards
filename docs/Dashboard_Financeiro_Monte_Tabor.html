@@ -1442,17 +1442,23 @@ function buildBanco(){
 
     var m=BAL[k];
 
-    var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
+    var cc=m.banco.cc;
 
-    var pvCls=m.banco.priv<0?' style="color:var(--r)"':'';
+    var reserva=gc(m,'RESERVA')||0;
+
+    var demais=m.tAtual-cc-reserva;
+
+    var ccCls=cc<0?' style="color:var(--r)"':'';
+
+    var pvCls=demais<0?' style="color:var(--r)"':'';
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
-    h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
+    h+='<td class="nr"'+ccCls+'>'+R(cc)+'</td>';
 
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
+    h+='<td class="nr">'+R(reserva)+'</td>';
 
-    h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
+    h+='<td class="nr"'+pvCls+'>'+R(demais)+'</td>';
 
     h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
 
