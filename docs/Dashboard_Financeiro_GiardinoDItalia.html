@@ -1519,7 +1519,7 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>Mês</th><th>Conta Ordinária (C/C)</th><th>Fundo de Reserva + Fundo Investimento</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th>Conta Corrente Bradesco</th><th>Aplicação Invest Fácil</th><th>Saldo Total</th></tr>';
 
   MESES.forEach(function(k){
 
@@ -1527,15 +1527,13 @@ function buildBanco(){
 
     var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
 
-    var pvCls=m.banco.priv<0?' style="color:var(--r)"':'';
+    var invest=m.banco.cdb+m.banco.priv;
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
     h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
 
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
-
-    h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
+    h+='<td class="nr">'+R(invest)+'</td>';
 
     h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
 
@@ -1661,11 +1659,9 @@ function buildCharts(){
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Conta Corrente Bradesco',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Fundo de Reserva + Fundo Investimento',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Aplicação Invest Fácil',data:MESES.map(function(k){return BAL[k].banco.cdb+BAL[k].banco.priv;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
