@@ -992,6 +992,15 @@ class AdapterLirbaPDF(AdapterBase):
             if total_u > 0:
                 dados.inadimplencia_valor = total_u
 
+        # ── 5. Inadimplência recebida ────────────────────────────────────────
+        # Webware: "RECEBIMENTO DE COTAS EM ATRASO  valor"
+        rec_m = re.search(
+            r"RECEBIMENTO\s+DE\s+COTAS\s+EM\s+ATRASO\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        )
+        if rec_m:
+            dados.inadimplencia_recebida = _num(rec_m.group(1))
+
     # ──────────────────────────────────────────────────────────────────────────
     # Métodos auxiliares compartilhados (Lirba + Webware)
     # ──────────────────────────────────────────────────────────────────────────

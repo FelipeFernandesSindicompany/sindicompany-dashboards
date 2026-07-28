@@ -12,7 +12,7 @@ node admin\scripts\generate-snapshots.mjs
 
 echo.
 echo Fazendo deploy Vercel (aguarde ~60s)...
-vercel deploy --prod --yes
+vercel deploy --prod --yes --force
 
 echo.
 echo Concluido! https://sindicompany-dashboards.vercel.app
