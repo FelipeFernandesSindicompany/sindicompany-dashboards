@@ -2380,7 +2380,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Privilege (Fachada)</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Conta Corrente Bradesco</th><th>Aplica&ccedil;&atilde;o Invest F&aacute;cil</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2388,13 +2388,13 @@ function buildTblBanco() {
 
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
 
+    var invest = (m.banco.cdb || 0) + (m.banco.priv || 0);
+
     h += '<tr><td class="bd">' + lbl + '</td>';
 
     h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
 
-    h += '<td class="nr">' + (m.banco.cdb !== null ? R(m.banco.cdb) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
-
-    h += '<td class="nr">' + R(m.banco.priv) + '</td>';
+    h += '<td class="nr">' + R(invest) + '</td>';
 
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
@@ -2756,11 +2756,9 @@ function buildCharts() {
 
       datasets: [
 
-        { label: 'C/C Itaú', data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }), backgroundColor: P },
+        { label: 'Conta Corrente Bradesco', data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }), backgroundColor: P },
 
-        { label: 'CDB', data: bancoMeses.map(function(k){ return BAL[k].banco.cdb; }), backgroundColor: O },
-
-        { label: 'Privilege', data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }), backgroundColor: G }
+        { label: 'Aplicação Invest Fácil', data: bancoMeses.map(function(k){ return (BAL[k].banco.cdb||0) + (BAL[k].banco.priv||0); }), backgroundColor: O }
 
       ]
 
