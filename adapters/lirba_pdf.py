@@ -972,8 +972,9 @@ class AdapterLirbaPDF(AdapterBase):
 
         if inad_by_data:
             # Tenta match com o mês/ano de referência ("/MM/AAAA")
-            if "-" in mes_referencia:
-                ano_r, mes_r = mes_referencia.split("-")[:2]
+            mes_ref = dados.mes_referencia
+            if "-" in mes_ref:
+                ano_r, mes_r = mes_ref.split("-")[:2]
                 sufixo = f"/{mes_r}/{ano_r}"
                 target = next((v for dt, v in inad_by_data.items() if dt.endswith(sufixo)), None)
             else:
