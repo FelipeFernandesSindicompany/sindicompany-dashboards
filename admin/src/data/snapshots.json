@@ -660,8 +660,8 @@
     }
   },
   "Dashboard_Financeiro_Organy_Residencial.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -676,15 +676,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 151147.76,
-      "tCred": 170962.76,
-      "tDeb": 207591.51,
-      "inad": 17078.3,
-      "tAnt": 187776.51
+      "tit": "Junho / 2026",
+      "tAtual": 158023.37,
+      "tCred": 173534,
+      "tDeb": 166658.39,
+      "inad": 26445.52,
+      "tAnt": 151147.76
     }
   },
   "Dashboard_Financeiro_Organy_Studio.html": {
