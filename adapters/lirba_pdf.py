@@ -238,8 +238,9 @@ class AdapterLirbaPDF(AdapterBase):
                 if re.search(r'\d{2}/\d{2}/\d{4}', nome) or re.search(r'\d{2}:\d{2}', nome):
                     continue
 
-                # Saldo atual preserva sinal (conta corrente pode ser negativa)
-                sa, cr, db = nums_f[0], nums_f[1], nums_f[2]
+                # Saldo anterior e saldo atual preservam sinal (podem ser negativos)
+                sa  = _num_signed(nums_raw[0]) if nums_raw else 0.0
+                cr, db = nums_f[1], nums_f[2]
                 sal = _num_signed(nums_raw[3]) if len(nums_raw) >= 4 else nums_f[3]
 
                 if nome.startswith("TOTAL"):
@@ -295,9 +296,10 @@ class AdapterLirbaPDF(AdapterBase):
             if not any([dados.banco_cc, dados.banco_cdb, dados.banco_priv]) and account_list:
                 saldo = account_list[0][1]
                 dados.banco_cc = saldo if saldo > 0 else 0.0
-        else:
-            # Fallback: classifica a partir do Resumo Financeiro Contábil
-            # (inclui contas negativas na soma de banco_priv para não inflar)
+
+        # Se conta_banc classificou tudo em banco_priv (conta única sem keyword CC/CDB),
+        # usa contas_detalhe para split correto (ex: Organy Studio com BANCO ITAU S/A).
+        if dados.banco_cc == 0 and dados.banco_cdb == 0 and dados.contas_detalhe:
             dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
             positivos_priv: list = []
             negativos_priv: list = []
@@ -535,12 +537,16 @@ class AdapterLirbaPDF(AdapterBase):
         # ── 3c. Combina sub-categorias + contas de nível alto ─────────────────────
         final_cats: dict = dict(sub_cats)
 
-        for conta_upper, val in operacionais.items():
-            cat_name = _conta_canonical.get(conta_upper.upper(), conta_upper.title())
-            # Aplica overrides do parser_config se existirem para esta conta
-            cat_name = cat_map_extra.get(conta_upper, cat_map_extra.get(conta_upper.title(), cat_name))
-            if cat_name not in final_cats:
-                final_cats[cat_name] = val
+        # Quando posicao_financeira já forneceu categorias completas de ORDINÁRIA,
+        # não adicionar operacionais de TOTAL DA CONTA (evita duplicatas e itens de
+        # outras contas como CONSUMO, FUNDO PARA EVENTUAIS, REEMBOLSO, etc.).
+        if extract_cats != 'posicao_financeira' or not sub_cats:
+            for conta_upper, val in operacionais.items():
+                cat_name = _conta_canonical.get(conta_upper.upper(), conta_upper.title())
+                # Aplica overrides do parser_config se existirem para esta conta
+                cat_name = cat_map_extra.get(conta_upper, cat_map_extra.get(conta_upper.title(), cat_name))
+                if cat_name not in final_cats:
+                    final_cats[cat_name] = val
 
         for cat, val in final_cats.items():
             dados.categorias_despesa[cat] = dados.categorias_despesa.get(cat, 0) + val
@@ -1101,9 +1107,11 @@ class AdapterLirbaPDF(AdapterBase):
         not_desp_norm = {_norm(k) for k in self._POS_NAO_DESPESA}
         # Prefixos de linhas de crédito/data
         not_desp_prefixes = {
-            "SALDO", "CONDOMINO", "RECEBIMENTO", "OUTRAS", "REEMBOLSO",
+            "SALDO", "CONDOMINO", "RECEBIMENTO", "OUTRAS",
             "RENDIMENTO", "JUROS", "MULTAS", "ATUALIZACAO", "ATUALIZAÇÃO",
-            "TOTAIS", "CONTAS", "PERIOD", "PERÍODO",
+            "TOTAIS", "PERIOD", "PERÍODO",
+            "TRANSFERENCIA", "TRANSFERÊNCIA",  # crédito de receita, não despesa
+            # "CONTAS" removido: "CONTAS DE CONSUMO" é desp real; "CONTASDATA" filtrado por not_desp_norm
         }
 
         # Marcadores para entrar na zona de despesas
@@ -1156,8 +1164,13 @@ class AdapterLirbaPDF(AdapterBase):
                 if "NÃO IDENTIFICAD" in ll_norm or "NAO IDENTIFICAD" in ll_norm:
                     continue
 
+                # Remove artefatos de navegação PDF que seguem o valor na mesma linha
+                line_clean = re.sub(
+                    r'\s+(ContasData|Voltar ao [íi]ndice|RelatDemon\w*|Panel\d+|Doctos)\s*$',
+                    '', line, flags=re.IGNORECASE
+                )
                 # Linha de categoria: "NOME_CATEGORIA  valor"
-                m = SINGLE_VAL.match(line)
+                m = SINGLE_VAL.match(line_clean)
                 if m:
                     name_raw = m.group(1).strip().upper()
                     val = _num(m.group(2))
