@@ -696,7 +696,9 @@ var CONFIG = {
 
       set25:93000.00, out25:93000.00, nov25:93000.00,
 
-      dez25:93000.00, jan26:93000.00, fev26:93000.00
+      dez25:93000.00, jan26:93000.00, fev26:93000.00,
+
+      mar26:93000.00, abr26:93000.00, mai26:93000.00, jun26:93000.00
 
     }
 
@@ -706,9 +708,9 @@ var CONFIG = {
 
 
 
-var EVO_L = ['Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26'];
+var EVO_L = ['Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26'];
 
-var EVO_V = [219639.19,195803.74,170640.11,142936.98,139676.00,104617.24,132214.38,145326.65,142876.20];
+var EVO_V = [219639.19,195803.74,170640.11,142936.98,139676.00,104617.24,132214.38,145326.65,142876.20,142201.79,130145.85,121898.55,118801.20];
 
 
 
@@ -1143,6 +1145,197 @@ var BAL = {
       {c:'OBRAS/MELHORIAS',v:4500.00},
 
       {c:'DESP. DIVERSAS',v:820.43}
+
+    ]
+
+  },
+  // ── Março / 2026 ──────────────────────────────────────────
+
+  mar26: {
+
+    tit:'Março / 2026', per:'01/03/2026 a 31/03/2026',
+
+    tAnt:142876.20, tCred:102945.54, tDeb:103619.95, tAtual:142201.79,
+
+    contas:[
+
+      {n:'CONTA PRINCIPAL',  a:20341.17, c:88760.54, d:92987.95, s:16113.76},
+
+      {n:'FUNDO DE RESERVA', a:58837.62, c:3126.60,  d:0.00,     s:61964.22},
+
+      {n:'SALÃO DE FESTAS',  a:4796.01,  c:100.00,   d:0.00,     s:4896.01},
+
+      {n:'REFORMA TELHADO',  a:36615.00, c:0.00,     d:0.00,     s:36615.00},
+
+      {n:'RATEIO PINTURA',   a:22286.40, c:10958.40, d:10632.00, s:22612.80}
+
+    ],
+
+    prev:93000.00, real:102945.54, tDesp:92987.95, fac:0.00,
+
+    inad:0.00, inadProc:0.00,
+
+    banco:{cc:16113.76, cdb:61964.22, priv:64123.81},
+
+    desp:[
+
+      {c:'CONSUMOS',                v:28323.36},
+
+      {c:'SERV. TERCEIRIZADOS',     v:41331.24},
+
+      {c:'MANUT/CONSERV. CONTRAT.', v:1968.50},
+
+      {c:'ADMINISTRATIVO',          v:9221.23},
+
+      {c:'MANUT/CONSERV. ESPORÁD.', v:5556.49},
+
+      {c:'OBRAS/MELHORIAS',         v:10632.00},
+
+      {c:'DESP. DIVERSAS',          v:6485.90}
+
+    ]
+
+  },
+
+  // ── Abril / 2026 ──────────────────────────────────────────
+
+  abr26: {
+
+    tit:'Abril / 2026', per:'01/04/2026 a 30/04/2026',
+
+    tAnt:142201.79, tCred:102198.25, tDeb:114254.19, tAtual:130145.85,
+
+    contas:[
+
+      {n:'CONTA PRINCIPAL',  a:16113.76, c:87469.85, d:103622.19, s:-38.58},
+
+      {n:'FUNDO DE RESERVA', a:61964.22, c:3330.00,  d:0.00,      s:65294.22},
+
+      {n:'SALÃO DE FESTAS',  a:4896.01,  c:440.00,   d:0.00,      s:5336.01},
+
+      {n:'REFORMA TELHADO',  a:36615.00, c:0.00,     d:0.00,      s:36615.00},
+
+      {n:'RATEIO PINTURA',   a:22612.80, c:10958.40, d:10632.00,  s:22939.20}
+
+    ],
+
+    prev:93000.00, real:102198.25, tDesp:103622.19, fac:0.00,
+
+    inad:0.00, inadProc:0.00,
+
+    banco:{cc:-38.58, cdb:65294.22, priv:64890.21},
+
+    desp:[
+
+      {c:'CONSUMOS',                v:16045.06},
+
+      {c:'SERV. TERCEIRIZADOS',     v:53879.50},
+
+      {c:'MANUT/CONSERV. CONTRAT.', v:2453.72},
+
+      {c:'ADMINISTRATIVO',          v:10440.38},
+
+      {c:'MANUT/CONSERV. ESPORÁD.', v:14900.28},
+
+      {c:'OBRAS/MELHORIAS',         v:10632.00},
+
+      {c:'DESP. DIVERSAS',          v:5463.25}
+
+    ]
+
+  },
+
+  // ── Maio / 2026 ──────────────────────────────────────────
+
+  mai26: {
+
+    tit:'Maio / 2026', per:'01/05/2026 a 31/05/2026',
+
+    tAnt:130145.85, tCred:98363.67, tDeb:106610.97, tAtual:121898.55,
+
+    contas:[
+
+      {n:'CONTA PRINCIPAL',  a:-38.58,   c:84075.27, d:95978.97, s:-11942.28},
+
+      {n:'FUNDO DE RESERVA', a:65294.22, c:3330.00,  d:0.00,     s:68624.22},
+
+      {n:'SALÃO DE FESTAS',  a:5336.01,  c:0.00,     d:0.00,     s:5336.01},
+
+      {n:'REFORMA TELHADO',  a:36615.00, c:0.00,     d:0.00,     s:36615.00},
+
+      {n:'RATEIO PINTURA',   a:22939.20, c:10958.40, d:10632.00, s:23265.60}
+
+    ],
+
+    prev:93000.00, real:98363.67, tDesp:95978.97, fac:0.00,
+
+    inad:0.00, inadProc:0.00,
+
+    banco:{cc:-11942.28, cdb:68624.22, priv:65216.61},
+
+    desp:[
+
+      {c:'CONSUMOS',                v:16238.18},
+
+      {c:'SERV. TERCEIRIZADOS',     v:46680.19},
+
+      {c:'MANUT/CONSERV. CONTRAT.', v:1593.72},
+
+      {c:'ADMINISTRATIVO',          v:16346.55},
+
+      {c:'MANUT/CONSERV. ESPORÁD.', v:14533.11},
+
+      {c:'OBRAS/MELHORIAS',         v:10632.00},
+
+      {c:'DESP. DIVERSAS',          v:587.22}
+
+    ]
+
+  },
+
+  // ── Junho / 2026 ──────────────────────────────────────────
+
+  jun26: {
+
+    tit:'Junho / 2026', per:'01/06/2026 a 30/06/2026',
+
+    tAnt:121898.55, tCred:98762.15, tDeb:101859.50, tAtual:118801.20,
+
+    contas:[
+
+      {n:'CONTA PRINCIPAL',  a:-11942.28, c:83973.75, d:91227.50, s:-19196.03},
+
+      {n:'FUNDO DE RESERVA', a:68624.22,  c:3330.00,  d:0.00,     s:71954.22},
+
+      {n:'SALÃO DE FESTAS',  a:5336.01,   c:500.00,   d:0.00,     s:5836.01},
+
+      {n:'REFORMA TELHADO',  a:36615.00,  c:0.00,     d:0.00,     s:36615.00},
+
+      {n:'RATEIO PINTURA',   a:23265.60,  c:10958.40, d:10632.00, s:23592.00}
+
+    ],
+
+    prev:93000.00, real:98762.15, tDesp:91227.50, fac:0.00,
+
+    inad:0.00, inadProc:0.00,
+
+    banco:{cc:-19196.03, cdb:71954.22, priv:66043.01},
+
+    desp:[
+
+      {c:'CONSUMOS',                v:15268.71},
+
+      {c:'SERV. TERCEIRIZADOS',     v:46992.59},
+
+      {c:'MANUT/CONSERV. CONTRAT.', v:2461.87},
+
+      {c:'ADMINISTRATIVO',          v:10127.52},
+
+      {c:'MANUT/CONSERV. ESPORÁD.', v:15165.50},
+
+      {c:'OBRAS/MELHORIAS',         v:10632.00},
+
+      {c:'DESP. DIVERSAS',          v:711.31}
 
     ]
 

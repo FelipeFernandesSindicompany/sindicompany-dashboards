@@ -942,8 +942,8 @@
     }
   },
   "Dashboard_Financeiro_SaintAfonso.html": {
-    "lastKey": "fev26",
-    "lastMonth": "Fev/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -953,15 +953,19 @@
       "nov25",
       "dez25",
       "jan26",
-      "fev26"
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Fevereiro / 2026",
-      "tAtual": 142876.2,
-      "tCred": 93191.36,
-      "tDeb": 95641.81,
+      "tit": "Junho / 2026",
+      "tAtual": 118801.2,
+      "tCred": 98762.15,
+      "tDeb": 101859.5,
       "inad": 0,
-      "tAnt": 145326.65
+      "tAnt": 121898.55
     }
   },
   "Dashboard_Financeiro_Serra_da_Mantiqueira.html": {
