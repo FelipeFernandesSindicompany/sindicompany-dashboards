@@ -1929,7 +1929,7 @@ function buildCharts() {
 
   function fmtK(v) { return 'R$\u00a0' + (v/1000).toFixed(0) + 'k'; }
 
-  function fmtR(v) { return 'R$\u00a0' + (v < 0 ? '-' : '') + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtR(v) { return (v < 0 ? '-' : '') + 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 
 
