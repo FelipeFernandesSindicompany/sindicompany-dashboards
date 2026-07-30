@@ -1452,13 +1452,15 @@ function buildCharts(){
 
 
 
+  function cSaldo(k,tipo){var m=BAL[k];if(!m.contas||!m.contas.length){return tipo==='cc'?m.banco.cc:tipo==='cdb'?m.banco.cdb:m.banco.priv;}var cc=0,cdb=0,priv=0;m.contas.forEach(function(c){var nu=c.n.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();if(nu.indexOf('ORDINARI')!==-1)cc+=c.s;else if(nu.indexOf('RESERVA')!==-1)cdb+=c.s;else if(c.s>0)priv+=c.s;});return tipo==='cc'?Math.max(0,cc):tipo==='cdb'?cdb:priv;}
+
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'ORDINÁRIA',data:MESES.map(function(k){return cSaldo(k,'cc');}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'F. Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'F. Reserva',data:MESES.map(function(k){return cSaldo(k,'cdb');}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Demais Fundos',data:MESES.map(function(k){return cSaldo(k,'priv');}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
