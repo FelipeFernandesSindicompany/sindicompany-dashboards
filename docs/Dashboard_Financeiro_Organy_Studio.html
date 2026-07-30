@@ -1452,7 +1452,7 @@ function buildCharts(){
 
 
 
-  function cSaldo(k,tipo){var m=BAL[k];if(!m.contas||!m.contas.length){return tipo==='cc'?m.banco.cc:tipo==='cdb'?m.banco.cdb:m.banco.priv;}var cc=0,cdb=0,priv=0;m.contas.forEach(function(c){var nu=c.n.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();if(nu.indexOf('ORDINARI')!==-1)cc+=c.s;else if(nu.indexOf('RESERVA')!==-1)cdb+=c.s;else if(c.s>0)priv+=c.s;});return tipo==='cc'?Math.max(0,cc):tipo==='cdb'?cdb:priv;}
+  function cSaldo(k,tipo){var m=BAL[k];if(!m.contas||!m.contas.length){return tipo==='cc'?m.banco.cc:tipo==='cdb'?m.banco.cdb:m.banco.priv;}var cc=0,cdb=0,priv=0;m.contas.forEach(function(c){var nu=c.n.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();if(nu.indexOf('ORDINARI')!==-1)cc+=c.s;else if(nu.indexOf('RESERVA')!==-1)cdb+=c.s;else if(c.s>0)priv+=c.s;});return tipo==='cc'?cc:tipo==='cdb'?cdb:priv;}
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
