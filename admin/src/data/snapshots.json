@@ -857,8 +857,8 @@
     }
   },
   "Dashboard_Financeiro_PortSaintTropez.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -873,15 +873,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 273523.75,
-      "tCred": 103161.22,
-      "tDeb": 97193.13,
-      "inad": 129761.35,
-      "tAnt": 267555.66
+      "tit": "Junho / 2026",
+      "tAtual": 274350.25,
+      "tCred": 104427.15,
+      "tDeb": 103600.65,
+      "inad": 158209.35,
+      "tAnt": 273523.75
     }
   },
   "Dashboard_Financeiro_ReservaVerde.html": {
