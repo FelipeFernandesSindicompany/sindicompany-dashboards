@@ -752,7 +752,7 @@ var BAL = {
 
       {c:'SERV. TERCEIRIZADOS',v:38540.18},
 
-      {c:'ADMINISTRATIVO',v:9681.99},
+      {c:'ADMINISTRATIVO',v:9671.99},
 
       {c:'MANUT/CONSERV. CONTRAT.',v:6038.47},
 
@@ -1189,9 +1189,7 @@ var BAL = {
 
       {c:'MANUT/CONSERV. ESPORÁD.', v:5556.49},
 
-      {c:'OBRAS/MELHORIAS',         v:10632.00},
-
-      {c:'DESP. DIVERSAS',          v:6485.90}
+      {c:'DESP. DIVERSAS',          v:6587.13}
 
     ]
 
@@ -1237,9 +1235,7 @@ var BAL = {
 
       {c:'MANUT/CONSERV. ESPORÁD.', v:14900.28},
 
-      {c:'OBRAS/MELHORIAS',         v:10632.00},
-
-      {c:'DESP. DIVERSAS',          v:5463.25}
+      {c:'DESP. DIVERSAS',          v:5903.25}
 
     ]
 
@@ -1284,8 +1280,6 @@ var BAL = {
       {c:'ADMINISTRATIVO',          v:16346.55},
 
       {c:'MANUT/CONSERV. ESPORÁD.', v:14533.11},
-
-      {c:'OBRAS/MELHORIAS',         v:10632.00},
 
       {c:'DESP. DIVERSAS',          v:587.22}
 
@@ -1333,9 +1327,7 @@ var BAL = {
 
       {c:'MANUT/CONSERV. ESPORÁD.', v:15165.50},
 
-      {c:'OBRAS/MELHORIAS',         v:10632.00},
-
-      {c:'DESP. DIVERSAS',          v:711.31}
+      {c:'DESP. DIVERSAS',          v:1211.31}
 
     ]
 
@@ -2001,27 +1993,17 @@ function buildCharts() {
 
 
 
-  var contaNames = ['CONTA PRINCIPAL','FUNDO DE RESERVA','RATEIO PINTURA'];
-
-  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'];
-
-  var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
-
-  var contaDatasets = contaNames.map(function(cn,i){
-
-    return { label:cn, data:MESES.map(function(k){
-
-      var c=BAL[k].contas.find(function(x){ return x.n===cn; });
-
-      return c?c.s:0;
-
-    }), backgroundColor:contaColors[i], borderColor:contaBorder[i], borderWidth:1, borderRadius:3, borderSkipped:false };
-
-  });
-
   mkChart('cContas', {
 
-    type:'bar', data:{ labels:ML, datasets:contaDatasets },
+    type:'bar', data:{ labels:ML, datasets:[
+
+      {label:'Ordinária', data:MESES.map(function(k){ var c=BAL[k].contas.find(function(x){return x.n==='CONTA PRINCIPAL';}); return c?c.s:0; }), backgroundColor:'rgba(23,27,46,0.85)', borderColor:'#171B2E', borderWidth:1, borderRadius:3, borderSkipped:false},
+
+      {label:'Fundo de Reserva', data:MESES.map(function(k){ var c=BAL[k].contas.find(function(x){return x.n==='FUNDO DE RESERVA';}); return c?c.s:0; }), backgroundColor:'rgba(232,119,34,0.85)', borderColor:'#C05A10', borderWidth:1, borderRadius:3, borderSkipped:false},
+
+      {label:'Demais Contas', data:MESES.map(function(k){ return BAL[k].contas.filter(function(c){return c.n!=='CONTA PRINCIPAL'&&c.n!=='FUNDO DE RESERVA';}).reduce(function(a,c){return a+c.s;},0); }), backgroundColor:'rgba(39,174,96,0.85)', borderColor:'#1A6B3C', borderWidth:1, borderRadius:3, borderSkipped:false}
+
+    ]},
 
     options:{ responsive:true, maintainAspectRatio:false,
 
