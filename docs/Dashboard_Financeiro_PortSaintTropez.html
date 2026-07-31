@@ -2738,35 +2738,36 @@ function buildCharts() {
 
   var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
 
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE RESERVA','OBRAS/MELHORIAS'];
-
-  var contaDatasets = contaNames.map(function(cn, i) {
-
-    return {
-
-      label: cn.replace('FUNDO DE ','F.'),
-
+  var contaDatasets = [
+    {
+      label: 'Ordin\u00e1ria',
       data: MESES.map(function(k) {
-
-        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
-
+        var c = BAL[k].contas.find(function(x){ return x.n === 'ORDIN\u00c1RIA'; });
         return c ? c.s : 0;
-
       }),
-
-      backgroundColor: contaColors[i],
-
-      borderColor: contaBorder[i],
-
-      borderWidth: 1,
-
-      borderRadius: 3,
-
-      borderSkipped: false
-
-    };
-
-  });
+      backgroundColor: contaColors[0], borderColor: contaBorder[0],
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    },
+    {
+      label: 'Fundo de Reserva',
+      data: MESES.map(function(k) {
+        var c = BAL[k].contas.find(function(x){ return x.n === 'FUNDO DE RESERVA'; });
+        return c ? c.s : 0;
+      }),
+      backgroundColor: contaColors[1], borderColor: contaBorder[1],
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    },
+    {
+      label: 'Demais Contas',
+      data: MESES.map(function(k) {
+        return BAL[k].contas.reduce(function(sum, c) {
+          return (c.n !== 'ORDIN\u00c1RIA' && c.n !== 'FUNDO DE RESERVA') ? sum + c.s : sum;
+        }, 0);
+      }),
+      backgroundColor: contaColors[2], borderColor: contaBorder[2],
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    }
+  ];
 
   mkChart('cContas', {
 
@@ -2784,7 +2785,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; var s=v<0?'- R$\u00a0'+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):fmtR(v); return '  '+ctx.dataset.label+': '+s; } }
 
         })
 
