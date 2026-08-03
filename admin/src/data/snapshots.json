@@ -88,8 +88,8 @@
     }
   },
   "Dashboard_Financeiro_BlueSky.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -104,15 +104,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 1382070.47,
-      "tCred": 1440883.59,
-      "tDeb": 1478623.62,
-      "inad": 179047.04,
-      "tAnt": 1419810.5
+      "tit": "Junho / 2026",
+      "tAtual": 1334694.9,
+      "tCred": 272631.95,
+      "tDeb": 320007.52,
+      "inad": 181157.46,
+      "tAnt": 1382070.47
     }
   },
   "Dashboard_Financeiro_CapDAntibes.html": {
