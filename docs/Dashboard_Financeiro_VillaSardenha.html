@@ -2470,39 +2470,71 @@ function buildCharts() {
 
 
 
-  // 3. Barras — saldo ORDINARIA e FUNDO DE RESERVA histórico
+    // 3. Barras — saldo por conta histórico (Ordinária / Fundo de Reserva / Demais Contas)
 
-  var contaNames = ['ORDINARIA', 'FUNDO DE RESERVA'];
+  var contaColors2 = ['rgba(23,27,46,0.82)', 'rgba(232,119,34,0.82)', 'rgba(39,174,96,0.82)'];
 
-  var contaLabels = ['Ordin\u00e1ria', 'Fundo de Reserva'];
+  var contaBorder2 = ['#171B2E', '#C05A10', '#1A6B3C'];
 
-  var contaColors2 = ['rgba(23,27,46,0.82)', 'rgba(232,119,34,0.82)'];
+  var contaDatasets = [
 
-  var contaBorder2 = ['#171B2E', '#C05A10'];
+    {
 
-  var contaDatasets = contaNames.map(function(cn, i) {
-
-    return {
-
-      label: contaLabels[i],
+      label: 'Ordin\u00e1ria',
 
       data: MESES.map(function(k) {
 
-        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
+        var c = BAL[k].contas.find(function(x){ return x.n === 'ORDINARIA'; });
 
         return c ? c.s : 0;
 
       }),
 
-      backgroundColor: contaColors2[i],
-
-      borderColor: contaBorder2[i],
+      backgroundColor: contaColors2[0], borderColor: contaBorder2[0],
 
       borderWidth: 1, borderRadius: 3, borderSkipped: false
 
-    };
+    },
 
-  });
+    {
+
+      label: 'Fundo de Reserva',
+
+      data: MESES.map(function(k) {
+
+        var c = BAL[k].contas.find(function(x){ return x.n === 'FUNDO DE RESERVA'; });
+
+        return c ? c.s : 0;
+
+      }),
+
+      backgroundColor: contaColors2[1], borderColor: contaBorder2[1],
+
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+
+    },
+
+    {
+
+      label: 'Demais Contas',
+
+      data: MESES.map(function(k) {
+
+        return BAL[k].contas.reduce(function(sum, c) {
+
+          return (c.n !== 'ORDINARIA' && c.n !== 'FUNDO DE RESERVA') ? sum + c.s : sum;
+
+        }, 0);
+
+      }),
+
+      backgroundColor: contaColors2[2], borderColor: contaBorder2[2],
+
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+
+    }
+
+  ];
 
   mkChart('cContas', {
 
@@ -2518,7 +2550,7 @@ function buildCharts() {
 
         legend: { labels: LEG },
 
-        tooltip: Object.assign({}, TT, { callbacks: { label: function(ctx){ return '  '+ctx.dataset.label+': '+fmtR(ctx.raw); } } })
+        tooltip: Object.assign({}, TT, { callbacks: { label: function(ctx){ var v=ctx.raw; return '  '+ctx.dataset.label+': '+(v<0?'-':'')+fmtR(v); } } })
 
       },
 
