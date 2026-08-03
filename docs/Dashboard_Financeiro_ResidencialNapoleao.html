@@ -1232,7 +1232,7 @@ function updateDespPie(mesKey) {
 
   if (!mesKey || !BAL[mesKey]) return;
 
-  var DEFAULT_C = ['#E87722','#2196F3','#4CAF50','#9C27B0','#00BCD4','#FF5722','#F7B731','#E91E63','#607D8B','#795548'];
+  var DEFAULT_C = ['#E87722','#2196F3','#4CAF50','#9C27B0','#00BCD4','#FF5722','#F7B731','#E91E63','#607D8B','#795548','#3F51B5','#009688'];
 
   var m = BAL[mesKey];
 
@@ -1443,7 +1443,7 @@ function buildCharts() {
 
   var catList2 = Object.keys(cats2);
 
-  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E'];
+  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#37474F','#558B2F','#E65100','#283593','#00695C'];
 
   mkChart('cDespBar', { type: 'bar',
 
@@ -1451,7 +1451,7 @@ function buildCharts() {
 
       data: catList2.map(function(c) { var d = BAL[k].desp.find(function(x){ return x.c === c; }); return d ? d.v : 0; }),
 
-      backgroundColor: (barColors[i]||'#888') + 'CC', borderColor: barColors[i]||'#888', borderWidth: 1, borderRadius: 4, borderSkipped: false }; }) },
+      backgroundColor: barColors[i % barColors.length] + 'CC', borderColor: barColors[i % barColors.length], borderWidth: 1, borderRadius: 4, borderSkipped: false }; }) },
 
     options: { responsive: true, maintainAspectRatio: false,
 
