@@ -742,11 +742,13 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <div id="pg-banco" class="pg">
 
-  <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Posi&ccedil;&atilde;o nas contas banc&aacute;rias e aplica&ccedil;&otilde;es</p></div>
+  <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Evolu&ccedil;&atilde;o dos saldos por conta cont&aacute;bil ao longo dos meses</p></div>
 
-  <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
+  <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o Saldo por Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
 
-  <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
+  <div class="cc"><h3>&#128203; Saldo por Conta por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div>
+    <div class="al inf" style="margin-top:12px"><span class="ai">&#8505;</span><div><strong>Demais Contas</strong> agrega: Sal&atilde;o de Festas, Fundo de Obras, Loca&ccedil;&otilde;es, Fundo Trabalhista, Fundo 13&ordm; Sal&aacute;rio e aplica&ccedil;&otilde;es vinculadas. Valores negativos indicam saldo devedor na conta ORDIN&Aacute;RIA (cobertura feita pela aplica&ccedil;&atilde;o).</div></div>
+  </div>
 
 </div>
 
@@ -2280,7 +2282,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Privilege / ITAUVEST</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Ordin&aacute;ria</th><th>Fundo de Reserva</th><th>Demais Contas</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2288,20 +2290,22 @@ function buildTblBanco() {
 
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
 
-    var temPriv = m.banco.priv > 0;
+    var ord    = m.contas.find(function(c){ return c.n === 'ORDINÁRIA'; });
+    var reserv = m.contas.find(function(c){ return c.n === 'FUNDO DE RESERVA'; });
+    var demais = m.contas.reduce(function(sum, c) {
+      return (c.n !== 'ORDINÁRIA' && c.n !== 'FUNDO DE RESERVA') ? sum + c.s : sum;
+    }, 0);
 
-    var cdbVal = temPriv ? R(m.banco.cdb) : R(m.banco.cdb);
+    var ordVal   = ord    ? ord.s    : 0;
+    var reservVal= reserv ? reserv.s : 0;
 
-    var privVal = temPriv ? R(m.banco.priv) : '<span style="color:var(--muted);font-size:11px">Consolidado em CDB</span>';
+    var csOrd = ordVal < 0 ? 'color:var(--r);font-weight:600' : '';
+    var csDem = demais < 0 ? 'color:var(--r);font-weight:600' : '';
 
     h += '<tr><td class="bd">' + lbl + '</td>';
-
-    h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
-
-    h += '<td class="nr">' + cdbVal + '</td>';
-
-    h += '<td class="nr">' + privVal + '</td>';
-
+    h += '<td class="nr" style="' + csOrd + '">' + R(ordVal) + '</td>';
+    h += '<td class="nr">' + R(reservVal) + '</td>';
+    h += '<td class="nr" style="' + csDem + '">' + R(demais) + '</td>';
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
   });
