@@ -1169,8 +1169,8 @@
     }
   },
   "Dashboard_Financeiro_VillaPark_Osasco.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1185,15 +1185,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 271931.86,
-      "tCred": 260588.56,
-      "tDeb": 169683.24,
-      "inad": 81471.13,
-      "tAnt": 181026.54
+      "tit": "Junho / 2026",
+      "tAtual": 217148.99,
+      "tCred": 340664.14,
+      "tDeb": 313446.22,
+      "inad": 76251.87,
+      "tAnt": 271931.86
     }
   },
   "Dashboard_Financeiro_VillaSardenha.html": {
