@@ -2384,7 +2384,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  Saldo: ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; return '  Saldo: ' + (v < 0 ? '-' : '') + fmtR(v); } }
 
         })
 
@@ -2762,7 +2762,7 @@ function buildCharts() {
 
         legend: { labels: LEG },
 
-        tooltip: Object.assign({}, TT, { callbacks: { label: function(ctx){ return '  Saldo: '+fmtR(ctx.raw); } } })
+        tooltip: Object.assign({}, TT, { callbacks: { label: function(ctx){ var v=ctx.raw; return '  Saldo: '+(v<0?'-':'')+fmtR(v); } } })
 
       },
 
