@@ -706,7 +706,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   </div>
 
-  <div class="al inf"><span class="ai">&#8505;</span><div>O <strong>Previsto</strong> representa os valores do Resumo de Emiss&atilde;o aprovados em assembleia na previs&atilde;o or&ccedil;ament&aacute;ria de cada m&ecirc;s.</div></div>
+  <div class="al inf"><span class="ai">&#8505;</span><div>O <strong>Previsto</strong> representa a soma das <strong>cotas condominiais do m&ecirc;s</strong> acrescida da <strong>inadimpl&ecirc;ncia do m&ecirc;s anterior</strong>, conforme o Resumo de Emiss&otilde;es ORDIN&Aacute;RIA do balancete.</div></div>
 
 </div>
 
@@ -774,17 +774,17 @@ var CONFIG = {
 
   sindica: 'Robotton',
 
-  orcamento: { exercicio: '2025/2026', totalAnual: 2400000,
+  orcamento: { exercicio: '2025/2026', totalAnual: 4310077,
 
     meses: {
 
-      abr25:199942.34, mai25:199942.34, jun25:199942.34, jul25:199942.34,
+      abr25:351068.7,  mai25:357093.49, jun25:356768.92, jul25:362023.44,
 
-      ago25:199942.34, set25:199942.34, out25:199942.34, nov25:199942.34,
+      ago25:349055.17, set25:356329.02, out25:359268.35, nov25:356614.15,
 
-      dez25:199942.34, jan26:199942.34, fev26:199942.34, mar26:199942.34,
+      dez25:360780.15, jan26:369834.92, fev26:362944.54, mar26:368296.08,
 
-      abr26:199942.34, mai26:199942.34
+      abr26:363495.63, mai26:373679.18, jun26:366474.79
 
     }
 
@@ -1920,7 +1920,7 @@ function buildOrcamento() {
 
   h += '<div class="cc"><h3>&#128203; Detalhamento Mensal &mdash; Previsto × Realizado</h3><div class="tw"><table>';
 
-  h += '<tr><th>Mês</th><th>Previsto (Assembleia)</th><th>Realizado</th><th>Variação (Real&minus;Prev)</th><th>% Realiz.</th><th>Status</th></tr>';
+  h += '<tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Variação (Real&minus;Prev)</th><th>% Realiz.</th><th>Status</th></tr>';
 
   var cumPrev = 0, cumReal = 0;
 
@@ -1969,6 +1969,8 @@ function buildOrcamento() {
     h += '<div class="al bad"><span class="ai">&#9888;</span><div><strong>Arrecadação abaixo do previsto:</strong> Déficit de <strong>' + R(Math.abs(gAcc)) + '</strong> no acumulado. Verificar inadimplência — ' + R(BAL[mesesComOrc[mesesComOrc.length-1]].inad) + ' em cotas em aberto no último mês.</div></div>';
 
   }
+
+  h += '<div class="al inf"><span class="ai">&#8505;</span><div>O <strong>Previsto</strong> representa a soma das <strong>cotas condominiais do m&ecirc;s</strong> acrescida da <strong>inadimpl&ecirc;ncia do m&ecirc;s anterior</strong>, conforme o Resumo de Emiss&otilde;es ORDIN&Aacute;RIA do balancete.</div></div>';
 
   document.getElementById('orc-content').innerHTML = h;
 
