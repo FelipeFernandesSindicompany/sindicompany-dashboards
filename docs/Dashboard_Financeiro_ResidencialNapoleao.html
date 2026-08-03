@@ -864,7 +864,7 @@ var BAL = {
 
   // Março / 2026
 
-  mar26: {tit:"Mar\u00e7o / 2026",per:"01/03/2026 a 31/03/2026",tAnt:52916.13,tCred:67920.40,tDeb:63821.50,tAtual:57015.03,contas:[{n:"ORDINARIA",a:-636.72,c:55344.62,d:56239.61,s:-1531.71},{n:"FUNDO DE RESERVA",a:33568.77,c:2725.91,d:0.00,s:36294.68},{n:"SAL\u00c3O FESTA/REUNI\u00c3O/CHURRASQUE",a:5057.08,c:0.00,d:0.00,s:5057.08},{n:"FUNDO DE OBRAS",a:14412.00,c:2476.50,d:0.00,s:16888.50},{n:"INDIVIDUALIZA\u00c7\u00c3O \u00c1GUA E/OU G\u00c1S",a:515.00,c:7373.37,d:7581.89,s:306.48}],prev:52125.4,real:52125.4,tDesp:56239.61,fac:0.00,inad:0.00,inadProc:0.00,banco:{cc:57015.03,cdb:0.00,priv:0.00},desp:[{c:"M\u00c3O DE OBRA",v:21566.09},{c:"MANUTEN\u00c7\u00c3O",v:16041.23},{c:"CONTRATOS",v:1375.52},{c:"CONSUMO",v:2827.98},{c:"MATERIAIS E UTENSILIOS",v:3223.93},{c:"SERVI\u00c7OS PRESTADOS",v:829.27},{c:"DIVERSOS E EVENTUAIS",v:2274.09},{c:"ASSESSORIA / ISEN\u00c7\u00c3O",v:8101.50}]},
+  mar26: {tit:"Mar\u00e7o / 2026",per:"01/03/2026 a 31/03/2026",tAnt:52916.13,tCred:67920.40,tDeb:63821.50,tAtual:57015.03,contas:[{n:"ORDINARIA",a:-636.72,c:55344.62,d:56239.61,s:-1531.71},{n:"FUNDO DE RESERVA",a:33568.77,c:2725.91,d:0.00,s:36294.68},{n:"SAL\u00c3O FESTA/REUNI\u00c3O/CHURRASQUE",a:5057.08,c:0.00,d:0.00,s:5057.08},{n:"FUNDO DE OBRAS",a:14412.00,c:2476.50,d:0.00,s:16888.50},{n:"INDIVIDUALIZA\u00c7\u00c3O \u00c1GUA E/OU G\u00c1S",a:515.00,c:7373.37,d:7581.89,s:306.48}],prev:52125.4,real:52125.4,tDesp:56239.61,fac:0.00,inad:0.00,inadProc:779.42,banco:{cc:57015.03,cdb:0.00,priv:0.00},desp:[{c:"M\u00c3O DE OBRA",v:21566.09},{c:"MANUTEN\u00c7\u00c3O",v:16041.23},{c:"CONTRATOS",v:1375.52},{c:"CONSUMO",v:2827.98},{c:"MATERIAIS E UTENSILIOS",v:3223.93},{c:"SERVI\u00c7OS PRESTADOS",v:829.27},{c:"DIVERSOS E EVENTUAIS",v:2274.09},{c:"ASSESSORIA / ISEN\u00c7\u00c3O",v:8101.50}]},
 
   // Abril / 2026
 
@@ -1298,7 +1298,7 @@ function buildTblPvr() {
 
 function buildTblInad() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Total em Aberto</th><th>Em Acordo/Processo</th><th>Status</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Total em Aberto</th><th>Recebido de Cotas em Atraso</th><th>Status</th></tr>';
 
   MESES.forEach(function(k) {
 
