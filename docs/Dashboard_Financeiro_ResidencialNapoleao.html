@@ -1318,13 +1318,13 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Bradesco C/C + InvestF&aacute;cil</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
     var m = BAL[k]; var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
 
-    h += '<tr><td class="bd">' + lbl + '</td><td class="nr">' + R(m.banco.cc) + '</td><td class="nr bd">' + R(m.tAtual) + '</td></tr>';
+    h += '<tr><td class="bd">' + lbl + '</td><td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
   });
 
