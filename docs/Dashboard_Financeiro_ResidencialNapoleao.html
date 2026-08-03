@@ -1531,7 +1531,13 @@ function buildCharts() {
 
         borderColor: R2, backgroundColor: 'rgba(192,57,43,0.10)', borderWidth: 2.5,
 
-        pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: R2, pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.35 }
+        pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: R2, pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.35 },
+
+      { label: 'Recebido de Cotas em Atraso', data: MESES.map(function(k){ return BAL[k].inadProc || 0; }),
+
+        borderColor: '#F9A825', backgroundColor: 'rgba(249,168,37,0.10)', borderWidth: 2.5,
+
+        pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: '#F9A825', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.35 }
 
     ]},
 
