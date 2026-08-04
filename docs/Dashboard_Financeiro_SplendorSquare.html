@@ -2766,7 +2766,23 @@ function buildCharts() {
 
   var catList = Object.keys(cats);
 
-  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
+  var barColors = [
+    '#b21919',  // mar25 — vermelho
+    '#b25619',  // abr25 — laranja escuro
+    '#b29319',  // mai25 — âmbar
+    '#93b219',  // jun25 — amarelo-verde
+    '#56b219',  // jul25 — verde-limão
+    '#19b219',  // ago25 — verde
+    '#19b256',  // set25 — verde-menta
+    '#19b293',  // out25 — verde-mar
+    '#1993b2',  // nov25 — azul-cerúleo
+    '#1956b2',  // dez25 — azul médio
+    '#1919b2',  // jan26 — azul
+    '#5619b2',  // fev26 — índigo
+    '#9319b2',  // mar26 — roxo
+    '#b21993',  // abr26 — magenta
+    '#b21956',  // mai26 — rosa escuro
+  ];
 
   var despDatasets = MESES.map(function(k, i) {
 
