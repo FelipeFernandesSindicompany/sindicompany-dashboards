@@ -1820,9 +1820,7 @@ window.onload = function() {
 
         R(totalDesp), 'r', 'Débitos totais') +
 
-    kpi('Sal&atilde;o/Eventos (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
-
-        R(getContaSaldo(ultimo, 'SALÃO')), 'y', '');
+    '';
 
 
 
@@ -2652,7 +2650,8 @@ function buildCharts() {
 
   var pieContas = ultimo.contas.filter(function(c){ return Math.abs(c.s) > 0; });
 
-  var pieLabels = pieContas.map(function(c){ return c.s < 0 ? c.n + ' (déf.)' : c.n; });
+  var toTC = function(s){ return s.toLowerCase().replace(/(?:^|\s|\/)\S/g, function(a){ return a.toUpperCase(); }); };
+  var pieLabels = pieContas.map(function(c){ var nm = toTC(c.n); return c.s < 0 ? nm + ' (déf.)' : nm; });
 
   var pieData   = pieContas.map(function(c){ return Math.abs(c.s); });
 
@@ -2720,47 +2719,15 @@ function buildCharts() {
 
   // ── 3. Barras empilhadas — saldo por conta histórico ─────────────────────────
 
-  var contaColorsSt = [
+  var stDatasets = [
 
-    'rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)',
+    {label:'Ordinária',     data:MESES.map(function(k){return BAL[k].banco.cc;}),   backgroundColor:'rgba(23,27,46,0.85)',    borderColor:P,          borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    'rgba(243,156,18,0.85)','rgba(41,128,185,0.85)','rgba(155,89,182,0.85)'
+    {label:'F. Reserva',    data:MESES.map(function(k){return BAL[k].banco.cdb;}),  backgroundColor:'rgba(232,119,34,0.85)', borderColor:'#C05A10',  borderWidth:1,borderRadius:3,borderSkipped:false},
+
+    {label:'Demais Contas', data:MESES.map(function(k){return BAL[k].banco.priv;}), backgroundColor:'rgba(39,174,96,0.85)',  borderColor:'#1A6B3C',  borderWidth:1,borderRadius:3,borderSkipped:false}
 
   ];
-
-  var contaBorderSt = [P, '#C05A10', '#1A6B3C', '#C67D00', '#1A5276', '#6C3483'];
-
-  var contaNames = ['ORDINÁRIA','FUNDO DE RESERVA','TARIFAS CONCESSIONÁRIAS','SALÃO/EVENTOS','SEGURANÇA'];
-
-  var stDatasets = contaNames.map(function(cn, i) {
-
-    return {
-
-      label: cn.replace('FUNDO ','F.').replace('ÁREA COMUM','Á.C.').replace('CONCESSIONÁRIAS','Conc.'),
-
-      data: MESES.map(function(k) {
-
-        var keyword = cn === 'TARIFAS CONCESSIONÁRIAS' ? 'TARIFAS' : cn === 'SALÃO/EVENTOS' ? 'SALÃO' : cn === 'SEGURANÇA' ? 'SEGURANÇA' : cn.split(' ')[cn.split(' ').length-1];
-
-        var c = BAL[k].contas.find(function(x){ return x.n.indexOf(keyword) >= 0; });
-
-        return c ? Math.max(0, c.s) : 0;
-
-      }),
-
-      backgroundColor: contaColorsSt[i],
-
-      borderColor: contaBorderSt[i],
-
-      borderWidth: 1,
-
-      borderRadius: 3,
-
-      borderSkipped: false
-
-    };
-
-  });
 
   mkChart('cContas', {
 
