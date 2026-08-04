@@ -1144,9 +1144,9 @@ function buildCharts(){
 
   var GY={color:'rgba(0,0,0,.06)'},GX={display:false},TK={font:{size:10}},LG={font:{size:11},boxWidth:13,usePointStyle:true,padding:14};
 
-  function fK(v){return 'R$ '+(v/1000).toFixed(0)+'k';}
+  function fK(v){return (v<0?'-':'')+'R$ '+Math.abs(v/1000).toFixed(0)+'k';}
 
-  function fR(v){return 'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function fR(v){return (v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
 
 
