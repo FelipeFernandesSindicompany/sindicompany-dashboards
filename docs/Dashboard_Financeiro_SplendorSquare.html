@@ -1070,7 +1070,7 @@ var BAL = {
 
       {c:'ADMINISTRATIVO', v:9873.48},
 
-      {c:'TRANSFERÊNCIAS', v:25465.39}
+      {c:'TRANSF./APLICAÇÕES', v:25465.39}
 
     ]
 
@@ -1130,7 +1130,7 @@ var BAL = {
 
       {c:'ADMINISTRATIVO', v:11708.11},
 
-      {c:'TRANSFERÊNCIAS', v:89091.56}
+      {c:'TRANSF./APLICAÇÕES', v:89091.56}
 
     ]
 
@@ -1192,7 +1192,7 @@ var BAL = {
 
       {c:'DESP. DIVERSAS', v:800.00},
 
-      {c:'TRANSFERÊNCIAS', v:38520.98}
+      {c:'TRANSF./APLICAÇÕES', v:38520.98}
 
     ]
 
@@ -2259,28 +2259,21 @@ function updateDespPie(mesKey) {
   // Paleta moderna com 9 cores distintas e visualmente harmoniosas
 
   var DESP_COLORS = {
-
-    'SERV. TERCEIRIZADOS':    '#E87722',  // laranja marca (geralmente maior fatia)
-
-    'CONSUMOS':               '#2196F3',  // azul vivo
-
-    'PESSOAL':                '#4CAF50',  // verde
-
-    'MANUT/CONSERV. CONTRAT.':'#9C27B0',  // roxo
-
-    'MANUT/CONSERV. ESPORÁD.':'#00BCD4',  // ciano
-
-    'ENCARGOS SOCIAIS':       '#FF5722',  // laranja escuro
-
-    'ADMINISTRATIVO':         '#F7B731',  // âmbar
-
-    'SEGUROS':                '#E91E63',  // rosa
-
-    'OBRAS/MELHORIAS':        '#607D8B',  // azul-cinza
-
+    'PESSOAL':                '#2a78d6',
+    'SERV. TERCEIRIZADOS':    '#eb6834',
+    'CONSUMOS':               '#1baf7a',
+    'MANUT/CONSERV. CONTRAT.':'#eda100',
+    'MANUT/CONSERV. ESPORÁD.':'#e87ba4',
+    'ADMINISTRATIVO':         '#008300',
+    'DESP. DIVERSAS':         '#4a3aa7',
+    'TRANSF./APLICAÇÕES':     '#e34948',
+    'ENCARGOS SOCIAIS':       '#256abf',
+    'SEGUROS':                '#c98500',
+    'OBRAS/MELHORIAS':        '#199e70',
+    'IR/IOF S/ RESGATE INVEST.':'#d55181',
   };
 
-  var DEFAULT_C = ['#E87722','#2196F3','#4CAF50','#9C27B0','#00BCD4','#FF5722','#F7B731','#E91E63','#607D8B'];
+  var DEFAULT_C = ['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#008300','#4a3aa7','#e34948','#256abf','#c98500','#199e70','#d55181'];
 
   var m = BAL[mesKey];
 
