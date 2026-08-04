@@ -2024,7 +2024,7 @@ function buildOrcamento() {
 
   var orc = CONFIG.orcamento;
 
-  var mesesComOrc = MESES.filter(function(k){ return orc.meses[k] !== undefined; });
+  var mesesComOrc = MESES;
 
 
 
@@ -2032,7 +2032,7 @@ function buildOrcamento() {
 
   mesesComOrc.forEach(function(k) {
 
-    totalPrev += (orc.meses[k] || 0);
+    totalPrev += (BAL[k].prev || 0);
 
     totalReal += (BAL[k].real || 0);
 
@@ -2068,7 +2068,7 @@ function buildOrcamento() {
 
   h += '<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">&#127919; Valida&ccedil;&atilde;o Or&ccedil;ament&aacute;ria &mdash; Exerc&iacute;cio ' + orc.exercicio + '</h3>';
 
-  h += '<p style="font-size:13px;color:var(--muted)">Compara&ccedil;&atilde;o entre o aprovado em assembleia e o realizado acumulado &bull; ' + mesesComOrc.length + ' meses apurados</p>';
+  h += '<p style="font-size:13px;color:var(--muted)">Previsto = emiss&atilde;o de cotas + inadimpl&ecirc;ncia acumulada (Total Devedores) &bull; ' + mesesComOrc.length + ' meses apurados</p>';
 
   h += '<div class="val-grid">';
 
@@ -2112,7 +2112,7 @@ function buildOrcamento() {
 
   h += '<div class="cc"><h3>&#128203; Detalhamento Mensal — Previsto &times; Realizado</h3><div class="tw"><table>';
 
-  h += '<tr><th>M&ecirc;s</th><th>Previsto (Assembleia)</th><th>Realizado</th><th>Diferen&ccedil;a</th><th>% Execu&ccedil;&atilde;o</th><th>Status</th></tr>';
+  h += '<tr><th>M&ecirc;s</th><th>Previsto (Emiss&atilde;o + Inad.)</th><th>Realizado</th><th>Diferen&ccedil;a</th><th>% Execu&ccedil;&atilde;o</th><th>Status</th></tr>';
 
 
 
@@ -2122,7 +2122,7 @@ function buildOrcamento() {
 
     var m = BAL[k];
 
-    var p = orc.meses[k];
+    var p = BAL[k].prev;
 
     var r = m.real;
 
