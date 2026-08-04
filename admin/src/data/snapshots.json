@@ -999,8 +999,8 @@
     }
   },
   "Dashboard_Financeiro_SplendorSquare.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "mar25",
       "abr25",
@@ -1016,15 +1016,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 317819.6,
-      "tCred": 267847.84,
-      "tDeb": 310311.36,
-      "inad": 135867.7,
-      "tAnt": 360283.12
+      "tit": "Junho / 2026",
+      "tAtual": 315561.47,
+      "tCred": 317436.82,
+      "tDeb": 267360.38,
+      "inad": 130923.66,
+      "tAnt": 317819.6
     }
   },
   "Dashboard_Financeiro_Sublime.html": {
