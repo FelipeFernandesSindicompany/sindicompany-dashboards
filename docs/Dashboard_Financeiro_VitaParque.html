@@ -590,7 +590,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="g2">
 
-    <div class="cc"><h3 id="pt">&#128176; Distribui&ccedil;&atilde;o do Saldo</h3><div class="cws"><canvas id="cPieMar"></canvas></div></div>
+    <div class="cc"><h3 id="pt">&#128176; Distribui&ccedil;&atilde;o do Saldo</h3><div class="cws" style="height:320px;"><canvas id="cPieMar"></canvas></div></div>
 
     <div class="cc"><h3>&#128202; Saldo por Conta</h3><div class="cws"><canvas id="cContas"></canvas></div></div>
 
@@ -1162,7 +1162,7 @@ function buildCharts(){
 
   var ul=BAL[MESES[MESES.length-1]];
 
-  var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#E91E63','#00BCD4','#795548','#607D8B'];
+  var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#E91E63','#00BCD4','#795548','#607D8B','#C0392B','#148F77','#BA4A00','#515A5A'];
 
   var pL=ul.contas.map(function(c){return c.s<0?c.n+' (déficit)':c.n;});
 
@@ -1172,7 +1172,7 @@ function buildCharts(){
 
   mkC('cPieMar',{type:'doughnut',data:{labels:pL,datasets:[{data:pD,backgroundColor:PC.slice(0,pD.length),borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
 
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}}); 
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',align:'start',labels:Object.assign({},LG,{font:{size:9},padding:5,boxWidth:9,generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}});
 
 
 
