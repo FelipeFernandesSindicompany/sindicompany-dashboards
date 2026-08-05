@@ -652,7 +652,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   </div>
 
-  <div class="al inf"><span class="ai">&#8505;</span><div><strong>Regra de receita:</strong> Real &gt; Previsto = &#127881; VERDE (arrecadou mais). Real &lt; Previsto = &#128308; VERMELHO (inadimpl&ecirc;ncia).</div></div>
+  <div class="al inf"><span class="ai">&#8505;</span><div><strong>Sobre o Previsto:</strong> O valor Previsto considera a inadimpl&ecirc;ncia do per&iacute;odo (cotas em atraso de meses anteriores) mais as cotas emitidas no m&ecirc;s, conforme o Resumo de Emiss&otilde;es da conta ORDIN&Aacute;RIA. Real &gt; Previsto = &#127881; VERDE (arrecadou mais). Real &lt; Previsto = &#128308; VERMELHO (inadimpl&ecirc;ncia).</div></div>
 
 </div>
 
@@ -978,31 +978,31 @@ function buildOrc(){
 
   var orc=CONFIG.orcamento;
 
-  var ks=MESES.filter(function(k){return orc.meses[k]!==undefined;});
+  var ks=MESES;
 
   var tP=0,tR=0;
 
-  ks.forEach(function(k){tP+=orc.meses[k];tR+=BAL[k].real;});
+  ks.forEach(function(k){tP+=BAL[k].prev;tR+=BAL[k].real;});
 
   var gap=tR-tP, pos=gap>=0;
 
-  var pct=tP>0?tR/tP*100:0, pctA=tR/(orc.totalAnual||1)*100;
+  var pct=tP>0?tR/tP*100:0;
 
   var sc=pos?'ok':(gap>-50000?'warn':'bad');
 
   var st=pos?'✅ Acima do previsto':'⚠ Abaixo do previsto';
 
-  var h='<div class="val-card '+sc+'">';
+  var h='<div class="al inf" style="margin-bottom:12px"><span class="ai">&#8505;</span><div><strong>Sobre o Previsto:</strong> O valor Previsto considera a inadimpl&ecirc;ncia do per&iacute;odo (cotas em atraso de meses anteriores) mais as cotas emitidas no m&ecirc;s, conforme o Resumo de Emiss&otilde;es da conta ORDIN&Aacute;RIA.</div></div>';
 
-  h+='<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">\u{1F3AF} Validação Orçamentária — '+orc.exercicio+'</h3>';
+  h+='<div class="val-card '+sc+'">';
+
+  h+='<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">\u{1F3AF} Execução Orçamentária — '+orc.exercicio+'</h3>';
 
   h+='<p style="font-size:13px;color:var(--muted)">Emissão Prevista vs. Realizada • '+ks.length+' meses</p>';
 
   h+='<div class="val-grid">';
 
-  h+='<div class="val-item"><div class="val-label">Total Previsto</div><div class="val-value" style="color:var(--p)">'+R(orc.totalAnual)+'</div></div>';
-
-  h+='<div class="val-item"><div class="val-label">Previsto Acumulado</div><div class="val-value" style="color:var(--o)">'+R(tP)+'</div></div>';
+  h+='<div class="val-item"><div class="val-label">Previsto Acumulado</div><div class="val-value" style="color:var(--p)">'+R(tP)+'</div></div>';
 
   h+='<div class="val-item"><div class="val-label">Realizado Acumulado</div><div class="val-value" style="color:'+(pos?'var(--g)':'var(--r)')+'">'+R(tR)+'</div><div class="val-pct">'+pct.toFixed(1)+'% | '+st+'</div></div>';
 
@@ -1010,11 +1010,11 @@ function buildOrc(){
 
   h+='</div>';
 
-  var pb=Math.min(pctA,100),bc=pctA >= 100 ? 'var(--g)' : pctA >= 80 ? 'var(--y)' : 'var(--r)';
+  var pb=Math.min(pct,100),bc=pct >= 100 ? 'var(--g)' : pct >= 80 ? 'var(--y)' : 'var(--r)';
 
-  h+='<div class="progress-wrap" style="margin-top:16px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Realizado vs. total previsto</span><span>'+pctA.toFixed(1)+'%</span></div>';
+  h+='<div class="progress-wrap" style="margin-top:16px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Realizado vs. Previsto Acumulado</span><span>'+pct.toFixed(1)+'%</span></div>';
 
-  h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pb+'%;background:'+bc+'"><span class="progress-label">'+pctA.toFixed(1)+'%</span></div></div></div></div>';
+  h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pb+'%;background:'+bc+'"><span class="progress-label">'+pct.toFixed(1)+'%</span></div></div></div></div>';
 
   h+='<div class="cc"><h3>\u{1F4CB} Detalhamento Mensal</h3><div class="tw"><table>';
 
@@ -1024,7 +1024,7 @@ function buildOrc(){
 
   ks.forEach(function(k){
 
-    var m=BAL[k],p=orc.meses[k],r=m.real,g=r-p;
+    var m=BAL[k],p=m.prev,r=m.real,g=r-p;
 
     var pct2=p>0?(r/p*100).toFixed(1):'0.0';cP+=p;cR+=r;
 
