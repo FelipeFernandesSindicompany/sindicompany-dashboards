@@ -1116,8 +1116,8 @@
     }
   },
   "Dashboard_Financeiro_VibraButanta.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1132,15 +1132,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 193430.56,
-      "tCred": 173740.88,
-      "tDeb": 115566.85,
-      "inad": 74195.93,
-      "tAnt": 135256.53
+      "tit": "Junho / 2026",
+      "tAtual": 186634.33,
+      "tCred": 237442.98,
+      "tDeb": 244239.21,
+      "inad": 80686.16,
+      "tAnt": 193430.56
     }
   },
   "Dashboard_Financeiro_Victoria.html": {
