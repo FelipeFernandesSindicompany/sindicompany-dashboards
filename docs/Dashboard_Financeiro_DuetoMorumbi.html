@@ -806,7 +806,7 @@ var CONFIG = {
   sindica: 'Sindicompany',
   orcamento: {
     exercicio: '2025/2026',
-    totalAnual: 400128.36,
+    totalAnual: 604722.30,
     meses: {
       abr26: 192867.88,
       mai26: 207260.48,
@@ -1348,19 +1348,19 @@ function buildOrcamento() {
 
 
 
-  // Alerta de projeção
+  // Alerta de período: realizado vs previsto (sem extrapolar para 12 meses)
 
-  if (projecaoAnual >= orc.totalAnual) {
+  if (totalReal >= totalPrev) {
 
-    var excesso = projecaoAnual - orc.totalAnual;
+    var excesso = totalReal - totalPrev;
 
-    h += '<div class="al ok"><span class="ai">&#9989;</span><div><strong>Proje&ccedil;&atilde;o favor&aacute;vel:</strong> Com base no ritmo atual, a arrecada&ccedil;&atilde;o projetada (' + R(projecaoAnual) + ') supera o or&ccedil;amento aprovado (' + R(orc.totalAnual) + ') em <strong>' + R(excesso) + '</strong>.</div></div>';
+    h += '<div class="al ok"><span class="ai">&#9989;</span><div><strong>Per&iacute;odo favor&aacute;vel:</strong> O arrecadado no per&iacute;odo (' + R(totalReal) + ') supera o previsto (' + R(totalPrev) + ') em <strong>' + R(excesso) + '</strong>.</div></div>';
 
   } else {
 
-    var deficit = orc.totalAnual - projecaoAnual;
+    var deficit = totalPrev - totalReal;
 
-    h += '<div class="al bad"><span class="ai">&#9888;</span><div><strong>Aten&ccedil;&atilde;o — Inadimpl&ecirc;ncia:</strong> A proje&ccedil;&atilde;o anual de arrecada&ccedil;&atilde;o (' + R(projecaoAnual) + ') est&aacute; <strong>' + R(deficit) + '</strong> abaixo do or&ccedil;amento aprovado. Recomenda-se a&ccedil;&atilde;o de cobran&ccedil;a.</div></div>';
+    h += '<div class="al bad"><span class="ai">&#9888;</span><div><strong>Aten&ccedil;&atilde;o — Inadimpl&ecirc;ncia:</strong> O arrecadado no per&iacute;odo (' + R(totalReal) + ') est&aacute; <strong>' + R(deficit) + '</strong> abaixo do previsto (' + R(totalPrev) + '). Recomenda-se a&ccedil;&atilde;o de cobran&ccedil;a.</div></div>';
 
   }
 
