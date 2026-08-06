@@ -4,6 +4,7 @@ from adapters.lirba_pdf import AdapterLirbaPDF
 from adapters.datadigitus_pdf import AdapterDatadigitusPDF
 from adapters.iello_pdf import AdapterIelloPDF
 from adapters.lfc_xlsx import AdapterLFCXLSX
+from adapters.manager_adm_pdf import AdapterManagerAdmPDF
 
 # Mantidos para compatibilidade com o condomínio de exemplo
 from adapters.empresa_a import AdapterEmpresaA
@@ -17,6 +18,7 @@ ADAPTERS = {
     "lirba_pdf":         AdapterLirbaPDF,
     "datadigitus_pdf":   AdapterDatadigitusPDF,
     "iello_pdf":         AdapterIelloPDF,
+    "manager_adm_pdf":   AdapterManagerAdmPDF,
     # Legado / exemplos
     "empresa_a": AdapterEmpresaA,
     "empresa_b": AdapterEmpresaB,
