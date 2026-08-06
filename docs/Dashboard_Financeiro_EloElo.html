@@ -998,9 +998,13 @@ function buildCharts(){
 
   mkChart('cPieMar',{type:'doughnut',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors.slice(0,pieData.length),borderColor:'#fff',borderWidth:3,hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LEG,{generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var pct=pieTotalAbs>0?(pieData[i]/pieTotalAbs*100).toFixed(1):'0.0';return{text:lbl+'  '+pct+'%',fillStyle:pieColors[i%pieColors.length],strokeStyle:'#fff',lineWidth:1,index:i};});}})},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){var pct=pieTotalAbs>0?(ctx.raw/pieTotalAbs*100).toFixed(1):'0.0';return '  '+fmtR(ctx.raw)+'  ('+pct+'%)';}}})}}});
 
-  var cNomes=['CAIXA ORDINARIO','FUNDO DE RESERVA','CAIXA USO SALOES/ESPACOS'],cColors=['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'],cBorders=['#171B2E','#C05A10','#1A6B3C'];
+  var cGrupos=[
+    {label:'Ordinária',        key:'CAIXA ORDINARIO',  bg:'rgba(23,27,46,0.85)',  border:'#171B2E'},
+    {label:'Fundo de Reserva', key:'FUNDO DE RESERVA', bg:'rgba(232,119,34,0.85)',border:'#C05A10'},
+    {label:'Demais Fundos',    key:'__outros__',        bg:'rgba(39,174,96,0.85)', border:'#1A6B3C'}
+  ];
 
-  mkChart('cContas',{type:'bar',data:{labels:ML,datasets:cNomes.map(function(cn,i){return{label:cn,data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n===cn;});return c?c.s:0;}),backgroundColor:cColors[i],borderColor:cBorders[i],borderWidth:1,borderRadius:3,borderSkipped:false};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},scales:{x:{stacked:true,ticks:TICK,grid:GRID_X},y:{stacked:true,ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y}}}});
+  mkChart('cContas',{type:'bar',data:{labels:ML,datasets:cGrupos.map(function(g){return{label:g.label,data:MESES.map(function(k){var contas=BAL[k].contas;if(g.key==='__outros__'){return contas.reduce(function(s,c){return c.n==='CAIXA ORDINARIO'||c.n==='FUNDO DE RESERVA'?s:s+c.s;},0);}var c=contas.find(function(x){return x.n===g.key;});return c?c.s:0;}),backgroundColor:g.bg,borderColor:g.border,borderWidth:1,borderRadius:3,borderSkipped:false};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},scales:{x:{stacked:true,ticks:TICK,grid:GRID_X},y:{stacked:true,ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y}}}}});
 
   var cats={};MESES.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
 
