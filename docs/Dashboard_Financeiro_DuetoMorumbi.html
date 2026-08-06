@@ -804,6 +804,11 @@ var CONFIG = {
   nome: 'Condomínio Dueto Morumbi',
   unidades: '---',
   sindica: 'Sindicompany',
+  banco: {
+    nome: 'Itaú',
+    agencia: '1661',
+    conta: '99304-6'
+  },
   orcamento: {
     exercicio: '2025/2026',
     totalAnual: 604722.30,
@@ -1785,19 +1790,48 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th class="nr">Total</th></tr>';
+  var b = CONFIG.banco || {};
+  var bNome    = b.nome    || '';
+  var bAgencia = b.agencia || '';
+  var bConta   = b.conta   || '';
+
+  // Cabeçalho: banco + colunas de mês
+  var h = '<tr><th>' + bNome.toUpperCase()
+        + (bAgencia ? ' &nbsp;&bull;&nbsp; AGÊNCIA: ' + bAgencia : '')
+        + (bConta   ? ' &nbsp;&bull;&nbsp; CORRENTE: ' + bConta  : '')
+        + '</th>';
 
   MESES.forEach(function(k) {
-
     var m = BAL[k];
-
-    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
-
-    h += '<tr><td class="bd">' + lbl + '</td>';
-
-    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
-
+    var lbl = m.tit.split(' / ')[0].toUpperCase()
+            + '/' + m.tit.split(' / ')[1].slice(-2);
+    h += '<th class="nr">' + lbl + '</th>';
   });
+  h += '</tr>';
+
+  // SALDO CORRENTE
+  h += '<tr><td>Saldo Corrente (C/C)</td>';
+  MESES.forEach(function(k) {
+    h += '<td class="nr">' + R(BAL[k].banco.cc) + '</td>';
+  });
+  h += '</tr>';
+
+  // SALDO APLICAÇÃO CDB DI
+  h += '<tr><td>Saldo Aplica&ccedil;&atilde;o CDB DI</td>';
+  MESES.forEach(function(k) {
+    h += '<td class="nr">' + R(BAL[k].banco.cdb) + '</td>';
+  });
+  h += '</tr>';
+
+  // SALDO ATUAL EM MM.AAAA
+  h += '<tr class="tot"><td><strong>Saldo Atual</strong></td>';
+  MESES.forEach(function(k) {
+    var m = BAL[k];
+    var tot = Math.round((m.banco.cc + m.banco.cdb + (m.banco.priv || 0)) * 100) / 100;
+    var mesAno = m.per.slice(3,5) + '.' + m.per.slice(6,10);
+    h += '<td class="nr bd" title="Saldo Atual em ' + mesAno + '"><strong>' + R(tot) + '</strong></td>';
+  });
+  h += '</tr>';
 
   document.getElementById('tblBanco').innerHTML = h;
 
