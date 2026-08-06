@@ -1261,19 +1261,20 @@
     }
   },
   "Dashboard_Financeiro_DuetoMorumbi.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 51306.89,
-      "tCred": 171208.98,
-      "tDeb": 141800.6,
-      "inad": 60937.22,
-      "tAnt": 21898.51
+      "tit": "Junho / 2026",
+      "tAtual": 50960.11,
+      "tCred": 151844.16,
+      "tDeb": 168970,
+      "inad": 55147.8,
+      "tAnt": 51306.89
     }
   }
 }
