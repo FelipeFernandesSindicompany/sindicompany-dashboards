@@ -240,7 +240,15 @@
       "cor": "#be185d",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "SERVICOS CONTRATADOS": "SERV. CONTRATADOS",
+          "MANUTENCAO E CONSERVACAO": "MANUT. CONTRATADA",
+          "DESPESAS GERAIS": "ADMINISTRATIVO",
+          "ISENCOES/REMUNERACOES": "ISENÇÕES/REMUN.",
+          "COMPRA MATERIAIS E EQUIPAMENTO": "MATERIAIS",
+          "TAXA DE ADMINISTRACAO": "TAXA ADM.",
+          "MANUT. E CONSERVACAO EVENTUAIS": "MANUT. EVENTUAL"
+        }
       }
     },
     {
