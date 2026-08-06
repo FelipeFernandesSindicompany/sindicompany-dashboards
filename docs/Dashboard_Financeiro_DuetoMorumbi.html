@@ -780,7 +780,7 @@ tr:nth-child(even) td{white-space:nowrap;background:#FAFAFA;}
 
   <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
 
-  <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
+  <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s &nbsp;<small style="font-weight:400;font-size:12px;color:var(--muted)">It&aacute;u &bull; Ag&ecirc;ncia 1661 &bull; C/C 99304-6</small></h3><div class="tw"><table id="tblBanco"></table></div></div>
 
 </div>
 
@@ -1790,48 +1790,23 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var b = CONFIG.banco || {};
-  var bNome    = b.nome    || '';
-  var bAgencia = b.agencia || '';
-  var bConta   = b.conta   || '';
-
-  // Cabeçalho: banco + colunas de mês
-  var h = '<tr><th>' + bNome.toUpperCase()
-        + (bAgencia ? ' &nbsp;&bull;&nbsp; AGÊNCIA: ' + bAgencia : '')
-        + (bConta   ? ' &nbsp;&bull;&nbsp; CORRENTE: ' + bConta  : '')
-        + '</th>';
+  var h = '<tr><th>M&ecirc;s</th><th class="nr">Saldo Corrente</th><th class="nr">Aplic. CDB DI</th><th class="nr">Saldo Atual</th></tr>';
 
   MESES.forEach(function(k) {
+
     var m = BAL[k];
-    var lbl = m.tit.split(' / ')[0].toUpperCase()
-            + '/' + m.tit.split(' / ')[1].slice(-2);
-    h += '<th class="nr">' + lbl + '</th>';
-  });
-  h += '</tr>';
-
-  // SALDO CORRENTE
-  h += '<tr><td>Saldo Corrente (C/C)</td>';
-  MESES.forEach(function(k) {
-    h += '<td class="nr">' + R(BAL[k].banco.cc) + '</td>';
-  });
-  h += '</tr>';
-
-  // SALDO APLICAÇÃO CDB DI
-  h += '<tr><td>Saldo Aplica&ccedil;&atilde;o CDB DI</td>';
-  MESES.forEach(function(k) {
-    h += '<td class="nr">' + R(BAL[k].banco.cdb) + '</td>';
-  });
-  h += '</tr>';
-
-  // SALDO ATUAL EM MM.AAAA
-  h += '<tr class="tot"><td><strong>Saldo Atual</strong></td>';
-  MESES.forEach(function(k) {
-    var m = BAL[k];
-    var tot = Math.round((m.banco.cc + m.banco.cdb + (m.banco.priv || 0)) * 100) / 100;
+    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
     var mesAno = m.per.slice(3,5) + '.' + m.per.slice(6,10);
-    h += '<td class="nr bd" title="Saldo Atual em ' + mesAno + '"><strong>' + R(tot) + '</strong></td>';
+    var tot = Math.round((m.banco.cc + m.banco.cdb + (m.banco.priv || 0)) * 100) / 100;
+
+    h += '<tr>';
+    h += '<td class="bd">' + lbl + '</td>';
+    h += '<td class="nr">' + R(m.banco.cc) + '</td>';
+    h += '<td class="nr">' + R(m.banco.cdb) + '</td>';
+    h += '<td class="nr bd" title="Saldo Atual em ' + mesAno + '">' + R(tot) + '</td>';
+    h += '</tr>';
+
   });
-  h += '</tr>';
 
   document.getElementById('tblBanco').innerHTML = h;
 
