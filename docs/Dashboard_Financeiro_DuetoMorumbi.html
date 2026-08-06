@@ -706,7 +706,7 @@ tr:nth-child(even) td{white-space:nowrap;background:#FAFAFA;}
 
   </div>
 
-  <div class="al inf"><span class="ai">&#8505;</span><div>O <strong>Previsto</strong> representa os valores do Resumo de Emiss&atilde;o aprovados em assembleia na previs&atilde;o or&ccedil;ament&aacute;ria de cada m&ecirc;s.</div></div>
+  <div class="al inf"><span class="ai">&#8505;</span><div>O <strong>Previsto</strong> &eacute; composto pelas <strong>cotas condominiais aprovadas em assembleia</strong> na previs&atilde;o or&ccedil;ament&aacute;ria, somadas &agrave; <strong>inadimpl&ecirc;ncia do per&iacute;odo</strong> &mdash; ou seja, o total esperado de arrecada&ccedil;&atilde;o mensal considerando tanto as cotas pagas quanto as cotas em aberto.</div></div>
 
 </div>
 
@@ -1260,6 +1260,7 @@ function buildOrcamento() {
   h += '<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">&#127919; Valida&ccedil;&atilde;o Or&ccedil;ament&aacute;ria &mdash; Exerc&iacute;cio ' + orc.exercicio + '</h3>';
 
   h += '<p style="font-size:13px;color:var(--muted)">Compara&ccedil;&atilde;o entre o aprovado em assembleia e o realizado acumulado &bull; ' + mesesComOrc.length + ' meses apurados</p>';
+  h += '<p style="font-size:12px;color:var(--muted);margin-top:6px;padding:8px 12px;border-left:3px solid var(--p);background:var(--p)10;border-radius:0 6px 6px 0">&#8505;&nbsp; O <strong>Previsto</strong> &eacute; composto pelas <strong>cotas condominiais aprovadas em assembleia</strong> somadas &agrave; <strong>inadimpl&ecirc;ncia do per&iacute;odo</strong> &mdash; representando o total esperado de arrecada&ccedil;&atilde;o mensal.</p>';
 
   h += '<div class="val-grid">';
 
