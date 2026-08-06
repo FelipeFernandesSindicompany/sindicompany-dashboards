@@ -123,14 +123,13 @@ class AdapterManagerAdmPDF(AdapterBase):
 
         # ── Resumo de Emissões ORDINARIA — prev / real ────────────────────────
         # Varredura sequencial com estados para evitar contaminação de outras contas
-        prev = real = inadProc_val = 0.0
-        # Estados: 'idle' → 'emissoes' → 'posicao' → 'done'
+        prev = real = 0.0
+        # Estados: 'idle' → 'emissoes' → 'done'
         state = "idle"
         for i, l in enumerate(lines):
             if state == "idle":
                 lup = l.upper()
                 if lup in ("ORDINARIA", "ORDINÁRIA"):
-                    # Confirma que a próxima linha relevante é Resumo de Emissões
                     nxt = lines[i + 1] if i + 1 < len(lines) else ""
                     if "RealizadoPrevisto" in nxt:
                         state = "emissoes"
@@ -144,30 +143,24 @@ class AdapterManagerAdmPDF(AdapterBase):
                     pair = _two_concat(l)
                     if pair:
                         real, prev = pair
+                    state = "done"
                     continue
-                # Início Posição Financeira
-                if "Posi" in l and "Financeira" in l:
-                    state = "posicao"
-                    continue
-                # Fim da seção Emissões sem achar Posição (raro): próxima conta
+                # Fim sem achar o par (raro)
                 if l.upper() in ("IMPOSTO PREDIAL", "FUNDO DE RESERVA", "OBRAS",
                                   "ALUGUEL S.FESTA /CHURRASQUEIRA"):
                     state = "done"
                 continue
 
-            if state == "posicao":
-                # Cotas em atraso recebidas no período
-                if re.match(r"^COTAS\s+EM\s+ATRASO\s+[\d]", l, re.IGNORECASE):
-                    nums = _find_br(l)
-                    if nums:
-                        inadProc_val = nums[0]
-                # Fim da Posição Financeira
-                if l.upper().startswith("SALDO ATUAL") or l.upper().startswith("TOTAIS"):
-                    state = "done"
-                continue
-
             if state == "done":
                 break
+
+        # ── inadProc — soma de todos "TOTAL COTAS EM ATRASO" do Demonstrativo ─
+        # Fonte: Demonstrativo de Receitas, seção por conta; soma todas as contas
+        inadProc_val = 0.0
+        for l in lines:
+            m = re.match(r"(-?\d{1,3}(?:\.\d{3})*,\d{2})TOTAL\s+COTAS\s+EM\s+ATRASO", l, re.IGNORECASE)
+            if m:
+                inadProc_val += _num(m.group(1))
 
         # ── inad — soma de todos "COTAS EM ATRASO EM {last_day}" no texto ────
         inad_val = 0.0
