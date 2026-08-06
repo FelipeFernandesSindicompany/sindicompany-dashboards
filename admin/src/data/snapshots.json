@@ -313,8 +313,8 @@
     }
   },
   "Dashboard_Financeiro_EloElo.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -327,15 +327,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 794930.26,
-      "tCred": 261382.46,
-      "tDeb": 248857.51,
-      "inad": 55368.51,
-      "tAnt": 782405.31
+      "tit": "Junho / 2026",
+      "tAtual": 645704.64,
+      "tCred": 306536.87,
+      "tDeb": 461610.94,
+      "inad": 52041.23,
+      "tAnt": 800778.71
     }
   },
   "Dashboard_Financeiro_GiardinoDItalia.html": {
