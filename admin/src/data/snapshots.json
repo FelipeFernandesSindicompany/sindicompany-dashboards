@@ -719,8 +719,8 @@
     }
   },
   "Dashboard_Financeiro_PadreCarvalho.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -735,15 +735,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 146944.76,
-      "tCred": 75817.61,
-      "tDeb": 76950.42,
+      "tit": "Junho / 2026",
+      "tAtual": 143553.08,
+      "tCred": 85889.44,
+      "tDeb": 89281.12,
       "inad": 0,
-      "tAnt": 148077.57
+      "tAnt": 146944.76
     }
   },
   "Dashboard_Financeiro_PalmBeach.html": {
