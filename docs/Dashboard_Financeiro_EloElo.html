@@ -1004,7 +1004,7 @@ function buildCharts(){
     {label:'Demais Fundos',    key:'__outros__',        bg:'rgba(39,174,96,0.85)', border:'#1A6B3C'}
   ];
 
-  mkChart('cContas',{type:'bar',data:{labels:ML,datasets:cGrupos.map(function(g){return{label:g.label,data:MESES.map(function(k){var contas=BAL[k].contas;if(g.key==='__outros__'){return contas.reduce(function(s,c){return c.n==='CAIXA ORDINARIO'||c.n==='FUNDO DE RESERVA'?s:s+c.s;},0);}var c=contas.find(function(x){return x.n===g.key;});return c?c.s:0;}),backgroundColor:g.bg,borderColor:g.border,borderWidth:1,borderRadius:3,borderSkipped:false};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},scales:{x:{stacked:true,ticks:TICK,grid:GRID_X},y:{stacked:true,ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y}}}}});
+  mkChart('cContas',{type:'bar',data:{labels:ML,datasets:cGrupos.map(function(g){return{label:g.label,data:MESES.map(function(k){var contas=BAL[k].contas;if(g.key==='__outros__'){return contas.reduce(function(s,c){return c.n==='CAIXA ORDINARIO'||c.n==='FUNDO DE RESERVA'?s:s+c.s;},0);}var c=contas.find(function(x){return x.n===g.key;});return c?c.s:0;}),backgroundColor:g.bg,borderColor:g.border,borderWidth:1,borderRadius:3,borderSkipped:false};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},scales:{x:{stacked:true,ticks:TICK,grid:GRID_X},y:{stacked:true,ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y}}}});
 
   var cats={};MESES.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
 
