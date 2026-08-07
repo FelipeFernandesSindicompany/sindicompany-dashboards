@@ -835,6 +835,7 @@ var BAL = {
       {n:'CRÉDITOS A IDENTIFICAR',    a:4056.38,   c:826.94,    d:0,         s:4883.32}
     ],
     prev: 214156.42, real: 127708.17, tDesp: 122114.12,
+    aplic: 100000.00, transf: 5479.07,
     fac: 0, inad: 86448.25, inadProc: 16274.61,
     banco: {cc:38424.83, cdb:311827.85, priv:117118.43},
     rec: [
@@ -998,6 +999,17 @@ function renderBal(id) {
   if (m.fac > 0) {
     h += '<tr><td style="color:var(--r)"><strong>FUNDO FACHADA</strong> (Colorcryl &ndash; reforma)</td><td class="nr" style="color:var(--r)"><strong>' + R(m.fac) + '</strong></td><td colspan="2" style="font-size:11px;color:var(--muted)">n&atilde;o entra nas despesas ordin&aacute;rias</td></tr>';
   }
+  var aplica = m.aplic || 0;
+  var transf  = m.transf || 0;
+  if (aplica > 0) {
+    h += '<tr><td>Aplica&ccedil;&atilde;o / Resgate</td><td class="nr" style="color:var(--r)">' + R(aplica) + '</td><td colspan="2" style="font-size:11px;color:var(--muted)">movimenta&ccedil;&atilde;o financeira</td></tr>';
+  }
+  if (transf > 0) {
+    h += '<tr><td>Transfer&ecirc;ncias</td><td class="nr" style="color:var(--r)">' + R(transf) + '</td><td colspan="2" style="font-size:11px;color:var(--muted)">movimenta&ccedil;&atilde;o financeira</td></tr>';
+  }
+  if (aplica > 0 || transf > 0) {
+    h += '<tr class="tot"><td>TOTAL D&Eacute;BITOS ORDIN&Aacute;RIA</td><td class="nr">' + R(m.tDesp + aplica + transf) + '</td><td colspan="2"></td></tr>';
+  }
   h += '</table></div></div>';
 
   document.getElementById('balContent').innerHTML = h;
@@ -1147,6 +1159,18 @@ function buildTblDesp() {
   });
   var tots = MESES.map(function(k){ return BAL[k].tDesp; });
   h += '<tr class="tot"><td>TOTAL ORDIN&Aacute;RIA</td>' + tots.map(function(v){ return '<td class="nr">' + R(v) + '</td>'; }).join('') + '</tr>';
+  var aplics = MESES.map(function(k){ return BAL[k].aplic || 0; });
+  var transfs = MESES.map(function(k){ return BAL[k].transf || 0; });
+  if (aplics.some(function(v){ return v > 0; })) {
+    h += '<tr><td>Aplica&ccedil;&atilde;o / Resgate</td>' + aplics.map(function(v){ return '<td class="nr" style="color:var(--r)">' + (v > 0 ? R(v) : '<span style="color:var(--muted)">&#8211;</span>') + '</td>'; }).join('') + '</tr>';
+  }
+  if (transfs.some(function(v){ return v > 0; })) {
+    h += '<tr><td>Transfer&ecirc;ncias</td>' + transfs.map(function(v){ return '<td class="nr" style="color:var(--r)">' + (v > 0 ? R(v) : '<span style="color:var(--muted)">&#8211;</span>') + '</td>'; }).join('') + '</tr>';
+  }
+  if (aplics.some(function(v){ return v > 0; }) || transfs.some(function(v){ return v > 0; })) {
+    var debits = MESES.map(function(k, i){ return BAL[k].tDesp + aplics[i] + transfs[i]; });
+    h += '<tr class="tot"><td>TOTAL D&Eacute;BITOS</td>' + debits.map(function(v){ return '<td class="nr">' + R(v) + '</td>'; }).join('') + '</tr>';
+  }
   document.getElementById('tblDesp').innerHTML = h;
 
   var sel = document.getElementById('desp-mes-sel');
