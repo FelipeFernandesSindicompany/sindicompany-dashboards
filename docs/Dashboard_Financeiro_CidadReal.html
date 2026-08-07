@@ -1395,17 +1395,27 @@ function buildCharts() {
 
   // ── 3. Barras empilhadas — saldo por conta histórico (Ciudad Real) ──────────
   var contaColorsSt = [
-    'rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)',
-    'rgba(243,156,18,0.85)','rgba(41,128,185,0.85)','rgba(155,89,182,0.85)'
+    'rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'
   ];
-  var contaBorderSt = [P, '#C05A10', '#1A6B3C', '#C67D00', '#1A5276', '#6C3483'];
-  var contaNames = ['ORDINÁRIA','FUNDO DE RESERVA','FUNDO ÁREA COMUM','FUNDO FACHADA','MERCADINHO'];
+  var contaBorderSt = [P, '#C05A10', '#1A6B3C'];
+  var contaNames = ['ORDINÁRIA','FUNDO DE RESERVA','DEMAIS'];
+  var contaLbls  = {'ORDINÁRIA':'ORDINÁRIA','FUNDO DE RESERVA':'F.DE RESERVA','DEMAIS':'Demais Contas'};
   var stDatasets = contaNames.map(function(cn, i) {
     return {
-      label: cn.replace('FUNDO ','F.').replace('ÁREA COMUM','Á.Comum'),
+      label: contaLbls[cn],
       data: MESES.map(function(k) {
-        var keyword = cn === 'FUNDO ÁREA COMUM' ? 'ÁREA' : cn === 'FUNDO FACHADA' ? 'FACHADA' : cn === 'MERCADINHO' ? 'MERCADINHO' : cn.split(' ')[cn.split(' ').length-1];
-        var c = BAL[k].contas.find(function(x){ return x.n.toUpperCase().indexOf(keyword) >= 0; });
+        var contas = BAL[k].contas;
+        if (cn === 'DEMAIS') {
+          return contas.reduce(function(acc, x) {
+            var u = x.n.toUpperCase();
+            if (u.indexOf('ORDINÁRIA') < 0 && u.indexOf('RESERVA') < 0) {
+              return acc + Math.max(0, x.s);
+            }
+            return acc;
+          }, 0);
+        }
+        var kw = cn.split(' ')[cn.split(' ').length - 1];
+        var c = contas.find(function(x){ return x.n.toUpperCase().indexOf(kw) >= 0; });
         return c ? Math.max(0, c.s) : 0;
       }),
       backgroundColor: contaColorsSt[i],
