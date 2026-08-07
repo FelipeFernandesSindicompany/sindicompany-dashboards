@@ -415,7 +415,7 @@ var CONFIG = {
     meses: {
       abr25: 130000, mai25: 130000, jun25: 130000, jul25: 130000,
       ago25: 130000, set25: 130000, out25: 130000, nov25: 130000,
-      dez25: 130000, jan26: 130000, fev26: 130000, mai26: 196883.46
+      dez25: 130000, jan26: 130000, fev26: 130000, mai26: 196883.46, jun26: 214156.42
     }
   }
 };
@@ -423,8 +423,8 @@ var CONFIG = {
 // ────────────────────────────────────────────────────────────────────────────
 //  SÉRIE HISTÓRICA — Evolução do saldo total (adicione o novo mês ao final)
 // ────────────────────────────────────────────────────────────────────────────
-var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mai/26'];
-var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86,459281.32];
+var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mai/26','Jun/26'];
+var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86,459281.22,467371.11];
 
 // ────────────────────────────────────────────────────────────────────────────
 //  BALANCETES MENSAIS
@@ -795,16 +795,16 @@ var BAL = {
   // ── Maio / 2026 (GK ADM) ───────────────────────────────────────
   mai26: {
     tit: 'Maio / 2026', per: '01/05/2026 a 31/05/2026',
-    tAnt: 447874.13, tCred: 123878.87, tDeb: 112471.68, tAtual: 459281.32,
+    tAnt: 447874.13, tCred: 123903.57, tDeb: 112496.48, tAtual: 459281.22,
     contas: [
-      {n:'ORDINÁRIA',                 a:240495.24, c:111971.84, d:112471.68, s:239995.40},
+      {n:'ORDINÁRIA',                 a:240495.24, c:111996.54, d:112496.48, s:239995.30},
       {n:'FUNDO DE RESERVA',          a:207378.89, c:7194.65,   d:0,         s:214573.54},
       {n:'SALÃO DE FESTAS/CHURRASQ.', a:0,         c:656.00,    d:0,         s:656.00},
       {n:'CRÉDITOS A IDENTIFICAR',    a:0,         c:4056.38,   d:0,         s:4056.38}
     ],
-    prev: 196883.46, real: 116150.19, tDesp: 112471.68,
-    fac: 0, inad: 80733.27, inadProc: 4187.40,
-    banco: {cc:239995.40, cdb:214573.54, priv:4712.38},
+    prev: 196883.46, real: 116150.19, tDesp: 112496.48,
+    fac: 0, inad: 80733.27, inadProc: 4319.61,
+    banco: {cc:133922.84, cdb:209544.22, priv:115814.16},
     rec: [
       {c:'TX Condomínio',         v:96270.57},
       {c:'Reemb. Consumo Água',   v:10020.59},
@@ -815,11 +815,41 @@ var BAL = {
     ],
     desp: [
       {c:'Serv. Terceirizados', v:47084.58},
-      {c:'Consumo',             v:20478.76},
+      {c:'Consumo',             v:20503.56},
       {c:'Administrativo',      v:23238.84},
-      {c:'Manutenção',          v:10504.01},
+      {c:'Manutenção',          v:10746.01},
       {c:'Eventuais Extras',    v:9952.43},
-      {c:'Despesas Diversas',   v:1213.06}
+      {c:'Despesas Diversas',   v:971.06}
+    ]
+  },
+
+  // ── Junho / 2026 (GK ADM) ──────────────────────────────────────
+  jun26: {
+    tit: 'Junho / 2026', per: '01/06/2026 a 30/06/2026',
+    tAnt: 459281.22, tCred: 240283.08, tDeb: 232193.19, tAtual: 467371.11,
+    contas: [
+      {n:'ORDINÁRIA',                 a:239995.30, c:231271.63, d:227593.19, s:243673.74},
+      {n:'FUNDO DE RESERVA',          a:214573.54, c:7829.54,   d:4600.00,   s:217803.08},
+      {n:'SALÃO DE FESTAS/CHURRASQ.', a:656.00,    c:0,         d:0,         s:656.00},
+      {n:'FACILITIES',                a:0,         c:354.97,    d:0,         s:354.97},
+      {n:'CRÉDITOS A IDENTIFICAR',    a:4056.38,   c:826.94,    d:0,         s:4883.32}
+    ],
+    prev: 214156.42, real: 127708.17, tDesp: 122114.12,
+    fac: 0, inad: 86448.25, inadProc: 16274.61,
+    banco: {cc:38424.83, cdb:311827.85, priv:117118.43},
+    rec: [
+      {c:'TX Condomínio',         v:96571.91},
+      {c:'Reemb. Consumo Água',   v:10033.16},
+      {c:'Fundo Reserva',         v:4828.49},
+      {c:'Cotas em Aberto',       v:16274.61}
+    ],
+    desp: [
+      {c:'Serv. Terceirizados', v:56228.21},
+      {c:'Consumo',             v:18904.88},
+      {c:'Administrativo',      v:14988.80},
+      {c:'Manutenção',          v:12972.92},
+      {c:'Eventuais Extras',    v:13331.53},
+      {c:'Despesas Diversas',   v:5687.78}
     ]
   }
 
