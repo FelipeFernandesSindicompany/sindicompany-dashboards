@@ -14,19 +14,6 @@
       }
     },
     {
-      "id": "barra_viva_i_alegria",
-      "nome": "Barra Viva I · Alegria",
-      "empresa_gestora": "lello_xls",
-      "pasta_dados": "data/barra_viva_i_alegria",
-      "html_file": "Dashboard_Financeiro_BarraVivaI_Alegria.html",
-      "ativo": true,
-      "cor": "#7c3aed",
-      "unidades": 0,
-      "parser_config": {
-        "cat_map": {}
-      }
-    },
-    {
       "id": "baturite",
       "nome": "Baturité",
       "empresa_gestora": "habitacional_xlsx",
