@@ -1215,7 +1215,7 @@ var BAL = {
     {c:"Outros", v:22482.65}
     ]
   },
-  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:306512.91,tCred:370224.89,tDeb:284563.38,tAtual:392174.42,contas:[{n:'ORDINÁRIA',a:254465.01,c:327417.46,d:267602.04,s:194649.59},{n:'FUNDO DE RESERVA',a:317440.66,c:11067.86,d:0,s:328508.52},{n:'LOCAÇÃO',a:120511.17,c:0,d:0,s:120511.17},{n:'FUNDO DE OBRAS/FACHADA',a:123026.09,c:31739.57,d:16961.34,s:137804.32}],prev:457635.29,real:315350.84,tDesp:301524.72,fac:0,inad:142284.45,inadProc:0,banco:{cc:392174.42,cdb:0,priv:0},desp:[{c:'Pessoal',v:113941.96},{c:'Consumo',v:91886.89},{c:'Manutenção',v:48320.21},{c:'Outros',v:30271.53},{c:'FUNDO DE OBRAS/FACHADA',v:16961.34},{c:'IMPOSTOS E TAXAS',v:142.79}]}
+  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:306512.91,tCred:370224.89,tDeb:284563.38,tAtual:392174.42,contas:[{n:'ORDINÁRIA',a:-254465.01,c:327417.46,d:267602.04,s:-194649.59},{n:'FUNDO DE RESERVA',a:317440.66,c:11067.86,d:0,s:328508.52},{n:'LOCAÇÃO',a:120511.17,c:0,d:0,s:120511.17},{n:'FUNDO DE OBRAS/FACHADA',a:123026.09,c:31739.57,d:16961.34,s:137804.32}],prev:457635.29,real:315350.84,tDesp:301524.72,fac:0,inad:142284.45,inadProc:0,banco:{cc:392174.42,cdb:0,priv:0},desp:[{c:'Pessoal',v:113941.96},{c:'Consumo',v:91886.89},{c:'Manutenção',v:48320.21},{c:'Outros',v:30271.53},{c:'FUNDO DE OBRAS/FACHADA',v:16961.34},{c:'IMPOSTOS E TAXAS',v:142.79}]}
 };
 
 
@@ -2184,7 +2184,7 @@ function buildCharts() {
 
   function fmtM(v)  { return 'R$\u00a0' + (v/1000000).toFixed(3) + 'M'; }
 
-  function fmtR(v)  { return 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtR(v)  { return (v < 0 ? '-' : '') + 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 
 
