@@ -468,6 +468,22 @@
       "tAnt": 200799.08
     }
   },
+  "Dashboard_Financeiro_Jau.html": {
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
+    "allKeys": [
+      "mai26",
+      "jun26"
+    ],
+    "data": {
+      "tit": "Junho / 2026",
+      "tAtual": -1470.45,
+      "tCred": 78743.28,
+      "tDeb": 89245.82,
+      "inad": 108715.69,
+      "tAnt": 9032.09
+    }
+  },
   "Dashboard_Financeiro_IGloo.html": {
     "lastKey": "abr26",
     "lastMonth": "Abr/26",

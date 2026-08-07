@@ -369,6 +369,19 @@
       }
     },
     {
+      "id": "jau_1894",
+      "nome": "Jaú 1894",
+      "empresa_gestora": "lello_pdf",
+      "pasta_dados": "data/jau_1894",
+      "html_file": "Dashboard_Financeiro_Jau.html",
+      "ativo": true,
+      "cor": "#f59e0b",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
+    },
+    {
       "id": "i_gloo_alphaville",
       "nome": "I-GLOO ALPHAVILLE",
       "empresa_gestora": "lirba_pdf",
