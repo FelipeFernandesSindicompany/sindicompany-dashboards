@@ -29,35 +29,6 @@
       "tAnt": 207421.02
     }
   },
-  "Dashboard_Financeiro_BarraVivaI_Alegria.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26"
-    ],
-    "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 290543.62,
-      "tCred": 124524.26,
-      "tDeb": 117878.11,
-      "inad": 34427.2,
-      "tAnt": 283897.47
-    }
-  },
   "Dashboard_Financeiro_Baturite.html": {
     "lastKey": "jun26",
     "lastMonth": "Jun/26",
