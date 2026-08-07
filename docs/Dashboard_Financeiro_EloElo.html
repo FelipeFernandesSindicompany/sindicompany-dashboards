@@ -930,19 +930,15 @@ function buildTblPvr(){
 
 function buildTblInad(){
 
-  var h='<tr><th>M\u00eas</th><th>Total em Aberto</th><th>Recebidos em Atraso</th><th>Varia\u00e7\u00e3o</th><th>Status</th></tr>';
+  var h='<tr><th>M\u00eas</th><th>Total em Aberto</th><th>Recebidos em Atraso</th><th>Status</th></tr>';
 
   MESES.forEach(function(k,i){var m=BAL[k],lbl=m.tit.split(' ')[0]+'/'+m.tit.split(' ')[2];
-
-    var prev_v=i>0?BAL[MESES[i-1]].inad:null,varStr='-',varCls='';
-
-    if(prev_v!==null){var dv=m.inad-prev_v;varStr=(dv>=0?'+':'')+R(dv);varCls=dv<=0?'color:var(--g)':'color:var(--r)';}
 
     var b=m.inad>60000?'<span class="badge bbad">Alto</span>':m.inad>45000?'<span class="badge bwarn">M\u00e9dio</span>':'<span class="badge bok">Controlado</span>';
 
     var ipStr=m.inadProc>0?'<span style="color:var(--g)">'+R(m.inadProc)+'</span>':'<span style="color:var(--muted)">\u2014</span>';
 
-    h+='<tr><td class="bd">'+lbl+'</td><td class="nr">'+R(m.inad)+'</td><td class="nr">'+ipStr+'</td><td class="nr" style="'+varCls+'">'+varStr+'</td><td>'+b+'</td></tr>';});
+    h+='<tr><td class="bd">'+lbl+'</td><td class="nr">'+R(m.inad)+'</td><td class="nr">'+ipStr+'</td><td>'+b+'</td></tr>';});
 
   document.getElementById('tblInad').innerHTML=h;
 
