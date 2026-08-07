@@ -309,6 +309,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div class="ni" onclick="nav('despesas',this)"><span class="ic">&#128184;</span> <span>Despesas</span></div>
     <div class="ni" onclick="nav('pvr',this)"><span class="ic">&#9878;</span> <span>Previsto &times; Realizado</span></div>
     <div class="ni" onclick="nav('orc',this);buildOrcamento()"><span class="ic">&#127919;</span> <span>Or&ccedil;amento</span></div>
+    <div class="ni" onclick="nav('inadimp',this)"><span class="ic">&#9888;</span> <span>Inadimpl&ecirc;ncia</span></div>
     <div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Banc&aacute;rio</span></div>
   </div>
   <div class="sb-foot">
@@ -389,6 +390,13 @@ tr:nth-child(even) td{background:#FAFAFA;}
     </div>
   </div>
   <div id="orc-content"></div>
+</div>
+
+<!-- INADIMPLÊNCIA -->
+<div id="pg-inadimp" class="pg">
+  <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Cotas em aberto e processos de cobran&ccedil;a</p></div>
+  <div class="cc"><h3>&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia (R$)</h3><div class="cw"><canvas id="cInad"></canvas></div></div>
+  <div class="cc"><h3>&#128203; Detalhamento por M&ecirc;s</h3><div class="tw"><table id="tblInad"></table></div></div>
 </div>
 
 <!-- SALDO BANCÁRIO -->
@@ -931,6 +939,7 @@ window.onload = function() {
   buildTblDesp();
   buildTblPvr();
   buildTblBanco();
+  buildTblInad();
   buildCharts();
   initOrcFiltros();
   buildOrcamento();
@@ -1276,6 +1285,28 @@ function buildTblBanco() {
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
   });
   document.getElementById('tblBanco').innerHTML = h;
+}
+
+function buildTblInad() {
+  var h = '<tr><th>M&ecirc;s</th><th>Total em Aberto</th><th>Recebido de Cotas em Atraso</th><th>Status</th></tr>';
+  MESES.forEach(function(k) {
+    var m = BAL[k];
+    var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+    var b;
+    if (m.inad === 0) {
+      b = '<span class="badge" style="background:var(--muted);color:#fff">N/D</span>';
+    } else if (m.inad > 90000) {
+      b = '<span class="badge bbad">Alto</span>';
+    } else if (m.inad > 70000) {
+      b = '<span class="badge bwarn">M&eacute;dio</span>';
+    } else {
+      b = '<span class="badge bok">Controlado</span>';
+    }
+    var inadTxt = m.inad > 0 ? R(m.inad) : '<span style="color:var(--muted)">N/D</span>';
+    var procTxt = m.inadProc > 0 ? R(m.inadProc) : '-';
+    h += '<tr><td class="bd">' + lbl + '</td><td class="nr">' + inadTxt + '</td><td class="nr">' + procTxt + '</td><td>' + b + '</td></tr>';
+  });
+  document.getElementById('tblInad').innerHTML = h;
 }
 
 // ── GRÁFICOS ──────────────────────────────────────────────────────────────────
@@ -1641,6 +1672,63 @@ function buildCharts() {
       scales: {
         x: { stacked: true, ticks: TICK, grid: GRID_X },
         y: { stacked: true, ticks: Object.assign({ callback: function(v){ return 'R$\u00a0' + (v/1000000).toFixed(2) + 'M'; } }, TICK), grid: GRID_Y }
+      }
+    }
+  });
+
+  // \u2500\u2500 Inadimpl\u00eancia (linhas com \u00e1rea) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  var inadMeses = MESES.filter(function(k){ return BAL[k].inad > 0; });
+  var inadML    = inadMeses.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
+  var inadVals  = inadMeses.map(function(k){ return BAL[k].inad; });
+  var inadAvg   = inadVals.length > 0 ? inadVals.reduce(function(a,b){ return a+b; },0) / inadVals.length : 0;
+  mkChart('cInad', {
+    type: 'line',
+    data: {
+      labels: inadML,
+      datasets: [
+        {
+          label: 'Total em Aberto',
+          data: inadVals,
+          borderColor: R2,
+          backgroundColor: 'rgba(192,57,43,0.10)',
+          borderWidth: 2.5,
+          pointRadius: 5, pointHoverRadius: 7,
+          pointBackgroundColor: R2, pointBorderColor: '#fff', pointBorderWidth: 2,
+          fill: true, tension: 0.35, order: 2
+        },
+        {
+          label: 'Recebido de Cotas em Atraso',
+          data: inadMeses.map(function(k){ return BAL[k].inadProc; }),
+          borderColor: Y,
+          backgroundColor: 'rgba(243,156,18,0.10)',
+          borderWidth: 2,
+          pointRadius: 4, pointHoverRadius: 6,
+          pointBackgroundColor: Y, pointBorderColor: '#fff', pointBorderWidth: 2,
+          fill: true, tension: 0.35, order: 3
+        },
+        {
+          label: 'M\u00e9dia (total)',
+          data: inadMeses.map(function(){ return inadAvg; }),
+          type: 'line',
+          borderColor: 'rgba(192,57,43,0.40)',
+          borderWidth: 1.5,
+          borderDash: [6,4],
+          pointRadius: 0,
+          fill: false, tension: 0, order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: LEG },
+        tooltip: Object.assign({}, TT, {
+          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+        })
+      },
+      scales: {
+        y: { ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y },
+        x: { ticks: TICK, grid: GRID_X }
       }
     }
   });
