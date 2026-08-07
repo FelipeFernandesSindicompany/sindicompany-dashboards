@@ -987,21 +987,6 @@ function renderBal(id) {
   h += '<div class="al ' + gcls + '"><span class="ai">' + gico + '</span>';
   h += '<div>Previsto: <strong>' + R(m.prev) + '</strong>&nbsp;&nbsp;|&nbsp;&nbsp;Realizado: <strong>' + R(m.real) + '</strong>&nbsp;&nbsp;|&nbsp;&nbsp;Diferen&ccedil;a: <strong>' + R(gap) + '</strong></div></div></div>';
 
-  
-  if (m.rec && m.rec.length) {
-    h += '<div class="cc"><h3>&#128178; Receitas por Categoria &ndash; ' + m.tit + '</h3><div class="tw"><table>';
-    h += '<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participação</th></tr>';
-    m.rec.forEach(function(r) {
-      var pct = m.tCred > 0 ? (r.v / m.tCred * 100).toFixed(1) : '0.0';
-      var sc = r.v < 0 ? ' style="color:var(--r)"' : '';
-      h += '<tr><td>' + r.c + '</td>';
-      h += '<td class="nr"' + sc + '>' + R(r.v) + '</td>';
-      h += '<td class="nr">' + pct + '%</td>';
-      h += '<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:' + (r.v > 0 ? pct : '0') + '%"></div></div></td></tr>';
-    });
-    h += '<tr class="tot"><td>TOTAL RECEITAS</td><td class="nr">' + R(m.tCred) + '</td><td colspan="2"></td></tr>';
-    h += '</table></div></div>';
-  }
   h += '<div class="cc"><h3>&#128184; Despesas por Categoria &ndash; ' + m.tit + '</h3><div class="tw"><table>';
   h += '<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participa&ccedil;&atilde;o</th></tr>';
   m.desp.forEach(function(d) {
@@ -1161,7 +1146,7 @@ function buildTblDesp() {
     h += '<tr><td>' + cat + '</td>' + vals.map(function(v){ return '<td class="nr">' + (v > 0 ? R(v) : '-') + '</td>'; }).join('') + '</tr>';
   });
   var tots = MESES.map(function(k){ return BAL[k].tDesp; });
-  h += '<tr class="tot"><td>TOTAL</td>' + tots.map(function(v){ return '<td class="nr">' + R(v) + '</td>'; }).join('') + '</tr>';
+  h += '<tr class="tot"><td>TOTAL ORDIN&Aacute;RIA</td>' + tots.map(function(v){ return '<td class="nr">' + R(v) + '</td>'; }).join('') + '</tr>';
   document.getElementById('tblDesp').innerHTML = h;
 
   var sel = document.getElementById('desp-mes-sel');
