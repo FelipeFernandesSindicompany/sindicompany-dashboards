@@ -844,7 +844,7 @@ var BAL = {
     ],
     prev: 214156.42, real: 127708.17, tDesp: 227593.19,
     fac: 0, inad: 86448.25, inadProc: 16274.61,
-    banco: {cc:38424.83, cdb:311827.85, priv:117118.43},
+    banco: {cc:38424.83, cdb:211827.85, priv:117118.43, itauvest:100000.00},
     rec: [
       {c:'TX Condomínio',         v:96571.91},
       {c:'Reemb. Consumo Água',   v:10033.16},
@@ -1274,14 +1274,16 @@ function buildTblPvr() {
 
 
 function buildTblBanco() {
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Aplic. Ordin&aacute;ria</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Aplic. Ordin&aacute;ria</th><th>ITAUVEST</th><th>Total</th></tr>';
   MESES.forEach(function(k) {
     var m = BAL[k];
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
+    var itv = m.banco.itauvest || 0;
     h += '<tr><td class="bd">' + lbl + '</td>';
     h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
     h += '<td class="nr">' + (m.banco.cdb !== null ? R(m.banco.cdb) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
     h += '<td class="nr">' + R(m.banco.priv) + '</td>';
+    h += '<td class="nr">' + (itv > 0 ? R(itv) : '<span style="color:var(--muted)">&#8211;</span>') + '</td>';
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
   });
   document.getElementById('tblBanco').innerHTML = h;
@@ -1655,6 +1657,15 @@ function buildCharts() {
           data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
           backgroundColor: 'rgba(39,174,96,0.82)',
           borderColor: '#1A6B3C',
+          borderWidth: 1,
+          borderRadius: 3,
+          borderSkipped: false
+        },
+        {
+          label: 'ITAUVEST',
+          data: bancoMeses.map(function(k){ return BAL[k].banco.itauvest || 0; }),
+          backgroundColor: 'rgba(41,128,185,0.82)',
+          borderColor: '#1A5276',
           borderWidth: 1,
           borderRadius: 3,
           borderSkipped: false
