@@ -985,11 +985,11 @@
     ],
     "data": {
       "tit": "Junho / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": -10787.01,
+      "tCred": 76101.39,
+      "tDeb": 73749.94,
+      "inad": 10842.37,
+      "tAnt": -13138.46
     }
   },
   "Dashboard_Financeiro_SplendorSquare.html": {
