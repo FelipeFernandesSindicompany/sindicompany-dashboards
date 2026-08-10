@@ -1108,17 +1108,17 @@ function buildInad(){
 
   var maxInad=Math.max.apply(null,MESES.map(function(k){return BAL[k].inad;}));
 
-  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>% s/ Previsto</th><th>Status</th></tr>';
+  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>Status</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k],pi=m.prev>0?(m.inad/m.prev*100).toFixed(1):'0.0';
+    var m=BAL[k];
 
     var b=m.inad>maxInad*0.8?'<span class="badge bbad">▲ Alto</span>':m.inad>maxInad*0.5?'<span class="badge bwarn">⚠ Médio</span>':'<span class="badge bok">▼ Controlado</span>';
 
     var ic=m.inad>maxInad*0.8?' style="color:var(--r)"':'';
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td class="nr"'+ic+'>'+pi+'%</td><td>'+b+'</td></tr>';
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td>'+b+'</td></tr>';
 
   });
 
