@@ -232,9 +232,9 @@ class AdapterAuxiliadoraXLS(AdapterBase):
     def _processar_emissoes(self, sh, dados: DadosFinanceiros) -> None:
         """
         Aba 'Resumo de Emissões':
-        Localiza seção ORDINARIA e extrai:
-          - receita_prevista = linha 'REC CONDOMINIO' → col Previsto
-          - inadimplencia_valor = linha 'REC COTAS EM ATRASO' → col Previsto
+        - receita_prevista  = linha 'TOTAL DE EMISSÔES' → col Previsto
+        - receita_cotas     = linha 'TOTAL DE EMISSÔES' → col Realizado  (→ campo 'real' no BAL)
+        - inadimplencia_valor = 'REC COTAS EM ATRASO' dentro da seção ORDINARIA → col Previsto
         """
         linhas = self._linhas(sh)
 
@@ -242,12 +242,18 @@ class AdapterAuxiliadoraXLS(AdapterBase):
         for linha in linhas:
             nome = _txt(linha[0]).upper() if linha else ""
 
+            # Linha de total geral — fonte autoritativa para prev e real
+            if "TOTAL DE EMISS" in nome and len(linha) >= 3:
+                dados.receita_prevista = round(_f(linha[1]), 2)
+                dados.receita_cotas    = round(_f(linha[2]), 2)
+                continue
+
             # Detecta início da seção ORDINARIA
             if re.match(r"^ORDINARI[AÁ]$", nome):
                 em_ordinaria = True
                 continue
 
-            # Fim da seção ORDINARIA: nova conta ou fim do arquivo
+            # Fim da seção ORDINARIA
             if em_ordinaria and nome and not re.match(r"^(CONTA|REC|ALUGUEI|COTAS|CORREIO)", nome):
                 if re.match(r"^(FUNDO|SALÃO|SALAO|TOTAL)", nome):
                     em_ordinaria = False
@@ -255,20 +261,15 @@ class AdapterAuxiliadoraXLS(AdapterBase):
             if not em_ordinaria:
                 continue
 
-            if len(linha) < 3:
+            if len(linha) < 2:
                 continue
-            previsto  = _f(linha[1])
-            realizado = _f(linha[2])
+            previsto = _f(linha[1])
 
-            # Receita prevista: linha "REC CONDOMINIO"
-            if "REC CONDOMINIO" in nome and previsto > 0 and dados.receita_prevista == 0:
-                dados.receita_prevista = round(previsto, 2)
-
-            # Inadimplência: linha "REC COTAS EM ATRASO" — o previsto é o que estava em aberto
+            # Inadimplência: REC COTAS EM ATRASO dentro de ORDINARIA — previsto = em aberto
             if "REC COTAS EM ATRASO" in nome and previsto > 0 and dados.inadimplencia_valor == 0:
                 dados.inadimplencia_valor = round(previsto, 2)
 
-        # Fallback: usa receita_realizada se previsto não encontrado
+        # Fallback: usa receita_realizada se total não encontrado
         if dados.receita_prevista == 0 and dados.receita_realizada > 0:
             dados.receita_prevista = dados.receita_realizada
 
