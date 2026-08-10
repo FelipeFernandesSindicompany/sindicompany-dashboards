@@ -1204,11 +1204,11 @@ function buildCharts(){
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Ordinária',data:MESES.map(function(k){var f=BAL[k].contas.find(function(c){return c.n.toUpperCase().indexOf('ORDINARI')>=0;});return f?f.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Itaú C/C 99797-0',data:MESES.map(function(k){return BAL[k].banco.cc||0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Fundo de Obras',data:MESES.map(function(k){var f=BAL[k].contas.find(function(c){return c.n.toUpperCase().indexOf('OBRAS')>=0;});return f?f.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Itauvest',data:MESES.map(function(k){return BAL[k].banco.vest||0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Demais Contas',data:MESES.map(function(k){return BAL[k].contas.reduce(function(sum,c){var u=c.n.toUpperCase();if(u.indexOf('ORDINARI')>=0||u.indexOf('OBRAS')>=0)return sum;return sum+c.s;},0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'CDB-DI',data:MESES.map(function(k){return BAL[k].banco.cdb||0;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;return '  '+c.dataset.label+': '+(v<0?'-':'')+fR(v);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
