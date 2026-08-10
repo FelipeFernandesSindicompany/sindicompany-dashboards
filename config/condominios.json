@@ -584,14 +584,31 @@
     {
       "id": "patricia",
       "nome": "Patrícia",
-      "empresa_gestora": "lello_xls",
+      "empresa_gestora": "auxiliadora_xls",
       "pasta_dados": "data/patricia",
       "html_file": "Dashboard_Financeiro_Patricia.html",
       "ativo": true,
       "cor": "#9333ea",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "SERVIÇOS TERCEIRIZADOS":        "SERV. TERCEIRIZADOS",
+          "SERVICOS TERCEIRIZADOS":        "SERV. TERCEIRIZADOS",
+          "SERVIÇOS PRESTADOS":            "SERV. TERCEIRIZADOS",
+          "SERVICOS PRESTADOS":            "SERV. TERCEIRIZADOS",
+          "DESPESAS ADMINISTRATIVAS":      "ADMINISTRATIVO",
+          "SEGUROS":                       "ADMINISTRATIVO",
+          "DESPESAS BANCÁRIAS":            "ADMINISTRATIVO",
+          "DESPESAS BANCARIAS":            "ADMINISTRATIVO",
+          "RENDIMENTOS":                   "ADMINISTRATIVO",
+          "TAXAS E TARIFAS SERV PÚBLICOS": "CONSUMOS",
+          "TAXAS E TARIFAS SERV PUBLICOS": "CONSUMOS",
+          "MANUTENÇÃO / CONSERVAÇÃO":      "MANUT/CONSERV. CONTRAT.",
+          "MANUTENCAO / CONSERVACAO":      "MANUT/CONSERV. CONTRAT.",
+          "MATERIAIS DIVERSOS":            "MANUT/CONSERV. ESPORÁD.",
+          "ENCARGOS SOCIAIS":              "ENCARGOS SOCIAIS",
+          "DESPESAS COM PESSOAL":          "PESSOAL"
+        }
       }
     },
     {

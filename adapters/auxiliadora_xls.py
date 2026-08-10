@@ -31,7 +31,6 @@ _SKIP_PREFIXOS = {
     "POSIÇÃO FINANCEIRA", "POSICAO FINANCEIRA",
     "TOTAIS", "TOTAL",
     "SALDO ATUAL", "SALDO ANTERIOR", "SALDO",
-    "RENDIMENTOS",                    # transferência inter-fundos, não é despesa operacional
 }
 
 # Linhas de crédito (receitas) dentro da seção ORDINARIA — não são despesas
@@ -131,6 +130,23 @@ class AdapterAuxiliadoraXLS(AdapterBase):
         # ── Fallback categorias ───────────────────────────────────────────────
         if not dados.categorias_despesa and dados.despesa_total > 0:
             dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── Resíduo: garante que soma das categorias = ORDINÁRIA.d ────────────
+        # Itens contabilizados na Aba 2 mas não detalhados na Aba 0 são
+        # absorvidos pela maior categoria para manter o total consistente.
+        if dados.categorias_despesa and dados.contas_detalhe:
+            ordinaria_d = next(
+                (c["debitos"] for c in dados.contas_detalhe
+                 if "ordinari" in c["nome"].lower()),
+                0.0,
+            )
+            if ordinaria_d > 0:
+                residuo = round(ordinaria_d - sum(dados.categorias_despesa.values()), 2)
+                if abs(residuo) > 0.01:
+                    maior = max(dados.categorias_despesa, key=dados.categorias_despesa.get)
+                    dados.categorias_despesa[maior] = round(
+                        dados.categorias_despesa[maior] + residuo, 2
+                    )
 
         # ── Inadimplência percentual ──────────────────────────────────────────
         if dados.receita_realizada > 0 and dados.inadimplencia_valor > 0:
