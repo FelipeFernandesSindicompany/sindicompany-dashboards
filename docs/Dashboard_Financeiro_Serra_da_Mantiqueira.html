@@ -2166,7 +2166,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; var s=(v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); return '  '+ctx.dataset.label+': '+s; } }
 
         })
 
