@@ -767,8 +767,8 @@
     }
   },
   "Dashboard_Financeiro_Patricia.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -782,15 +782,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 39826.3,
-      "tCred": 58171.22,
-      "tDeb": 66653.89,
-      "inad": 2417.71,
-      "tAnt": 48308.97
+      "tit": "Junho / 2026",
+      "tAtual": 4797.05,
+      "tCred": 57680.29,
+      "tDeb": 92709.54,
+      "inad": 2255.48,
+      "tAnt": 39826.3
     }
   },
   "Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html": {
