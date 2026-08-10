@@ -759,11 +759,11 @@
     ],
     "data": {
       "tit": "Junho / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": 318107.87,
+      "tCred": 80377.42,
+      "tDeb": 75467.76,
+      "inad": 125634.16,
+      "tAnt": 313198.21
     }
   },
   "Dashboard_Financeiro_Patricia.html": {

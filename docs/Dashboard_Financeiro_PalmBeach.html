@@ -784,7 +784,7 @@ var CONFIG = {
 
       dez25: 75000, jan26: 65000, fev26: 65000, mar26: 65000,
 
-      abr26: 70000, mai26: 70000
+      abr26: 70000, mai26: 70000, jun26: 70000
 
     }
 
@@ -798,7 +798,7 @@ var MESES = ["abr25", "mai25", "jun25", "jul25", "ago25", "set25", "out25", "nov
 
 var EVO_L = ['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26'];
 
-var EVO_V = [279782.28, 290857.95, 297675.69, 303112.76, 302043.28, 297893.13, 293604.37, 296229.68, 310368.77, 300933.26, 307242.62, 296825.05, 306071.22, 313198.21, 0.0];
+var EVO_V = [279782.28, 290857.95, 297675.69, 303112.76, 302043.28, 297893.13, 293604.37, 296229.68, 310368.77, 300933.26, 307242.62, 296825.05, 306071.22, 313198.21, 318107.87];
 
 
 
@@ -1531,7 +1531,57 @@ var BAL = {
     ]
 
   },
-  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:0,tCred:0,tDeb:0,tAtual:0,contas:[{n:'ORDINÁRIA',a:0,c:0,d:0,s:0}],prev:0,real:0,tDesp:0,fac:0,inad:0,inadProc:0,banco:{cc:0,cdb:0,priv:0},desp:[]}
+  jun26: {
+
+    tit: 'Junho / 2026', per: '01/06/2026 a 30/06/2026',
+
+    tAnt: 313198.21, tCred: 80377.42, tDeb: 75467.76, tAtual: 318107.87,
+
+    contas: [
+
+      {n:'ASSISTÊNCIA JURÍDICA', a:13631.11, c:0.00,    d:0.00,    s:13631.11},
+
+      {n:'FUNDO DE OBRAS',       a:66540.37, c:2809.05, d:0.00,    s:69349.42},
+
+      {n:'FUNDO DE RESERVA',     a:212027.21,c:5974.68, d:3000.00, s:215001.89},
+
+      {n:'MANUT. PINTURA',       a:22045.17, c:3640.00, d:0.00,    s:25685.17},
+
+      {n:'ORDINÁRIA',            a:-8280.30, c:67953.69,d:72467.76, s:-12794.37},
+
+      {n:'SALAO DE FESTAS',      a:7234.65,  c:0.00,    d:0.00,    s:7234.65}
+
+    ],
+
+    prev: 70000.00, real: 80377.42, tDesp: 75467.76, fac: 3000.00,
+
+    inad: 125634.16, inadProc: 0,
+
+    banco: {cc: 78813.57, cdb: 239294.30, priv: 0},
+
+    desp: [
+
+      {c:'PESSOAL',           v:42642.98},
+
+      {c:'CONSUMOS',          v:7036.00},
+
+      {c:'TARIFAS',           v:292.37},
+
+      {c:'MANUTENÇÃO',        v:4604.10},
+
+      {c:'CONSERVAÇÃO/OBRAS', v:8284.42},
+
+      {c:'SERV. TÉCNICOS',    v:0.00},
+
+      {c:'ADMINISTRATIVO',    v:4649.46},
+
+      {c:'JUDICIAL',          v:4000.00},
+
+      {c:'SEGUROS',           v:3361.46}
+
+    ]
+
+  }
 };
 
 
@@ -1620,9 +1670,9 @@ window.onload = function() {
 
         R(ultimo.tAtual), '', '&#8595; vs ' + primeiro.tit.split(' ')[0] + ': ' + R(primeiro.tAtual)) +
 
-    kpi('F. Obras (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
+    kpi('F. Reserva (' + ultimo.tit.split(' ')[0] + '/' + ultimo.tit.split(' ')[2] + ')',
 
-        R(getContaSaldo(ultimo, 'OBRAS')), 'o', 'Fundo de Obras acumulado') +
+        R(getContaSaldo(ultimo, 'RESERVA')), 'o', 'Fundo de Reserva acumulado') +
 
     kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
 
@@ -2550,35 +2600,65 @@ function buildCharts() {
 
   var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
 
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE OBRAS','FUNDO DE FUNCION\u00c1RIOS'];
+  var contaDatasets = [
 
-  var contaDatasets = contaNames.map(function(cn, i) {
+    {
 
-    return {
-
-      label: cn.replace('FUNDO DE ','F.'),
+      label: 'Taxa de Condom\u00ednio',
 
       data: MESES.map(function(k) {
 
-        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
+        var c = BAL[k].contas.find(function(x){ return x.n === 'ORDIN\u00c1RIA'; });
 
         return c ? c.s : 0;
 
       }),
 
-      backgroundColor: contaColors[i],
+      backgroundColor: contaColors[0], borderColor: contaBorder[0],
 
-      borderColor: contaBorder[i],
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
 
-      borderWidth: 1,
+    },
 
-      borderRadius: 3,
+    {
 
-      borderSkipped: false
+      label: 'Fundo de Reserva',
 
-    };
+      data: MESES.map(function(k) {
 
-  });
+        var c = BAL[k].contas.find(function(x){ return x.n === 'FUNDO DE RESERVA'; });
+
+        return c ? c.s : 0;
+
+      }),
+
+      backgroundColor: contaColors[1], borderColor: contaBorder[1],
+
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+
+    },
+
+    {
+
+      label: 'Demais contas',
+
+      data: MESES.map(function(k) {
+
+        return BAL[k].contas.reduce(function(sum, c) {
+
+          return (c.n !== 'ORDIN\u00c1RIA' && c.n !== 'FUNDO DE RESERVA') ? sum + c.s : sum;
+
+        }, 0);
+
+      }),
+
+      backgroundColor: contaColors[2], borderColor: contaBorder[2],
+
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+
+    }
+
+  ];
 
   mkChart('cContas', {
 
@@ -2596,7 +2676,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; return '  '+ctx.dataset.label+': '+(v<0?'-':'')+fmtR(Math.abs(v)); } }
 
         })
 
@@ -3164,7 +3244,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; return '  '+ctx.dataset.label+': '+(v<0?'-':'')+fmtR(Math.abs(v)); } }
 
         })
 
