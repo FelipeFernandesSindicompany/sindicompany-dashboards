@@ -738,8 +738,8 @@
     }
   },
   "Dashboard_Financeiro_PalmBeach.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -754,15 +754,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 313198.21,
-      "tCred": 74033.88,
-      "tDeb": 66906.89,
-      "inad": 127123.94,
-      "tAnt": 306071.22
+      "tit": "Junho / 2026",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
+      "inad": 0,
+      "tAnt": 0
     }
   },
   "Dashboard_Financeiro_Patricia.html": {
