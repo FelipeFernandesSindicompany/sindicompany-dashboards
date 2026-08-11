@@ -1139,7 +1139,7 @@ function buildBanco(){
 
     h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
 
-    h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
+    h+='<td class="nr bd">'+R((m.banco.cc||0)+(m.banco.cdb||0)+(m.banco.priv||0))+'</td></tr>';
 
   });
 
