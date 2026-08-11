@@ -1265,7 +1265,7 @@ function buildCharts(){
 
     {label:'ITAUVEST',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;var s=(v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});return '  '+c.dataset.label+': '+s;}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 }
 
