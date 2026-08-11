@@ -761,7 +761,7 @@ window.onload=function(){
 
     kpi('F. Reserva ('+ab(ul.tit)+')',R(gc(ul,'RESERVA')),'o','Fundo de Reserva acumulado')+
 
-    kpi('Inadimplência ('+ab(ul.tit)+')',R(ul.inad),'r','Devedores em aberto')+
+    kpi('Receitas (excl. '+ab(pr.tit)+')',R(tR),'g','Total do período')+
 
     kpi('Despesas (excl. '+ab(pr.tit)+')',R(tD),'y','Total do período');
 
@@ -769,11 +769,13 @@ window.onload=function(){
 
   var alertEl=document.getElementById('geral-alert');
 
-  alertEl.innerHTML=ul.inad>150000
+  var saldo=tR-tD;
 
-    ?'<div class="al bad"><span class="ai">⚠</span><div><strong>Inadimplência elevada:</strong> '+R(ul.inad)+' em aberto em '+ab(ul.tit)+'. Ação imediata necessária.</div></div>'
+  alertEl.innerHTML=saldo>=0
 
-    :'<div class="al warn"><span class="ai">⚠</span><div><strong>Inadimplência:</strong> '+R(ul.inad)+' em aberto. Monitorar cobrança.</div></div>';
+    ?'<div class="al inf"><span class="ai">✅</span><div><strong>Superávit operacional acumulado:</strong> As receitas ('+R(tR)+') superaram as despesas ('+R(tD)+') em <strong style="color:var(--g)">'+R(saldo)+'</strong>.</div></div>'
+
+    :'<div class="al bad"><span class="ai">⚠</span><div><strong>Déficit operacional acumulado:</strong> As despesas ('+R(tD)+') superaram as receitas ('+R(tR)+') em <strong style="color:var(--r)">'+R(Math.abs(saldo))+'</strong>.</div></div>';
 
 
 
