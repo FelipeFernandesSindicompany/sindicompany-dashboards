@@ -694,7 +694,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <script>
 
-var CONFIG={nome:"784 Condomínio Go Liberdade",sindica:"BBZ",orcamento:{exercicio:"2025/2026",totalAnual:1306251.17,meses:{abr25:100418.58,mai25:100418.58,jun25:100418.58,jul25:100418.58,ago25:100418.58,set25:100418.58,out25:100418.58,nov25:100418.58,dez25:100418.58,jan26:100418.58,fev26:100418.58,mar26:100418.58,abr26:101228.21}}};
+var CONFIG={nome:"784 Condomínio Go Liberdade",sindica:"BBZ",orcamento:{exercicio:"2025/2026",totalAnual:2738266.15,meses:{abr25:210339.56,mai25:202158.99,jun25:201471.79,jul25:209448.49,ago25:203774.62,set25:216674.97,out25:206597.49,nov25:208022.25,dez25:208589.52,jan26:202965.81,fev26:232518.29,mar26:217934.73,abr26:217769.64}}};
 
 var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26'];
 
@@ -933,7 +933,9 @@ function buildOrc(){
 
   var st=pos?'✅ Acima do previsto':'⚠ Abaixo do previsto';
 
-  var h='<div class="val-card '+sc+'">';
+  var h='<div class="al" style="background:rgba(26,111,175,0.07);border-left:4px solid #1A6FAF;margin-bottom:12px"><span class="ai" style="color:#1A6FAF;font-size:18px">&#8505;</span><div style="font-size:12.5px;color:var(--muted)"><strong style="color:var(--p)">Metodologia dos valores:</strong> O <strong>Previsto</strong> considera a <strong>emissão do período</strong> (cotas ordinárias + reembolso de energia, gás e água) somada à <strong>inadimplência acumulada recuperada no mês</strong>, conforme extraídos das prestações de contas mensais (.xlsx).</div></div>';
+
+  h+='<div class="val-card '+sc+'">';
 
   h+='<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">\u{1F3AF} Validação Orçamentária — '+orc.exercicio+'</h3>';
 
