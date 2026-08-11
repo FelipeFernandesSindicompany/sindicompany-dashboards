@@ -1031,23 +1031,41 @@ function buildDespTbl(){
 
 
 
+var DESP_MAP={
+  'Pessoal Próprio':'Pessoal','DESPESAS COM PESSOAL':'Pessoal',
+  'ENCARGOS SOCIAIS':'Encargos Sociais',
+  'Conserv./Manut.':'Manutenção e Conservação','Manut. Contratos':'Manutenção e Conservação','MANUTENCAO E CONSERVACAO':'Manutenção e Conservação',
+  'Consumos':'Consumos','CONSUMOS':'Consumos',
+  'Impostos/Taxas':'Impostos e Taxas','IMPOSTOS E TAXAS':'Impostos e Taxas',
+  'MANUT. E CONSERVACAO EVENTUAIS':'Manut. e Conservação Eventuais',
+  'Material de Expediente':'Compra Materiais e Equipamento','COMPRA MATERIAIS E EQUIPAMENTO':'Compra Materiais e Equipamento',
+  'Desp. Bancárias':'Despesas Gerais','Despesas Diversas':'Despesas Gerais','Seguros':'Despesas Gerais','DESPESAS GERAIS':'Despesas Gerais',
+  'TV POR ASSINATURA/INTERNET':'Tv por Assinatura/Internet',
+  'ISENCOES/REMUNERACOES':'Isenções/Remunerações',
+  'Pessoal Contrat.':'Serviços Contratados','SERVICOS CONTRATADOS':'Serviços Contratados',
+  'Honorários/Adm.':'Taxa de Administração','TAXA DE ADMINISTRACAO':'Taxa de Administração'
+};
+var CATS=['Pessoal','Encargos Sociais','Manutenção e Conservação','Consumos','Impostos e Taxas','Manut. e Conservação Eventuais','Compra Materiais e Equipamento','Despesas Gerais','Tv por Assinatura/Internet','Isenções/Remunerações','Serviços Contratados','Taxa de Administração'];
+var CATS_C={'Pessoal':'#4CAF50','Encargos Sociais':'#8BC34A','Manutenção e Conservação':'#2196F3','Consumos':'#00BCD4','Impostos e Taxas':'#F7B731','Manut. e Conservação Eventuais':'#9C27B0','Compra Materiais e Equipamento':'#795548','Despesas Gerais':'#607D8B','Tv por Assinatura/Internet':'#00695C','Isenções/Remunerações':'#E91E63','Serviços Contratados':'#E87722','Taxa de Administração':'#171B2E'};
+function aggDesp(m){var a={};CATS.forEach(function(c){a[c]=0;});m.desp.forEach(function(d){var cn=DESP_MAP[d.c]||d.c;if(a[cn]!==undefined)a[cn]+=d.v;});return CATS.map(function(c){return a[c]||0;});}
+
+
+
 function updPie(k){
 
   if(!k||!BAL[k])return;
 
-  var DC={'Pessoal Próprio':'#4CAF50','Pessoal Contrat.':'#E87722','Conserv./Manut.':'#2196F3','Manut. Contratos':'#9C27B0','Consumos':'#00BCD4','Impostos/Taxas':'#F7B731','Desp. Bancárias':'#607D8B','Despesas Diversas':'#FF5722','Honorários/Adm.':'#171B2E','Seguros':'#E91E63','Fundo Manutenção':'#00695C','Fundo Elevador':'#795548'};
+  var m=BAL[k];
+  var vals=aggDesp(m);
+  var tot=vals.reduce(function(a,b){return a+b;},0);
+  var visL=[],visV=[],visBg=[];
+  CATS.forEach(function(c,i){if(vals[i]>0){visL.push(c);visV.push(vals[i]);visBg.push(CATS_C[c]||'#888');}});
 
-  var DEF=['#E87722','#2196F3','#4CAF50','#9C27B0','#00BCD4','#FF5722','#F7B731','#E91E63','#607D8B','#171B2E'];
-
-  var m=BAL[k],tot=m.desp.reduce(function(a,d){return a+d.v;},0);
-
-  var bg=m.desp.map(function(d,i){return DC[d.c]||DEF[i%DEF.length];});
-
-  mkC('cPieMes',{type:'doughnut',data:{labels:m.desp.map(function(d){return d.c;}),datasets:[{data:m.desp.map(function(d){return d.v;}),backgroundColor:bg,borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
+  mkC('cPieMes',{type:'doughnut',data:{labels:visL,datasets:[{data:visV,backgroundColor:visBg,borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
 
     options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{
 
-      legend:{position:'right',labels:{font:{size:12},boxWidth:14,padding:12,color:'#333',generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var v=chart.data.datasets[0].data[i];var p=tot>0?(v/tot*100).toFixed(1):'0.0';return{text:lbl+'  '+p+'%',fillStyle:bg[i],strokeStyle:'#fff',lineWidth:1,index:i};});}}},
+      legend:{position:'right',labels:{font:{size:12},boxWidth:14,padding:12,color:'#333',generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var v=chart.data.datasets[0].data[i];var p=tot>0?(v/tot*100).toFixed(1):'0.0';return{text:lbl+'  '+p+'%',fillStyle:visBg[i],strokeStyle:'#fff',lineWidth:1,index:i};});}}},
 
       tooltip:{backgroundColor:'rgba(23,27,46,.92)',titleColor:'#fff',bodyColor:'#dde',padding:10,cornerRadius:8,callbacks:{label:function(ctx){var p=tot>0?(ctx.parsed/tot*100).toFixed(1):'0.0';return '  R$ '+ctx.parsed.toLocaleString('pt-BR',{minimumFractionDigits:2})+'  ('+p+'%)';}}}}}});
 
@@ -1185,13 +1203,9 @@ function buildCharts(){
 
 
 
-  var cats={};MESES.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
-
-  var catL=Object.keys(cats);
-
   var BC=['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
 
-  mkC('cDespBar',{type:'bar',data:{labels:catL,datasets:MESES.map(function(k,i){var m=BAL[k],bc=BC[i]||'#888';return{label:ab(m.tit),data:catL.map(function(c){var d=m.desp.find(function(x){return x.c===c;});return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRadius:4,borderSkipped:false};})},
+  mkC('cDespBar',{type:'bar',data:{labels:CATS,datasets:MESES.map(function(k,i){var m=BAL[k],bc=BC[i]||'#888';return{label:ab(m.tit),data:aggDesp(m),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRadius:4,borderSkipped:false};})},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
