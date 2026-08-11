@@ -369,8 +369,8 @@
     }
   },
   "Dashboard_Financeiro_GoLiberdade.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -385,13 +385,14 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 32280.28,
-      "tCred": 0,
-      "tDeb": 0,
+      "tit": "Junho / 2026",
+      "tAtual": 42556.34,
+      "tCred": 144651.38,
+      "tDeb": 134375.32,
       "inad": 80538.37,
       "tAnt": 32280.28
     }
