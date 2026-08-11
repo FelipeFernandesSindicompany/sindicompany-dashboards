@@ -897,14 +897,12 @@ function renderBal(id){
 
   h+='<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participação</th></tr>';
 
-  m.desp.forEach(function(d){
-
-    var p=m.tDesp>0?(d.v/m.tDesp*100).toFixed(1):'0.0';
-
-    h+='<tr><td>'+d.c+'</td><td class="nr">'+R(d.v)+'</td><td class="nr">'+p+'%</td>';
-
+  var _aggVals=aggDesp(m);
+  CATS.forEach(function(c,i){
+    if(_aggVals[i]<=0)return;
+    var p=m.tDesp>0?(_aggVals[i]/m.tDesp*100).toFixed(1):'0.0';
+    h+='<tr><td>'+c+'</td><td class="nr">'+R(_aggVals[i])+'</td><td class="nr">'+p+'%</td>';
     h+='<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:'+p+'%"></div></div></td></tr>';
-
   });
 
   h+='<tr class="tot"><td>TOTAL ORDINÁRIA</td><td class="nr">'+R(m.tDesp)+'</td><td colspan="2"></td></tr>';
@@ -1001,15 +999,13 @@ function buildOrc(){
 
 function buildDespTbl(){
 
-  var cats={};MESES.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
-
-  var catL=Object.keys(cats);
+  var _aggAll={};MESES.forEach(function(k){_aggAll[k]=aggDesp(BAL[k]);});
 
   var h='<tr><th>Categoria</th>'+MESES.map(function(k){return '<th style="text-align:right">'+ab(BAL[k].tit)+'</th>';}).join('')+'</tr>';
 
-  catL.forEach(function(cat){
+  CATS.forEach(function(cat,ci){
 
-    var vals=MESES.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});
+    var vals=MESES.map(function(k){return _aggAll[k][ci];});
 
     if(vals.every(function(v){return v===0;}))return;
 
