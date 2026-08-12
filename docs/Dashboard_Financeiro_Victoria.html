@@ -2408,11 +2408,18 @@ function buildCharts() {
 
   MESES.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c] = true; }); });
 
-  var catShort = {'PESSOAL':'Pessoal','ENCARGOS SOCIAIS':'Enc. Soc.','SERV. TERCEIRIZADOS':'Terceiriz.','CONSUMOS':'Consumos','SEGUROS':'Seguros','ADMINISTRATIVO':'Adm.','MANUT/CONSERV. CONTRAT.':'Man. Cont.','MANUT/CONSERV. ESPORÁD.':'Man. Espo.'};
+  var catShort = {
+    'Mão de Obra Terceirizada':'M.O. Terceirizada',
+    'Consumo':'Consumo',
+    'Administrativas e Gerais':'Adm. e Gerais',
+    'Manutenção de Equipamentos':'Manut. Equip.',
+    'Conservação e Limpeza':'Conserv. e Limp.',
+    'Mão de Obra Própria':'M.O. Própria'
+  };
 
   var catList = Object.keys(cats);
 
-  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
+  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593','#00ACC1','#FF7043'];
 
   var despDatasets = MESES.map(function(k, i) {
 
