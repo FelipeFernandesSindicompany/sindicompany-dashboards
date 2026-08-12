@@ -2532,17 +2532,27 @@ function buildCharts() {
 
   var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
 
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE RESERVA','BENFEITORIAS'];
+  var CONTA_CFG = [
+    {key:'ORDIN\u00c1RIA',       label:'Ordin\u00e1ria'},
+    {key:'FUNDO DE RESERVA', label:'Fundo de Reserva'},
+    {key:'__DEMAIS__',       label:'Demais Contas'}
+  ];
 
-  var contaDatasets = contaNames.map(function(cn, i) {
+  var contaDatasets = CONTA_CFG.map(function(cfg, i) {
 
     return {
 
-      label: cn.replace('FUNDO DE ','F.'),
+      label: cfg.label,
 
       data: MESES.map(function(k) {
 
-        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
+        if (cfg.key === '__DEMAIS__') {
+          return BAL[k].contas.reduce(function(sum, x) {
+            return (x.n === 'ORDIN\u00c1RIA' || x.n === 'FUNDO DE RESERVA') ? sum : sum + (x.s || 0);
+          }, 0);
+        }
+
+        var c = BAL[k].contas.find(function(x){ return x.n === cfg.key; });
 
         return c ? c.s : 0;
 
@@ -2578,7 +2588,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; return '  '+ctx.dataset.label+': '+(v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); } }
 
         })
 
