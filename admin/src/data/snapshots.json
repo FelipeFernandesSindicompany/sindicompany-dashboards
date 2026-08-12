@@ -1141,8 +1141,8 @@
     }
   },
   "Dashboard_Financeiro_Victoria.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1157,15 +1157,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 178651.87,
-      "tCred": 68683.77,
-      "tDeb": 57318.44,
+      "tit": "Junho / 2026",
+      "tAtual": 182834.45,
+      "tCred": 58886.77,
+      "tDeb": 54704.19,
       "inad": 24758.99,
-      "tAnt": 167286.54
+      "tAnt": 178651.87
     }
   },
   "Dashboard_Financeiro_VillaPark_Osasco.html": {
