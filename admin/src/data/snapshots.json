@@ -487,8 +487,8 @@
     }
   },
   "Dashboard_Financeiro_IGloo.html": {
-    "lastKey": "abr26",
-    "lastMonth": "Abr/26",
+    "lastKey": "mai26",
+    "lastMonth": "Mai/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -502,15 +502,16 @@
       "jan26",
       "fev26",
       "mar26",
-      "abr26"
+      "abr26",
+      "mai26"
     ],
     "data": {
-      "tit": "Abril / 2026",
-      "tAtual": 287793,
-      "tCred": 223398.72,
-      "tDeb": 208155.92,
-      "inad": 358951.71,
-      "tAnt": 272550.2
+      "tit": "Maio / 2026",
+      "tAtual": 316817.17,
+      "tCred": 292786.98,
+      "tDeb": 263762.81,
+      "inad": 365713.17,
+      "tAnt": 287793
     }
   },
   "Dashboard_Financeiro_LivingForConsolacao.html": {
