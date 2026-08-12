@@ -710,6 +710,43 @@ class AdapterLirbaPDF(AdapterBase):
                 "\n".join(balancete_pages), cat_map_extra
             )
             dados.categorias_despesa.update(cats)
+            # Fundos de utilidade (Gás, Água, Benfeitorias) transitam pela
+            # Ordinária e são transferidos para contas próprias: a soma das
+            # categorias excede os débitos da Ordinária pelo valor transferido.
+            # Corrige subtraindo o excesso de CONSUMO e fixando despesa_total.
+            ord_entry = next(
+                (c for c in dados.contas_detalhe
+                 if 'ORDIN' in c['nome'].upper()),
+                None
+            )
+            if ord_entry:
+                total_cats = round(sum(dados.categorias_despesa.values()), 2)
+                ordinaria_deb = ord_entry['debitos']
+                diff = round(total_cats - ordinaria_deb, 2)
+                if diff > 0:
+                    consumo_key = next(
+                        (k for k in dados.categorias_despesa
+                         if 'CONSUMO' in k.upper()), None
+                    )
+                    if consumo_key:
+                        consumo_val = dados.categorias_despesa[consumo_key]
+                        if diff <= consumo_val:
+                            dados.categorias_despesa[consumo_key] = round(
+                                consumo_val - diff, 2
+                            )
+                        else:
+                            # CONSUMO não absorve tudo; sobra vai para SERVIÇOS
+                            remainder = round(diff - consumo_val, 2)
+                            dados.categorias_despesa[consumo_key] = 0.0
+                            serv_key = next(
+                                (k for k in dados.categorias_despesa
+                                 if 'SERVI' in k.upper()), None
+                            )
+                            if serv_key:
+                                dados.categorias_despesa[serv_key] = round(
+                                    dados.categorias_despesa[serv_key] - remainder, 2
+                                )
+                dados.despesa_total = ordinaria_deb
 
         if not dados.categorias_despesa and dados.despesa_total > 0:
             dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
