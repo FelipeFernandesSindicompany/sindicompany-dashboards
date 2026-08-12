@@ -899,7 +899,9 @@ function renderBal(id){
 
   });
 
-  h+='<tr class="tot"><td>TOTAL</td><td class="nr">'+R(m.tAnt)+'</td><td class="nr" style="color:var(--g)">'+R(m.tCred)+'</td><td class="nr" style="color:var(--r)">'+R(m.tDeb)+'</td><td class="nr" style="color:var(--p)">'+R(m.tAtual)+'</td></tr>';
+  var _sC=0,_sD=0;m.contas.forEach(function(c){_sC+=c.c;_sD+=c.d;});
+
+  h+='<tr class="tot"><td>TOTAL</td><td class="nr">'+R(m.tAnt)+'</td><td class="nr" style="color:var(--g)">'+R(_sC)+'</td><td class="nr" style="color:var(--r)">'+R(_sD)+'</td><td class="nr" style="color:var(--p)">'+R(m.tAtual)+'</td></tr>';
 
   h+='</table></div></div>';
 
