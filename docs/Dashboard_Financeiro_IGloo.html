@@ -1191,9 +1191,11 @@ function buildCharts(){
 
   var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#E91E63','#00BCD4','#795548','#607D8B'];
 
-  var pL=ul.contas.map(function(c){return c.s<0?c.n+' (déficit)':c.n;});
+  var pFilt=ul.contas.filter(function(c){return c.s!==0;});
 
-  var pD=ul.contas.map(function(c){return Math.abs(c.s);});
+  var pL=pFilt.map(function(c){return c.s<0?c.n+' (déficit)':c.n;});
+
+  var pD=pFilt.map(function(c){return Math.abs(c.s);});
 
   var pT=pD.reduce(function(a,b){return a+b;},0);
 
