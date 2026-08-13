@@ -885,7 +885,7 @@ function renderBal(id){
 
   h+='<tr><th>Conta</th><th>Saldo Ant.</th><th>Créditos</th><th>Débitos</th><th>Saldo Atual</th></tr>';
 
-  m.contas.forEach(function(c){
+  m.contas.filter(function(c){return c.a!==0||c.c!==0||c.d!==0||c.s!==0;}).forEach(function(c){
 
     var sc=c.s<0?' style="color:var(--r)"':'';
 
