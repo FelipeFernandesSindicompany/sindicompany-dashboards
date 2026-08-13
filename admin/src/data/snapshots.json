@@ -1142,6 +1142,22 @@
       "tAnt": 193430.56
     }
   },
+  "Dashboard_Financeiro_VeraCruz.html": {
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
+    "allKeys": [
+      "mai26",
+      "jun26"
+    ],
+    "data": {
+      "tit": "Junho / 2026",
+      "tAtual": -14826.32,
+      "tCred": 116227.39,
+      "tDeb": 127123.24,
+      "inad": 3058.05,
+      "tAnt": -3930.47
+    }
+  },
   "Dashboard_Financeiro_Victoria.html": {
     "lastKey": "jun26",
     "lastMonth": "Jun/26",

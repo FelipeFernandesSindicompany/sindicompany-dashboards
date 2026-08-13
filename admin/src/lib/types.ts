@@ -15,7 +15,8 @@ export type AdapterType =
   | 'lello_xls'
   | 'lirba_pdf'
   | 'datadigitus_pdf'
-  | 'iello_pdf';
+  | 'iello_pdf'
+  | 'convivium_pdf';
 
 export interface BALEntry {
   tit: string;

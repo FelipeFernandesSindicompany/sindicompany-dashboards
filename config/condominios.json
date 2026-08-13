@@ -874,6 +874,20 @@
       }
     },
     {
+      "id": "vera_cruz",
+      "nome": "VERA CRUZ",
+      "empresa_gestora": "convivium_pdf",
+      "pasta_dados": "data/vera_cruz",
+      "html_file": "Dashboard_Financeiro_VeraCruz.html",
+      "ativo": true,
+      "cor": "#0ea5e9",
+      "unidades": 0,
+      "parser_config": {
+        "extract_cats": "posicao_financeira",
+        "cat_map": {}
+      }
+    },
+    {
       "id": "victoria",
       "nome": "Victoria",
       "empresa_gestora": "habitacional_xlsx",
