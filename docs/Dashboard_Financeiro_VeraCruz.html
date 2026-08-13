@@ -701,13 +701,238 @@ var CONFIG = {
 
 
 
-var EVO_L = ['Mai/26','Jun/26'];
+var EVO_L = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26'];
 
-var EVO_V = [-3930.47,-14826.32];
+var EVO_V = [65478.17,68893.13,-13386.79,-14678.79,-17189.68,-16103.41,-13179.30,-16397.99,-18116.92,-20247.51,-3930.47,-14826.32];
 
 
 
 var BAL = {
+
+  // ── Julho / 2025 ──────────────────────────────────────────────────────────
+  jul25: {
+    tit:'Julho / 2025', per:'01/07/2025 a 31/07/2025',
+    tAnt:57988.55, tCred:132580.29, tDeb:125090.67, tAtual:65478.17,
+    contas:[{n:'ORDINÁRIA', a:57988.55, c:132580.29, d:125090.67, s:65478.17}],
+    prev:132580.29, real:132580.29, tDesp:125090.67, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:65478.17, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:54576.51},
+      {c:'ENCARGOS SOCIAIS',           v:5696.77},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:13260.47},
+      {c:'CONCES.SERV.PÚBLICOS',       v:18208.39},
+      {c:'MATERIAIS DE CONSUMO',       v:2034.39},
+      {c:'SEGUROS',                    v:2154.78},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:21819.61},
+      {c:'IMPOSTOS E TAXAS',           v:1811.77},
+      {c:'EQUIPAM. E FERRAMENTAS',     v:1600.00},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Agosto / 2025 ─────────────────────────────────────────────────────────
+  ago25: {
+    tit:'Agosto / 2025', per:'01/08/2025 a 31/08/2025',
+    tAnt:65478.17, tCred:132580.29, tDeb:129165.33, tAtual:68893.13,
+    contas:[{n:'ORDINÁRIA', a:65478.17, c:132580.29, d:129165.33, s:68893.13}],
+    prev:132580.29, real:132580.29, tDesp:129165.33, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:68893.13, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:54576.51},
+      {c:'ENCARGOS SOCIAIS',           v:5696.77},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:13227.79},
+      {c:'CONCES.SERV.PÚBLICOS',       v:18848.21},
+      {c:'MATERIAIS DE CONSUMO',       v:2520.87},
+      {c:'SEGUROS',                    v:2230.20},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:23119.61},
+      {c:'IMPOSTOS E TAXAS',           v:1792.14},
+      {c:'EQUIPAM. E FERRAMENTAS',     v:1879.99},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:4798.39},
+      {c:'DIVERSOS E IMPREVISTOS',     v:146.87},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Setembro / 2025 ───────────────────────────────────────────────────────
+  set25: {
+    tit:'Setembro / 2025', per:'01/09/2025 a 30/09/2025',
+    tAnt:68893.13, tCred:119953.49, tDeb:202233.41, tAtual:-13386.79,
+    contas:[{n:'ORDINÁRIA', a:68893.13, c:119953.49, d:202233.41, s:-13386.79}],
+    prev:119953.49, real:119953.49, tDesp:202233.41, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-13386.79, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:54576.51},
+      {c:'ENCARGOS SOCIAIS',           v:5766.62},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:12330.87},
+      {c:'CONCES.SERV.PÚBLICOS',       v:15954.05},
+      {c:'MATERIAIS DE CONSUMO',       v:2956.85},
+      {c:'SEGUROS',                    v:2217.27},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:24386.53},
+      {c:'IMPOSTOS E TAXAS',           v:1792.14},
+      {c:'EQUIPAM. E FERRAMENTAS',     v:2150.00},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:78377.72},
+      {c:'DIVERSOS E IMPREVISTOS',     v:1396.87},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Outubro / 2025 ────────────────────────────────────────────────────────
+  out25: {
+    tit:'Outubro / 2025', per:'01/10/2025 a 31/10/2025',
+    tAnt:-13386.79, tCred:124677.29, tDeb:125969.29, tAtual:-14678.79,
+    contas:[{n:'ORDINÁRIA', a:-13386.79, c:124677.29, d:125969.29, s:-14678.79}],
+    prev:124677.29, real:124677.29, tDesp:125969.29, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-14678.79, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:59812.75},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:12595.72},
+      {c:'CONCES.SERV.PÚBLICOS',       v:21037.37},
+      {c:'MATERIAIS DE CONSUMO',       v:194.99},
+      {c:'SEGUROS',                    v:2217.27},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:22404.41},
+      {c:'IMPOSTOS E TAXAS',           v:1792.14},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3986.66},
+      {c:'DIVERSOS E IMPREVISTOS',     v:1600.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Novembro / 2025 ───────────────────────────────────────────────────────
+  nov25: {
+    tit:'Novembro / 2025', per:'01/11/2025 a 30/11/2025',
+    tAnt:-14678.79, tCred:125390.32, tDeb:127901.21, tAtual:-17189.68,
+    contas:[{n:'ORDINÁRIA', a:-14678.79, c:125390.32, d:127901.21, s:-17189.68}],
+    prev:125390.32, real:125390.32, tDesp:127901.21, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-17189.68, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:51317.16},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:12395.72},
+      {c:'CONCES.SERV.PÚBLICOS',       v:21764.88},
+      {c:'MATERIAIS DE CONSUMO',       v:2933.86},
+      {c:'SEGUROS',                    v:2204.34},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:28581.21},
+      {c:'IMPOSTOS E TAXAS',           v:1796.06},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:2980.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Dezembro / 2025 ───────────────────────────────────────────────────────
+  dez25: {
+    tit:'Dezembro / 2025', per:'01/12/2025 a 31/12/2025',
+    tAnt:-17189.68, tCred:123829.53, tDeb:122743.26, tAtual:-16103.41,
+    contas:[{n:'ORDINÁRIA', a:-17189.68, c:123829.53, d:122743.26, s:-16103.41}],
+    prev:123829.53, real:123829.53, tDesp:122743.26, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-16103.41, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:50498.76},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:12395.72},
+      {c:'CONCES.SERV.PÚBLICOS',       v:20764.58},
+      {c:'MATERIAIS DE CONSUMO',       v:2361.78},
+      {c:'SEGUROS',                    v:2223.73},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:25851.16},
+      {c:'IMPOSTOS E TAXAS',           v:1670.55},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:3049.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Janeiro / 2026 ────────────────────────────────────────────────────────
+  jan26: {
+    tit:'Janeiro / 2026', per:'01/01/2026 a 31/01/2026',
+    tAnt:-16103.41, tCred:123829.53, tDeb:120905.42, tAtual:-13179.30,
+    contas:[{n:'ORDINÁRIA', a:-16103.41, c:123829.53, d:120905.42, s:-13179.30}],
+    prev:123829.53, real:123829.53, tDesp:120905.42, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-13179.30, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:50498.76},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:12395.72},
+      {c:'CONCES.SERV.PÚBLICOS',       v:20549.67},
+      {c:'MATERIAIS DE CONSUMO',       v:2015.72},
+      {c:'SEGUROS',                    v:2223.73},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:24686.08},
+      {c:'IMPOSTOS E TAXAS',           v:1612.76},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:2995.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Fevereiro / 2026 ──────────────────────────────────────────────────────
+  fev26: {
+    tit:'Fevereiro / 2026', per:'01/02/2026 a 28/02/2026',
+    tAnt:-13179.30, tCred:125078.87, tDeb:128297.56, tAtual:-16397.99,
+    contas:[{n:'ORDINÁRIA', a:-13179.30, c:125078.87, d:128297.56, s:-16397.99}],
+    prev:125078.87, real:125078.87, tDesp:128297.56, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-16397.99, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:53748.82},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:12395.72},
+      {c:'CONCES.SERV.PÚBLICOS',       v:22921.89},
+      {c:'MATERIAIS DE CONSUMO',       v:3283.96},
+      {c:'SEGUROS',                    v:2217.27},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:25039.38},
+      {c:'IMPOSTOS E TAXAS',           v:1782.54},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:2980.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Março / 2026 ──────────────────────────────────────────────────────────
+  mar26: {
+    tit:'Março / 2026', per:'01/03/2026 a 31/03/2026',
+    tAnt:-16397.99, tCred:129387.33, tDeb:131106.26, tAtual:-18116.92,
+    contas:[{n:'ORDINÁRIA', a:-16397.99, c:129387.33, d:131106.26, s:-18116.92}],
+    prev:129387.33, real:129387.33, tDesp:131106.26, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-18116.92, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:53748.82},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:14325.72},
+      {c:'CONCES.SERV.PÚBLICOS',       v:26155.62},
+      {c:'MATERIAIS DE CONSUMO',       v:4904.85},
+      {c:'SEGUROS',                    v:2217.27},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:22489.39},
+      {c:'IMPOSTOS E TAXAS',           v:1736.61},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:1600.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
+
+  // ── Abril / 2026 ──────────────────────────────────────────────────────────
+  abr26: {
+    tit:'Abril / 2026', per:'01/04/2026 a 30/04/2026',
+    tAnt:-18116.92, tCred:115596.77, tDeb:117727.36, tAtual:-20247.51,
+    contas:[{n:'ORDINÁRIA', a:-18116.92, c:115596.77, d:117727.36, s:-20247.51}],
+    prev:115596.77, real:115596.77, tDesp:117727.36, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:-20247.51, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:53748.83},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:13800.99},
+      {c:'CONCES.SERV.PÚBLICOS',       v:22143.83},
+      {c:'MATERIAIS DE CONSUMO',       v:2878.59},
+      {c:'SEGUROS',                    v:2229.99},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:15649.93},
+      {c:'IMPOSTOS E TAXAS',           v:1747.22},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:1600.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
 
   // ── Maio / 2026 ───────────────────────────────────────────────────────────
   mai26: {
@@ -1182,6 +1407,9 @@ function updateDespPie(mesKey) {
     'HONORÁRIOS E EXPEDIENTE':'#CA8A04',
     'DIVERSOS E IMPREVISTOS':'#DB2777',
     'IMPOSTOS E TAXAS':'#65A30D',
+    'ENCARGOS SOCIAIS':'#0F766E',
+    'EQUIPAM. E FERRAMENTAS':'#B45309',
+    'DESPESAS BANCÁRIAS':'#6B7280',
 
     'MANUT/CONSERV. CONTRAT.':'#9C27B0','MANUT/CONSERV. ESPORÁD.':'#00BCD4',
 
