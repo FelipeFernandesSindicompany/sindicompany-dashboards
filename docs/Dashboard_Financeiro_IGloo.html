@@ -1205,11 +1205,17 @@ function buildCharts(){
 
 
 
+  function _sOrd(k){var c=BAL[k].contas.find(function(x){return /Ordin/i.test(x.n);});return c?c.s:0;}
+  function _sRes(k){var c=BAL[k].contas.find(function(x){return /Reserva/i.test(x.n);});return c?c.s:0;}
+  function _sDem(k){return BAL[k].contas.filter(function(x){return !/Ordin/i.test(x.n)&&!/Reserva/i.test(x.n)&&x.s>0;}).reduce(function(s,x){return s+x.s;},0);}
+
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Conta Principal',data:MESES.map(function(k){return BAL[k].banco.cp;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Ordinária',data:MESES.map(_sOrd),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Aplicação',data:MESES.map(function(k){return BAL[k].banco.ap;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Fundo de Reserva',data:MESES.map(_sRes),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+
+    {label:'Demais Contas',data:MESES.map(_sDem),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
