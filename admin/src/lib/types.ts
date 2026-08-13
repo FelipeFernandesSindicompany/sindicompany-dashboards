@@ -7,6 +7,7 @@ export interface Condominio {
   ativo: boolean;
   cor: string;
   unidades: number;
+  dashboard_url?: string;
 }
 
 export type AdapterType =

@@ -83,7 +83,7 @@ export function CondoCard({ status }: Props) {
           <TrendingUp size={11} />
           Detalhe
         </Link>
-        <a href={`/api/dashboard/${condominio.id}`} target="_blank" rel="noopener noreferrer"
+        <a href={condominio.dashboard_url ?? `/api/dashboard/${condominio.id}`} target="_blank" rel="noopener noreferrer"
           className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px]
             text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors duration-150">
           <ExternalLink size={11} />
@@ -99,7 +99,7 @@ export function CondoCard({ status }: Props) {
           <TrendingUp size={12} />
           Detalhe
         </Link>
-        <a href={`/api/dashboard/${condominio.id}`} target="_blank" rel="noopener noreferrer"
+        <a href={condominio.dashboard_url ?? `/api/dashboard/${condominio.id}`} target="_blank" rel="noopener noreferrer"
           className="btn-secondary text-[12px] px-3 py-1.5">
           <ExternalLink size={12} />
           Dashboard

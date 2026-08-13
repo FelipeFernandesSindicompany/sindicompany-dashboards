@@ -387,6 +387,7 @@
       "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/i_gloo_alphaville",
       "html_file": "Dashboard_Financeiro_IGloo.html",
+      "dashboard_url": "https://igloo-alphaville.vercel.app/api/dashboard/i_gloo_alphaville",
       "ativo": true,
       "cor": "#db2777",
       "unidades": 0,
