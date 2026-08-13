@@ -701,13 +701,37 @@ var CONFIG = {
 
 
 
-var EVO_L = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26'];
+var EVO_L = ['Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26'];
 
-var EVO_V = [65478.17,68893.13,-13386.79,-14678.79,-17189.68,-16103.41,-13179.30,-16397.99,-18116.92,-20247.51,-3930.47,-14826.32];
+var EVO_V = [57988.55,65478.17,68893.13,-13386.79,-14678.79,-17189.68,-16103.41,-13179.30,-16397.99,-18116.92,-20247.51,-3930.47,-14826.32];
 
 
 
 var BAL = {
+
+  // ── Junho / 2025 ──────────────────────────────────────────────────────────
+  jun25: {
+    tit:'Junho / 2025', per:'01/06/2025 a 30/06/2025',
+    tAnt:49365.92, tCred:132580.29, tDeb:123957.66, tAtual:57988.55,
+    contas:[{n:'ORDINÁRIA', a:49365.92, c:132580.29, d:123957.66, s:57988.55}],
+    prev:132580.29, real:132580.29, tDesp:123957.66, fac:0.00,
+    inad:0.00, inadProc:0.00,
+    banco:{cc:57988.55, cdb:0, priv:0},
+    desp:[
+      {c:'PESSOAL TERCEIRIZADO',       v:54577.21},
+      {c:'ENCARGOS SOCIAIS',           v:5733.74},
+      {c:'CONTRATOS/MANUT. MENSAIS',   v:13410.47},
+      {c:'CONCES.SERV.PÚBLICOS',       v:17849.96},
+      {c:'MATERIAIS DE CONSUMO',       v:1409.38},
+      {c:'SEGUROS',                    v:2100.00},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:21248.94},
+      {c:'IMPOSTOS E TAXAS',           v:1799.98},
+      {c:'EQUIPAM. E FERRAMENTAS',     v:1600.00},
+      {c:'HONORÁRIOS E EXPEDIENTE',    v:3600.00},
+      {c:'DIVERSOS E IMPREVISTOS',     v:300.00},
+      {c:'DESPESAS BANCÁRIAS',         v:327.98}
+    ]
+  },
 
   // ── Julho / 2025 ──────────────────────────────────────────────────────────
   jul25: {
@@ -747,11 +771,12 @@ var BAL = {
       {c:'CONCES.SERV.PÚBLICOS',       v:18848.21},
       {c:'MATERIAIS DE CONSUMO',       v:2520.87},
       {c:'SEGUROS',                    v:2230.20},
-      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:23119.61},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:22819.61},
       {c:'IMPOSTOS E TAXAS',           v:1792.14},
       {c:'EQUIPAM. E FERRAMENTAS',     v:1879.99},
       {c:'HONORÁRIOS E EXPEDIENTE',    v:4798.39},
       {c:'DIVERSOS E IMPREVISTOS',     v:146.87},
+      {c:'MÓVEIS E UTENSÍLIOS',        v:300.00},
       {c:'DESPESAS BANCÁRIAS',         v:327.98}
     ]
   },
@@ -771,11 +796,12 @@ var BAL = {
       {c:'CONCES.SERV.PÚBLICOS',       v:15954.05},
       {c:'MATERIAIS DE CONSUMO',       v:2956.85},
       {c:'SEGUROS',                    v:2217.27},
-      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:24386.53},
+      {c:'SERVIÇOS EVENTUAIS/AVULSOS', v:22786.53},
       {c:'IMPOSTOS E TAXAS',           v:1792.14},
       {c:'EQUIPAM. E FERRAMENTAS',     v:2150.00},
       {c:'HONORÁRIOS E EXPEDIENTE',    v:78377.72},
       {c:'DIVERSOS E IMPREVISTOS',     v:1396.87},
+      {c:'MÓVEIS E UTENSÍLIOS',        v:1600.00},
       {c:'DESPESAS BANCÁRIAS',         v:327.98}
     ]
   },
@@ -1410,6 +1436,7 @@ function updateDespPie(mesKey) {
     'ENCARGOS SOCIAIS':'#0F766E',
     'EQUIPAM. E FERRAMENTAS':'#B45309',
     'DESPESAS BANCÁRIAS':'#6B7280',
+    'MÓVEIS E UTENSÍLIOS':'#7C3AED',
 
     'MANUT/CONSERV. CONTRAT.':'#9C27B0','MANUT/CONSERV. ESPORÁD.':'#00BCD4',
 
