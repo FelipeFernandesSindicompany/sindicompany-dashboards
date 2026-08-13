@@ -875,7 +875,7 @@
     },
     {
       "id": "vera_cruz",
-      "nome": "VERA CRUZ",
+      "nome": "Vera Cruz",
       "empresa_gestora": "convivium_pdf",
       "pasta_dados": "data/vera_cruz",
       "html_file": "Dashboard_Financeiro_VeraCruz.html",
