@@ -827,8 +827,8 @@
     }
   },
   "Dashboard_Financeiro_Platinum.html": {
-    "lastKey": "mai26",
-    "lastMonth": "Mai/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -843,15 +843,16 @@
       "fev26",
       "mar26",
       "abr26",
-      "mai26"
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Maio / 2026",
-      "tAtual": 229513.46,
-      "tCred": 597937.59,
-      "tDeb": 555856.01,
-      "inad": 226222.39,
-      "tAnt": 187431.88
+      "tit": "Junho / 2026",
+      "tAtual": 303312.19,
+      "tCred": 160085.84,
+      "tDeb": 86287.11,
+      "inad": 226788.97,
+      "tAnt": 229513.46
     }
   },
   "Dashboard_Financeiro_PortSaintTropez.html": {
