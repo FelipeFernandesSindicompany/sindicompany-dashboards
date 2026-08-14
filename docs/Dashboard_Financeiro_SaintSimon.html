@@ -1440,13 +1440,13 @@ function buildCharts(){
 
 <script>
 (function(){
-  var _u='Vml0YVBhcnF1ZQ==',_p='Vml0YTIwMjYq';
+  var _u='U2FpbnRTaW1vbg==',_p='U2FpbnRTaW1vbjIwMjYq';
   var EON='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',EOFF='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
   function dlHide(){var o=document.getElementById('dl-login-overlay');if(o)o.style.display='none';}
-  if(sessionStorage.getItem('dl_auth_VitaParque')==='1'){dlHide();return;}
+  if(sessionStorage.getItem('dl_auth_SaintSimon')==='1'){dlHide();return;}
   document.getElementById('dl-pass').value='';
   document.getElementById('dl-user').value='';
-  try{var sv=localStorage.getItem('dl_auth_VitaParque_sv');
+  try{var sv=localStorage.getItem('dl_auth_SaintSimon_sv');
     if(sv){var cv=JSON.parse(sv);
       document.getElementById('dl-user').value=cv.u||'';
       
@@ -1466,10 +1466,10 @@ function buildCharts(){
     var pw=document.getElementById('dl-pass').value;
     var err=document.getElementById('dl-login-error');
     if(btoa(u)===_u&&btoa(pw)===_p){
-      sessionStorage.setItem('dl_auth_VitaParque','1');
+      sessionStorage.setItem('dl_auth_SaintSimon','1');
       var rem=document.getElementById('dl-remember');
-      if(rem&&rem.checked){localStorage.setItem('dl_auth_VitaParque_sv',JSON.stringify({u:u}));}
-      else{localStorage.removeItem('dl_auth_VitaParque_sv');}
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_SaintSimon_sv',JSON.stringify({u:u}));}
+      else{localStorage.removeItem('dl_auth_SaintSimon_sv');}
       dlHide();
     }else{err.textContent='Usuário ou senha incorretos.';
       document.getElementById('dl-pass').value='';
