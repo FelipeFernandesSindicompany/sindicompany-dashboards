@@ -358,7 +358,7 @@
       <div class="sub">Central de Dashboards Financeiros</div>
     </div>
   </div>
-  <span class="total-badge">48 condomínios</span>
+  <span class="total-badge">49 condomínios</span>
 </header>
 
 <div class="search-wrap">
@@ -369,7 +369,7 @@
 </div>
 
 <div class="grid-wrap">
-  <div class="contagem" id="contagem">48 dashboards disponíveis</div>
+  <div class="contagem" id="contagem">49 dashboards disponíveis</div>
   <div class="grid" id="grid">
     
     <a href="Dashboard_Financeiro_Alvorada.html" class="card" style="--cor:#2563eb" target="_blank">
@@ -756,6 +756,14 @@
       </div>
       <span class="card-arrow">→</span>
     </a>
+    <a href="Dashboard_Financeiro_SaintSimon.html" class="card" style="--cor:#0f766e" target="_blank">
+      <div class="card-avatar">S</div>
+      <div class="card-body">
+        <div class="card-nome">Saint Simon</div>
+        <div class="card-mes">Mar/26</div>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
     <div class="empty" id="empty" style="display:none">Nenhum condomínio encontrado.</div>
   </div>
 </div>
@@ -774,7 +782,7 @@ function filtrar() {
     if (show) vis++;
   });
   document.getElementById('contagem').textContent =
-    q ? `${vis} resultado(s) para "${q}"` : `48 dashboards disponíveis`;
+    q ? `${vis} resultado(s) para "${q}"` : `49 dashboards disponíveis`;
   document.getElementById('empty').style.display = vis === 0 ? '' : 'none';
 }
 </script>

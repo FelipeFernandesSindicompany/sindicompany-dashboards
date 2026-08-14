@@ -1302,5 +1302,21 @@
       "inad": 55117.94,
       "tAnt": 51306.89
     }
+  },
+  "Dashboard_Financeiro_SaintSimon.html": {
+    "lastKey": "mar26",
+    "lastMonth": "Mar/26",
+    "allKeys": [
+      "fev26",
+      "mar26"
+    ],
+    "data": {
+      "tit": "Março / 2026",
+      "tAtual": 56939.73,
+      "tCred": 245992.55,
+      "tDeb": 364326.3,
+      "inad": 0,
+      "tAnt": 175273.48
+    }
   }
 }

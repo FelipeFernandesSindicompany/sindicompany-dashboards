@@ -593,22 +593,22 @@
       "unidades": 0,
       "parser_config": {
         "cat_map": {
-          "SERVIÇOS TERCEIRIZADOS":        "SERV. TERCEIRIZADOS",
-          "SERVICOS TERCEIRIZADOS":        "SERV. TERCEIRIZADOS",
-          "SERVIÇOS PRESTADOS":            "SERV. TERCEIRIZADOS",
-          "SERVICOS PRESTADOS":            "SERV. TERCEIRIZADOS",
-          "DESPESAS ADMINISTRATIVAS":      "ADMINISTRATIVO",
-          "SEGUROS":                       "ADMINISTRATIVO",
-          "DESPESAS BANCÁRIAS":            "ADMINISTRATIVO",
-          "DESPESAS BANCARIAS":            "ADMINISTRATIVO",
-          "RENDIMENTOS":                   "ADMINISTRATIVO",
+          "SERVIÇOS TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "SERVICOS TERCEIRIZADOS": "SERV. TERCEIRIZADOS",
+          "SERVIÇOS PRESTADOS": "SERV. TERCEIRIZADOS",
+          "SERVICOS PRESTADOS": "SERV. TERCEIRIZADOS",
+          "DESPESAS ADMINISTRATIVAS": "ADMINISTRATIVO",
+          "SEGUROS": "ADMINISTRATIVO",
+          "DESPESAS BANCÁRIAS": "ADMINISTRATIVO",
+          "DESPESAS BANCARIAS": "ADMINISTRATIVO",
+          "RENDIMENTOS": "ADMINISTRATIVO",
           "TAXAS E TARIFAS SERV PÚBLICOS": "CONSUMOS",
           "TAXAS E TARIFAS SERV PUBLICOS": "CONSUMOS",
-          "MANUTENÇÃO / CONSERVAÇÃO":      "MANUT/CONSERV. CONTRAT.",
-          "MANUTENCAO / CONSERVACAO":      "MANUT/CONSERV. CONTRAT.",
-          "MATERIAIS DIVERSOS":            "MANUT/CONSERV. ESPORÁD.",
-          "ENCARGOS SOCIAIS":              "ENCARGOS SOCIAIS",
-          "DESPESAS COM PESSOAL":          "PESSOAL"
+          "MANUTENÇÃO / CONSERVAÇÃO": "MANUT/CONSERV. CONTRAT.",
+          "MANUTENCAO / CONSERVACAO": "MANUT/CONSERV. CONTRAT.",
+          "MATERIAIS DIVERSOS": "MANUT/CONSERV. ESPORÁD.",
+          "ENCARGOS SOCIAIS": "ENCARGOS SOCIAIS",
+          "DESPESAS COM PESSOAL": "PESSOAL"
         }
       }
     },
@@ -989,6 +989,19 @@
       "html_file": "Dashboard_Financeiro_DuetoMorumbi.html",
       "ativo": true,
       "cor": "#f59e0b",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
+    },
+    {
+      "id": "saint_simon",
+      "nome": "Saint Simon",
+      "empresa_gestora": "ucondo_pdf",
+      "pasta_dados": "data/saint_simon",
+      "html_file": "Dashboard_Financeiro_SaintSimon.html",
+      "ativo": true,
+      "cor": "#0f766e",
       "unidades": 0,
       "parser_config": {
         "cat_map": {}
