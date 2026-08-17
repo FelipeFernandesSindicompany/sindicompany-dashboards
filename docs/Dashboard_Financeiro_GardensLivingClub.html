@@ -1893,75 +1893,13 @@ function buildCharts() {
 
 
 
-  // ── 3. Barras empilhadas — saldo por conta histórico ────────────────────────
+    // ── 3. Barras empilhadas — saldo por conta histórico ────────────────────
 
-  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'];
-
-  var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
-
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE OBRAS','FUNDO DE FUNCION\u00c1RIOS'];
-
-  var contaDatasets = contaNames.map(function(cn, i) {
-
-    return {
-
-      label: cn.replace('FUNDO DE ','F.'),
-
-      data: MESES.map(function(k) {
-
-        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
-
-        return c ? c.s : 0;
-
-      }),
-
-      backgroundColor: contaColors[i],
-
-      borderColor: contaBorder[i],
-
-      borderWidth: 1,
-
-      borderRadius: 3,
-
-      borderSkipped: false
-
-    };
-
-  });
-
-  mkChart('cContas', {
-
-    type: 'bar',
-
-    data: { labels: ML, datasets: contaDatasets },
-
-    options: {
-
-      responsive: true, maintainAspectRatio: false,
-
-      plugins: {
-
-        legend: { labels: LEG },
-
-        tooltip: Object.assign({}, TT, {
-
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
-
-        })
-
-      },
-
-      scales: {
-
-        x: { stacked: true, ticks: TICK, grid: GRID_X },
-
-        y: { stacked: true, ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y }
-
-      }
-
-    }
-
-  });
+  var contaDatasets = [
+    {label:'Ordinária',    data:MESES.map(function(k){return BAL[k].banco.cc;}),   backgroundColor:'rgba(23,27,46,0.85)',   borderColor:'#171B2E', borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'F. Reserva',  data:MESES.map(function(k){return BAL[k].banco.cdb;}),  backgroundColor:'rgba(232,119,34,0.85)', borderColor:'#C05A10', borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Demais Contas',data:MESES.map(function(k){return BAL[k].banco.priv;}), backgroundColor:'rgba(39,174,96,0.85)',  borderColor:'#1A6B3C', borderWidth:1,borderRadius:3,borderSkipped:false}
+  ];
 
 
 
