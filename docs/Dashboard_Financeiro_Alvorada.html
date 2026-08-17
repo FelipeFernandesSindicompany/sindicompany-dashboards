@@ -105,6 +105,9 @@ tr:nth-child(even) td{background:#FAFAFA;}
 .pill{padding:6px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
 
 .pill:hover,.pill.on{background:var(--p);color:#fff;}
+.bal-sel{padding:8px 36px 8px 16px;border-radius:24px;border:2px solid var(--p);background:var(--card);color:var(--txt);font-size:14px;font-weight:600;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\'%3E%3Cpath fill=\'%23171B2E\' d=\'M7 10l5 5 5-5z\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;min-width:110px;}
+.bal-sel:focus{border-color:var(--p);}
+@media(max-width:767px){.bal-sel{width:100%;}}
 
 .pb{background:#EEE;border-radius:4px;height:6px;overflow:hidden;}
 
@@ -564,7 +567,10 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Balanço Mensal</h1><p>Resumo financeiro contábil por período</p></div>
 
-  <div class="pg-pills" id="bal-pills"></div>
+    <div id="bal-filtros" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <select id="bal-sel-ano" class="bal-sel"></select>
+    <select id="bal-sel-mes" class="bal-sel"></select>
+  </div>
 
   <div id="balContent"></div>
 
@@ -748,11 +754,7 @@ window.onload=function(){
 
     :'<div class="al ok"><span class="ai">✓</span><div><strong>Inadimplência controlada:</strong> '+R(ul.inad)+' em aberto em '+ab(ul.tit)+'.</div></div>');
 
-  var pills=document.getElementById('bal-pills');
-
-  MESES.forEach(function(k,i){var btn=document.createElement('button');btn.className='pill'+(i===MESES.length-1?' on':'');btn.setAttribute('onclick',"selMes('"+k+"',this)");btn.textContent=BAL[k].tit.replace(' / ','/');pills.appendChild(btn);});
-
-  selMes(MESES[MESES.length-1],null);
+  var anosMeses={};MESES.forEach(function(k){var ano='20'+k.slice(-2);if(!anosMeses[ano])anosMeses[ano]=[];anosMeses[ano].push(k);});var anosDisp=Object.keys(anosMeses).sort();var anoAtivoBal=anosDisp[anosDisp.length-1];var selAno=document.getElementById('bal-sel-ano');var selMesEl=document.getElementById('bal-sel-mes');function popularMeses(ano){selMesEl.innerHTML='';var lista=anosMeses[ano]||[];lista.forEach(function(k){var opt=document.createElement('option');opt.value=k;opt.textContent=BAL[k].tit.split(' / ')[0];selMesEl.appendChild(opt);});if(lista.length)selMesEl.value=lista[lista.length-1];return lista;}anosDisp.forEach(function(a){var opt=document.createElement('option');opt.value=a;opt.textContent=a;selAno.appendChild(opt);});selAno.value=anoAtivoBal;selAno.addEventListener('change',function(){anoAtivoBal=selAno.value;var lista=popularMeses(anoAtivoBal);if(lista.length)selectMes(lista[lista.length-1]);});selMesEl.addEventListener('change',function(){selectMes(selMesEl.value);});var listaMeses=popularMeses(anoAtivoBal);selectMes(listaMeses[listaMeses.length-1]);
 
   buildDespTbl();buildInad();buildBanco();buildCharts();
 
@@ -762,7 +764,7 @@ window.onload=function(){
 
 function nav(id,el){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');}
 
-function selMes(id,btn){document.querySelectorAll('.pg-pills .pill').forEach(function(p){p.classList.remove('on');});if(btn)btn.classList.add('on');renderBal(id);}
+function selectMes(id){var selMesEl=document.getElementById('bal-sel-mes');if(selMesEl&&selMesEl.value!==id)selMesEl.value=id;renderBal(id);}function selMes(id,btn){selectMes(id);}
 
 
 
