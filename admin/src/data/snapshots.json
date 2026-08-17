@@ -1304,19 +1304,23 @@
     }
   },
   "Dashboard_Financeiro_SaintSimon.html": {
-    "lastKey": "mar26",
-    "lastMonth": "Mar/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
+      "jan26",
       "fev26",
-      "mar26"
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26"
     ],
     "data": {
-      "tit": "Março / 2026",
-      "tAtual": 56939.73,
-      "tCred": 245992.55,
-      "tDeb": 364326.3,
+      "tit": "Junho / 2026",
+      "tAtual": 35557.33,
+      "tCred": 212023.92,
+      "tDeb": 186759.01,
       "inad": 0,
-      "tAnt": 175273.48
+      "tAnt": 10292.42
     }
   }
 }
