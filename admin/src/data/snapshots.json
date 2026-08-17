@@ -1323,5 +1323,24 @@
       "inad": 0,
       "tAnt": 10292.42
     }
+  },
+  "Dashboard_Financeiro_GardensLivingClub.html": {
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
+    "allKeys": [
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26",
+      "jul26"
+    ],
+    "data": {
+      "tit": "Julho / 2026",
+      "tAtual": 590011.86,
+      "tCred": 387213.14,
+      "tDeb": 390917.56,
+      "inad": 91738.45,
+      "tAnt": 593716.28
+    }
   }
 }

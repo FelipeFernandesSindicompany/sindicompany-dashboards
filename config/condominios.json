@@ -1006,6 +1006,19 @@
       "parser_config": {
         "cat_map": {}
       }
+    },
+    {
+      "id": "gardens_living_club",
+      "nome": "Gardens Living Club I",
+      "empresa_gestora": "ucondo_pdf",
+      "pasta_dados": "data/gardens_living_club",
+      "html_file": "Dashboard_Financeiro_GardensLivingClub.html",
+      "ativo": true,
+      "cor": "#15803d",
+      "unidades": 400,
+      "parser_config": {
+        "cat_map": {}
+      }
     }
   ],
   "empresas": {
