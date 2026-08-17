@@ -1903,6 +1903,26 @@ function buildCharts() {
 
 
 
+
+
+  mkChart('cContas', {
+    type: 'bar',
+    data: { labels: ML, datasets: contaDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: LEG },
+        tooltip: Object.assign({}, TT, {
+          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+        })
+      },
+      scales: {
+        x: { stacked: true, ticks: TICK, grid: GRID_X },
+        y: { stacked: true, ticks: Object.assign({ callback: fmtK }, TICK), grid: GRID_Y }
+      }
+    }
+  });
+
   // ── 4. Barras agrupadas — despesas por categoria ─────────────────────────────
 
   var cats = {};
