@@ -1563,7 +1563,7 @@ window.onload = function() {
 
     kpi('Aplicação F. Reserva',
 
-        R(getContaSaldo(ultimo, 'APLICAÇÃO') || 0), 'o', 'Saldo da aplicação financeira') +
+        R(ultimo.banco.cdb || 0), 'o', 'Saldo da aplicação financeira') +
 
     kpi('Receitas (excl. ' + primeiro.tit.split(' ')[0] + '/' + primeiro.tit.split(' ')[2] + ')',
 
