@@ -708,7 +708,7 @@
     {
       "id": "reserva_verde",
       "nome": "Reserva Verde",
-      "empresa_gestora": "lirba_pdf",
+      "empresa_gestora": "sk_condominios_pdf",
       "pasta_dados": "data/reserva_verde",
       "html_file": "Dashboard_Financeiro_ReservaVerde.html",
       "ativo": true,
