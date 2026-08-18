@@ -2297,7 +2297,7 @@ function buildCharts() {
 
   function fmtM(v)  { return 'R$\u00a0' + (v/1000000).toFixed(3) + 'M'; }
 
-  function fmtR(v)  { return 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtR(v)  { var abs = Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); return (v < 0 ? '-' : '') + 'R$\u00a0' + abs; }
 
 
 
