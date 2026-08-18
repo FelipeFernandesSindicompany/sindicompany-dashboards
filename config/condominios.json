@@ -431,22 +431,13 @@
     {
       "id": "monte_tabor",
       "nome": "Monte Tabor",
-      "empresa_gestora": "lirba_pdf",
+      "empresa_gestora": "alliz_pdf",
       "pasta_dados": "data/monte_tabor",
       "html_file": "Dashboard_Financeiro_Monte_Tabor.html",
       "ativo": true,
       "cor": "#16a34a",
       "unidades": 0,
-      "parser_config": {
-        "extract_cats": "posicao_financeira",
-        "contas_separadas": [
-          "CONSUMO",
-          "I.P.T.U."
-        ],
-        "consumo_name": "Consumos",
-        "iptu_name": "IPTU",
-        "cat_map": {}
-      }
+      "parser_config": {}
     },
     {
       "id": "nyc",

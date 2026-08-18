@@ -7,6 +7,7 @@ from adapters.lfc_xlsx import AdapterLFCXLSX
 from adapters.manager_adm_pdf import AdapterManagerAdmPDF
 from adapters.auxiliadora_xls import AdapterAuxiliadoraXLS
 from adapters.sk_condominios_pdf import AdapterSKCondominiosPDF
+from adapters.alliz_pdf import AdapterAllizPDF
 
 # Mantidos para compatibilidade com o condomínio de exemplo
 from adapters.empresa_a import AdapterEmpresaA
@@ -23,6 +24,7 @@ ADAPTERS = {
     "iello_pdf":          AdapterIelloPDF,
     "manager_adm_pdf":    AdapterManagerAdmPDF,
     "sk_condominios_pdf": AdapterSKCondominiosPDF,
+    "alliz_pdf":          AdapterAllizPDF,
     # Legado / exemplos
     "empresa_a": AdapterEmpresaA,
     "empresa_b": AdapterEmpresaB,
