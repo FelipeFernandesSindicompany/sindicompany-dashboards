@@ -2215,7 +2215,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Privilege (Fachada)</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Banco Inter</th><th>Aplica&ccedil;&atilde;o F. Reserva</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2228,8 +2228,6 @@ function buildTblBanco() {
     h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
 
     h += '<td class="nr">' + (m.banco.cdb !== null ? R(m.banco.cdb) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
-
-    h += '<td class="nr">' + R(m.banco.priv) + '</td>';
 
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
 
@@ -2988,7 +2986,7 @@ function buildCharts() {
 
         {
 
-          label: 'C/C Bradesco',
+          label: 'Banco Inter',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
 
@@ -3006,7 +3004,7 @@ function buildCharts() {
 
         {
 
-          label: 'Invest Fácil',
+          label: 'Aplicação F. Reserva',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.cdb; }),
 
@@ -3021,24 +3019,6 @@ function buildCharts() {
           borderSkipped: false
 
         },
-
-        {
-
-          label: 'Privilege',
-
-          data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
-
-          backgroundColor: 'rgba(39,174,96,0.82)',
-
-          borderColor: '#1A6B3C',
-
-          borderWidth: 1,
-
-          borderRadius: 3,
-
-          borderSkipped: false
-
-        }
 
       ]
 
