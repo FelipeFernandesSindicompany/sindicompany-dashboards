@@ -1653,7 +1653,7 @@ function buildTblInad() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>M&ecirc;s</th><th>Conta Corrente</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>Ordinária</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2405,7 +2405,7 @@ function buildCharts() {
 
         {
 
-          label: 'Conta Corrente',
+          label: 'Ordinária',
 
           data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
 
