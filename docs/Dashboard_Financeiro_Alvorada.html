@@ -807,15 +807,6 @@ function renderBal(id){
 
   h+='</table></div></div>';
 
-  h+='<div class="cc"><h3>📍 Inadimplência – '+m.tit+'</h3>';
-
-  h+='<div class="kg">';
-
-  h+=kpi('Devedores em Aberto',R(m.inad),'r','Inadimplência do período');
-
-  h+=kpi('Em Processo/Acordo',R(m.inadProc),'y','Cobrança em andamento');
-
-  h+='</div></div>';
 
   document.getElementById('balContent').innerHTML=h;
 
