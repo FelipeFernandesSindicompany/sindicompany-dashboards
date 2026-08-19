@@ -879,10 +879,10 @@ window.onload=function(){
 
   var alertEl=document.getElementById('geral-alert');
 
-  alertEl.innerHTML=ul.inad>5000
-
+  alertEl.innerHTML=ul.inad===0
+    ?'<div class="al ok"><span class="ai">✓</span><div><strong>Sem inadimplência registrada</strong> em '+ab(ul.tit)+'.</div></div>'
+    :ul.inad>5000
     ?'<div class="al bad"><span class="ai">⚠</span><div><strong>Inadimplência elevada:</strong> '+R(ul.inad)+' em aberto em '+ab(ul.tit)+'. Ação imediata necessária.</div></div>'
-
     :'<div class="al warn"><span class="ai">⚠</span><div><strong>Inadimplência:</strong> '+R(ul.inad)+' em aberto. Monitorar cobrança.</div></div>';
 
 
