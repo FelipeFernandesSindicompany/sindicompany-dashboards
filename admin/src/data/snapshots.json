@@ -90,8 +90,8 @@
     }
   },
   "Dashboard_Financeiro_CapDAntibes.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -107,15 +107,16 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 461541.42,
-      "tCred": 94584.34,
-      "tDeb": 74942.78,
-      "inad": 38812.61,
-      "tAnt": 441899.86
+      "tit": "Julho / 2026",
+      "tAtual": 481823.46,
+      "tCred": 103999.64,
+      "tDeb": 83717.6,
+      "inad": 45438.43,
+      "tAnt": 461541.42
     }
   },
   "Dashboard_Financeiro_CentralDasArtes.html": {
