@@ -1076,7 +1076,7 @@ var BAL = {
 
     inad:  3038.40,
 
-    inadProc: 3167.45,
+    inadProc: 2749.67,
 
     banco: {"cc": 9653.65, "cdb": 151199.45, "priv": 0.0},
 
@@ -1251,7 +1251,7 @@ function renderBal(id){
 
   h+=kpi('Devedores em Aberto',R(m.inad),'r','Total no período');
 
-  h+=kpi('Total Cotas em Aberto',R(m.inadProc),'y','Recebido de cotas em aberto no mês');
+  h+=kpi('Recebido em Atraso',R(m.inadProc),'y','Cotas de períodos anteriores');
 
   h+='</div></div>';
 
@@ -1443,7 +1443,7 @@ function buildInad(){
 
   var maxInad=Math.max.apply(null,MESES.map(function(k){return BAL[k].inad;}));
 
-  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Total Cotas em Aberto</th><th>% s/ Previsto</th><th>Status</th></tr>';
+  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>% s/ Previsto</th><th>Status</th></tr>';
 
   MESES.forEach(function(k){
 
@@ -1603,7 +1603,7 @@ function buildCharts(){
 
     {label:'Devedores em Aberto',data:MESES.map(function(k){return BAL[k].inad;}),borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,.10)',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35,order:2},
 
-    {label:'Total Cotas em Aberto',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:'#F39C12',backgroundColor:'rgba(243,156,18,.12)',borderWidth:2,pointRadius:4,fill:true,tension:0.35,order:3},
+    {label:'Recebido em Atraso',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:'#F39C12',backgroundColor:'rgba(243,156,18,.12)',borderWidth:2,pointRadius:4,fill:true,tension:0.35,order:3},
 
     {label:'Média',data:(function(){var a=MESES.map(function(k){return BAL[k].inad;}).reduce(function(x,y){return x+y;},0)/MESES.length;return MESES.map(function(){return a;});}()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},
 
