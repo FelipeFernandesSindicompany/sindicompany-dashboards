@@ -1,7 +1,7 @@
 {
   "Dashboard_Financeiro_Alvorada.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "mar25",
       "abr25",
@@ -18,15 +18,16 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 207938.23,
-      "tCred": 86070.55,
-      "tDeb": 85553.34,
-      "inad": 18687.6,
-      "tAnt": 207421.02
+      "tit": "Julho / 2026",
+      "tAtual": 200004.62,
+      "tCred": 79735.53,
+      "tDeb": 87669.14,
+      "inad": 0,
+      "tAnt": 207938.23
     }
   },
   "Dashboard_Financeiro_Baturite.html": {
