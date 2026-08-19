@@ -2271,7 +2271,7 @@ function buildCharts() {
 
   var LEG   = { font: { size: 11 }, boxWidth: 13, usePointStyle: true, padding: 14 };
 
-  function fmtR(v)  { return 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtR(v)  { return (v<0?'-':'')+'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
   function fmtK(v)  { return 'R$\u00a0' + (v/1000).toFixed(0) + 'k'; }
 
@@ -2353,13 +2353,14 @@ function buildCharts() {
 
   var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
 
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE RESERVA','OBRAS/MELHORIAS'];
+  var contaKeys   = ['ORDIN\u00c1RIA','FUNDO DE RESERVA','OBRAS/MELHORIAS'];
+  var contaLabels = ['Ordin\u00e1ria','Fundo de Reserva','Demais Contas'];
 
-  var contaDatasets = contaNames.map(function(cn, i) {
+  var contaDatasets = contaKeys.map(function(cn, i) {
 
     return {
 
-      label: cn, data: MESES.map(function(k) { var c = BAL[k].contas.find(function(x){ return x.n === cn; }); return c ? c.s : 0; }),
+      label: contaLabels[i], data: MESES.map(function(k) { var c = BAL[k].contas.find(function(x){ return x.n === cn; }); return c ? c.s : 0; }),
 
       backgroundColor: contaColors[i], borderColor: contaBorder[i], borderWidth: 1, borderRadius: 3, borderSkipped: false
 
