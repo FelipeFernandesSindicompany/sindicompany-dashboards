@@ -2837,39 +2837,69 @@ function buildCharts() {
 
   // ── 3. Barras empilhadas — saldo por conta histórico ────────────────────────
 
-  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)'];
+  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'];
 
-  var contaBorder = ['#171B2E','#C05A10'];
+  var contaBorder = ['#171B2E','#C05A10','#1A6B3C'];
 
-  var contaNames  = ['ORDIN\u00c1RIA','FUNDO DE RESERVA'];
+  var contaDatasets = [
 
-  var contaDatasets = contaNames.map(function(cn, i) {
+    {
 
-    return {
-
-      label: cn.replace('FUNDO DE ','F.'),
+      label: 'Ordin\u00e1ria',
 
       data: MESES.map(function(k) {
 
-        var c = BAL[k].contas.find(function(x){ return x.n === cn; });
+        var c = BAL[k].contas.find(function(x){ return x.n === 'ORDIN\u00c1RIA'; });
 
         return c ? c.s : 0;
 
       }),
 
-      backgroundColor: contaColors[i],
+      backgroundColor: contaColors[0], borderColor: contaBorder[0],
 
-      borderColor: contaBorder[i],
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
 
-      borderWidth: 1,
+    },
 
-      borderRadius: 3,
+    {
 
-      borderSkipped: false
+      label: 'F. Reserva',
 
-    };
+      data: MESES.map(function(k) {
 
-  });
+        var c = BAL[k].contas.find(function(x){ return x.n === 'FUNDO DE RESERVA'; });
+
+        return c ? c.s : 0;
+
+      }),
+
+      backgroundColor: contaColors[1], borderColor: contaBorder[1],
+
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+
+    },
+
+    {
+
+      label: 'Demais Contas',
+
+      data: MESES.map(function(k) {
+
+        return BAL[k].contas.reduce(function(sum, c) {
+
+          return (c.n !== 'ORDIN\u00c1RIA' && c.n !== 'FUNDO DE RESERVA') ? sum + c.s : sum;
+
+        }, 0);
+
+      }),
+
+      backgroundColor: contaColors[2], borderColor: contaBorder[2],
+
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+
+    }
+
+  ];
 
   mkChart('cContas', {
 
@@ -2887,7 +2917,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ var v=ctx.raw; return '  '+ctx.dataset.label+': '+(v<0?'-':'')+fmtR(Math.abs(v)); } }
 
         })
 
