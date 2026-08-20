@@ -205,6 +205,36 @@ class AdapterHabitacionalXLSX(AdapterBase):
             }]
             dados.banco_cc = dados.saldo_atual
 
+        # ── Composição de Saldo Bancário — lê valores reais do extrato ──────────────
+        # Seção "COMPOSIÇÃO DE SALDO" tem linhas com descrição do banco e valor em col K
+        # Ex: "BCO.ITAÚ - C/CORRENTE ..." → cc | "APLIC.CDB-DI" → cdb | "ITAUVEST" → priv
+        for i, row in enumerate(linhas):
+            desc_h = str(col(row, 0) or "").upper()
+            if "COMPOSI" in desc_h and "SALDO" in desc_h:
+                _cc = _cdb = _priv = 0.0
+                for row2 in linhas[i + 1: i + 20]:
+                    d2 = str(col(row2, 0) or "").upper()
+                    if "SALDO FINAL" in d2:
+                        break
+                    raw = str(col(row2, 10) or "").strip().replace(".", "").replace(",", ".")
+                    try:
+                        v2 = float(raw)
+                    except ValueError:
+                        continue
+                    if v2 <= 0:
+                        continue
+                    if "C/CORRENTE" in d2 or ("CORRENTE" in d2 and "CDB" not in d2):
+                        _cc += v2
+                    elif "CDB" in d2 or "POUPAN" in d2:
+                        _cdb += v2
+                    else:
+                        _priv += v2
+                if _cc + _cdb + _priv > 0:
+                    dados.banco_cc  = _cc
+                    dados.banco_cdb = _cdb
+                    dados.banco_priv = _priv
+                break
+
         # ── Receita Prevista / Realizada — Resumo de Emissão (ORDINÁRIA) ───────────
         # Após o header "Resumo de Emissão" (col A), a primeira linha com col A
         # vazia e col I + col K numéricos positivos é o total do período:
