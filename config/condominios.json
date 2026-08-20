@@ -90,20 +90,8 @@
       "unidades": 0,
       "parser_config": {
         "cat_map": {
-          "SALÁRIOS E ORDENADOS": "PESSOAL",
-          "SALARIOS E ORDENADOS": "PESSOAL",
-          "ENCARGOS TRABALHISTAS": "ENCARGOS SOCIAIS",
-          "TARIFAS PÚBLICAS": "CONSUMOS",
-          "TARIFAS PUBLICAS": "CONSUMOS",
-          "MATERIAIS DE CONSUMO": "CONSUMOS",
-          "MANUTENÇÃO/CONSERVAÇÃO": "MANUT/CONSERV. CONTRAT.",
-          "MANUTENCAO/CONSERVACAO": "MANUT/CONSERV. CONTRAT.",
-          "HONORÁRIOS E EXPEDIENTE": "ADMINISTRATIVO",
-          "HONORARIOS E EXPEDIENTE": "ADMINISTRATIVO",
-          "IMPOSTOS E TAXAS": "ADMINISTRATIVO",
-          "SEGUROS CONTRATADOS": "ADMINISTRATIVO",
-          "SERVIÇOS PRESTADOS": "SERV. TERCEIRIZADOS",
-          "SERVICOS PRESTADOS": "SERV. TERCEIRIZADOS"
+          "Manutenção/Conservação": "MANUT/CONSERV/REPOSIÇÃO",
+          "MANUTENÇÃO/CONSERVAÇÃO": "MANUT/CONSERV/REPOSIÇÃO"
         },
         "conta_map": {
           "CONTA ORDINÁRIA": "ORDINÁRIA",

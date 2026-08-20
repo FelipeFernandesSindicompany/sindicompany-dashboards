@@ -742,6 +742,15 @@ def injetar_no_html(html_path: Path, chave: str, bloco_js: str,
             orc_atual  = orc_m.group(2)
             novo_orc   = orc_atual.rstrip().rstrip(',') + f",\n  {chave}:{round(orc_valor, 2)},"
             texto = texto[:orc_m.start()] + orc_m.group(1) + novo_orc + orc_m.group(3) + texto[orc_m.end():]
+        elif not orc_m:
+            # Fallback: CONFIG.orcamento.meses inline (ex: Cap D'Antibes)
+            config_meses_m = re.search(r'(meses\s*:\s*\{)([^}]*?)(\})', texto)
+            if config_meses_m and chave not in config_meses_m.group(2):
+                orc_atual2 = config_meses_m.group(2)
+                novo_orc2  = orc_atual2.rstrip().rstrip(',') + f",{chave}:{round(orc_valor, 2)}"
+                texto = (texto[:config_meses_m.start()]
+                         + config_meses_m.group(1) + novo_orc2 + config_meses_m.group(3)
+                         + texto[config_meses_m.end():])
 
     # ── 7. Atualiza var MESES = [...] se for array fixo (não Object.keys) ──
     meses_arr_m = re.search(r"(var\s+MESES\s*=\s*\[)([^\]]*?)(\])", texto)

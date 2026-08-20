@@ -207,15 +207,29 @@ class AdapterDatadigitusPDF(AdapterBase):
         #   - Linha com prefixo reconhecido → abre nova categoria
         #   - Linha com apenas número → subtotal da categoria corrente
         #   - "TOTAL DA CONTA" → fecha bloco da conta (reseta categoria)
+        # Extrai categorias APENAS da CONTA ORDINÁRIA (001) — outras contas
+        # (002 OBRAS, 054 I.P.T.U., etc.) não compõem tDesp/desp[].
         cat_atual = None
+        em_conta_ordinaria = False
         for linha in linhas:
             l = linha.strip()
             if not l:
                 continue
 
+            # Detecta início de seção de uma conta: "001 - CONTA NAME..."
+            m_conta_hdr = re.match(r'^(\d{3})\s*-\s*CONTA\b', l, re.IGNORECASE)
+            if m_conta_hdr:
+                em_conta_ordinaria = (m_conta_hdr.group(1) == '001')
+                cat_atual = None
+                continue
+
             # Fecha categoria no "TOTAL DA CONTA"
             if re.match(r"^TOTAL DA CONTA\b", l, re.IGNORECASE):
                 cat_atual = None
+                continue
+
+            # Só extrai categorias da CONTA ORDINÁRIA
+            if not em_conta_ordinaria:
                 continue
 
             # Detecta novo cabeçalho de categoria
@@ -267,6 +281,18 @@ class AdapterDatadigitusPDF(AdapterBase):
             dados.inadimplencia_percentual = round(
                 total_inad / dados.receita_realizada * 100, 2
             )
+
+        # ── 5b. inadProc = soma de "Devedores meses anteriores → Realizado" ──────
+        # Aparece uma vez por conta no Demonstrativo Financeiro por Conta.
+        # A soma de TODAS as contas (001+002+003+009+013+054...) = inadProc correto.
+        # group(1) = Previsto, group(2) = Realizado.
+        total_inadproc = 0.0
+        for m in re.finditer(
+            r"Devedores\s+m[eê]s(?:es)?\s+anterior(?:es)?\s+([\d.,]+)\s+([\d.,]+)",
+            texto_total, re.IGNORECASE
+        ):
+            total_inadproc += _num(m.group(2))
+        dados.inadimplencia_recebida = total_inadproc
 
         return dados
 
