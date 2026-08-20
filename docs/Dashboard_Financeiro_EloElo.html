@@ -807,7 +807,7 @@ window.onload=function(){
 
   var ultimo=BAL[MESES[MESES.length-1]],primeiro=BAL[MESES[0]];
 
-  document.getElementById('sb-info').innerHTML='Atualizado: Jun/2026<br>Adm: Graiche';
+  var _k=MESES[MESES.length-1];document.getElementById('sb-info').innerHTML='Atualizado: '+_k.charAt(0).toUpperCase()+_k.slice(1,-2)+'/'+_k.slice(-2);
 
   document.getElementById('geral-subtitle').innerHTML='Demonstrativo Financeiro &middot; '+primeiro.tit+' &ndash; '+ultimo.tit+' &middot; '+CONFIG.nome;
 
