@@ -202,7 +202,15 @@
       "cor": "#4f46e5",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "PESSOAL CONTRATADO":          "Pessoal/Terceirização",
+          "PESSOAL PROPRIO":             "Pessoal/Terceirização",
+          "HONORARIOS / ADMINISTRATIVO": "Honorários/Administrativo",
+          "HONORARIOS/ADMINISTRATIVO":   "Honorários/Administrativo",
+          "CONSERVAÇÃO/MANUTENÇÃO":      "Conserv./Manut. Avulsa",
+          "CONSERVACAO/MANUTENCAO":      "Conserv./Manut. Avulsa",
+          "CONSERV/MANUT/CONTRATOS":     "Conserv./Manut. Contratos"
+        }
       }
     },
     {
