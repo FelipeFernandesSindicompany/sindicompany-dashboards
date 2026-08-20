@@ -205,6 +205,32 @@ class AdapterHabitacionalXLSX(AdapterBase):
             }]
             dados.banco_cc = dados.saldo_atual
 
+        # ── Receita Prevista / Realizada — Resumo de Emissão (ORDINÁRIA) ───────────
+        # Após o header "Resumo de Emissão" (col A), a primeira linha com col A
+        # vazia e col I + col K numéricos positivos é o total do período:
+        #   col I (idx 8) = Previsto (orçamento aprovado em assembleia)
+        #   col K (idx 10) = Realizado (créditos recebidos no período)
+        # Sobrescreve o fallback prev=tCred que _processa_resumo() define.
+        _in_emissao = False
+        _emissao_linhas = 0
+        for _row in linhas:
+            _a = str(col(_row, 0) or "").strip()
+            if "RESUMO DE EMISS" in _a.upper():
+                _in_emissao = True
+                _emissao_linhas = 0
+                continue
+            if not _in_emissao:
+                continue
+            _emissao_linhas += 1
+            _v_prev = _f(col(_row, 8))
+            _v_real = _f(col(_row, 10))
+            if not _a and _v_prev > 0 and _v_real > 0:
+                dados.receita_prevista = _v_prev
+                dados.receita_cotas    = _v_real
+                break
+            if _emissao_linhas > 20:
+                _in_emissao = False
+
         # ── Despesas por categoria ──
         # col E (idx 4) = "TOTAL DA CONTA PESSOAL", col H (idx 7) = valor
         # Nomes de contas/fundos que NÃO são categorias operacionais de despesa
@@ -281,7 +307,7 @@ class AdapterHabitacionalXLSX(AdapterBase):
                 fim_mes_patterns = []
             for row in linhas:
                 desc = str(col(row, 0) or "").upper().strip()
-                is_overdue = "ATRASO" in desc or "ABERTO" in desc
+                is_overdue = "ATRASO" in desc or "ABERTO" in desc or "COBRAN" in desc
                 has_fim_mes = any(p in desc for p in fim_mes_patterns)
                 if is_overdue and has_fim_mes:
                     v = _f(col(row, 10))
