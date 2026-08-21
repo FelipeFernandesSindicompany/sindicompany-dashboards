@@ -637,7 +637,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
     </div>
 
-    <div style="max-width:680px;margin:0 auto;"><div class="cws" style="height:320px;"><canvas id="cPieMes"></canvas></div></div>
+    <div style="margin:0 auto;"><div class="cws" style="height:420px;"><canvas id="cPieMes"></canvas></div></div>
 
   </div>
 
@@ -1266,7 +1266,7 @@ function updPie(k){
 
     options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{
 
-      legend:{position:'right',labels:{font:{size:12},boxWidth:14,padding:12,color:'#333',generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var v=chart.data.datasets[0].data[i];var p=tot>0?(v/tot*100).toFixed(1):'0.0';return{text:lbl+'  '+p+'%',fillStyle:bg[i],strokeStyle:'#fff',lineWidth:1,index:i};});}}},
+      legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:7,color:'#333',generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var v=chart.data.datasets[0].data[i];var p=tot>0?(v/tot*100).toFixed(1):'0.0';return{text:lbl+'  '+p+'%',fillStyle:bg[i],strokeStyle:'#fff',lineWidth:1,index:i};});}}},
 
       tooltip:{backgroundColor:'rgba(23,27,46,.92)',titleColor:'#fff',bodyColor:'#dde',padding:10,cornerRadius:8,callbacks:{label:function(ctx){var p=tot>0?(ctx.parsed/tot*100).toFixed(1):'0.0';return '  R$ '+ctx.parsed.toLocaleString('pt-BR',{minimumFractionDigits:2})+'  ('+p+'%)';}}}}}});
 
