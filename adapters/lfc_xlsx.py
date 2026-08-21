@@ -9,7 +9,8 @@ Estrutura (diferente do Habitacional padrão):
 
   Resumo de Emissão:
     Linha em branco (sem col A) após "Receitas Previstas e Realizadas":
-      col I = Previsto total, col K = Realizado total
+      col I = Previsto TOTAL (Cotas em Atraso + Emissão do Período + ANTECIPAÇÕES)
+      col K = Realizado total
 
   Inad (inadimplencia_valor):
     Soma de "Cotas em Atraso em {último dia do mês}" col K (idx 10) em TODAS as seções.
@@ -124,15 +125,10 @@ class AdapterLFCXLSX(AdapterBase):
                 found_hdr = True
                 continue
             if found_hdr:
-                # "Emissão do Período" → previsto (col I)
-                # Normaliza acentos para não falhar com "PERÍODO" (Í ≠ I)
-                desc_norm = (desc_up.replace("Ã","A").replace("Ô","O")
-                             .replace("Í","I").replace("Â","A").replace("Ó","O"))
-                if "EMISS" in desc_norm and "PERIOD" in desc_norm:
+                # Linha em branco = total → col I = previsto total, col K = realizado total
+                # (inclui Cotas em Atraso + Emissão do Período + ANTECIPAÇÕES)
+                if not desc and (_f(col(row, 8)) > 0 or _f(col(row, 10)) > 0):
                     dados.receita_prevista = _f(col(row, 8))
-                    continue
-                # Linha em branco = total → realizado total (col K)
-                if not desc and _f(col(row, 10)) > 0:
                     dados.receita_cotas = _f(col(row, 10))
                     break
                 # Próxima seção → para
