@@ -74,10 +74,16 @@ class AdapterIelloPDF(AdapterBase):
                 nums_f = [_num(n) for n in nums if re.search(r"\d", n)]
                 if len(nums_f) >= 4:
                     dados.saldo_anterior    = nums_f[0]
-                    dados.receita_realizada = conta_condominio_c if conta_condominio_c else nums_f[1]
+                    # tCred = soma de TODOS os créditos (SALDO FINAL col 2)
+                    dados.receita_realizada = nums_f[1]
                     dados.despesa_total     = nums_f[2]
                     dados.saldo_atual       = nums_f[3]
-                    dados.receita_prevista  = 0.0
+                    # real = créditos da CONTA CONDOMÍNIO apenas (cota condominial recebida)
+                    if conta_condominio_c is not None:
+                        dados.receita_cotas = conta_condominio_c
+                    # prev = orçamento mensal aprovado, lido do parser_config
+                    orc = self.config.get("parser_config", {}).get("orcamento_mensal", 0.0)
+                    dados.receita_prevista = float(orc) if orc else 0.0
                 in_resumo = False
                 continue
 
