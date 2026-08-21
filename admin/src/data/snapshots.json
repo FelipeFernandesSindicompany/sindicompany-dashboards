@@ -406,20 +406,21 @@
     }
   },
   "Dashboard_Financeiro_Guaratambe.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 128128.28,
-      "tCred": 82659.94,
-      "tDeb": 78329.19,
-      "inad": 25873.95,
-      "tAnt": 123797.53
+      "tit": "Julho / 2026",
+      "tAtual": 141658.62,
+      "tCred": 78930,
+      "tDeb": 65399.66,
+      "inad": 28272.04,
+      "tAnt": 128128.28
     }
   },
   "Dashboard_Financeiro_Highlights_DrNelsonMoretti.html": {
