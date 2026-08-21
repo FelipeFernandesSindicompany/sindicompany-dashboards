@@ -346,8 +346,8 @@
     }
   },
   "Dashboard_Financeiro_GoBarra_Funda.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -363,15 +363,16 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 1451.76,
-      "tCred": 92358.84,
-      "tDeb": 105735.66,
+      "tit": "Julho / 2026",
+      "tAtual": 1265.23,
+      "tCred": 88676.56,
+      "tDeb": 88863.09,
       "inad": 16043.82,
-      "tAnt": 14828.58
+      "tAnt": 1451.76
     }
   },
   "Dashboard_Financeiro_GoLiberdade.html": {
