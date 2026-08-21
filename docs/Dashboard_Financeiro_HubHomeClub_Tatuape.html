@@ -1347,6 +1347,14 @@ function selectMes(id){var selMesEl=document.getElementById('bal-sel-mes');if(se
 
 
 
+// Retorna {items, total} com despesas escalonadas para a conta ORDINÁRIA
+function ordDesp(m){
+  var od=m.contas.reduce(function(a,x){return(/ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n))?a+x.d:a;},0)||m.tDesp;
+  var sum=m.desp.reduce(function(a,d){return a+d.v;},0);
+  var r=(sum>0.01&&Math.abs(sum-od)>0.01)?od/sum:1;
+  return{items:m.desp.map(function(d){return{c:d.c,v:Math.round(d.v*r*100)/100};}),total:od};
+}
+
 function renderBal(id){
 
   var m=BAL[id];
@@ -1403,17 +1411,14 @@ function renderBal(id){
 
   h+='<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participação</th></tr>';
 
-  m.desp.forEach(function(d){
-
-    var pct=(d.v/m.tDesp*100).toFixed(1);
-
+  var od=ordDesp(m);
+  od.items.forEach(function(d){
+    var pct=(od.total>0?(d.v/od.total*100):0).toFixed(1);
     h+='<tr><td>'+d.c+'</td><td class="nr">'+R(d.v)+'</td><td class="nr">'+pct+'%</td>';
-
     h+='<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:'+pct+'%"></div></div></td></tr>';
-
   });
 
-  h+='<tr class="tot"><td>TOTAL ORDINÁRIA</td><td class="nr">'+R(m.tDesp)+'</td><td colspan="2"></td></tr>';
+  h+='<tr class="tot"><td>TOTAL ORDINÁRIA</td><td class="nr">'+R(od.total)+'</td><td colspan="2"></td></tr>';
 
   h+='</table></div></div>';
 
@@ -1524,8 +1529,11 @@ function buildOrcamento(){
 function buildTblDesp(){
 
   var cats={};
-
-  MESES.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
+  var scaled={}; // cache ordDesp por mês
+  MESES.forEach(function(k){
+    scaled[k]=ordDesp(BAL[k]);
+    scaled[k].items.forEach(function(d){cats[d.c]=true;});
+  });
 
   var catList=Object.keys(cats);
 
@@ -1535,15 +1543,15 @@ function buildTblDesp(){
 
   catList.forEach(function(cat){
 
-    var vals=MESES.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});
+    var vals=MESES.map(function(k){var d=scaled[k].items.find(function(x){return x.c===cat;});return d?d.v:0;});
 
     if(vals.every(function(v){return v===0;}))return;
 
-    h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
+    h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0.01?R(v):'-')+'</td>';}).join('')+'</tr>';
 
   });
 
-  h+='<tr class="tot"><td>TOTAL</td>'+MESES.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
+  h+='<tr class="tot"><td>TOTAL</td>'+MESES.map(function(k){return '<td class="nr">'+R(scaled[k].total)+'</td>';}).join('')+'</tr>';
 
   document.getElementById('tblDesp').innerHTML=h;
 
