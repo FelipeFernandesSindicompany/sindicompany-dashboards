@@ -344,11 +344,14 @@
           "manutenção - contratos": "MANUT/CONSERV. CONTRAT.",
           "eventuais - extras": "MANUT/CONSERV. ESPORÁD.",
           "administrativo": "ADMINISTRATIVO",
-          "transferências": "DESP. DIVERSAS",
-          "outras receitas": "DESP. DIVERSAS",
-          "ir/iof s/ resgate investimento": "DESP. DIVERSAS"
+          "transferências": "TRANSFERÊNCIAS",
+          "outras receitas": "TRANSFERÊNCIAS",
+          "ir/iof s/ resgate investimento": "TRANSFERÊNCIAS"
         },
-        "posicao_financeira_idx": 3
+        "posicao_financeira_idx": 3,
+        "contas_map": {
+          "ORDINARIA": "ORDINÁRIA"
+        }
       }
     },
     {

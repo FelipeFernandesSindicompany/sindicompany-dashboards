@@ -98,8 +98,9 @@ class AdapterLelloXLS(AdapterBase):
             mes_referencia=mes_referencia,
         )
 
-        # ── Tabela 0: Resumo Financeiro + contas individuais + banco ──
+        # ── Tabela 0: Resumo Financeiro ──
         CONTAS_CDB = {"FUNDO DE RESERVA", "FUNDO RESERVA", "CDB", "POUPANÇA", "RESERVA"}
+        posicao_idx = self.parser_config.get("posicao_financeira_idx")
         if tabelas:
             df = tabelas[0]
             ultima = df.iloc[-1]
@@ -111,27 +112,30 @@ class AdapterLelloXLS(AdapterBase):
                 dados.receita_prevista  = dados.receita_realizada
             except Exception:
                 pass
-            # Contas individuais (linhas 1 a penúltima)
-            for _, row in df.iloc[1:-1].iterrows():
-                nome = str(row.iloc[0]).strip()
-                if not nome or nome.lower() in ("nan", "conta"):
-                    continue
-                ant  = _num(row.iloc[1])
-                cred = _num(row.iloc[2])
-                deb  = _num(row.iloc[3])
-                sal  = _num(row.iloc[4])
-                dados.contas_detalhe.append({
-                    "nome": nome.upper(),
-                    "saldo_ant": ant, "creditos": cred,
-                    "debitos": deb, "saldo_atual": sal,
-                })
-                nome_up = nome.upper()
-                if "ORDIN" in nome_up and "EXTRA" not in nome_up:
-                    dados.banco_cc = sal
-                elif any(kw in nome_up for kw in CONTAS_CDB):
-                    dados.banco_cdb = sal
-                else:
-                    dados.banco_priv += sal
+            # Contas individuais e banco — apenas quando posicao_financeira_idx configurado
+            if posicao_idx is not None:
+                contas_map = self.parser_config.get("contas_map", {})
+                for _, row in df.iloc[1:-1].iterrows():
+                    nome = str(row.iloc[0]).strip()
+                    if not nome or nome.lower() in ("nan", "conta"):
+                        continue
+                    ant  = _num(row.iloc[1])
+                    cred = _num(row.iloc[2])
+                    deb  = _num(row.iloc[3])
+                    sal  = _num(row.iloc[4])
+                    nome_up = nome.upper()
+                    nome_can = contas_map.get(nome_up, nome_up)
+                    dados.contas_detalhe.append({
+                        "nome": nome_can,
+                        "saldo_ant": ant, "creditos": cred,
+                        "debitos": deb, "saldo_atual": sal,
+                    })
+                    if "ORDIN" in nome_up and "EXTRA" not in nome_up:
+                        dados.banco_cc = sal
+                    elif any(kw in nome_up for kw in CONTAS_CDB):
+                        dados.banco_cdb = sal
+                    else:
+                        dados.banco_priv += sal
 
         # ── Tabela 1: Inadimplência (Posição Devedores) ──
         if len(tabelas) > 1:
@@ -143,7 +147,6 @@ class AdapterLelloXLS(AdapterBase):
                 pass
 
         # ── Despesas: Posição Financeira ORDINÁRIA (tabela configurada) ou Demonstrativo ──
-        posicao_idx = self.parser_config.get("posicao_financeira_idx")
         cat_map = self.parser_config.get("cat_map", {})
 
         if posicao_idx is not None and len(tabelas) > posicao_idx:
