@@ -2075,55 +2075,54 @@ function buildCharts() {
 
 
 
-  // ── 3. Barras empilhadas — saldo por conta histórico (Ciudad Real) ──────────
+  // ── 3. Barras empilhadas — Saldo por Conta (Ordinária / Fundo / Demais) ──────
 
-  var contaColorsSt = [
-
-    'rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)',
-
-    'rgba(243,156,18,0.85)','rgba(41,128,185,0.85)','rgba(155,89,182,0.85)'
-
-  ];
-
-  var contaBorderSt = [P, '#C05A10', '#1A6B3C', '#C67D00', '#1A5276', '#6C3483'];
-
-  var contaNames = ['ORDINÁRIA','FUNDO DE RESERVA','OBRAS/MELHORIAS','FÉRIAS / 13º SALÁRIO','SALÃO DE FESTAS','RATEIO EXTRAORDINÁRIO'];
-
-  var stDatasets = contaNames.map(function(cn, i) {
-
-    return {
-
-      label: cn,
-
-      data: MESES.map(function(k) {
-
-        var keyword = cn.split(' ')[cn.split(' ').length-1];
-
-        var c = BAL[k].contas.find(function(x){ return x.n.toUpperCase().indexOf(keyword) >= 0; });
-
-        return c ? Math.max(0, c.s) : 0;
-
-      }),
-
-      backgroundColor: contaColorsSt[i],
-
-      borderColor: contaBorderSt[i],
-
-      borderWidth: 1,
-
-      borderRadius: 3,
-
-      borderSkipped: false
-
-    };
-
-  });
+  function fmtRS(v) {
+    var abs = Math.abs(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    return (v < 0 ? '-R$ ' : 'R$ ') + abs;
+  }
 
   mkChart('cContas', {
 
     type: 'bar',
 
-    data: { labels: ML, datasets: stDatasets },
+    data: { labels: ML, datasets: [
+
+      {
+        label: 'ORDINÁRIA',
+        data: MESES.map(function(k) {
+          return BAL[k].contas.filter(function(x){ return /ORDIN/i.test(x.n) && !/EXTRA/i.test(x.n) && !/FUNDO/i.test(x.n); })
+                              .reduce(function(a, c){ return a + c.s; }, 0);
+        }),
+        backgroundColor: 'rgba(23,27,46,0.85)', borderColor: '#171B2E',
+        borderWidth: 1, borderRadius: 3, borderSkipped: false
+      },
+
+      {
+        label: 'FUNDO DE RESERVA',
+        data: MESES.map(function(k) {
+          return BAL[k].contas.filter(function(x){ return /FUNDO|RESERVA/i.test(x.n); })
+                              .reduce(function(a, c){ return a + c.s; }, 0);
+        }),
+        backgroundColor: 'rgba(232,119,34,0.85)', borderColor: '#C05A10',
+        borderWidth: 1, borderRadius: 3, borderSkipped: false
+      },
+
+      {
+        label: 'DEMAIS CONTAS',
+        data: MESES.map(function(k) {
+          var m = BAL[k];
+          var ordSum = m.contas.filter(function(x){ return /ORDIN/i.test(x.n) && !/EXTRA/i.test(x.n) && !/FUNDO/i.test(x.n); })
+                               .reduce(function(a, c){ return a + c.s; }, 0);
+          var frSum  = m.contas.filter(function(x){ return /FUNDO|RESERVA/i.test(x.n); })
+                               .reduce(function(a, c){ return a + c.s; }, 0);
+          return m.tAtual - ordSum - frSum;
+        }),
+        backgroundColor: 'rgba(39,174,96,0.85)', borderColor: '#1A6B3C',
+        borderWidth: 1, borderRadius: 3, borderSkipped: false
+      }
+
+    ]},
 
     options: {
 
@@ -2135,7 +2134,7 @@ function buildCharts() {
 
         tooltip: Object.assign({}, TT, {
 
-          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtR(ctx.raw); } }
+          callbacks: { label: function(ctx){ return '  ' + ctx.dataset.label + ': ' + fmtRS(ctx.raw); } }
 
         })
 
