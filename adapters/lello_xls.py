@@ -98,7 +98,8 @@ class AdapterLelloXLS(AdapterBase):
             mes_referencia=mes_referencia,
         )
 
-        # ── Tabela 0: Resumo Financeiro ──
+        # ── Tabela 0: Resumo Financeiro + contas individuais + banco ──
+        CONTAS_CDB = {"FUNDO DE RESERVA", "FUNDO RESERVA", "CDB", "POUPANÇA", "RESERVA"}
         if tabelas:
             df = tabelas[0]
             ultima = df.iloc[-1]
@@ -110,6 +111,27 @@ class AdapterLelloXLS(AdapterBase):
                 dados.receita_prevista  = dados.receita_realizada
             except Exception:
                 pass
+            # Contas individuais (linhas 1 a penúltima)
+            for _, row in df.iloc[1:-1].iterrows():
+                nome = str(row.iloc[0]).strip()
+                if not nome or nome.lower() in ("nan", "conta"):
+                    continue
+                ant  = _num(row.iloc[1])
+                cred = _num(row.iloc[2])
+                deb  = _num(row.iloc[3])
+                sal  = _num(row.iloc[4])
+                dados.contas_detalhe.append({
+                    "nome": nome.upper(),
+                    "saldo_ant": ant, "creditos": cred,
+                    "debitos": deb, "saldo_atual": sal,
+                })
+                nome_up = nome.upper()
+                if "ORDIN" in nome_up and "EXTRA" not in nome_up:
+                    dados.banco_cc = sal
+                elif any(kw in nome_up for kw in CONTAS_CDB):
+                    dados.banco_cdb = sal
+                else:
+                    dados.banco_priv += sal
 
         # ── Tabela 1: Inadimplência (Posição Devedores) ──
         if len(tabelas) > 1:
@@ -120,42 +142,59 @@ class AdapterLelloXLS(AdapterBase):
             except Exception:
                 pass
 
-        # ── Tabela de Despesas: "DEMONSTRATIVO DE DESPESAS" ──
-        tab_desp = None
-        for df in tabelas:
-            if "DEMONSTRATIVO DE DESPESAS" in str(df.columns).upper():
-                tab_desp = df
-                break
+        # ── Despesas: Posição Financeira ORDINÁRIA (tabela configurada) ou Demonstrativo ──
+        posicao_idx = self.parser_config.get("posicao_financeira_idx")
+        cat_map = self.parser_config.get("cat_map", {})
 
-        if tab_desp is not None:
-            for _, row in tab_desp.iterrows():
-                c0 = str(row.iloc[0] if len(row) > 0 else "").strip()
-                c2 = str(row.iloc[2] if len(row) > 2 else "")
-                c3 = str(row.iloc[3] if len(row) > 3 else "")
+        if posicao_idx is not None and len(tabelas) > posicao_idx:
+            # Lê despesas da Posição Financeira da conta ORDINÁRIA (apenas débitos)
+            df_pos = tabelas[posicao_idx]
+            from collections import OrderedDict
+            consolidated: dict = OrderedDict()
+            import pandas as _pd
+            for _, row in df_pos.iterrows():
+                desc = str(row.iloc[1]).strip().lower() if not _pd.isna(row.iloc[1]) else ""
+                deb = _num(row.iloc[3])
+                if "totais" in desc:
+                    break
+                if deb > 0 and desc and desc != "nan":
+                    cat = cat_map.get(desc, cat_map.get(desc.title(), desc.upper()))
+                    consolidated[cat] = consolidated.get(cat, 0) + deb
+            for cat, val in consolidated.items():
+                dados.categorias_despesa[cat] = val
+        else:
+            # Fallback: lê do DEMONSTRATIVO DE DESPESAS (todas as contas)
+            tab_desp = None
+            for df in tabelas:
+                if "DEMONSTRATIVO DE DESPESAS" in str(df.columns).upper():
+                    tab_desp = df
+                    break
 
-                # Grupo de despesas: "NOME Total:"
-                if re.search(r"\bTotal:\s*$", c0, re.IGNORECASE):
-                    cat = re.sub(r"\s*Total:\s*$", "", c0, flags=re.IGNORECASE).strip()
-                    cat_upper = cat.upper()
-                    if cat_upper in _EXCLUIR_GRUPOS:
-                        continue
-                    val = _num_br(c3) or _num_br(c2)
-                    if val > 0:
-                        dados.categorias_despesa[cat.title()] = (
-                            dados.categorias_despesa.get(cat.title(), 0) + val
-                        )
+            if tab_desp is not None:
+                for _, row in tab_desp.iterrows():
+                    c0 = str(row.iloc[0] if len(row) > 0 else "").strip()
+                    c2 = str(row.iloc[2] if len(row) > 2 else "")
+                    c3 = str(row.iloc[3] if len(row) > 3 else "")
 
-                # Conta top-level: "Total CONTA"
-                elif re.match(r"^Total\s+\S", c0, re.IGNORECASE):
-                    conta = re.sub(r"^Total\s+", "", c0, flags=re.IGNORECASE).strip()
-                    conta_upper = conta.upper()
-                    if conta_upper in _EXCLUIR_CONTAS:
-                        continue
-                    val = _num_br(c2) or _num_br(c3)
-                    if val > 0:
-                        dados.categorias_despesa[conta.title()] = (
-                            dados.categorias_despesa.get(conta.title(), 0) + val
-                        )
+                    if re.search(r"\bTotal:\s*$", c0, re.IGNORECASE):
+                        cat = re.sub(r"\s*Total:\s*$", "", c0, flags=re.IGNORECASE).strip()
+                        cat_upper = cat.upper()
+                        if cat_upper in _EXCLUIR_GRUPOS:
+                            continue
+                        val = _num_br(c3) or _num_br(c2)
+                        if val > 0:
+                            raw = cat_map.get(cat.upper(), cat.title())
+                            dados.categorias_despesa[raw] = dados.categorias_despesa.get(raw, 0) + val
+
+                    elif re.match(r"^Total\s+\S", c0, re.IGNORECASE):
+                        conta = re.sub(r"^Total\s+", "", c0, flags=re.IGNORECASE).strip()
+                        conta_upper = conta.upper()
+                        if conta_upper in _EXCLUIR_CONTAS:
+                            continue
+                        val = _num_br(c2) or _num_br(c3)
+                        if val > 0:
+                            raw = cat_map.get(conta.upper(), conta.title())
+                            dados.categorias_despesa[raw] = dados.categorias_despesa.get(raw, 0) + val
 
         # Fallback
         if not dados.categorias_despesa and dados.despesa_total > 0:

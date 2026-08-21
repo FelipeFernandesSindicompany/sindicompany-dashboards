@@ -203,13 +203,13 @@
       "unidades": 0,
       "parser_config": {
         "cat_map": {
-          "PESSOAL CONTRATADO":          "Pessoal/Terceirização",
-          "PESSOAL PROPRIO":             "Pessoal/Terceirização",
+          "PESSOAL CONTRATADO": "Pessoal/Terceirização",
+          "PESSOAL PROPRIO": "Pessoal/Terceirização",
           "HONORARIOS / ADMINISTRATIVO": "Honorários/Administrativo",
-          "HONORARIOS/ADMINISTRATIVO":   "Honorários/Administrativo",
-          "CONSERVAÇÃO/MANUTENÇÃO":      "Conserv./Manut. Avulsa",
-          "CONSERVACAO/MANUTENCAO":      "Conserv./Manut. Avulsa",
-          "CONSERV/MANUT/CONTRATOS":     "Conserv./Manut. Contratos"
+          "HONORARIOS/ADMINISTRATIVO": "Honorários/Administrativo",
+          "CONSERVAÇÃO/MANUTENÇÃO": "Conserv./Manut. Avulsa",
+          "CONSERVACAO/MANUTENCAO": "Conserv./Manut. Avulsa",
+          "CONSERV/MANUT/CONTRATOS": "Conserv./Manut. Contratos"
         }
       }
     },
@@ -244,7 +244,7 @@
       "cor": "#0d9488",
       "unidades": 0,
       "parser_config": {
-        "orcamento_mensal": 113999.70,
+        "orcamento_mensal": 113999.7,
         "cat_map": {}
       }
     },
@@ -337,7 +337,18 @@
       "cor": "#7c3aed",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "despesas com pessoal": "PESSOAL",
+          "serviços terceirizados": "SERV. TERCEIRIZADOS",
+          "tarifas concessionárias": "CONSUMOS",
+          "manutenção - contratos": "MANUT/CONSERV. CONTRAT.",
+          "eventuais - extras": "MANUT/CONSERV. ESPORÁD.",
+          "administrativo": "ADMINISTRATIVO",
+          "transferências": "DESP. DIVERSAS",
+          "outras receitas": "DESP. DIVERSAS",
+          "ir/iof s/ resgate investimento": "DESP. DIVERSAS"
+        },
+        "posicao_financeira_idx": 3
       }
     },
     {
