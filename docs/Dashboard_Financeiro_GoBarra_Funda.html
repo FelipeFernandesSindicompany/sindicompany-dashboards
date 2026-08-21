@@ -2358,7 +2358,7 @@ function buildCharts() {
 
   function fmtK(v)  { return 'R$\u00a0' + (v/1000).toFixed(0) + 'k'; }
 
-  function fmtR(v)  { return 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtR(v)  { var s='R$\u00a0'+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); return v<0?'-'+s:s; }
 
 
 
@@ -2440,7 +2440,9 @@ function buildCharts() {
 
   // 3. Barras — saldo por conta histórico
 
-  var contaNames = ['ORDINARIA','FUNDO DE RESERVA','OBRAS/MELHORIAS'];
+  var contaNames = ['Ordinária','Fundo de Reserva','Demais Contas'];
+
+  var contaKeys  = ['cc','cdb','priv'];
 
   var contaColors2 = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)'];
 
@@ -2450,9 +2452,7 @@ function buildCharts() {
 
     return { label: cn, data: MESES.map(function(k) {
 
-      var c = BAL[k].contas.find(function(x){ return x.n === cn; });
-
-      return c ? c.s : 0;
+      return BAL[k].banco[contaKeys[i]] || 0;
 
     }), backgroundColor: contaColors2[i], borderColor: contaBorder2[i], borderWidth: 1, borderRadius: 3, borderSkipped: false };
 
