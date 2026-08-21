@@ -127,7 +127,7 @@ class AdapterHabitacionalXLSX(AdapterBase):
         #   O "Resumo Financeiro Contábil" (mais abaixo) tem cols E/G/I/K.
         #   Linha "TOTAL" nessa seção consolida tudo.
         #
-        CONTAS_CDB  = {"FUNDO DE RESERVA", "FUNDO RESERVA", "RESERVA", "CDB", "POUPANÇA", "POUPANCA"}
+        CONTAS_CDB  = {"FUNDO DE RESERVA", "FUNDO RESERVA", "RESERVA", "CDB", "POUPANÇA", "POUPANCA", "BENFEITORIAS"}
         CONTAS_EXCL = {"TOTAL", "CONTA"}
 
         def _processa_resumo(rows):
@@ -360,14 +360,21 @@ class AdapterHabitacionalXLSX(AdapterBase):
 
         # ── Recebidos em Atraso (inadProc) ──
         # Formato 1: "Total Recebido (Com Baixa de Recibo)" — coluna I (idx 8) ou vizinhas
+        # Go Barra Funda: label na col A (j=0) com valor na col J (idx 9)
         for row in linhas:
             for j, cell in enumerate(row):
                 if cell and "Com Baixa" in str(cell):
+                    # Tenta as 4 colunas seguintes (formato padrão)
                     for k in range(j + 1, min(len(row), j + 5)):
                         v = _f(row[k])
                         if v > 0:
                             dados.inadimplencia_recebida = v
                             break
+                    # Fallback: col J (idx 9) quando label está em col A e valor não encontrado
+                    if dados.inadimplencia_recebida == 0 and j == 0 and len(row) > 9:
+                        v = _f(row[9])
+                        if v > 0:
+                            dados.inadimplencia_recebida = v
                     break
 
         # Formato 2 (Elo/Habitacional): "CONDOMINOS EM ATRASO RECEBIDOS" col K — soma por conta
