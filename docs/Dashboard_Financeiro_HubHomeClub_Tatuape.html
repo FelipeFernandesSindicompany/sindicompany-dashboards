@@ -1762,27 +1762,27 @@ function buildCharts(){
 
 
 
-  // 3. Barras empilhadas por conta
+  // 3. Barras empilhadas por conta — 3 grupos
 
-  var CN=['ORDINÁRIA','FUNDO DE RESERVA'];
-
-  var CC=['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)'];
-
-  var CB=['#171B2E','#C05A10'];
+  function fmtRS(v){var abs=Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});return(v<0?'-R$ ':'R$ ')+abs;}
 
   mkChart('cContas',{type:'bar',
 
-    data:{labels:ML,datasets:CN.map(function(cn,i){return{label:cn,
-
-      data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n===cn;});return c?c.s:0;}),
-
-      backgroundColor:CC[i],borderColor:CB[i],borderWidth:1,borderRadius:3,borderSkipped:false};})
-
-    },
+    data:{labels:ML,datasets:[
+      {label:'ORDINÁRIA',
+        data:MESES.map(function(k){return BAL[k].contas.filter(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);}),
+        backgroundColor:'rgba(23,27,46,0.85)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+      {label:'FUNDO DE RESERVA',
+        data:MESES.map(function(k){return BAL[k].contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);}),
+        backgroundColor:'rgba(232,119,34,0.85)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+      {label:'DEMAIS CONTAS',
+        data:MESES.map(function(k){var m=BAL[k];var o=m.contas.filter(function(x){return /ORDIN/i.test(x.n)&&!/FUNDO/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);var f=m.contas.filter(function(x){return /FUNDO|RESERVA/i.test(x.n);}).reduce(function(a,c){return a+c.s;},0);return m.tAtual-o-f;}),
+        backgroundColor:'rgba(39,174,96,0.85)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}
+    ]},
 
     options:{responsive:true,maintainAspectRatio:false,
 
-      plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return'  '+ctx.dataset.label+': '+fR(ctx.raw);}}})},
+      plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return'  '+ctx.dataset.label+': '+fmtRS(ctx.raw);}}})},
 
       scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}
 
