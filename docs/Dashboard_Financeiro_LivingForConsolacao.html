@@ -668,7 +668,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Despesas por Categoria</h1><p>An&aacute;lise das despesas da conta ORDIN&Aacute;RIA</p></div>
 
-  <div class="cc"><h3>&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><div class="cw"><canvas id="cDespBar"></canvas></div></div>
+  <div class="cc"><h3>&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div class="cw" style="min-width:1400px;"><canvas id="cDespBar"></canvas></div></div></div>
 
   <div class="cc">
 
@@ -2400,7 +2400,7 @@ function buildCharts() {
 
   var catList = Object.keys(cats);
 
-  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
+  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593','#B71C1C','#4A148C','#006064'];
 
   var despDatasets = MESES.map(function(k, i) {
 
