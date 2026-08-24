@@ -668,7 +668,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Despesas por Categoria</h1><p>An&aacute;lise das despesas da conta ORDIN&Aacute;RIA</p></div>
 
-  <div class="cc"><h3>&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div class="cw" style="min-width:1400px;"><canvas id="cDespBar"></canvas></div></div></div>
+  <div class="cc"><h3>&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><div id="cDespScroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;"><div id="cDespWrap" style="position:relative;height:260px;"><canvas id="cDespBar"></canvas></div></div></div>
 
   <div class="cc">
 
@@ -2419,6 +2419,8 @@ function buildCharts() {
     };
 
   });
+
+  (function(){var w=Math.max(900,catList.length*(MESES.length*14+30));document.getElementById('cDespWrap').style.width=w+'px';})();
 
   mkChart('cDespBar', {
 
