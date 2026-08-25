@@ -88,7 +88,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 
 .cw{position:relative;height:260px;} .cws{position:relative;height:200px;}
 
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;align-items:start;}
 
 .tw{overflow-x:auto;}
 
@@ -2748,7 +2748,7 @@ function buildCharts() {
       label: 'Demais Contas',
       data: MESES.map(function(k) {
         return BAL[k].contas.reduce(function(sum, c) {
-          return (c.n !== 'ORDIN\u00c1RIA' && c.n !== 'FUNDO DE RESERVA') ? sum + c.s : sum;
+          return (c.n !== 'ORDIN\u00c1RIA' && c.n !== 'FUNDO DE RESERVA') ? sum + Math.abs(c.s) : sum;
         }, 0);
       }),
       backgroundColor: contaColors[2], borderColor: contaBorder[2],
