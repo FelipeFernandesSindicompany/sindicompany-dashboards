@@ -1,3 +1,6 @@
+import importlib
+from pathlib import Path
+
 from adapters.habitacional_xlsx import AdapterHabitacionalXLSX
 from adapters.lello_mhtml import AdapterLelloMHTML
 from adapters.lirba_pdf import AdapterLirbaPDF
@@ -30,8 +33,50 @@ ADAPTERS = {
     "empresa_b": AdapterEmpresaB,
 }
 
+_CONDO_CACHE: dict | None = None
+
+
+def _condo_adapters() -> dict:
+    """
+    Carrega adapters específicos de adapters/condominios/{condo_id}.py.
+    Cada arquivo deve exportar uma classe chamada 'Adapter'.
+    Cache populado uma vez na primeira chamada.
+    """
+    global _CONDO_CACHE
+    if _CONDO_CACHE is not None:
+        return _CONDO_CACHE
+    _CONDO_CACHE = {}
+    condominios_dir = Path(__file__).parent / "condominios"
+    if not condominios_dir.exists():
+        return _CONDO_CACHE
+    for py in sorted(condominios_dir.glob("[!_]*.py")):
+        mod_name = f"adapters.condominios.{py.stem}"
+        try:
+            mod = importlib.import_module(mod_name)
+            if hasattr(mod, "Adapter"):
+                _CONDO_CACHE[py.stem] = mod.Adapter
+        except Exception as exc:
+            print(f"[AVISO] adapter específico {py.name}: {exc}")
+    return _CONDO_CACHE
+
 
 def get_adapter(empresa_id: str, config: dict):
+    """
+    Retorna a instância de adapter correta para o condomínio.
+
+    Prioridade:
+      1. Adapter específico em adapters/condominios/{condo_id}.py
+      2. Adapter genérico por empresa_gestora (dict ADAPTERS)
+    """
+    condo_id = config.get("id", "")
+
+    # 1. Adapter específico do condomínio
+    if condo_id:
+        condo_cls = _condo_adapters().get(condo_id)
+        if condo_cls:
+            return condo_cls(config)
+
+    # 2. Adapter genérico por empresa
     cls = ADAPTERS.get(empresa_id)
     if not cls:
         raise ValueError(

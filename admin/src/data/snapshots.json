@@ -1359,5 +1359,31 @@
       "inad": 263779.58,
       "tAnt": 593716.28
     }
+  },
+  "Dashboard_Financeiro_Demonstracao.html": {
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
+    "allKeys": [
+      "ago25",
+      "set25",
+      "out25",
+      "nov25",
+      "dez25",
+      "jan26",
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26",
+      "jul26"
+    ],
+    "data": {
+      "tit": "",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
+      "inad": 0,
+      "tAnt": 0
+    }
   }
 }

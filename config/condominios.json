@@ -998,6 +998,19 @@
       "parser_config": {
         "cat_map": {}
       }
+    },
+    {
+      "id": "demonstracao",
+      "nome": "Demonstração",
+      "empresa_gestora": "demo",
+      "pasta_dados": "data/demonstracao",
+      "html_file": "Dashboard_Financeiro_Demonstracao.html",
+      "ativo": true,
+      "cor": "#6366f1",
+      "unidades": 150,
+      "parser_config": {
+        "cat_map": {}
+      }
     }
   ],
   "empresas": {
