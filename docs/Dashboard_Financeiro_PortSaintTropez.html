@@ -2252,7 +2252,7 @@ function buildTblBanco() {
 
     h += '<td class="nr">' + (m.banco.priv !== null ? R(m.banco.priv) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
 
-    h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
+    h += '<td class="nr bd">' + R((m.banco.cc||0)+(m.banco.cdb||0)+(m.banco.priv||0)) + '</td></tr>';
 
   });
 
