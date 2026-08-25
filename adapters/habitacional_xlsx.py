@@ -206,21 +206,32 @@ class AdapterHabitacionalXLSX(AdapterBase):
             dados.banco_cc = dados.saldo_atual
 
         # ── Composição de Saldo Bancário — lê valores reais do extrato ──────────────
-        # Seção "COMPOSIÇÃO DE SALDO" tem linhas com descrição do banco e valor em col K
-        # Ex: "BCO.ITAÚ - C/CORRENTE ..." → cc | "APLIC.CDB-DI" → cdb | "ITAUVEST" → priv
+        # "COMPOSIÇÃO DE SALDO" (Elo, Go, etc.): valor em col K (idx 10)
+        # "DEMONSTRATIVO CONCILIAÇÃO BANCÁRIA" (Port Saint Tropez/Verti): tenta K, H, I, J
+        # parser_config.banco_col pode forçar uma coluna específica (0-indexed)
+        _banco_col_override = self.config.get("parser_config", {}).get("banco_col", None)
+        _banco_try_cols = ([_banco_col_override] if _banco_col_override is not None
+                          else [10, 7, 8, 9])
         for i, row in enumerate(linhas):
             desc_h = str(col(row, 0) or "").upper()
-            if "COMPOSI" in desc_h and "SALDO" in desc_h:
+            is_composicao  = "COMPOSI" in desc_h and "SALDO" in desc_h
+            is_conciliacao = "CONCILIA" in desc_h and "BANC" in desc_h
+            if is_composicao or is_conciliacao:
                 _cc = _cdb = _priv = 0.0
                 for row2 in linhas[i + 1: i + 20]:
                     d2 = str(col(row2, 0) or "").upper()
                     if "SALDO FINAL" in d2:
                         break
-                    raw = str(col(row2, 10) or "").strip().replace(".", "").replace(",", ".")
-                    try:
-                        v2 = float(raw)
-                    except ValueError:
-                        continue
+                    v2 = 0.0
+                    for try_col in _banco_try_cols:
+                        raw = str(col(row2, try_col) or "").strip().replace(".", "").replace(",", ".")
+                        try:
+                            cand = float(raw)
+                            if cand > 0:
+                                v2 = cand
+                                break
+                        except ValueError:
+                            continue
                     if v2 <= 0:
                         continue
                     if "C/CORRENTE" in d2 or ("CORRENTE" in d2 and "CDB" not in d2):

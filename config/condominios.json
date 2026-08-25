@@ -679,7 +679,9 @@
       "cor": "#db2777",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "MANUTENÇÃO **** EVENTUAL ****": "MANUTENÇÃO EVENTUAL"
+        }
       }
     },
     {
