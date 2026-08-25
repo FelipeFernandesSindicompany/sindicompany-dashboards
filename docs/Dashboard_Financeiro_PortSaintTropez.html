@@ -2663,27 +2663,7 @@ function buildCharts() {
 
       plugins: {
 
-        legend: {
-
-          position: 'right',
-
-          labels: Object.assign({}, LEG, {
-
-            generateLabels: function(chart) {
-
-              return chart.data.labels.map(function(lbl, i) {
-
-                var pct = pieTotalAbs > 0 ? (pieData[i]/pieTotalAbs*100).toFixed(1) : '0.0';
-
-                return { text: lbl + '  ' + pct + '%', fillStyle: pieColors[i]||'#999', strokeStyle: '#fff', lineWidth: 1, index: i };
-
-              });
-
-            }
-
-          })
-
-        },
+        legend: { display: false },
 
         tooltip: Object.assign({}, TT, {
 
@@ -2706,6 +2686,36 @@ function buildCharts() {
     }
 
   });
+
+  (function(){
+
+    var html = '<div style="display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px;justify-content:center;">';
+
+    pieLabels.forEach(function(lbl, i){
+
+      var pct = pieTotalAbs > 0 ? (pieData[i]/pieTotalAbs*100).toFixed(1) : '0.0';
+
+      var col = pieColors[i]||'#999';
+
+      html += '<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t)">'
+
+            + '<span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:'+col+';flex-shrink:0;"></span>'
+
+            + '<span>'+lbl+'&nbsp;<strong>'+pct+'%</strong></span>'
+
+            + '</div>';
+
+    });
+
+    html += '</div>';
+
+    var legEl = document.createElement('div');
+
+    legEl.innerHTML = html;
+
+    document.getElementById('cPieMar').parentNode.parentNode.appendChild(legEl);
+
+  })();
 
 
 
