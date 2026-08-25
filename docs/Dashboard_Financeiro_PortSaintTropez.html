@@ -2641,7 +2641,7 @@ function buildCharts() {
 
   var ultimo = BAL[MESES[MESES.length - 1]];
 
-  var pieColors = ['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6'];
+  var pieColors = ['#1A237E','#E87722','#2E7D32','#F9A825','#0277BD','#9B59B6','#C62828','#00695C','#6D4C41','#546E7A'];
 
   var pieLabels = ultimo.contas.map(function(c){ return c.s < 0 ? c.n + ' (d\u00e9ficit)' : c.n; });
 
@@ -2665,7 +2665,7 @@ function buildCharts() {
 
         legend: {
 
-          position: 'right',
+          position: 'bottom',
 
           labels: Object.assign({}, LEG, {
 
@@ -2675,7 +2675,7 @@ function buildCharts() {
 
                 var pct = pieTotalAbs > 0 ? (pieData[i]/pieTotalAbs*100).toFixed(1) : '0.0';
 
-                return { text: lbl + '  ' + pct + '%', fillStyle: pieColors[i], strokeStyle: '#fff', lineWidth: 1, index: i };
+                return { text: lbl + '  ' + pct + '%', fillStyle: pieColors[i]||'#999', strokeStyle: '#fff', lineWidth: 1, index: i };
 
               });
 
