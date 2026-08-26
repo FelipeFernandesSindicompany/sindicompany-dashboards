@@ -2356,36 +2356,6 @@ function buildCharts() {
 
   });
 
-// ── Filtro de período: Despesas por Categoria ─────────────────────────────────
-(function(){
-  var _allMeses = MESES.slice();
-  var _origColors = _allMeses.map(function(k,i){
-    var ch = chartInstances['cDespBar'];
-    return (ch && ch.data && ch.data.datasets[i]) ? ch.data.datasets[i].backgroundColor : '#888';
-  });
-  function _filterDespBar(n){
-    var ch = chartInstances['cDespBar'];
-    if(!ch) return;
-    var mf = n>0 ? _allMeses.slice(-n) : _allMeses;
-    var cats={};
-    mf.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c]=true; }); });
-    var catL=Object.keys(cats);
-    ch.data.labels = catL.map(function(c){ return (typeof catShort!=='undefined'&&catShort[c])||c; });
-    ch.data.datasets = mf.map(function(k,ii){
-      var idx=_allMeses.indexOf(k), m=BAL[k];
-      return {
-        label: m.tit.split(' ')[0]+'/'+m.tit.split(' ')[2],
-        data: catL.map(function(c){ var d=m.desp.find(function(x){return x.c===c;}); return d?d.v:0; }),
-        backgroundColor: _origColors[idx]||'#888'
-      };
-    });
-    ch.update();
-    var _el=document.getElementById("cDespBar");if(_el){_el.style.minWidth=Math.max(500,catL.length*130)+"px";_el.parentElement.style.overflowX="auto";}
-  }
-  _filterDespBar(12);
-  window._filterDespBar=_filterDespBar;
-})();
-
 // ── Filtro de período: Detalhamento de Despesas ───────────────────────────────
 (function(){
   function _filterDespTable(n){
@@ -2405,12 +2375,48 @@ function buildCharts() {
     if(!tbl)return;
     tbl.innerHTML=h;
     tbl.style.minWidth=Math.max(400,mf.length*120+160)+'px';
-    var tw=tbl.parentElement;
-    if(tw)tw.style.overflowX='auto';
+    var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
   }
   _filterDespTable(12);
   window._filterDespTable=_filterDespTable;
 })();
+
+
+// ── Filtro de período: Despesas por Categoria ─────────────────────────────────
+(function(){
+  var _allMeses=MESES.slice();
+  var _origColors=null;
+  function _filterDespBar(n){
+    var ch=chartInstances['cDespBar'];
+    if(!ch)return;
+    if(!_origColors){_origColors=_allMeses.map(function(k,i){return (ch.data&&ch.data.datasets[i])?ch.data.datasets[i].backgroundColor:'#888';});}
+    var mf=n>0?_allMeses.slice(-n):_allMeses;
+    var cats={};
+    mf.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
+    var catL=Object.keys(cats);
+    ch.data.labels=catL.map(function(c){return (typeof catShort!=='undefined'&&catShort[c])||c;});
+    ch.data.datasets=mf.map(function(k,ii){
+      var idx=_allMeses.indexOf(k),m=BAL[k];
+      return {
+        label:m.tit.split(' ')[0]+'/'+m.tit.split(' ')[2],
+        data:catL.map(function(c){var d=m.desp.find(function(x){return x.c===c;});return d?d.v:0;}),
+        backgroundColor:_origColors[idx]||'#888'
+      };
+    });
+    ch.update();
+    var _el=document.getElementById('cDespBar');
+    if(_el){_el.style.minWidth=Math.max(500,catL.length*130)+'px';_el.parentElement.style.overflowX='auto';}
+  }
+  _filterDespBar(12);
+  window._filterDespBar=_filterDespBar;
+})();
+
+
+
+
+
+
+
 
 
 
@@ -2699,6 +2705,10 @@ function buildCharts() {
 
 
 
+
+
+
+
   // ── 8. Inadimplência (linhas com área) ────────────────────────────────────────
 
   mkChart('cInad', {
@@ -2779,35 +2789,6 @@ function buildCharts() {
 
             var vals = MESES.map(function(k){ return BAL[k].inad; });
 
-// ── Filtro de período: Inadimplência ─────────────────────────────────────────
-(function(){
-  var _allMesInad=MESES.slice();
-  var _chI=chartInstances['cInad'];
-  var _dsOrig=_chI?_chI.data.datasets.map(function(ds){return ds.data.slice();}):[];
-  function _filterInad(n){
-    var mf=n>0?_allMesInad.slice(-n):_allMesInad;
-    var startIdx=_allMesInad.length-mf.length;
-    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
-    var ch=chartInstances['cInad'];
-    if(ch){
-      ch.data.labels=mf.map(lbl);
-      ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrig[di]?_dsOrig[di].slice(startIdx):[];});
-      ch.update();
-    }
-    var tbl=document.getElementById('tblInad');
-    if(tbl){
-      var ri=0;
-      tbl.querySelectorAll('tr').forEach(function(r){
-        if(r.querySelector('th'))return;
-        r.style.display=(ri>=startIdx)?'':'none';
-        ri++;
-      });
-      var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
-    }
-  }
-  _filterInad(12);
-  window._filterInad=_filterInad;
-})();
 
 
             var avg  = vals.reduce(function(a,b){ return a+b; },0) / vals.length;
@@ -2865,6 +2846,38 @@ function buildCharts() {
     }
 
   });
+
+// ── Filtro de período: Inadimplência ─────────────────────────────────────────
+(function(){
+  var _allMesInad=MESES.slice();
+  var _dsOrig=null;
+  function _filterInad(n){
+    var ch=chartInstances['cInad'];
+    if(!ch)return;
+    if(!_dsOrig){_dsOrig=ch.data.datasets.map(function(ds){return ds.data.slice();});}
+    var mf=n>0?_allMesInad.slice(-n):_allMesInad;
+    var startIdx=_allMesInad.length-mf.length;
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    ch.data.labels=mf.map(lbl);
+    ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrig[di]?_dsOrig[di].slice(startIdx):[];});
+    ch.update();
+    var tbl=document.getElementById('tblInad');
+    if(tbl){
+      var ri=0;
+      tbl.querySelectorAll('tr').forEach(function(r){
+        if(r.querySelector('th'))return;
+        r.style.display=(ri>=startIdx)?'':'none';
+        ri++;
+      });
+      var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
+    }
+  }
+  _filterInad(12);
+  window._filterInad=_filterInad;
+})();
+
+
+
 
 
 
@@ -2973,18 +2986,17 @@ function buildCharts() {
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
 (function(){
   var _allBMeses=(typeof bancoMeses!=='undefined')?bancoMeses.slice():MESES.slice();
-  var _chB=chartInstances['cBanco'];
-  var _dsOrigB=_chB?_chB.data.datasets.map(function(ds){return ds.data.slice();}):[];
+  var _dsOrigB=null;
   function _filterBanco(n){
+    var ch=chartInstances['cBanco'];
+    if(!ch)return;
+    if(!_dsOrigB){_dsOrigB=ch.data.datasets.map(function(ds){return ds.data.slice();});}
     var mf=n>0?_allBMeses.slice(-n):_allBMeses;
     var startIdx=_allBMeses.length-mf.length;
     var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
-    var ch=chartInstances['cBanco'];
-    if(ch){
-      ch.data.labels=mf.map(lbl);
-      ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrigB[di]?_dsOrigB[di].slice(startIdx):[];});
-      ch.update();
-    }
+    ch.data.labels=mf.map(lbl);
+    ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrigB[di]?_dsOrigB[di].slice(startIdx):[];});
+    ch.update();
     var tbl=document.getElementById('tblBanco');
     if(tbl){
       var ri=0;
@@ -2998,6 +3010,10 @@ function buildCharts() {
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
+
+
 
 
 }
