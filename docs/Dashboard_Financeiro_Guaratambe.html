@@ -668,7 +668,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Despesas por Categoria</h1><p>An&aacute;lise das despesas da conta Ordin&aacute;ria</p></div>
 
-  <div class="cc"><h3>&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><div class="cw"><canvas id="cDespBar"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128202; Despesas por Categoria (R$) &ndash; comparativo mensal</h3><select onchange="window._filterDespBar(+this.value)" style="padding:4px 10px;border-radius:6px;border:1px solid #ccc;font-size:13px;cursor:pointer;background:#fff;color:#333;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cDespBar"></canvas></div></div>
 
   <div class="cc">
 
@@ -2231,6 +2231,36 @@ function buildCharts() {
     }
 
   });
+
+// ── Filtro de período: Despesas por Categoria ─────────────────────────────────
+(function(){
+  var _allMeses = MESES.slice();
+  var _origColors = _allMeses.map(function(k,i){
+    var ch = chartInstances['cDespBar'];
+    return (ch && ch.data && ch.data.datasets[i]) ? ch.data.datasets[i].backgroundColor : '#888';
+  });
+  function _filterDespBar(n){
+    var ch = chartInstances['cDespBar'];
+    if(!ch) return;
+    var mf = n>0 ? _allMeses.slice(-n) : _allMeses;
+    var cats={};
+    mf.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c]=true; }); });
+    var catL=Object.keys(cats);
+    ch.data.labels = catL.map(function(c){ return (typeof catShort!=='undefined'&&catShort[c])||c; });
+    ch.data.datasets = mf.map(function(k,ii){
+      var idx=_allMeses.indexOf(k), m=BAL[k];
+      return {
+        label: m.tit.split(' ')[0]+'/'+m.tit.split(' ')[2],
+        data: catL.map(function(c){ var d=m.desp.find(function(x){return x.c===c;}); return d?d.v:0; }),
+        backgroundColor: _origColors[idx]||'#888'
+      };
+    });
+    ch.update();
+  }
+  _filterDespBar(12);
+  window._filterDespBar=_filterDespBar;
+})();
+
 
 
 
