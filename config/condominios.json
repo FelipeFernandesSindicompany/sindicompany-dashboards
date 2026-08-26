@@ -447,8 +447,13 @@
           "MANUT/CONSERV. ESPORÁD.": "Manutenção",
           "IMPOSTOS E TAXAS": "Impostos e Taxas",
           "OUTROS": "Outros",
-          "AQUISICOES": "Outros",
-          "AQUISIÇÕES": "Outros",
+          "AQUISICOES": "Aquisições",
+          "AQUISIÇÕES": "Aquisições",
+          "ADMINISTRACAO": "Administração",
+          "ADMINISTRAÇÃO": "Administração",
+          "TERCEIRIZACAO": "Terceirização",
+          "TERCEIRIZAÇAO": "Terceirização",
+          "TERCEIRIZAÇÃO": "Terceirização",
           "ENCARGOS": "ENCARGOS SOCIAIS"
         }
       }
