@@ -1113,25 +1113,29 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>Mês</th><th>Itaú C/C 99797-0</th><th>Itauvest</th><th>CDB-DI</th><th>Total</th></tr>';
+  var h='<tr><th>Mês</th><th>Ordinária</th><th>Fundo de Obras</th><th>Demais Contas</th><th>Total</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k],b=m.banco;
+    var m=BAL[k];
 
-    var vCC=b.cc||0,vVest=b.vest||0,vCDB=b.cdb||0;
+    function gs(nome){var c=m.contas.find(function(x){return x.n===nome;});return c?c.s:0;}
 
-    var tot=Math.round((vCC+vVest+vCDB)*100)/100;
+    var vOrd=gs('ORDINARIA'),vObras=gs('FUNDO DE OBRAS');
 
-    var ccCls=vCC<0?' style="color:var(--r)"':'';
+    var vDemais=m.contas.reduce(function(a,c){return(c.n==='ORDINARIA'||c.n==='FUNDO DE OBRAS')?a:a+(c.s||0);},0);
+
+    var tot=Math.round((vOrd+vObras+vDemais)*100)/100;
+
+    var ordCls=vOrd<0?' style="color:var(--r)"':'';
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
-    h+='<td class="nr"'+ccCls+'>'+R(vCC)+'</td>';
+    h+='<td class="nr"'+ordCls+'>'+R(vOrd)+'</td>';
 
-    h+='<td class="nr">'+R(vVest)+'</td>';
+    h+='<td class="nr">'+R(vObras)+'</td>';
 
-    h+='<td class="nr">'+R(vCDB)+'</td>';
+    h+='<td class="nr">'+R(vDemais)+'</td>';
 
     h+='<td class="nr bd">'+R(tot)+'</td></tr>';
 
@@ -1187,11 +1191,11 @@ function buildCharts(){
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Itaú C/C 99797-0',data:MESES.map(function(k){return BAL[k].banco.cc||0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Ordinária',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n==='ORDINARIA';});return c?c.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Itauvest',data:MESES.map(function(k){return BAL[k].banco.vest||0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Fundo de Obras',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n==='FUNDO DE OBRAS';});return c?c.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'CDB-DI',data:MESES.map(function(k){return BAL[k].banco.cdb||0;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Demais Contas',data:MESES.map(function(k){return BAL[k].contas.reduce(function(a,c){return(c.n==='ORDINARIA'||c.n==='FUNDO DE OBRAS')?a:a+(c.s||0);},0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;return '  '+c.dataset.label+': '+(v<0?'-':'')+fR(v);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
