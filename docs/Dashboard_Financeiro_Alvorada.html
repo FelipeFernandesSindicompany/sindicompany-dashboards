@@ -608,7 +608,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Inadimplência</h1><p>Devedores em aberto e cotas em processo de cobrança</p></div>
 
-  <div class="cc"><h3>📊 Evolução da Inadimplência</h3><div class="cw"><canvas id="cInad"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">📊 Evolução da Inadimplência</h3><select onchange="window._filterInad(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cInad"></canvas></div></div>
 
   <div class="cc"><h3>📃 Detalhamento por Mês</h3><div class="tw"><table id="tblInad"></table></div></div>
 
@@ -1000,7 +1000,38 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
-  mkC('cInad',{type:'line',data:{labels:ML,datasets:[{label:'Devedores em Aberto',data:MESES.map(function(k){return BAL[k].inad;}),borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,.10)',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35,order:2},{label:'Recebidos em Atraso',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:'#F39C12',backgroundColor:'rgba(243,156,18,.12)',borderWidth:2,pointRadius:4,fill:true,tension:0.35,order:3},{label:'Média',data:(function(){var a=MESES.map(function(k){return BAL[k].inad;}).reduce(function(x,y){return x+y;},0)/MESES.length;return MESES.map(function(){return a;});}()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
+  mkC('cInad',{type:'line',data:{labels:ML,datasets:[{label:'Devedores em Aberto',data:MESES.map(function(k){return BAL[k].inad;}),borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,.10)',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35,order:2},{label:'Recebidos em Atraso',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:'#F39C12',backgroundColor:'rgba(243,156,18,.12)',borderWidth:2,pointRadius:4,fill:true,tension:0.35,order:3},{label:'Média',data:(function(){var a=MESES.map(function(k){return BAL[k].inad;}).reduce(function(x,y){return x+y;},0)/MESES.length;return MESES.map(function(){return a;});
+
+// ── Filtro de período: Inadimplência ─────────────────────────────────────────
+(function(){
+  var _allMesInad=MESES.slice();
+  var _chI=chartInstances['cInad'];
+  var _dsOrig=_chI?_chI.data.datasets.map(function(ds){return ds.data.slice();}):[];
+  function _filterInad(n){
+    var mf=n>0?_allMesInad.slice(-n):_allMesInad;
+    var startIdx=_allMesInad.length-mf.length;
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    var ch=chartInstances['cInad'];
+    if(ch){
+      ch.data.labels=mf.map(lbl);
+      ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrig[di]?_dsOrig[di].slice(startIdx):[];});
+      ch.update();
+    }
+    var tbl=document.getElementById('tblInad');
+    if(tbl){
+      var ri=0;
+      tbl.querySelectorAll('tr').forEach(function(r){
+        if(r.querySelector('th'))return;
+        r.style.display=(ri>=startIdx)?'':'none';
+        ri++;
+      });
+      var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
+    }
+  }
+  _filterInad(12);
+  window._filterInad=_filterInad;
+})();
+}()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
 
 

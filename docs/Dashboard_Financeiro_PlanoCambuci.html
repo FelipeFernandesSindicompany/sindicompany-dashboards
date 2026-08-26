@@ -718,7 +718,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Cotas em aberto e processos de cobran&ccedil;a</p></div>
 
-  <div class="cc"><h3>&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia (R$)</h3><div class="cw"><canvas id="cInad"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia (R$)</h3><select onchange="window._filterInad(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cInad"></canvas></div></div>
 
   <div class="cc"><h3>&#128203; Detalhamento por M&ecirc;s</h3><div class="tw"><table id="tblInad"></table></div></div>
 
@@ -2741,6 +2741,37 @@ function buildCharts() {
           data: (function(){
 
             var vals = MESES.map(function(k){ return BAL[k].inad; });
+
+// ── Filtro de período: Inadimplência ─────────────────────────────────────────
+(function(){
+  var _allMesInad=MESES.slice();
+  var _chI=chartInstances['cInad'];
+  var _dsOrig=_chI?_chI.data.datasets.map(function(ds){return ds.data.slice();}):[];
+  function _filterInad(n){
+    var mf=n>0?_allMesInad.slice(-n):_allMesInad;
+    var startIdx=_allMesInad.length-mf.length;
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    var ch=chartInstances['cInad'];
+    if(ch){
+      ch.data.labels=mf.map(lbl);
+      ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrig[di]?_dsOrig[di].slice(startIdx):[];});
+      ch.update();
+    }
+    var tbl=document.getElementById('tblInad');
+    if(tbl){
+      var ri=0;
+      tbl.querySelectorAll('tr').forEach(function(r){
+        if(r.querySelector('th'))return;
+        r.style.display=(ri>=startIdx)?'':'none';
+        ri++;
+      });
+      var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
+    }
+  }
+  _filterInad(12);
+  window._filterInad=_filterInad;
+})();
+
 
             var avg  = vals.reduce(function(a,b){ return a+b; },0) / vals.length;
 
