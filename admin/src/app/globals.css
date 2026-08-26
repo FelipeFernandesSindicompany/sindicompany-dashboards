@@ -113,6 +113,18 @@ body {
            transition-colors duration-150;
   }
 
+  /* Native select: força modo escuro no popup do browser (Windows/Chrome) */
+  select {
+    color-scheme: dark;
+    background-color: #18181b;
+    color: #fafafa;
+  }
+
+  select option {
+    background-color: #18181b;
+    color: #fafafa;
+  }
+
   /* Esconde scrollbar mas mantém scroll funcional */
   .no-scrollbar {
     -ms-overflow-style: none;
