@@ -437,14 +437,18 @@
       "parser_config": {
         "extract_cats": "webware",
         "cat_map": {
-          "CONTRATOS": "SERV. TERCEIRIZADOS",
-          "CONSUMO": "CONSUMOS",
-          "MANUTENCAO": "MANUT/CONSERV. CONTRAT.",
-          "MANUTENÇÃO": "MANUT/CONSERV. CONTRAT.",
-          "OUTROS": "ADMINISTRATIVO",
-          "AQUISICOES": "ADMINISTRATIVO",
-          "AQUISIÇÕES": "ADMINISTRATIVO",
-          "IMPOSTOS E TAXAS": "ADMINISTRATIVO",
+          "PESSOAL": "Pessoal",
+          "CONTRATOS": "Contratos",
+          "CONSUMO": "Consumo",
+          "CONSUMOS": "Consumo",
+          "MANUTENCAO": "Manutenção",
+          "MANUTENÇÃO": "Manutenção",
+          "MANUT/CONSERV. CONTRAT.": "Manutenção",
+          "MANUT/CONSERV. ESPORÁD.": "Manutenção",
+          "IMPOSTOS E TAXAS": "Impostos e Taxas",
+          "OUTROS": "Outros",
+          "AQUISICOES": "Outros",
+          "AQUISIÇÕES": "Outros",
           "ENCARGOS": "ENCARGOS SOCIAIS"
         }
       }
