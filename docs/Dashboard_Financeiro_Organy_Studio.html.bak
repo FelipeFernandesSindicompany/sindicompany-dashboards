@@ -6,9 +6,9 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Dashboard Financeiro – I-GLOO ALPHAVILLE</title>
+<title>Dashboard Financeiro — Organy Studio</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -24,7 +24,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 
 .sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.15);}
 
-.sb-logo h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#EDE5F5;}
+.sb-logo img{max-width:160px;height:auto;display:block;}
+
+.sb-logo h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#EDE5F5;margin-top:10px;}
 
 .sb-logo p{font-size:10px;color:rgba(255,255,255,.6);margin-top:3px;}
 
@@ -90,6 +92,8 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 .tot td{background:var(--pl)!important;font-weight:700;}
 
+#tblDesp th,#tblDesp td{white-space:nowrap;}
+
 .al{border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;}
 
 .al .ai{font-size:18px;flex-shrink:0;}
@@ -107,9 +111,6 @@ tr:nth-child(even) td{background:#FAFAFA;}
 .pill{padding:7px 16px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;}
 
 .pill:hover,.pill.on{background:var(--p);color:#fff;}
-.bal-sel{padding:8px 36px 8px 16px;border-radius:24px;border:2px solid var(--p);background:var(--card);color:var(--txt);font-size:14px;font-weight:600;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\'%3E%3Cpath fill=\'%23171B2E\' d=\'M7 10l5 5 5-5z\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;min-width:110px;}
-.bal-sel:focus{border-color:var(--p);}
-@media(max-width:767px){.bal-sel{width:100%;}}
 
 .pb{height:8px;background:#EEE;border-radius:4px;overflow:hidden;margin-top:4px;}
 
@@ -140,8 +141,6 @@ tr:nth-child(even) td{background:#FAFAFA;}
 .progress-fill{height:100%;border-radius:10px;transition:width .5s;}
 
 .progress-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff;mix-blend-mode:difference;}
-
-
 
 @media print{#sb{display:none;}#mn{margin-left:0;}}
 
@@ -506,7 +505,8 @@ tr:nth-child(even) td{background:#FAFAFA;}
 <body>
 <div id="dl-login-overlay">
   <div id="dl-login-box">
-    <h2>I-GLOO Alphaville</h2>
+    <div class="dl-logo">Sindicompany</div>
+    <h2>Organy Studio</h2>
     <p>Dashboard Financeiro &mdash; Acesso Restrito</p>
     <input type="text" id="dl-user" placeholder="Usuário" autocomplete="off" />
     <div id="dl-pass-wrap">
@@ -540,7 +540,9 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="sb-logo">
 
-<h2>I-GLOO ALPHAVILLE</h2>
+    <img src="data:image/png;base64,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" alt="Logo">
+
+    <h2>Organy Studio</h2>
 
     <p>Demonstrativo Financeiro Condominial</p>
 
@@ -580,7 +582,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <div id="pg-geral" class="pg on">
 
-  <div class="ph"><h1>Vis&atilde;o Geral</h1><p id="gs">Demonstrativo Financeiro &middot; Condom&iacute;nio I-GLOO ALPHAVILLE</p></div>
+  <div class="ph"><h1>Vis&atilde;o Geral</h1><p id="gs">Demonstrativo Financeiro &middot; Organy Studio</p></div>
 
   <div class="kg" id="geral-kpis"></div>
 
@@ -604,10 +606,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Balan&ccedil;o Mensal</h1><p>Resumo financeiro cont&aacute;bil por per&iacute;odo</p></div>
 
-    <div id="bal-filtros" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-    <select id="bal-sel-ano" class="bal-sel"></select>
-    <select id="bal-sel-mes" class="bal-sel"></select>
-  </div>
+  <div class="pg-pills" id="bal-pills"></div>
 
   <div id="balContent"></div>
 
@@ -619,7 +618,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Despesas por Categoria</h1><p>An&aacute;lise das despesas da conta Ordin&aacute;ria</p></div>
 
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128202; Despesas por Categoria &ndash; comparativo mensal</h3><select onchange="window._filterDespBar(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cDespBar"></canvas></div></div>
+  <div class="cc"><h3>&#128202; Despesas por Categoria &ndash; comparativo mensal</h3><div class="cw"><canvas id="cDespBar"></canvas></div></div>
 
   <div class="cc">
 
@@ -635,7 +634,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   </div>
 
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128203; Detalhamento por Categoria e M&ecirc;s</h3><select onchange="window._filterDespTable(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="tw"><table id="tblDesp"></table></div></div>
+  <div class="cc"><h3>&#128203; Detalhamento por Categoria e M&ecirc;s</h3><div class="tw"><table id="tblDesp"></table></div></div>
 
 </div>
 
@@ -645,7 +644,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Previsto &times; Realizado</h1><p>Emiss&atilde;o Prevista vs. Emiss&atilde;o Realizada da Conta Ordin&aacute;ria</p></div>
 
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127919; Previsto &times; Realizado por M&ecirc;s</h3><select onchange="window._filterPvr(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cPvr"></canvas></div></div>
+  <div class="cc"><h3>&#127919; Previsto &times; Realizado por M&ecirc;s</h3><div class="cw"><canvas id="cPvr"></canvas></div></div>
 
   <div class="g2">
 
@@ -655,7 +654,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   </div>
 
-  <div class="al inf"><span class="ai">&#8505;</span><div><strong>Regra de receita:</strong> Real &gt; Previsto = &#127881; VERDE (arrecadou mais). Real &lt; Previsto = &#128308; VERMELHO (inadimpl&ecirc;ncia).</div></div>
+  <div class="al inf"><span class="ai">&#8505;</span><div><strong>Regra de receita:</strong> Real &gt; Previsto = &#127881; VERDE (arrecadou acima do or&ccedil;amento). Real &lt; Previsto = &#128308; VERMELHO (indica inadimpl&ecirc;ncia).</div></div>
 
 </div>
 
@@ -675,7 +674,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Devedores em aberto e recupera&ccedil;&atilde;o mensal</p></div>
 
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia</h3><select onchange="window._filterInad(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cInad"></canvas></div></div>
+  <div class="cc"><h3>&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia</h3><div class="cw"><canvas id="cInad"></canvas></div></div>
 
   <div class="cc"><h3>&#128203; Detalhamento por M&ecirc;s</h3><div class="tw"><table id="tblInad"></table></div></div>
 
@@ -695,44 +694,303 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 </main>
 
+
+
 <script>
 
-var CONFIG={nome:"I-GLOO ALPHAVILLE",sindico:"Mauro Pasquotto Borgeth",administradora:"HSA Condomínios",orcamento:{exercicio:"2025/2026",totalAnual:2041141.29,meses:{abr25:117539.35,mai25:117539.35,jun25:117539.35,jul25:117539.35,ago25:117539.35,set25:117539.35,out25:117539.35,nov25:152295.73,dez25:152295.73,jan26:152295.73,fev26:152295.73,mar26:152295.73,abr26:152295.73,mai26:152295.73,jun26:152295.73}}};
+var BAL = {
 
-var EVO_L=['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26']
+  abr25: {
 
-var EVO_V=[152354.17, 129456.65, 97311.03, 87919.96, 105287.12, 134067.64, 106114.87, 150222.03, 184447.08, 191990.01, 250717.51, 272550.2, 287793.0, 316817.17, 340486.31]
+    tit:'Abril / 2025', per:'01/04/2025 a 30/04/2025',
 
-var BAL={
+    tAnt:-20338.48, tCred:10067.18, tDeb:57459.26, tAtual:-67730.56,
 
-  abr25:{tit:'Abril / 2025',per:'01/04/2025 a 30/04/2025',tAnt:148774.54,tCred:171888.94,tDeb:168309.31,tAtual:152354.17,contas:[{n:'Ordin\u00e1ria',a:-71207.14,c:139156.75,d:122791.0,s:-54841.39},{n:'Fundo Reserva',a:106378.68,c:5651.53,d:0.0,s:112030.21},{n:'Fundo Pintura',a:10000.0,c:0.0,d:0.0,s:10000.0},{n:'Fundo de Obras',a:-502.16,c:1021.56,d:519.4,s:0.0},{n:'Fundo de Obras/Melhorias',a:30463.53,c:0.0,d:30463.53,s:0.0},{n:'Rateio AVCB',a:-6522.53,c:2283.34,d:0.0,s:-4239.19},{n:'G\u00e1s',a:-13952.09,c:17349.88,d:19139.81,s:-15742.02},{n:'Reparo Elevadores',a:-2306.42,c:8866.67,d:12339.37,s:-5779.12},{n:'Água',a:-4152.09,c:12737.55,d:14039.13,s:-5453.67},{n:'C\u00e2meras',a:101337.48,c:9629.17,d:0.0,s:110966.65},{n:'Cobertura',a:-2622.36,c:5883.34,d:0.0,s:3260.98},{n:'Garagem',a:-3192.45,c:1250.0,d:0.0,s:-1942.45},{n:'Portaria',a:374.52,c:416.67,d:0.0,s:791.19},{n:'Academia',a:-16391.61,c:416.67,d:0.0,s:-15974.94},{n:'Lazer',a:4583.37,c:416.67,d:0.0,s:5000.04},{n:'Segundo Subsolo',a:-532.42,c:1812.5,d:0.0,s:1280.08},{n:'Rateio Extra',a:-1924.05,c:26954.6,d:30975.03,s:-5944.48},{n:'Dif. Reajuste',a:18942.28,c:0.0,d:0.0,s:18942.28}],prev:117539.35,real:102894.79,tDesp:122791.00,fac:0,inad:254124.94,inadProc:0,banco:{cp:100597.34,ap:51756.83},desp:[{c:'PESSOAL',v:76629.91},{c:'CONSUMO',v:26702.54},{c:'SERVI\u00c7OS',v:11904.93},{c:'GERAIS',v:7553.62}]},
+    contas:[{n:'ORDINÁRIA', a:-1259.73, c:5345.16, d:12596.48, s:-8511.05}, {n:'FUNDO DE RESERVA', a:1672.42, c:267.24, d:0.00, s:1939.66}, {n:'IMPOSTO PREDIAL', a:-584.93, c:765.55, d:1749.19, s:-1568.57}, {n:'CONSUMO', a:-2268.01, c:1980.04, d:38186.10, s:-38474.07}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:-13883.97, c:1709.19, d:4927.49, s:-17102.27}],
 
-  mai25:{tit:'Maio / 2025',per:'01/05/2025 a 31/05/2025',tAnt:152354.17,tCred:174913.57,tDeb:197811.09,tAtual:129456.65,contas:[{n:'Ordin\u00e1ria',a:-54841.39,c:117062.07,d:151450.36,s:-89229.68},{n:'Fundo Reserva',a:112030.21,c:6064.83,d:0.0,s:118095.04},{n:'Fundo Pintura',a:10000.0,c:0.0,d:0.0,s:10000.0},{n:'Fundo de Obras',a:0.0,c:18190.65,d:0.0,s:18190.65},{n:'Rateio AVCB',a:-4239.19,c:0.0,d:0.0,s:-4239.19},{n:'G\u00e1s',a:-15742.02,c:18686.0,d:20785.79,s:-17841.81},{n:'Reparo Elevadores',a:-5779.12,c:0.0,d:11535.81,s:-17314.93},{n:'Água',a:-5453.67,c:13610.96,d:14039.13,s:-5881.84},{n:'C\u00e2meras',a:110966.65,c:0.0,d:0.0,s:110966.65},{n:'Cobertura',a:3260.98,c:0.0,d:0.0,s:3260.98},{n:'Garagem',a:-1942.45,c:0.0,d:0.0,s:-1942.45},{n:'Portaria',a:791.19,c:0.0,d:0.0,s:791.19},{n:'Academia',a:-15974.94,c:0.0,d:0.0,s:-15974.94},{n:'Lazer',a:5000.04,c:0.0,d:0.0,s:5000.04},{n:'Segundo Subsolo',a:1280.08,c:0.0,d:0.0,s:1280.08},{n:'Rateio Extra',a:-5944.48,c:1299.06,d:0.0,s:-4645.42},{n:'Dif. Reajuste',a:18942.28,c:0.0,d:0.0,s:18942.28}],prev:117539.35,real:110268.35,tDesp:151450.36,fac:0,inad:313641.04,inadProc:0,banco:{cp:77148.14,ap:52308.51},desp:[{c:'PESSOAL',v:77805.21},{c:'CONSUMO',v:37187.3},{c:'SERVI\u00c7OS',v:28209.98},{c:'GERAIS',v:8247.87}]},
+    prev:15408.31, real:5345.16, tDesp:12596.48, fac:0.00,
 
-  jun25:{tit:'Junho / 2025',per:'01/06/2025 a 30/06/2025',tAnt:129456.65,tCred:165602.57,tDeb:197748.19,tAtual:97311.03,contas:[{n:'Ordin\u00e1ria',a:-89229.68,c:111268.34,d:143214.73,s:-121176.07},{n:'Fundo Reserva',a:118095.04,c:5704.1,d:0.0,s:123799.14},{n:'Fundo Pintura',a:10000.0,c:0.0,d:0.0,s:10000.0},{n:'Fundo de Obras',a:18190.65,c:17051.9,d:0.0,s:35242.55},{n:'Rateio AVCB',a:-4239.19,c:0.0,d:0.0,s:-4239.19},{n:'G\u00e1s',a:-17841.81,c:18826.15,d:22512.79,s:-21528.45},{n:'Reparo Elevadores',a:-17314.93,c:0.0,d:17981.54,s:-35296.47},{n:'Água',a:-5881.84,c:12752.08,d:14039.13,s:-7168.89},{n:'C\u00e2meras',a:110966.65,c:0.0,d:0.0,s:110966.65},{n:'Cobertura',a:3260.98,c:0.0,d:0.0,s:3260.98},{n:'Garagem',a:-1942.45,c:0.0,d:0.0,s:-1942.45},{n:'Portaria',a:791.19,c:0.0,d:0.0,s:791.19},{n:'Academia',a:-15974.94,c:0.0,d:0.0,s:-15974.94},{n:'Lazer',a:5000.04,c:0.0,d:0.0,s:5000.04},{n:'Segundo Subsolo',a:1280.08,c:0.0,d:0.0,s:1280.08},{n:'Rateio Extra',a:-4645.42,c:0.0,d:0.0,s:-4645.42},{n:'Dif. Reajuste',a:18942.28,c:0.0,d:0.0,s:18942.28}],prev:117539.35,real:103329.72,tDesp:143214.73,fac:0,inad:317641.70,inadProc:0,banco:{cp:45368.75,ap:51942.28},desp:[{c:'PESSOAL',v:77283.30},{c:'CONSUMO',v:0.0},{c:'SERVI\u00c7OS',v:43504.17},{c:'GERAIS',v:22427.26}]},
+    inad:17979.14, inadProc:348.61,
 
-  jul25:{tit:'Julho / 2025',per:'01/07/2025 a 31/07/2025',tAnt:97311.03,tCred:177147.73,tDeb:186538.80,tAtual:87919.96,contas:[{n:'Ordin\u00e1ria',a:-121176.07,c:150106.89,d:136539.2,s:-107608.38},{n:'Fundo Reserva',a:123799.14,c:5886.33,d:409.35,s:129276.12},{n:'Fundo Pintura',a:10000.0,c:0.0,d:0.0,s:10000.0},{n:'Fundo de Obras',a:35242.55,c:20071.28,d:0.0,s:55313.83},{n:'Rateio AVCB',a:-4239.19,c:0.0,d:0.0,s:-4239.19},{n:'G\u00e1s',a:-21528.45,c:813.7,d:23281.92,s:-43996.67},{n:'Reparo Elevadores',a:-35296.47,c:0.0,d:12678.55,s:-47975.02},{n:'Água',a:-7168.89,c:537.05,d:14039.13,s:-20670.97},{n:'C\u00e2meras',a:110966.65,c:0.0,d:0.0,s:110966.65},{n:'Cobertura',a:3260.98,c:0.0,d:0.0,s:3260.98},{n:'Garagem',a:-1942.45,c:0.0,d:0.0,s:-1942.45},{n:'Portaria',a:791.19,c:0.0,d:0.0,s:791.19},{n:'Academia',a:-15974.94,c:0.0,d:0.0,s:-15974.94},{n:'Lazer',a:5000.04,c:0.0,d:0.0,s:5000.04},{n:'Segundo Subsolo',a:1280.08,c:0.0,d:0.0,s:1280.08},{n:'Rateio Extra',a:-4645.42,c:141.83,d:0.0,s:-4503.59},{n:'Dif. Reajuste',a:18942.28,c:0.0,d:0.0,s:18942.28}],prev:117539.35,real:108557.62,tDesp:136539.20,fac:0,inad:324319.73,inadProc:0,banco:{cp:49928.33,ap:37991.63},desp:[{c:'PESSOAL',v:83213.19},{c:'CONSUMO',v:0.0},{c:'SERVI\u00c7OS',v:31246.49},{c:'GERAIS',v:22079.52}]},
+    banco:{cc:0.00, cdb:1939.66, priv:0.00},
 
-  ago25:{tit:'Agosto / 2025',per:'01/08/2025 a 31/08/2025',tAnt:87919.96,tCred:210172.47,tDeb:192805.31,tAtual:105287.12,contas:[{n:'Ordin\u00e1ria',a:-107608.38,c:143615.14,d:132941.01,s:-96934.25},{n:'Fundo Reserva',a:129276.12,c:5709.78,d:0.0,s:134985.9},{n:'Fundo Pintura',a:10000.0,c:0.0,d:0.0,s:10000.0},{n:'Fundo de Obras',a:55313.83,c:17175.05,d:0.0,s:72488.88},{n:'Rateio AVCB',a:-4239.19,c:0.0,d:0.0,s:-4239.19},{n:'G\u00e1s',a:-43996.67,c:30856.02,d:33729.1,s:-46869.75},{n:'Reparo Elevadores',a:-47975.02,c:0.0,d:12096.07,s:-60071.09},{n:'Água',a:-20670.97,c:12816.48,d:14039.13,s:-21893.62},{n:'C\u00e2meras',a:110966.65,c:0.0,d:0.0,s:110966.65},{n:'Cobertura',a:3260.98,c:0.0,d:0.0,s:3260.98},{n:'Garagem',a:-1942.45,c:0.0,d:0.0,s:-1942.45},{n:'Portaria',a:791.19,c:0.0,d:0.0,s:791.19},{n:'Academia',a:-15974.94,c:0.0,d:0.0,s:-15974.94},{n:'Lazer',a:5000.04,c:0.0,d:0.0,s:5000.04},{n:'Segundo Subsolo',a:1280.08,c:0.0,d:0.0,s:1280.08},{n:'Rateio Extra',a:-4503.59,c:0.0,d:0.0,s:-4503.59},{n:'Dif. Reajuste',a:18942.28,c:0.0,d:0.0,s:18942.28}],prev:117539.35,real:105868.04,tDesp:132941.01,fac:0,inad:325873.89,inadProc:0,banco:{cp:66878.87,ap:38408.25},desp:[{c:'PESSOAL',v:78220.88},{c:'CONSUMO',v:0.0},{c:'SERVI\u00c7OS',v:30611.21},{c:'GERAIS',v:24108.92}]},
+    desp:[{c:'SERV. TERCEIRIZADOS', v:8865.38}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:0.00}, {c:'MANUT/CONSERV. CONTRAT.', v:2661.90}, {c:'MANUT/CONSERV. ESPORÁD.', v:0.00}, {c:'ADMINISTRATIVO', v:1069.20}, {c:'PESSOAL', v:0.00}]
 
-  set25:{tit:'Setembro / 2025',per:'01/09/2025 a 30/09/2025',tAnt:105287.12,tCred:203798.32,tDeb:175017.80,tAtual:134067.64,contas:[{n:'Ordin\u00e1ria',a:-41591.69,c:148773.13,d:129203.69,s:-22022.25},{n:'Fundo Reserva',a:134985.9,c:6388.71,d:0.0,s:141374.61},{n:'Fundo Pintura',a:10000.0,c:0.0,d:0.0,s:10000.0},{n:'Rateio AVCB',a:-4239.19,c:0.0,d:0.0,s:-4239.19},{n:'G\u00e1s',a:-46869.75,c:34216.49,d:29064.98,s:-41718.24},{n:'Reparo Elevadores',a:-42924.77,c:0.0,d:2710.0,s:-45634.77},{n:'Água',a:-21893.62,c:14419.99,d:14039.13,s:-21512.76},{n:'C\u00e2meras',a:110966.65,c:0.0,d:0.0,s:110966.65},{n:'Cobertura',a:3260.98,c:0.0,d:0.0,s:3260.98},{n:'Garagem',a:-1942.45,c:0.0,d:0.0,s:-1942.45},{n:'Portaria',a:791.19,c:0.0,d:0.0,s:791.19},{n:'Academia',a:-15974.94,c:0.0,d:0.0,s:-15974.94},{n:'Lazer',a:5000.04,c:0.0,d:0.0,s:5000.04},{n:'Segundo Subsolo',a:1280.08,c:0.0,d:0.0,s:1280.08},{n:'Rateio Extra',a:-4503.59,c:0.0,d:0.0,s:-4503.59},{n:'Dif. Reajuste',a:18942.28,c:0.0,d:0.0,s:18942.28}],prev:117539.35,real:118947.56,tDesp:129203.69,fac:0,inad:322364.44,inadProc:0,banco:{cp:95217.79,ap:38849.85},desp:[{c:'PESSOAL',v:77062.34},{c:'CONSUMO',v:0.0},{c:'SERVI\u00c7OS',v:29417.14},{c:'GERAIS',v:22724.21}]},
+  },
 
-  out25:{tit:'Outubro / 2025',per:'01/10/2025 a 31/10/2025',tAnt:134067.64,tCred:183588.44,tDeb:211541.21,tAtual:106114.87,contas:[{n:'Ordin\u00e1ria',a:-22022.25,c:284412.68,d:303687.19,s:-41296.76},{n:'Fundo Reserva',a:141374.61,c:5477.69,d:0,s:146852.30},{n:'Fundo Pintura',a:10000.0,c:0,d:10000.0,s:0},{n:'Benfeitorias',a:0,c:559.33,d:0,s:559.33},{n:'Rateio AVCB',a:-4239.19,c:4239.19,d:0,s:0},{n:'G\u00e1s',a:-41718.24,c:74236.16,d:32517.92,s:0},{n:'Reparo Elevadores',a:-45634.77,c:45634.77,d:0,s:0},{n:'\u00c1gua',a:-21512.76,c:35551.89,d:14039.13,s:0},{n:'C\u00e2meras',a:110966.65,c:0,d:110966.65,s:0},{n:'Cobertura',a:3260.98,c:0,d:3260.98,s:0},{n:'Garagem',a:-1942.45,c:1942.45,d:0,s:0},{n:'Portaria',a:791.19,c:0,d:791.19,s:0},{n:'Academia',a:-15974.94,c:15974.94,d:0,s:0},{n:'Lazer',a:5000.04,c:0,d:5000.04,s:0},{n:'Segundo Subsolo',a:1280.08,c:0,d:1280.08,s:0},{n:'Rateio Extra',a:-4503.59,c:4503.59,d:0,s:0},{n:'Dif. Reajuste',a:18942.28,c:0,d:18942.28,s:0}],prev:117539.35,real:109588.46,tDesp:303687.19,fac:0,inad:327636.11,inadProc:0,banco:{cp:66797.63,ap:39317.24},desp:[{c:'PESSOAL',v:77070.28},{c:'CONSUMO',v:75269.96},{c:'SERVI\u00c7OS',v:9335.91},{c:'GERAIS',v:25871.64},{c:'TRANSF. FUNDOS',v:116139.40}]},
+  mai25: {
 
-  nov25:{tit:'Novembro / 2025',per:'01/11/2025 a 30/11/2025',tAnt:106114.87,tCred:227903.54,tDeb:183796.38,tAtual:150222.03,contas:[{n:'Ordin\u00e1ria',a:-41296.76,c:211361.10,d:183796.38,s:-13732.04},{n:'Fundo Reserva',a:146852.30,c:7359.42,d:0,s:154211.72},{n:'Benfeitorias',a:559.33,c:9183.02,d:0,s:9742.35},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Gás',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Água',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:139832.93,tDesp:183796.38,fac:0,inad:308598.46,inadProc:0,banco:{cp:110041.4,ap:40180.63},desp:[{c:'PESSOAL',v:79898.87},{c:'CONSUMO',v:53723.33},{c:'SERVI\u00c7OS',v:46353.18},{c:'GERAIS',v:3821.00}]},
+    tit:'Maio / 2025', per:'01/05/2025 a 31/05/2025',
 
-  dez25:{tit:'Dezembro / 2025',per:'01/12/2025 a 31/12/2025',tAnt:150222.03,tCred:235140.58,tDeb:200915.53,tAtual:184447.08,contas:[{n:'Ordin\u00e1ria',a:-13732.04,c:216228.10,d:200915.53,s:1580.53},{n:'Fundo Reserva',a:154211.72,c:8081.90,d:0,s:162293.62},{n:'Benfeitorias',a:9742.35,c:10830.58,d:0,s:20572.93},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Gás',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Água',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:152525.89,tDesp:200915.53,fac:0,inad:322587.41,inadProc:0,banco:{cp:143781.63,ap:40665.45},desp:[{c:'PESSOAL',v:84344.63},{c:'CONSUMO',v:40465.20},{c:'SERVI\u00c7OS',v:41784.84},{c:'GERAIS',v:34320.86}]},
+    tAnt:-67730.56, tCred:30881.28, tDeb:17013.43, tAtual:-53862.71,
 
-  jan26:{tit:'Janeiro / 2026',per:'01/01/2026 a 31/01/2026',tAnt:184447.08,tCred:206113.29,tDeb:198570.36,tAtual:191990.01,contas:[{n:'Ordin\u00e1ria',a:1748.04,c:186167.93,d:167941.68,s:19974.29},{n:'Fundo Reserva',a:162126.11,c:6970.30,d:0,s:169096.41},{n:'Benfeitorias',a:20572.93,c:9242.86,d:0,s:29815.79},{n:'G\u00e1s',a:0,c:2285.94,d:30628.68,s:-28342.74},{n:'\u00c1gua',a:0,c:1446.26,d:0,s:1446.26},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:130539.73,tDesp:167941.68,fac:0,inad:348912.07,inadProc:0,banco:{cp:150856.31,ap:41133.7},desp:[{c:'PESSOAL',v:82369.71},{c:'CONSUMO',v:35884.6},{c:'SERVI\u00c7OS',v:29615.23},{c:'GERAIS',v:20072.14}]},
+    contas:[{n:'ORDINÁRIA', a:-8511.05, c:20115.39, d:6370.17, s:5234.17}, {n:'FUNDO DE RESERVA', a:1939.66, c:1005.75, d:0.00, s:2945.41}, {n:'IMPOSTO PREDIAL', a:-1568.57, c:1671.45, d:1321.91, s:-1219.03}, {n:'CONSUMO', a:-38474.07, c:4236.25, d:9321.35, s:-43559.17}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:-17102.27, c:3852.44, d:0.00, s:-13249.83}],
 
-  fev26:{tit:'Fevereiro / 2026',per:'01/02/2026 a 28/02/2026',tAnt:191990.01,tCred:212231.08,tDeb:153503.58,tAtual:250717.51,contas:[{n:'Ordin\u00e1ria',a:19974.29,c:163035.89,d:138888.56,s:44121.62},{n:'Fundo Reserva',a:169096.41,c:6914.37,d:0,s:176010.78},{n:'Benfeitorias',a:29815.79,c:9878.30,d:0,s:39694.09},{n:'G\u00e1s',a:-28342.74,c:18626.31,d:0,s:-9716.43},{n:'\u00c1gua',a:1446.26,c:13776.21,d:14615.02,s:607.45},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:138822.37,tDesp:138888.56,fac:0,inad:363304.56,inadProc:0,banco:{cp:138722.98,ap:111994.53},desp:[{c:'PESSOAL',v:77160.63},{c:'CONSUMO',v:10966.9},{c:'SERVI\u00c7OS',v:30024.46},{c:'GERAIS',v:20736.57}]},
+    prev:47897.27, real:19858.39, tDesp:6370.17, fac:0.00,
 
-  mar26:{tit:'Mar\u00e7o / 2026',per:'01/03/2026 a 31/03/2026',tAnt:250717.51,tCred:226929.55,tDeb:205096.86,tAtual:272550.20,contas:[{n:'Ordin\u00e1ria',a:44121.62,c:180527.80,d:190147.93,s:34501.49},{n:'Fundo Reserva',a:176010.78,c:8741.99,d:0,s:184752.77},{n:'Benfeitorias',a:39694.09,c:9978.87,d:0,s:49672.96},{n:'G\u00e1s',a:-9716.43,c:12776.84,d:0,s:3060.41},{n:'\u00c1gua',a:607.45,c:14904.05,d:14948.93,s:562.57},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:148668.84,tDesp:190147.93,fac:0,inad:348155.95,inadProc:0,banco:{cp:159219.94,ap:113330.26},desp:[{c:'PESSOAL',v:78899.44},{c:'CONSUMO',v:9186.76},{c:'SERVI\u00c7OS',v:71327.39},{c:'GERAIS',v:30734.34}]},
+    inad:37609.00, inadProc:7945.43,
 
-  abr26:{tit:'Abril / 2026',per:'01/04/2026 a 30/04/2026',tAnt:272550.2,tCred:223398.72,tDeb:208155.92,tAtual:287793.0,contas:[{n:'Ordinária',a:34501.48,c:170404.19,d:158114.44,s:46791.23},{n:'Fundo Reserva',a:184752.77,c:8547.05,d:0,s:193299.82},{n:'Benfeitorias',a:49672.96,c:10395.88,d:0,s:60068.84},{n:'Gás',a:3060.41,c:18867.98,d:35092.54,s:-13164.15},{n:'Água',a:562.57,c:15183.62,d:14948.94,s:797.25},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:147193.75,tDesp:158114.44,fac:4771.42,inad:358951.71,inadProc:0,banco:{cp:173247.01,ap:114545.99},desp:[{c:'PESSOAL',v:87787.65},{c:'CONSUMO',v:10741.38},{c:'SERVIÇOS',v:33793.49},{c:'GERAIS',v:25791.92}]},
-  mai26:{tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:287793.0,tCred:292786.98,tDeb:263762.81,tAtual:316817.17,contas:[{n:'Ordinária',a:46791.23,c:144949.45,d:128528.98,s:63211.7},{n:'Fundo Reserva',a:193299.82,c:8325.98,d:0,s:201625.8},{n:'Benfeitorias',a:60068.84,c:9662.98,d:3791.0,s:65940.82},{n:'Gás',a:13164.15,c:15370.62,d:14998.99,s:-12792.52},{n:'Água',a:797.25,c:14477.95,d:16443.84,s:-1168.64},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:135523.07,tDesp:128528.98,fac:2476.3,inad:365713.17,inadProc:0,banco:{cp:100695.22,ap:216121.95},desp:[{c:'PESSOAL',v:82180.55},{c:'CONSUMO',v:7220.05},{c:'SERVIÇOS',v:30304.51},{c:'GERAIS',v:8411.72},{c:'DESPESAS VINCULADAS À UNIDADE INFRATORA',v:412.15}]},
-  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:316817.17,tCred:251047.86,tDeb:227378.72,tAtual:340486.31,contas:[{n:'Ordinária',a:63211.7,c:147533.08,d:138879.94,s:71864.84},{n:'Fundo Reserva',a:201625.8,c:8855.06,d:0,s:210480.86},{n:'Fundo de Obras',a:0,c:232.01,d:0,s:232.01},{n:'Benfeitorias',a:65940.82,c:10689.9,d:0,s:76630.72},{n:'Gás',a:12792.52,c:15676.55,d:21549.84,s:-18665.81},{n:'Água',a:1168.64,c:16061.26,d:14948.94,s:-56.32},{n:'Fundo Pintura',a:0,c:0,d:0,s:0},{n:'Rateio AVCB',a:0,c:0,d:0,s:0},{n:'Reparo Elevadores',a:0,c:0,d:0,s:0},{n:'Câmeras',a:0,c:0,d:0,s:0},{n:'Cobertura',a:0,c:0,d:0,s:0},{n:'Garagem',a:0,c:0,d:0,s:0},{n:'Portaria',a:0,c:0,d:0,s:0},{n:'Academia',a:0,c:0,d:0,s:0},{n:'Lazer',a:0,c:0,d:0,s:0},{n:'Segundo Subsolo',a:0,c:0,d:0,s:0},{n:'Rateio Extra',a:0,c:0,d:0,s:0},{n:'Dif. Reajuste',a:0,c:0,d:0,s:0}],prev:152295.73,real:140429.39,tDesp:138879.94,fac:2844.66,inad:376948.2,inadProc:0,banco:{cp:69826.4,ap:270659.91},desp:[{c:'PESSOAL',v:81685.45},{c:'CONSUMO',v:9661.02},{c:'SERVIÇOS',v:34629.47},{c:'GERAIS',v:12904.0}]}
+    banco:{cc:5234.17, cdb:2945.41, priv:0.00},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:0.00}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:0.00}, {c:'MANUT/CONSERV. CONTRAT.', v:1896.35}, {c:'MANUT/CONSERV. ESPORÁD.', v:4071.01}, {c:'ADMINISTRATIVO', v:402.81}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  jun25: {
+
+    tit:'Junho / 2025', per:'01/06/2025 a 30/06/2025',
+
+    tAnt:-53862.71, tCred:74877.52, tDeb:20971.64, tAtual:43.17,
+
+    contas:[{n:'ORDINÁRIA', a:5234.17, c:55925.17, d:17655.64, s:43503.70}, {n:'FUNDO DE RESERVA', a:2945.41, c:2793.62, d:0.00, s:5739.03}, {n:'IMPOSTO PREDIAL', a:-1219.03, c:2565.52, d:0.00, s:1346.49}, {n:'CONSUMO', a:-43559.17, c:7743.57, d:3316.00, s:-39131.60}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:-13249.83, c:5849.64, d:0.00, s:-7400.19}],
+
+    prev:65873.00, real:53669.61, tDesp:17655.64, fac:0.00,
+
+    inad:16752.57, inadProc:20521.52,
+
+    banco:{cc:43503.70, cdb:5739.03, priv:0.00},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:15165.29}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:0.00}, {c:'MANUT/CONSERV. CONTRAT.', v:1488.63}, {c:'MANUT/CONSERV. ESPORÁD.', v:259.90}, {c:'ADMINISTRATIVO', v:741.82}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  jul25: {
+
+    tit:'Julho / 2025', per:'01/07/2025 a 31/07/2025',
+
+    tAnt:43.17, tCred:40891.43, tDeb:66548.52, tAtual:-25613.92,
+
+    contas:[{n:'ORDINÁRIA', a:43503.70, c:29982.26, d:46560.99, s:26924.97}, {n:'FUNDO DE RESERVA', a:5739.03, c:1499.10, d:0.00, s:7238.13}, {n:'IMPOSTO PREDIAL', a:1346.49, c:1386.14, d:4256.78, s:-1524.15}, {n:'CONSUMO', a:-39131.60, c:4929.13, d:15080.75, s:-49283.22}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:-7400.19, c:3094.80, d:650.00, s:-4955.39}],
+
+    prev:47899.43, real:29937.85, tDesp:46560.99, fac:0.00,
+
+    inad:24591.03, inadProc:0.00,
+
+    banco:{cc:26924.97, cdb:7238.13, priv:0.00},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:37127.83}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:219.46}, {c:'MANUT/CONSERV. CONTRAT.', v:4440.82}, {c:'MANUT/CONSERV. ESPORÁD.', v:3180.13}, {c:'ADMINISTRATIVO', v:1592.75}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  ago25: {
+
+    tit:'Agosto / 2025', per:'01/08/2025 a 31/08/2025',
+
+    tAnt:-25613.92, tCred:45632.00, tDeb:36958.89, tAtual:-16940.81,
+
+    contas:[{n:'ORDINÁRIA', a:26924.97, c:33944.82, d:27463.88, s:33405.91}, {n:'FUNDO DE RESERVA', a:7238.13, c:1697.24, d:0.00, s:8935.37}, {n:'IMPOSTO PREDIAL', a:-1524.15, c:1589.36, d:1755.00, s:-1689.79}, {n:'CONSUMO', a:-49283.22, c:4725.92, d:7740.01, s:-52297.31}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:-4955.39, c:3674.66, d:0.00, s:-1280.73}],
+
+    prev:55795.70, real:32794.29, tDesp:27463.88, fac:0.00,
+
+    inad:31279.81, inadProc:718.36,
+
+    banco:{cc:33405.91, cdb:8935.37, priv:0.00},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:21397.26}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:219.46}, {c:'MANUT/CONSERV. CONTRAT.', v:2615.24}, {c:'MANUT/CONSERV. ESPORÁD.', v:2578.96}, {c:'ADMINISTRATIVO', v:652.96}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  set25: {
+
+    tit:'Setembro / 2025', per:'01/09/2025 a 30/09/2025',
+
+    tAnt:-16940.81, tCred:52042.33, tDeb:99121.13, tAtual:-64019.61,
+
+    contas:[{n:'ORDINÁRIA', a:33405.91, c:38513.53, d:78568.01, s:-6648.57}, {n:'FUNDO DE RESERVA', a:8935.37, c:1861.85, d:0.00, s:10797.22}, {n:'IMPOSTO PREDIAL', a:-1689.79, c:1795.63, d:1778.32, s:-1672.48}, {n:'CONSUMO', a:-52297.31, c:5862.29, d:18774.80, s:-65209.82}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:-1280.73, c:4009.03, d:0.00, s:2728.30}],
+
+    prev:59755.58, real:35850.59, tDesp:78568.01, fac:0.00,
+
+    inad:32334.43, inadProc:3908.68,
+
+    banco:{cc:0.00, cdb:10797.22, priv:2728.30},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:71144.71}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:114.78}, {c:'MANUT/CONSERV. CONTRAT.', v:4005.51}, {c:'MANUT/CONSERV. ESPORÁD.', v:2035.59}, {c:'ADMINISTRATIVO', v:1267.42}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  out25: {
+
+    tit:'Outubro / 2025', per:'01/10/2025 a 31/10/2025',
+
+    tAnt:-64019.61, tCred:43233.38, tDeb:48882.60, tAtual:-69668.83,
+
+    contas:[{n:'ORDINÁRIA', a:-6648.57, c:36022.42, d:42723.82, s:-13349.97}, {n:'FUNDO DE RESERVA', a:10797.22, c:1051.11, d:0.00, s:11848.33}, {n:'IMPOSTO PREDIAL', a:-1672.48, c:971.92, d:1632.40, s:-2332.96}, {n:'CONSUMO', a:-65209.82, c:3017.97, d:4526.38, s:-66718.23}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:0.00, d:0.00, s:-4014.26}, {n:'IMPLANTAÇÃO', a:2728.30, c:2169.96, d:0.00, s:4898.26}],
+
+    prev:60659.16, real:21000.21, tDesp:42723.82, fac:0.00,
+
+    inad:53492.20, inadProc:0.00,
+
+    banco:{cc:0.00, cdb:11848.33, priv:4898.26},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:29064.51}, {c:'CONSUMOS', v:0.00}, {c:'ENCARGOS SOCIAIS', v:0.00}, {c:'MANUT/CONSERV. CONTRAT.', v:8027.02}, {c:'MANUT/CONSERV. ESPORÁD.', v:3254.25}, {c:'ADMINISTRATIVO', v:2378.04}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  nov25: {
+
+    tit:'Novembro / 2025', per:'01/11/2025 a 30/11/2025',
+
+    tAnt:-69668.83, tCred:84642.22, tDeb:18330.30, tAtual:-3356.91,
+
+    contas:[{n:'ORDINÁRIA', a:-13349.97, c:33593.50, d:7534.54, s:12708.99}, {n:'FUNDO DE RESERVA', a:11848.33, c:891.05, d:0.00, s:12739.38}, {n:'IMPOSTO PREDIAL', a:-2332.96, c:1429.80, d:1749.18, s:-2652.34}, {n:'FUNDO PARA EVENTUAIS', a:0.00, c:1351.29, d:0.00, s:1351.29}, {n:'CONSUMO', a:-66718.23, c:43362.32, d:9046.58, s:-32402.49}, {n:'RESPONSABILIDADE CONSTRUTORA', a:-4014.26, c:4014.26, d:0.00, s:0.00}, {n:'IMPLANTAÇÃO', a:4898.26, c:0.00, d:0.00, s:4898.26}],
+
+    prev:76829.53, real:30341.39, tDesp:7534.54, fac:0.00,
+
+    inad:62534.46, inadProc:0.00,
+
+    banco:{cc:12708.99, cdb:12739.38, priv:6249.55},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:1416.91}, {c:'CONSUMOS', v:61.26}, {c:'ENCARGOS SOCIAIS', v:680.11}, {c:'MANUT/CONSERV. CONTRAT.', v:3083.65}, {c:'MANUT/CONSERV. ESPORÁD.', v:1413.15}, {c:'ADMINISTRATIVO', v:879.46}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  dez25: {
+
+    tit:'Dezembro / 2025', per:'01/12/2025 a 31/12/2025',
+
+    tAnt:-3356.91, tCred:76428.01, tDeb:46208.04, tAtual:26863.06,
+
+    contas:[{n:'ORDINÁRIA', a:12708.99, c:57153.70, d:43302.09, s:26560.60}, {n:'FUNDO DE RESERVA', a:12739.38, c:1842.18, d:0.00, s:14581.56}, {n:'IMPOSTO PREDIAL', a:-2652.34, c:915.56, d:0.00, s:-1736.78}, {n:'FUNDO PARA EVENTUAIS', a:1351.29, c:1436.33, d:0.00, s:2787.62}, {n:'CONSUMO', a:-32402.49, c:13148.96, d:2905.95, s:-22159.48}, {n:'IMPLANTAÇÃO', a:4898.26, c:1931.28, d:0.00, s:6829.54}],
+
+    prev:81545.88, real:48518.98, tDesp:43302.09, fac:0.00,
+
+    inad:44313.93, inadProc:18055.50,
+
+    banco:{cc:26560.60, cdb:14581.56, priv:9617.16},
+
+    desp:[{c:'SERV. TERCEIRIZADOS', v:29257.29}, {c:'CONSUMOS', v:79.90}, {c:'ENCARGOS SOCIAIS', v:201.79}, {c:'MANUT/CONSERV. CONTRAT.', v:12007.37}, {c:'MANUT/CONSERV. ESPORÁD.', v:1305.79}, {c:'ADMINISTRATIVO', v:449.95}, {c:'PESSOAL', v:0.00}]
+
+  },
+
+  jan26: {
+
+    tit:'Janeiro / 2026', per:'01/01/2026 a 31/01/2026',
+
+    tAnt:26293.06, tCred:40846.27, tDeb:46547.69, tAtual:20591.64,
+
+    contas:[{n:'ORDINÁRIA', a:25990.60, c:25715.53, d:33199.43, s:18506.70}, {n:'FUNDO DE RESERVA', a:14581.56, c:1179.18, d:0.00, s:15760.74}, {n:'IMPOSTO PREDIAL', a:-1736.78, c:267.14, d:0.00, s:-1469.64}, {n:'FUNDO PARA EVENTUAIS', a:2787.62, c:1445.00, d:0.00, s:4232.62}, {n:'CONSUMO', a:-22159.48, c:11772.15, d:13348.26, s:-23735.59}, {n:'IMPLANTAÇÃO', a:6829.54, c:467.27, d:0.00, s:7296.81}],
+
+    prev:19670.61, real:13804.19, tDesp:33088.37, fac:0.00,
+
+    inad:39316.34, inadProc:28401.61,
+
+    banco:{cc:18506.70, cdb:15760.74, priv:11529.43},
+
+    desp:[{c:'MANUT/CONSERV. ESPORÁD.', v:15830.22}, {c:'MANUT/CONSERV. CONTRAT.', v:8408.60}, {c:'SERV. TERCEIRIZADOS', v:8144.19}, {c:'ADMINISTRATIVO', v:520.44}, {c:'CONSUMOS', v:184.92}]
+
+  },
+
+  fev26: {
+
+    tit:'Fevereiro / 2026', per:'01/02/2026 a 28/02/2026',
+
+    tAnt:20591.64, tCred:21346.44, tDeb:35267.67, tAtual:6670.41,
+
+    contas:[{n:'ORDINÁRIA', a:18506.70, c:14476.10, d:29999.15, s:2983.65}, {n:'FUNDO DE RESERVA', a:15760.74, c:723.73, d:0.00, s:16484.47}, {n:'IMPOSTO PREDIAL', a:-1469.64, c:-1815.47, d:0.00, s:-3285.11}, {n:'FUNDO PARA EVENTUAIS', a:4232.62, c:1050.17, d:0.00, s:5282.79}, {n:'CONSUMO', a:-23735.59, c:6911.91, d:5268.52, s:-22092.20}, {n:'IMPLANTAÇÃO', a:7296.81, c:0.00, d:0.00, s:7296.81}],
+
+    prev:19670.61, real:13827.69, tDesp:29888.09, fac:0.00,
+
+    inad:43203.36, inadProc:30832.89,
+
+    banco:{cc:2983.65, cdb:16484.47, priv:12579.60},
+
+    desp:[{c:'MANUT/CONSERV. ESPORÁD.', v:12531.68}, {c:'MANUT/CONSERV. CONTRAT.', v:9104.98}, {c:'SERV. TERCEIRIZADOS', v:7150.78}, {c:'ADMINISTRATIVO', v:812.96}, {c:'CONSUMOS', v:287.69}]
+
+  },
+
+  mar26: {
+
+    tit:'Março / 2026', per:'01/03/2026 a 31/03/2026',
+
+    tAnt:6670.41, tCred:40290.00, tDeb:29611.74, tAtual:17348.67,
+
+    contas:[{n:'ORDINÁRIA', a:2983.65, c:25633.85, d:18232.16, s:10385.34}, {n:'FUNDO DE RESERVA', a:16484.47, c:1031.56, d:0.00, s:17516.03}, {n:'IMPOSTO PREDIAL', a:-3285.11, c:1735.35, d:0.00, s:-1549.76}, {n:'FUNDO PARA EVENTUAIS', a:5282.79, c:0.00, d:0.00, s:5282.79}, {n:'CONSUMO', a:-22092.20, c:11889.24, d:11379.58, s:-21582.54}, {n:'IMPLANTAÇÃO', a:7296.81, c:0.00, d:0.00, s:7296.81}],
+
+    prev:19670.61, real:16630.04, tDesp:18232.16, fac:0.00,
+
+    inad:47610.97, inadProc:33248.17,
+
+    banco:{cc:10385.34, cdb:17516.03, priv:12579.60},
+
+    desp:[{c:'MANUT/CONSERV. CONTRAT.', v:8780.15}, {c:'SERV. TERCEIRIZADOS', v:6385.86}, {c:'ADMINISTRATIVO', v:1684.26}, {c:'MANUT/CONSERV. ESPORÁD.', v:1120.86}, {c:'CONSUMOS', v:261.03}]
+
+  },
+
+  abr26: {
+
+    tit:'Abril / 2026', per:'01/04/2026 a 30/04/2026',
+
+    tAnt:17348.67, tCred:28903.06, tDeb:25807.28, tAtual:20444.45,
+
+    contas:[{n:'ORDINÁRIA', a:10385.34, c:18327.44, d:22519.69, s:6193.09}, {n:'FUNDO DE RESERVA', a:17516.03, c:870.58, d:0.00, s:18386.61}, {n:'IMPOSTO PREDIAL', a:-1549.76, c:-297.09, d:0.00, s:-1846.85}, {n:'FUNDO PARA EVENTUAIS', a:5282.79, c:186.26, d:0.00, s:5469.05}, {n:'CONSUMO', a:-21582.54, c:9815.87, d:3287.59, s:-15054.26}, {n:'IMPLANTAÇÃO', a:7296.81, c:0.00, d:0.00, s:7296.81}],
+
+    prev:19670.61, real:13827.49, tDesp:22519.69, fac:0.00,
+
+    inad:44399.16, inadProc:31179.38,
+
+    banco:{cc:6193.09, cdb:18386.61, priv:12765.86},
+
+    desp:[{c:'MANUT/CONSERV. CONTRAT.', v:11514.62}, {c:'SERV. TERCEIRIZADOS', v:7031.62}, {c:'MANUT/CONSERV. ESPORÁD.', v:2783.84}, {c:'ADMINISTRATIVO', v:994.72}, {c:'CONSUMOS', v:194.89}]
+
+  },
+
+  mai26: {
+
+    tit:'Maio / 2026', per:'01/05/2026 a 31/05/2026',
+
+    tAnt:20444.45, tCred:33266.24, tDeb:29348.37, tAtual:24362.32,
+
+    contas:[{n:'ORDINÁRIA', a:6193.09, c:22143.46, d:23177.70, s:5158.85}, {n:'FUNDO DE RESERVA', a:18386.61, c:1072.78, d:580.00, s:18879.39}, {n:'IMPOSTO PREDIAL', a:-1846.85, c:58.05, d:0.00, s:-1788.80}, {n:'FUNDO PARA EVENTUAIS', a:5469.05, c:90.76, d:0.00, s:5559.81}, {n:'CONSUMO', a:-15054.26, c:9901.19, d:5590.67, s:-10743.74}, {n:'IMPLANTAÇÃO', a:7296.81, c:0.00, d:0.00, s:7296.81}],
+
+    prev:19670.61, real:19136.41, tDesp:23007.70, fac:0.00,
+
+    inad:41539.88, inadProc:29486.02,
+
+    banco:{cc:5158.85, cdb:18879.39, priv:12856.62},
+
+    desp:[{c:'MANUT/CONSERV. CONTRAT.', v:9603.92}, {c:'SERV. TERCEIRIZADOS', v:7175.12}, {c:'MANUT/CONSERV. ESPORÁD.', v:4207.41}, {c:'ENCARGOS SOCIAIS', v:609.70}, {c:'ADMINISTRATIVO', v:1216.66}, {c:'CONSUMOS', v:194.89}]
+
+  },
+  jun26:{tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:24362.32,tCred:87217.67,tDeb:31207.33,tAtual:80372.66,contas:[{n:'ORDINÁRIA',a:5158.85,c:63253.91,d:22002.51,s:46410.25},{n:'FUNDO DE RESERVA',a:18879.39,c:2468.18,d:0.00,s:21347.57},{n:'IMPOSTO PREDIAL',a:-1788.80,c:2247.04,d:0.00,s:458.24},{n:'FUNDO PARA EVENTUAIS',a:5559.81,c:473.35,d:1520.00,s:4513.16},{n:'CONSUMO',a:-10743.74,c:16635.55,d:7684.82,s:-1793.01},{n:'IMPLANTAÇÃO',a:7296.81,c:2139.64,d:0.00,s:9436.45}],prev:19670.61,real:19133.74,tDesp:22002.51,fac:3688.48,inad:0.00,inadProc:55677.08,banco:{cc:46410.25,cdb:21347.57,priv:12614.84},desp:[{c:'Contratos',v:8986.16},{c:'Serv. Terceirizados',v:7175.12},{c:'Serviços Prest/Consertos',v:3055.77},{c:'Regularizações Contabeis',v:596.09},{c:'Operacionais/Administrativas',v:502.69},{c:'Encargos Sociais',v:344.52},{c:'Contas De Consumo',v:274.88},{c:'Portal De Serviços',v:272.48},{c:'Imposto E Taxas',v:236.35},{c:'Despesas Jurídicas',v:200.34},{c:'Reembolso',v:180.11},{c:'Assessoria Administ. /Seguros',v:178.00}]}
 };
+
+
+
+var CONFIG={nome:"Organy Studio",sindica:"Cleiton de Andrade Câmara",administradora:"Robotton Master",orcamento:{exercicio:"2025/2026",totalAnual:610016.91,meses:{
+
+    abr25: 15408.31,
+
+    mai25: 47897.27,
+
+    jun25: 65873.00,
+
+    jul25: 47899.43,
+
+    ago25: 55795.70,
+
+    set25: 59755.58,
+
+    out25: 60659.16,
+
+    nov25: 76829.53,
+
+    dez25: 81545.88,
+
+    jan26: 19670.61,
+
+    fev26: 19670.61,
+
+    mar26: 19670.61,
+
+    abr26: 19670.61,
+
+    mai26: 19670.61,
+
+    jun26: 19670.61
+
+  }}};
+
+
 
 var MESES=Object.keys(BAL);
 
@@ -746,7 +1004,7 @@ function R(n){
 
   var i=a[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 
-  var s='R$ '+i+','+a[1];
+  var s='R$ '+i+','+a[1];
 
   return n<0?'('+s+')':s;
 
@@ -754,11 +1012,11 @@ function R(n){
 
 function kpi(l,v,c,s){return '<div class="kc '+c+'"><div class="kl">'+l+'</div><div class="kv">'+v+'</div><div class="ks">'+s+'</div></div>';}
 
-function gc(m,kw){var kl=kw.toUpperCase();var f=m.contas.find(function(c){return c.n.toUpperCase().indexOf(kl)>=0;});return f?f.s:null;}
+function gc(m,kw){var f=m.contas.find(function(c){return c.n.indexOf(kw)>=0;});return f?f.s:null;}
 
 function ab(t){
 
-  var A={'Janeiro':'Jan','Fevereiro':'Fev','Março':'Mar','Abril':'Abr','Maio':'Mai','Junho':'Jun','Julho':'Jul','Agosto':'Ago','Setembro':'Set','Outubro':'Out','Novembro':'Nov','Dezembro':'Dez'};
+  var A={'Janeiro':'Jan','Fevereiro':'Fev','Marco':'Mar','Abril':'Abr','Maio':'Mai','Junho':'Jun','Julho':'Jul','Agosto':'Ago','Setembro':'Set','Outubro':'Out','Novembro':'Nov','Dezembro':'Dez'};
 
   var p=t.split(' / ');
 
@@ -774,39 +1032,57 @@ window.onload=function(){
 
   document.getElementById('sb-info').innerHTML='Atualizado: '+ab(ul.tit)+'<br>Admin: '+CONFIG.administradora;
 
-  document.getElementById('gs').innerHTML='Demonstrativo · '+pr.tit+' – '+ul.tit;
+  document.getElementById('gs').innerHTML='Demonstrativo &middot; '+pr.tit+' &ndash; '+ul.tit;
 
-  document.getElementById('pt').innerHTML='\u{1F4B0} Distribuição do Saldo ('+ab(ul.tit)+')';
+  document.getElementById('pt').innerHTML='&#128176; Distribuição do Saldo ('+ab(ul.tit)+')';
 
 
 
   var tR=0,tD=0;
 
-  MESES.forEach(function(k){if(k!==MESES[0]){tR+=BAL[k].tCred;tD+=BAL[k].tDeb;}});
+  MESES.forEach(function(k){tR+=BAL[k].tCred;tD+=BAL[k].tDeb;});
 
   document.getElementById('geral-kpis').innerHTML=
 
-    kpi('Saldo Total ('+ab(ul.tit)+')',R(ul.tAtual),'','↑ vs '+ab(pr.tit)+': '+R(pr.tAtual))+
+    kpi('Saldo Total ('+ab(ul.tit)+')',R(ul.tAtual),'','&uarr; vs '+ab(pr.tit)+': '+R(pr.tAtual))+
 
     kpi('F. Reserva ('+ab(ul.tit)+')',R(gc(ul,'RESERVA')),'o','Fundo de Reserva acumulado')+
 
-    kpi('Receitas Totais (excl. '+ab(pr.tit)+')',R(tR),'g','Total do período')+
+    kpi('Total Receitas (período)',R(tR),'g','Total de entradas do período')+
 
-    kpi('Despesas Totais (excl. '+ab(pr.tit)+')',R(tD),'y','Total do período');
+    kpi('Total Débitos (período)',R(tD),'y','Total de saídas do período');
 
 
+
+  var inadPct=ul.prev>0?(ul.inad/ul.prev*100).toFixed(1):'0.0';
 
   var alertEl=document.getElementById('geral-alert');
 
-  alertEl.innerHTML=ul.inad>150000
+  alertEl.innerHTML=ul.inad>80000
 
-    ?'<div class="al bad"><span class="ai">⚠</span><div><strong>Inadimplência elevada:</strong> '+R(ul.inad)+' em aberto em '+ab(ul.tit)+'. Ação imediata necessária.</div></div>'
+    ?'<div class="al bad"><span class="ai">⚠</span><div><strong>Inadimplência elevada:</strong> '+R(ul.inad)+' em aberto em '+ab(ul.tit)+' ('+inadPct+'% do previsto). Ação imediata necessária.</div></div>'
 
-    :'<div class="al warn"><span class="ai">⚠</span><div><strong>Inadimplência:</strong> '+R(ul.inad)+' em aberto. Monitorar cobrança.</div></div>';
+    :'<div class="al warn"><span class="ai">⚠</span><div><strong>Inadimplência:</strong> '+R(ul.inad)+' em aberto ('+inadPct+'% do previsto). Monitorar cobrança.</div></div>';
 
 
 
-  var anosMeses={};MESES.forEach(function(k){var ano='20'+k.slice(-2);if(!anosMeses[ano])anosMeses[ano]=[];anosMeses[ano].push(k);});var anosDisp=Object.keys(anosMeses).sort();var anoAtivoBal=anosDisp[anosDisp.length-1];var selAno=document.getElementById('bal-sel-ano');var selMesEl=document.getElementById('bal-sel-mes');function popularMeses(ano){selMesEl.innerHTML='';var lista=anosMeses[ano]||[];lista.forEach(function(k){var opt=document.createElement('option');opt.value=k;opt.textContent=BAL[k].tit.split(' / ')[0];selMesEl.appendChild(opt);});if(lista.length)selMesEl.value=lista[lista.length-1];return lista;}anosDisp.forEach(function(a){var opt=document.createElement('option');opt.value=a;opt.textContent=a;selAno.appendChild(opt);});selAno.value=anoAtivoBal;selAno.addEventListener('change',function(){anoAtivoBal=selAno.value;var lista=popularMeses(anoAtivoBal);if(lista.length)selectMes(lista[lista.length-1]);});selMesEl.addEventListener('change',function(){selectMes(selMesEl.value);});var listaMeses=popularMeses(anoAtivoBal);selectMes(listaMeses[listaMeses.length-1]);
+  var pills=document.getElementById('bal-pills');
+
+  MESES.forEach(function(k,i){
+
+    var btn=document.createElement('button');
+
+    btn.className='pill'+(i===MESES.length-1?' on':'');
+
+    btn.setAttribute('onclick',"selMes('"+k+"',this)");
+
+    btn.textContent=BAL[k].tit.replace(' / ','/');
+
+    pills.appendChild(btn);
+
+  });
+
+  selMes(MESES[MESES.length-1],null);
 
   buildOrc();buildDespTbl();buildPvr();buildInad();buildBanco();buildCharts();
 
@@ -826,7 +1102,15 @@ function nav(id,el){
 
 }
 
-function selectMes(id){var selMesEl=document.getElementById('bal-sel-mes');if(selMesEl&&selMesEl.value!==id)selMesEl.value=id;renderBal(id);}function selMes(id,btn){selectMes(id);}
+function selMes(id,btn){
+
+  document.querySelectorAll('.pg-pills .pill').forEach(function(p){p.classList.remove('on');});
+
+  if(btn)btn.classList.add('on');
+
+  renderBal(id);
+
+}
 
 
 
@@ -836,15 +1120,15 @@ function renderBal(id){
 
   var gap=m.real-m.prev, pos=gap>=0;
 
-  var gcls=pos?'ok':'bad', gico=pos?'✅':'❌';
-
   var dc=pos?'#27AE60':'#C0392B';
+
+  var gcls=pos?'ok':'bad', gico=pos?'✅':'❌';
 
   var dv='<strong style="color:'+dc+'">'+R(Math.abs(gap))+'</strong>';
 
   var stxt=pos
 
-    ?'<strong>Acima do previsto</strong> — Realizado ('+R(m.real)+') superou o previsto ('+R(m.prev)+') em '+dv+'.'
+    ?'<strong>Acima do previsto</strong> — Realizado ('+R(m.real)+') superou o previsto ('+R(m.prev)+') em '+dv+'. Arrecadação positiva.'
 
     :'<strong>Abaixo do previsto</strong> — Realizado ('+R(m.real)+') ficou '+dv+' abaixo do previsto ('+R(m.prev)+'). Indica inadimplência.';
 
@@ -860,11 +1144,11 @@ function renderBal(id){
 
   h+='</div>';
 
-  h+='<div class="cc"><h3>\u{1F4CB} Resumo por Conta – '+m.tit+' <small style="color:var(--muted);font-weight:400">'+m.per+'</small></h3><div class="tw"><table>';
+  h+='<div class="cc"><h3>&#128203; Resumo por Conta – '+m.tit+' <small style="color:var(--muted);font-weight:400">'+m.per+'</small></h3><div class="tw"><table>';
 
   h+='<tr><th>Conta</th><th>Saldo Ant.</th><th>Créditos</th><th>Débitos</th><th>Saldo Atual</th></tr>';
 
-  m.contas.filter(function(c){return c.a!==0||c.c!==0||c.d!==0||c.s!==0;}).forEach(function(c){
+  m.contas.forEach(function(c){
 
     var sc=c.s<0?' style="color:var(--r)"':'';
 
@@ -878,13 +1162,11 @@ function renderBal(id){
 
   });
 
-  var _sC=0,_sD=0;m.contas.forEach(function(c){_sC+=c.c;_sD+=c.d;});
-
-  h+='<tr class="tot"><td>TOTAL</td><td class="nr">'+R(m.tAnt)+'</td><td class="nr" style="color:var(--g)">'+R(_sC)+'</td><td class="nr" style="color:var(--r)">'+R(_sD)+'</td><td class="nr" style="color:var(--p)">'+R(m.tAtual)+'</td></tr>';
+  h+='<tr class="tot"><td>TOTAL</td><td class="nr">'+R(m.tAnt)+'</td><td class="nr" style="color:var(--g)">'+R(m.tCred)+'</td><td class="nr" style="color:var(--r)">'+R(m.tDeb)+'</td><td class="nr" style="color:var(--p)">'+R(m.tAtual)+'</td></tr>';
 
   h+='</table></div></div>';
 
-  h+='<div class="cc"><h3>\u{1F3AF} Previsto × Realizado</h3><div class="al '+gcls+'"><span class="ai">'+gico+'</span><div>'+stxt+'</div></div>';
+  h+='<div class="cc"><h3>&#127919; Previsto × Realizado</h3><div class="al '+gcls+'"><span class="ai">'+gico+'</span><div>'+stxt+'</div></div>';
 
   h+='<div class="kg" style="margin-top:8px">';
 
@@ -898,7 +1180,7 @@ function renderBal(id){
 
   h+='</div></div>';
 
-  h+='<div class="cc"><h3>\u{1F4B8} Despesas – '+m.tit+'</h3><div class="tw"><table>';
+  h+='<div class="cc"><h3>&#128184; Despesas – '+m.tit+'</h3><div class="tw"><table>';
 
   h+='<tr><th>Categoria</th><th>Valor</th><th>%</th><th>Participação</th></tr>';
 
@@ -942,9 +1224,9 @@ function buildOrc(){
 
   var h='<div class="val-card '+sc+'">';
 
-  h+='<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">\u{1F3AF} Validação Orçamentária — '+orc.exercicio+'</h3>';
+  h+='<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">&#127919; Validação Orçamentária — '+orc.exercicio+'</h3>';
 
-  h+='<p style="font-size:13px;color:var(--muted)">Emissão Prevista vs. Realizada • '+ks.length+' meses</p>';
+  h+='<p style="font-size:13px;color:var(--muted)">Emissão Prevista vs. Realizada &bull; '+ks.length+' meses</p>';
 
   h+='<div class="val-grid">';
 
@@ -964,7 +1246,7 @@ function buildOrc(){
 
   h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pb+'%;background:'+bc+'"><span class="progress-label">'+pctA.toFixed(1)+'%</span></div></div></div></div>';
 
-  h+='<div class="cc"><h3>\u{1F4CB} Detalhamento Mensal</h3><div class="tw"><table>';
+  h+='<div class="cc"><h3>&#128203; Detalhamento Mensal</h3><div class="tw"><table>';
 
   h+='<tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Diferença (R−P)</th><th>% Realiz.</th><th>Status</th></tr>';
 
@@ -978,7 +1260,7 @@ function buildOrc(){
 
     var cs=g>=0?'color:var(--g)':'color:var(--r)';
 
-    var badge=g>=0?'<span class="badge bok">✓ Ok</span>':(g>-10000?'<span class="badge bwarn">⚠ Atenção</span>':'<span class="badge bbad">✖ Déficit</span>');
+    var badge=g>=0?'<span class="badge bok">✓ Ok</span>':(g>-20000?'<span class="badge bwarn">⚠ Atenção</span>':'<span class="badge bbad">✖ Déficit</span>');
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr">'+R(p)+'</td><td class="nr">'+R(r)+'</td><td class="nr" style="'+cs+'">'+R(g)+'</td><td class="nr" style="'+cs+'">'+pct2+'%</td><td>'+badge+'</td></tr>';
 
@@ -1024,12 +1306,6 @@ function buildDespTbl(){
 
   h+='<tr class="tot"><td>TOTAL</td>'+MESES.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
 
-  var hasTransf=MESES.some(function(k){return BAL[k].desp.some(function(d){return d.c==='TRANSF. FUNDOS';});});
-  if(hasTransf){
-    var nc=1+MESES.length;
-    h+='<tr><td colspan="'+nc+'" style="font-size:11px;color:var(--muted);font-style:italic;padding:8px 10px 4px;line-height:1.5;background:transparent;border-top:1px dashed var(--border,#DDE0E8)">&#9432; <strong>Outubro/2025 — Transferências entre Fundos (R$ 116.139,40):</strong> em outubro/2025, a conta Ordinária realizou transferências excepcionais para zeragem de saldos negativos de fundos (Gás, Água, Reparo Elevadores, AVCB, Academia, Garagem e Rateio Extra). Esses valores estão destacados na linha <em>TRANSF. FUNDOS</em> e compõem o total de despesas ordinárias daquele mês.</td></tr>';
-  }
-
   document.getElementById('tblDesp').innerHTML=h;
 
   var sel=document.getElementById('dms');sel.innerHTML='';
@@ -1046,13 +1322,11 @@ function updPie(k){
 
   if(!k||!BAL[k])return;
 
-  var DC={'Pessoal Próprio':'#4CAF50','Pessoal Contrat.':'#E87722','Conserv./Manut.':'#2196F3','Manut. Contratos':'#9C27B0','Consumos':'#00BCD4','Impostos/Taxas':'#F7B731','Desp. Bancárias':'#607D8B','Despesas Diversas':'#FF5722','Honorários/Adm.':'#171B2E','Seguros':'#E91E63','Fundo Manutenção':'#00695C','Fundo Elevador':'#795548'};
-
-  var DEF=['#E87722','#2196F3','#4CAF50','#9C27B0','#00BCD4','#FF5722','#F7B731','#E91E63','#607D8B','#171B2E'];
+  var DEF=['#E87722','#2196F3','#4CAF50','#9C27B0','#00BCD4','#FF5722','#F7B731','#E91E63','#607D8B','#171B2E','#00695C','#795548'];
 
   var m=BAL[k],tot=m.desp.reduce(function(a,d){return a+d.v;},0);
 
-  var bg=m.desp.map(function(d,i){return DC[d.c]||DEF[i%DEF.length];});
+  var bg=m.desp.map(function(d,i){return DEF[i%DEF.length];});
 
   mkC('cPieMes',{type:'doughnut',data:{labels:m.desp.map(function(d){return d.c;}),datasets:[{data:m.desp.map(function(d){return d.v;}),backgroundColor:bg,borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
 
@@ -1066,23 +1340,21 @@ function updPie(k){
 
 
 
-function prc(k){var o=CONFIG.orcamento;return(o&&o.meses&&o.meses[k]!==undefined)?o.meses[k]:BAL[k].prev;}
-
 function buildPvr(){
 
   var h='<tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Diferença (R−P)</th><th>% Realiz.</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k],p=prc(k),g=m.real-p;
+    var m=BAL[k],g=m.real-m.prev;
 
-    var pct=p>0?(m.real/p*100).toFixed(1):'0.0';
+    var pct=m.prev>0?(m.real/m.prev*100).toFixed(1):'0.0';
 
     var cs=g>=0?'color:var(--g)':'color:var(--r)';
 
     var ico=g>=0?' ✓':' ✗';
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr">'+R(p)+'</td><td class="nr">'+R(m.real)+'</td><td class="nr" style="'+cs+'"><strong>'+R(g)+ico+'</strong></td><td class="nr" style="'+cs+'">'+pct+'%</td></tr>';
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr">'+R(m.prev)+'</td><td class="nr">'+R(m.real)+'</td><td class="nr" style="'+cs+'"><strong>'+R(g)+ico+'</strong></td><td class="nr" style="'+cs+'">'+pct+'%</td></tr>';
 
   });
 
@@ -1094,17 +1366,19 @@ function buildPvr(){
 
 function buildInad(){
 
-  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Status</th></tr>';
+  var maxInad=Math.max.apply(null,MESES.map(function(k){return BAL[k].inad;}));
+
+  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>% s/ Previsto</th><th>Status</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k];
+    var m=BAL[k],pi=m.prev>0?(m.inad/m.prev*100).toFixed(1):'0.0';
 
-    var b=m.inad>150000?'<span class="badge bbad">▲ Alto</span>':m.inad>100000?'<span class="badge bwarn">⚠ Médio</span>':'<span class="badge bok">▼ Controlado</span>';
+    var b=m.inad>maxInad*0.8?'<span class="badge bbad">▲ Alto</span>':m.inad>maxInad*0.5?'<span class="badge bwarn">⚠ Médio</span>':'<span class="badge bok">▼ Controlado</span>';
 
-    var ic=m.inad>150000?' style="color:var(--r)"':'';
+    var ic=m.inad>maxInad*0.8?' style="color:var(--r)"':'';
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td>'+b+'</td></tr>';
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td class="nr"'+ic+'>'+pi+'%</td><td>'+b+'</td></tr>';
 
   });
 
@@ -1116,21 +1390,17 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>M\u00eas</th><th>Conta Principal</th><th>Aplica\u00e7\u00e3o</th><th>Saldo Final</th></tr>';
+  var h='<tr><th>Mês</th><th style="text-align:right">Total</th></tr>';
 
   MESES.forEach(function(k){
 
     var m=BAL[k];
 
-    var cpCls=m.banco.cp<0?' style="color:var(--r)"':'';
+    var cls=m.tAtual<0?' style="color:var(--r)"':'';
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
-    h+='<td class="nr"'+cpCls+'>'+R(m.banco.cp)+'</td>';
-
-    h+='<td class="nr">'+R(m.banco.ap)+'</td>';
-
-    h+='<td class="nr bd">'+R(m.banco.cp+m.banco.ap)+'</td></tr>';
+    h+='<td class="nr bd"'+cls+'>'+R(m.tAtual)+'</td></tr>';
 
   });
 
@@ -1154,15 +1424,15 @@ function buildCharts(){
 
   var GY={color:'rgba(0,0,0,.06)'},GX={display:false},TK={font:{size:10}},LG={font:{size:11},boxWidth:13,usePointStyle:true,padding:14};
 
-  function fK(v){return 'R$ '+(v/1000).toFixed(0)+'k';}
+  function fK(v){return 'R$ '+(v/1000).toFixed(0)+'k';}
 
-  function fR(v){return (v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function fR(v){return 'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
 
 
   mkC('cEvo',{type:'line',data:{labels:ML,datasets:[{label:'Saldo Total',data:MESES.map(function(k){return BAL[k].tAtual;}),borderColor:'#5B2D8E',backgroundColor:'rgba(91,45,142,.10)',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'#5B2D8E',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35}]},
 
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  Saldo: '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:function(v){return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});}},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  Saldo: '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:function(v){return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});}},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
 
 
@@ -1170,31 +1440,27 @@ function buildCharts(){
 
   var PC=['#171B2E','#E87722','#27AE60','#F39C12','#2980B9','#9B59B6','#E91E63','#00BCD4','#795548','#607D8B'];
 
-  var pFilt=ul.contas.filter(function(c){return c.s!==0;});
+  var pL=ul.contas.map(function(c){return c.s<0?c.n+' (déficit)':c.n;});
 
-  var pL=pFilt.map(function(c){return c.s<0?c.n+' (déficit)':c.n;});
-
-  var pD=pFilt.map(function(c){return Math.abs(c.s);});
+  var pD=ul.contas.map(function(c){return Math.abs(c.s);});
 
   var pT=pD.reduce(function(a,b){return a+b;},0);
 
   mkC('cPieMar',{type:'doughnut',data:{labels:pL,datasets:[{data:pD,backgroundColor:PC.slice(0,pD.length),borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
 
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}}); 
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}});
 
 
 
-  function _sOrd(k){var c=BAL[k].contas.find(function(x){return /Ordin/i.test(x.n);});return c?c.s:0;}
-  function _sRes(k){var c=BAL[k].contas.find(function(x){return /Reserva/i.test(x.n);});return c?c.s:0;}
-  function _sDem(k){return BAL[k].contas.filter(function(x){return !/Ordin/i.test(x.n)&&!/Reserva/i.test(x.n)&&x.s>0;}).reduce(function(s,x){return s+x.s;},0);}
+  function cSaldo(k,tipo){var m=BAL[k];if(!m.contas||!m.contas.length){return tipo==='cc'?m.banco.cc:tipo==='cdb'?m.banco.cdb:m.banco.priv;}var cc=0,cdb=0,priv=0;m.contas.forEach(function(c){var nu=c.n.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();if(nu.indexOf('ORDINARI')!==-1)cc+=c.s;else if(nu.indexOf('RESERVA')!==-1)cdb+=c.s;else if(c.s>0)priv+=c.s;});return tipo==='cc'?Math.max(0,cc):tipo==='cdb'?cdb:priv;}
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Ordinária',data:MESES.map(_sOrd),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'ORDINÁRIA',data:MESES.map(function(k){return cSaldo(k,'cc');}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Fundo de Reserva',data:MESES.map(_sRes),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'F. Reserva',data:MESES.map(function(k){return cSaldo(k,'cdb');}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Demais Contas',data:MESES.map(_sDem),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Demais Fundos',data:MESES.map(function(k){return cSaldo(k,'priv');}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
@@ -1204,67 +1470,9 @@ function buildCharts(){
 
   var catL=Object.keys(cats);
 
-  var BC=['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#BF360C','#00ACC1','#7CB342'];
+  var BC=['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
 
-  mkC('cDespBar',{type:'bar',data:{labels:catL,datasets:MESES.map(function(k,i){var m=BAL[k],bc=BC[i]||'#888';return{label:ab(m.tit),data:catL.map(function(c){var d=m.desp.find(function(x){return x.c===c;});
-
-// ── Filtro de período: Despesas por Categoria ─────────────────────────────────
-(function(){
-  var _allMeses = MESES.slice();
-  var _origColors = _allMeses.map(function(k,i){
-    var ch = chartInstances["cDespBar"];
-    return (ch && ch.data && ch.data.datasets[i]) ? ch.data.datasets[i].backgroundColor : "#888";
-  });
-  function _filterDespBar(n){
-    var ch = chartInstances["cDespBar"];
-    if(!ch) return;
-    var mf = n>0 ? _allMeses.slice(-n) : _allMeses;
-    var cats={};
-    mf.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c]=true; }); });
-    var catL=Object.keys(cats);
-    ch.data.labels = catL.map(function(c){ return (typeof catShort!=="undefined"&&catShort[c])||c; });
-    ch.data.datasets = mf.map(function(k,ii){
-      var idx=_allMeses.indexOf(k), m=BAL[k];
-      return {
-        label: m.tit.split(" ")[0]+"/"+m.tit.split(" ")[2],
-        data: catL.map(function(c){ var d=m.desp.find(function(x){return x.c===c;}); return d?d.v:0; }),
-        backgroundColor: _origColors[idx]||"#888"
-      };
-    });
-    ch.update();
-    var _el=document.getElementById("cDespBar");if(_el){_el.style.minWidth=Math.max(500,catL.length*130)+"px";_el.parentElement.style.overflowX="auto";}
-  }
-  _filterDespBar(12);
-  window._filterDespBar=_filterDespBar;
-})();
-
-// ── Filtro de período: Detalhamento de Despesas ───────────────────────────────
-(function(){
-  function _filterDespTable(n){
-    var mf=n>0?MESES.slice(-n):MESES;
-    var cats={};
-    mf.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
-    var catL=Object.keys(cats);
-    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
-    var h='<tr><th>Categoria</th>'+mf.map(function(k){return '<th style="text-align:right">'+lbl(k)+'</th>';}).join('')+'</tr>';
-    catL.forEach(function(cat){
-      var vals=mf.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});
-      if(vals.every(function(v){return v===0;}))return;
-      h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
-    });
-    h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
-    var tbl=document.getElementById('tblDesp');
-    if(!tbl)return;
-    tbl.innerHTML=h;
-    tbl.style.minWidth=Math.max(400,mf.length*120+160)+'px';
-    var tw=tbl.parentElement;
-    if(tw)tw.style.overflowX='auto';
-  }
-  _filterDespTable(12);
-  window._filterDespTable=_filterDespTable;
-})();
-
-return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRadius:4,borderSkipped:false};})},
+  mkC('cDespBar',{type:'bar',data:{labels:catL,datasets:MESES.map(function(k,i){var m=BAL[k],bc=BC[i]||'#888';return{label:ab(m.tit),data:catL.map(function(c){var d=m.desp.find(function(x){return x.c===c;});return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRadius:4,borderSkipped:false};})},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
@@ -1274,7 +1482,7 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
-  var pV=MESES.map(function(k){return prc(k);}),rV=MESES.map(function(k){return BAL[k].real;});
+  var pV=MESES.map(function(k){return BAL[k].prev;}),rV=MESES.map(function(k){return BAL[k].real;});
 
   var pA=pV.reduce(function(a,b){return a+b;},0)/pV.length;
 
@@ -1288,46 +1496,9 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){if(c.datasetIndex===2)return '  Média: '+fR(pA);return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
-// ── Filtro de período: Previsto × Realizado ───────────────────────────────────
-(function(){
-  var _allMesPvr=MESES.slice();
-  function _filterPvr(n){
-    var mf=n>0?_allMesPvr.slice(-n):_allMesPvr;
-    var startIdx=_allMesPvr.length-mf.length;
-    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
-    var ch1=chartInstances['cPvr'];
-    if(ch1){
-      ch1.data.labels=mf.map(lbl);
-      ch1.data.datasets[0].data=mf.map(function(k){return BAL[k].prev;});
-      ch1.data.datasets[1].data=mf.map(function(k){return BAL[k].real;});
-      ch1.update();
-    }
-    var ch2=chartInstances['cPvrGap'];
-    if(ch2){
-      ch2.data.labels=mf.map(lbl);
-      ch2.data.datasets[0].data=mf.map(function(k){return BAL[k].prev-BAL[k].real;});
-      ch2.data.datasets[0].backgroundColor=mf.map(function(k){return (BAL[k].prev-BAL[k].real)>0?'rgba(192,57,43,0.75)':'rgba(39,174,96,0.75)';});
-      ch2.data.datasets[0].borderColor=mf.map(function(k){return (BAL[k].prev-BAL[k].real)>0?'#922B21':'#1E8449';});
-      ch2.update();
-    }
-    var tbl=document.getElementById('tblPvr');
-    if(tbl){
-      var ri=0;
-      tbl.querySelectorAll('tr').forEach(function(r){
-        if(r.querySelector('th'))return;
-        r.style.display=(ri>=startIdx)?'':'none';
-        ri++;
-      });
-    }
-  }
-  _filterPvr(12);
-  window._filterPvr=_filterPvr;
-})();
 
 
-
-
-  var gV=MESES.map(function(k){return BAL[k].real-prc(k);});
+  var gV=MESES.map(function(k){return BAL[k].real-BAL[k].prev;});
 
   var gA=gV.reduce(function(a,b){return a+b;},0)/gV.length,gM=Math.max.apply(null,gV.map(Math.abs))||1;
 
@@ -1347,38 +1518,7 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
     {label:'Recebido em Atraso',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:'#F39C12',backgroundColor:'rgba(243,156,18,.12)',borderWidth:2,pointRadius:4,fill:true,tension:0.35,order:3},
 
-    {label:'Média',data:(function(){var a=MESES.map(function(k){return BAL[k].inad;}).reduce(function(x,y){return x+y;},0)/MESES.length;return MESES.map(function(){return a;});
-
-// ── Filtro de período: Inadimplência ─────────────────────────────────────────
-(function(){
-  var _allMesInad=MESES.slice();
-  var _chI=chartInstances['cInad'];
-  var _dsOrig=_chI?_chI.data.datasets.map(function(ds){return ds.data.slice();}):[];
-  function _filterInad(n){
-    var mf=n>0?_allMesInad.slice(-n):_allMesInad;
-    var startIdx=_allMesInad.length-mf.length;
-    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
-    var ch=chartInstances['cInad'];
-    if(ch){
-      ch.data.labels=mf.map(lbl);
-      ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrig[di]?_dsOrig[di].slice(startIdx):[];});
-      ch.update();
-    }
-    var tbl=document.getElementById('tblInad');
-    if(tbl){
-      var ri=0;
-      tbl.querySelectorAll('tr').forEach(function(r){
-        if(r.querySelector('th'))return;
-        r.style.display=(ri>=startIdx)?'':'none';
-        ri++;
-      });
-      var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
-    }
-  }
-  _filterInad(12);
-  window._filterInad=_filterInad;
-})();
-}()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},
+    {label:'Média',data:(function(){var a=MESES.map(function(k){return BAL[k].inad;}).reduce(function(x,y){return x+y;},0)/MESES.length;return MESES.map(function(){return a;});}()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
@@ -1386,15 +1526,11 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Conta Principal',data:MESES.map(function(k){return BAL[k].banco.cp;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Total',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
-    {label:'Aplicação',data:MESES.map(function(k){return BAL[k].banco.ap;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false}]},
-
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{ticks:TK,grid:GX},y:{ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 }
-
-
 
 </script>
 
@@ -1608,13 +1744,13 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 <script>
 (function(){
-  var _u='SUdsb28=',_p='SUdsb28yMDI2Kg==';
+  var _u='T3JnYW55U3R1ZGlv',_p='T3JnYW55U3R1ZGlvMjAyNio=';
   var EON='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',EOFF='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
   function dlHide(){var o=document.getElementById('dl-login-overlay');if(o)o.style.display='none';}
-  if(sessionStorage.getItem('dl_auth_IGloo')==='1'){dlHide();return;}
+  if(sessionStorage.getItem('dl_auth_Organy_Studio')==='1'){dlHide();return;}
   document.getElementById('dl-pass').value='';
   document.getElementById('dl-user').value='';
-  try{var sv=localStorage.getItem('dl_auth_IGloo_sv');
+  try{var sv=localStorage.getItem('dl_auth_Organy_Studio_sv');
     if(sv){var cv=JSON.parse(sv);
       document.getElementById('dl-user').value=cv.u||'';
       
@@ -1634,10 +1770,10 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
     var pw=document.getElementById('dl-pass').value;
     var err=document.getElementById('dl-login-error');
     if(btoa(u)===_u&&btoa(pw)===_p){
-      sessionStorage.setItem('dl_auth_IGloo','1');
+      sessionStorage.setItem('dl_auth_Organy_Studio','1');
       var rem=document.getElementById('dl-remember');
-      if(rem&&rem.checked){localStorage.setItem('dl_auth_IGloo_sv',JSON.stringify({u:u}));}
-      else{localStorage.removeItem('dl_auth_IGloo_sv');}
+      if(rem&&rem.checked){localStorage.setItem('dl_auth_Organy_Studio_sv',JSON.stringify({u:u}));}
+      else{localStorage.removeItem('dl_auth_Organy_Studio_sv');}
       dlHide();
     }else{err.textContent='Usuário ou senha incorretos.';
       document.getElementById('dl-pass').value='';
@@ -1652,3 +1788,4 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 </body>
 
 </html>
+

@@ -702,7 +702,7 @@ tr:nth-child(even) td{white-space:nowrap;background:#FAFAFA;}
 
   <div class="ph"><h1>Previsto &times; Realizado</h1><p>Comparativo entre a previs&atilde;o or&ccedil;ament&aacute;ria aprovada em assembleia e os valores realizados</p></div>
 
-  <div class="cc"><h3>&#127919; Previsto &times; Realizado por M&ecirc;s (Conta Ordin&aacute;ria)</h3><div class="cw"><canvas id="cPvr"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127919; Previsto &times; Realizado por M&ecirc;s (Conta Ordin&aacute;ria)</h3><select onchange="window._filterPvr(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cPvr"></canvas></div></div>
 
   <div class="g2">
 
@@ -2459,6 +2459,43 @@ function buildCharts() {
     }
 
   });
+
+// ── Filtro de período: Previsto × Realizado ───────────────────────────────────
+(function(){
+  var _allMesPvr=MESES.slice();
+  function _filterPvr(n){
+    var mf=n>0?_allMesPvr.slice(-n):_allMesPvr;
+    var startIdx=_allMesPvr.length-mf.length;
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    var ch1=chartInstances['cPvr'];
+    if(ch1){
+      ch1.data.labels=mf.map(lbl);
+      ch1.data.datasets[0].data=mf.map(function(k){return BAL[k].prev;});
+      ch1.data.datasets[1].data=mf.map(function(k){return BAL[k].real;});
+      ch1.update();
+    }
+    var ch2=chartInstances['cPvrGap'];
+    if(ch2){
+      ch2.data.labels=mf.map(lbl);
+      ch2.data.datasets[0].data=mf.map(function(k){return BAL[k].prev-BAL[k].real;});
+      ch2.data.datasets[0].backgroundColor=mf.map(function(k){return (BAL[k].prev-BAL[k].real)>0?'rgba(192,57,43,0.75)':'rgba(39,174,96,0.75)';});
+      ch2.data.datasets[0].borderColor=mf.map(function(k){return (BAL[k].prev-BAL[k].real)>0?'#922B21':'#1E8449';});
+      ch2.update();
+    }
+    var tbl=document.getElementById('tblPvr');
+    if(tbl){
+      var ri=0;
+      tbl.querySelectorAll('tr').forEach(function(r){
+        if(r.querySelector('th'))return;
+        r.style.display=(ri>=startIdx)?'':'none';
+        ri++;
+      });
+    }
+  }
+  _filterPvr(12);
+  window._filterPvr=_filterPvr;
+})();
+
 
 
 
