@@ -641,7 +641,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   </div>
 
-  <div class="cc"><h3>&#128203; Detalhamento por Categoria e M&ecirc;s</h3><div class="tw"><table id="tblDesp"></table></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128203; Detalhamento por Categoria e M&ecirc;s</h3><select onchange="window._filterDespTable(+this.value)" style="padding:4px 10px;border-radius:6px;border:1px solid #ccc;font-size:13px;cursor:pointer;background:#fff;color:#333;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="tw"><table id="tblDesp"></table></div></div>
 
 </div>
 
@@ -1443,6 +1443,33 @@ function buildCharts(){
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+// ── Filtro de período: Detalhamento de Despesas ───────────────────────────────
+(function(){
+  function _filterDespTable(n){
+    var mf=n>0?MESES.slice(-n):MESES;
+    var cats={};
+    mf.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
+    var catL=Object.keys(cats);
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    var h='<tr><th>Categoria</th>'+mf.map(function(k){return '<th style="text-align:right">'+lbl(k)+'</th>';}).join('')+'</tr>';
+    catL.forEach(function(cat){
+      var vals=mf.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});
+      if(vals.every(function(v){return v===0;}))return;
+      h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
+    });
+    h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
+    var tbl=document.getElementById('tblDesp');
+    if(!tbl)return;
+    tbl.innerHTML=h;
+    tbl.style.minWidth=Math.max(400,mf.length*120+160)+'px';
+    var tw=tbl.parentElement;
+    if(tw)tw.style.overflowX='auto';
+  }
+  _filterDespTable(12);
+  window._filterDespTable=_filterDespTable;
+})();
+
 return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRadius:4,borderSkipped:false};})},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
