@@ -684,7 +684,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Posi&ccedil;&atilde;o nas contas e aplica&ccedil;&otilde;es financeiras</p></div>
 
-  <div class="cc"><h3>&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><div class="cw"><canvas id="cBanco"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><select onchange="window._filterBanco(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cBanco"></canvas></div></div>
 
   <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
 
@@ -3263,6 +3263,36 @@ function buildCharts() {
     }
 
   });
+
+// ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
+(function(){
+  var _allBMeses=(typeof bancoMeses!=='undefined')?bancoMeses.slice():MESES.slice();
+  var _chB=chartInstances['cBanco'];
+  var _dsOrigB=_chB?_chB.data.datasets.map(function(ds){return ds.data.slice();}):[];
+  function _filterBanco(n){
+    var mf=n>0?_allBMeses.slice(-n):_allBMeses;
+    var startIdx=_allBMeses.length-mf.length;
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    var ch=chartInstances['cBanco'];
+    if(ch){
+      ch.data.labels=mf.map(lbl);
+      ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrigB[di]?_dsOrigB[di].slice(startIdx):[];});
+      ch.update();
+    }
+    var tbl=document.getElementById('tblBanco');
+    if(tbl){
+      var ri=0;
+      tbl.querySelectorAll('tr').forEach(function(r){
+        if(r.querySelector('th'))return;
+        r.style.display=(ri>=startIdx)?'':'none';
+        ri++;
+      });
+    }
+  }
+  _filterBanco(12);
+  window._filterBanco=_filterBanco;
+})();
+
 
 }
 
