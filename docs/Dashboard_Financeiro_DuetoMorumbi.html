@@ -2180,6 +2180,7 @@ function buildCharts() {
       };
     });
     ch.update();
+    var _el=document.getElementById("cDespBar");if(_el){_el.style.minWidth=Math.max(500,catL.length*130)+"px";_el.parentElement.style.overflowX="auto";}
   }
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
