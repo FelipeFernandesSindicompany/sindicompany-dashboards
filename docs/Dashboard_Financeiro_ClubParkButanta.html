@@ -5442,31 +5442,22 @@ function buildCharts() {
 // ── Filtro de período: Despesas por Categoria ─────────────────────────────────
 (function(){
   var _allMeses=MESES.slice();
-  var _origColors=null;
   function _filterDespBar(n){
     var ch=chartInstances['cDespBar'];
     if(!ch)return;
-    if(!_origColors){_origColors=_allMeses.map(function(k,i){return (ch.data&&ch.data.datasets[i])?ch.data.datasets[i].backgroundColor:'#888';});}
     var mf=n>0?_allMeses.slice(-n):_allMeses;
-    var cats={};
-    mf.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
-    var catL=Object.keys(cats);
-    ch.data.labels=catL.map(function(c){return (typeof catShort!=='undefined'&&catShort[c])||c;});
-    ch.data.datasets=mf.map(function(k,ii){
-      var idx=_allMeses.indexOf(k),m=BAL[k];
-      return {
-        label:m.tit.split(' ')[0]+'/'+m.tit.split(' ')[2],
-        data:catL.map(function(c){var d=m.desp.find(function(x){return x.c===c;});return d?d.v:0;}),
-        backgroundColor:_origColors[idx]||'#888'
-      };
-    });
+    _allMeses.forEach(function(k,i){ch.setDatasetVisibility(i,mf.indexOf(k)!==-1);});
     ch.update();
     var _el=document.getElementById('cDespBar');
-    if(_el){_el.style.minWidth=Math.max(500,catL.length*130)+'px';_el.parentElement.style.overflowX='auto';}
+    if(_el){_el.style.minWidth=Math.max(500,ch.data.labels.length*130)+'px';_el.parentElement.style.overflowX='auto';}
   }
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+
+
+
 
 
 
@@ -6020,6 +6011,8 @@ function buildCharts() {
 
 
 
+
+
   // ── 8. Inadimplência (linhas com área) ────────────────────────────────────────
 
 
@@ -6330,6 +6323,8 @@ function buildCharts() {
 
 
 
+
+
   // ── 9. Posição bancária (barras empilhadas) ───────────────────────────────────
 
 
@@ -6471,6 +6466,8 @@ function buildCharts() {
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
 
 
 
