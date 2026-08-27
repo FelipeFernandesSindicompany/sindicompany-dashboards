@@ -730,6 +730,28 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
   </div>
 
+  <div class="cc" style="margin-bottom:16px">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+
+      <h3 style="margin:0">&#127919; Filtrar per&iacute;odo</h3>
+
+      <select onchange="window._filterOrc(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;">
+
+        <option value="6">&#218;ltimos 6 meses</option>
+
+        <option value="12" selected>&#218;ltimos 12 meses</option>
+
+        <option value="18">&#218;ltimos 18 meses</option>
+
+        <option value="0">Todos os meses</option>
+
+      </select>
+
+    </div>
+
+  </div>
+
   <div id="orc-content"></div>
 
 </div>
@@ -1487,7 +1509,7 @@ function nav(id, el) {
 
   if (el) el.classList.add('on');
 
-  if (id === 'orc') buildOrcamento();
+  if (id === 'orc') { var _s = document.querySelector('#pg-orc select'); buildOrcamento(_s ? +_s.value : 12); }
 
 }
 
@@ -1597,11 +1619,15 @@ function renderBal(id) {
 
 // ── ORÇAMENTO / VALIDAÇÃO ─────────────────────────────────────────────────────
 
-function buildOrcamento() {
+function buildOrcamento(n) {
+
+  if (n === undefined) n = 12;
 
   var orc = CONFIG.orcamento;
 
-  var mesesComOrc = MESES.filter(function(k){ return orc.meses[k] !== undefined; });
+  var todos = MESES.filter(function(k){ return orc.meses[k] !== undefined; });
+
+  var mesesComOrc = (n > 0 && todos.length > n) ? todos.slice(-n) : todos;
 
 
 
@@ -1754,6 +1780,8 @@ function buildOrcamento() {
   document.getElementById('orc-content').innerHTML = h;
 
 }
+
+window._filterOrc = function(n) { buildOrcamento(n); };
 
 
 
