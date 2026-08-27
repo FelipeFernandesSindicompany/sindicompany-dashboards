@@ -813,7 +813,7 @@ var BAL = {
   mai26: {tit:'Maio / 2026',per:'01/05/2026 a 31/05/2026',tAnt:23451.23,tCred:56967.30,tDeb:54873.33,tAtual:25545.20,contas:[{n:'ORDINÁRIA',a:20461.15,c:54813.16,d:54873.33,s:20400.98},{n:'FUNDO DE RESERVA',a:2190.08,c:2154.14,d:0,s:4344.22},{n:'SALÃO DE FESTAS',a:800,c:0,d:0,s:800}],prev:56693.33,real:54618.68,tDesp:54873.33,fac:0,inad:2159.66,inadProc:0,banco:{cc:14653.23,cdb:10804.09,priv:87.88},desp:[{c:'Serviços Terceirizados',v:22972.32},{c:'Consumos',v:11316.64},{c:'Contratos',v:13859.34},{c:'Impostos/Taxas',v:27.90},{c:'Manutenção/Serviços',v:4985.67},{c:'Administrativo',v:1386.75},{c:'Cobrança',v:324.71}]},
 
   jun26: {tit:'Junho / 2026',per:'01/06/2026 a 30/06/2026',tAnt:25545.20,tCred:63843.57,tDeb:52577.72,tAtual:36811.05,contas:[{n:'ORDINÁRIA',a:20400.98,c:61306.88,d:52577.72,s:29130.14},{n:'FUNDO DE RESERVA',a:4344.22,c:2536.69,d:0,s:6880.91},{n:'SALÃO DE FESTAS',a:800,c:0,d:0,s:800}],prev:57850.33,real:57850.33,tDesp:52577.72,fac:0,inad:0,inadProc:2159.66,banco:{cc:25817.41,cdb:10921.49,priv:72.15},desp:[{c:'Serviços Terceirizados',v:21860.09},{c:'Consumos',v:12686.87},{c:'Contratos',v:13294.40},{c:'Impostos/Taxas',v:472.70},{c:'Manutenção/Serviços',v:1511.89},{c:'Administrativo',v:288.69},{c:'Cobrança',v:2143.18},{c:'Outros',v:319.90}]},
-  jul26:{tit:'Julho / 2026',per:'01/07/2026 a 31/07/2026',tAnt:36811.05,tCred:48254.89,tDeb:74360.21,tAtual:10705.73,contas:[{n:'ORDINÁRIA',a:29130.14,c:46054.79,d:74360.21,s:824.72},{n:'FUNDO DE RESERVA',a:6880.91,c:2200.1,d:0,s:9081.01},{n:'SALÃO DE FESTAS',a:800.0,c:0,d:0,s:800.0}],prev:45413.89,real:40697.0,tDesp:74360.21,fac:69.61,inad:1883.97,inadProc:0,banco:{cc:0,cdb:127.34,priv:0},desp:[{c:'Serviços Terceirizados',v:27434.31},{c:'Contratos',v:16965.11},{c:'Consumos',v:15241.76},{c:'SERVIÇOS PREST/CONSERTOS',v:3175.0},{c:'SALÁRIOS E ORDENADOS',v:2703.45},{c:'SEGUROS',v:2250.9},{c:'MATERIAIS/DIVERSOS',v:2048.84},{c:'AQUISIÇÕES',v:1728.67},{c:'Administrativo',v:1558.15},{c:'Despesas Bancárias',v:451.57},{c:'ENCARGOS SOCIAIS',v:440.3},{c:'CERTIFICADO DIGITAL',v:290.0},{c:'TRANSFERÊNCIA',v:72.15}]}
+  jul26:{tit:'Julho / 2026',per:'01/07/2026 a 31/07/2026',tAnt:36811.05,tCred:48254.89,tDeb:74360.21,tAtual:10705.73,contas:[{n:'ORDINÁRIA',a:29130.14,c:46054.79,d:74360.21,s:824.72},{n:'FUNDO DE RESERVA',a:6880.91,c:2200.1,d:0,s:9081.01},{n:'SALÃO DE FESTAS',a:800.0,c:0,d:0,s:800.0}],prev:45413.89,real:40697.0,tDesp:74360.21,fac:69.61,inad:1883.97,inadProc:0,banco:{cc:0,cdb:127.34,priv:0},desp:[{c:'Serviços Terceirizados',v:27434.31},{c:'Contratos',v:16965.11},{c:'Consumos',v:15241.76},{c:'Serviços Prest/Consertos',v:3175.0},{c:'Salários E Ordenados',v:2703.45},{c:'Seguros',v:2250.9},{c:'Materiais/Diversos',v:2048.84},{c:'Aquisições',v:1728.67},{c:'Administrativo',v:1558.15},{c:'Despesas Bancárias',v:451.57},{c:'Encargos Sociais',v:440.3},{c:'Certificado Digital',v:290.0},{c:'Transferência',v:72.15}]}
 };
 
 
@@ -1244,17 +1244,19 @@ function buildOrcamento() {
 
 function buildTblDesp() {
 
-  // Coleta todas as categorias
+  var toTC = function(s){return s.toLowerCase().replace(/(^|[\s\/\-])(\w)/g,function(m,p1,p2){return p1+p2.toUpperCase();});};
 
-  var cats = {};
+  // Coleta todas as categorias (case-insensitive para evitar duplicatas)
+
+  var catsMap = {};
 
   MESES.forEach(function(k) {
 
-    BAL[k].desp.forEach(function(d){ cats[d.c] = true; });
+    BAL[k].desp.forEach(function(d){ var key=d.c.toLowerCase().trim(); if(!catsMap[key])catsMap[key]=d.c; });
 
   });
 
-  var catList = Object.keys(cats);
+  var catL = Object.keys(catsMap);
 
   var labels = MESES.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
 
@@ -1262,11 +1264,11 @@ function buildTblDesp() {
 
   var h = '<tr><th>Categoria</th>' + labels.map(function(l){ return '<th style="text-align:right">' + l + '</th>'; }).join('') + '</tr>';
 
-  catList.forEach(function(cat) {
+  catL.forEach(function(key) {
 
     var vals = MESES.map(function(k) {
 
-      var d = BAL[k].desp.find(function(x){ return x.c === cat; });
+      var d = BAL[k].desp.find(function(x){ return x.c.toLowerCase().trim() === key; });
 
       return d ? d.v : 0;
 
@@ -1274,7 +1276,7 @@ function buildTblDesp() {
 
     if (vals.every(function(v){ return v === 0; })) return;
 
-    h += '<tr><td>' + cat + '</td>' + vals.map(function(v){ return '<td class="nr">' + (v > 0 ? R(v) : '-') + '</td>'; }).join('') + '</tr>';
+    h += '<tr><td>' + toTC(catsMap[key]) + '</td>' + vals.map(function(v){ return '<td class="nr">' + (v > 0 ? R(v) : '-') + '</td>'; }).join('') + '</tr>';
 
   });
 
@@ -1856,13 +1858,13 @@ function buildCharts() {
 
   // ── 4. Barras agrupadas — despesas por categoria ─────────────────────────────
 
-  var cats = {};
+  var catsMapB = {};
 
-  MESES.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c] = true; }); });
+  MESES.forEach(function(k){ BAL[k].desp.forEach(function(d){ var key=d.c.toLowerCase().trim(); if(!catsMapB[key])catsMapB[key]=d.c; }); });
 
-  var catShort = {'PESSOAL':'Pessoal','MANUTENÇÃO':'Manutenção','ADMINISTRATIVO':'Administrativo','CONSUMOS':'Consumos','CONTRATOS':'Contratos','TARIFAS E IMPOSTOS':'Tarifas/Imp.','DESPESA FINANCEIRA':'D. Financeira','OUTROS':'Outros'};
+  var toTCB = function(s){return s.toLowerCase().replace(/(^|[\s\/\-])(\w)/g,function(m,p1,p2){return p1+p2.toUpperCase();});};
 
-  var catList = Object.keys(cats);
+  var catList = Object.keys(catsMapB);
 
   var barColors = ['#1A237E','#C62828','#2E7D32','#E87722','#6A1B9A','#00695C','#AD1457','#F57F17','#0277BD','#4E342E','#558B2F','#880E4F','#37474F'];
 
@@ -1876,9 +1878,9 @@ function buildCharts() {
 
       label: m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2],
 
-      data: catList.map(function(c) {
+      data: catList.map(function(key) {
 
-        var d = m.desp.find(function(x){ return x.c === c; });
+        var d = m.desp.find(function(x){ return x.c.toLowerCase().trim() === key; });
 
         return d ? d.v : 0;
 
@@ -1902,7 +1904,7 @@ function buildCharts() {
 
     type: 'bar',
 
-    data: { labels: catList.map(function(c){ return catShort[c] || c; }), datasets: despDatasets },
+    data: { labels: catList.map(function(key){ return toTCB(catsMapB[key]); }), datasets: despDatasets },
 
     options: {
 
@@ -1936,15 +1938,16 @@ function buildCharts() {
 (function(){
   function _filterDespTable(n){
     var mf=n>0?MESES.slice(-n):MESES;
-    var cats={};
-    mf.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
-    var catL=Object.keys(cats);
+    var catsMap={};
+    mf.forEach(function(k){BAL[k].desp.forEach(function(d){var key=d.c.toLowerCase().trim();if(!catsMap[key])catsMap[key]=d.c;});});
+    var catL=Object.keys(catsMap);
+    var toTC=function(s){return s.toLowerCase().replace(/(^|[\s\/\-])(\w)/g,function(m,p1,p2){return p1+p2.toUpperCase();});};
     var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
     var h='<tr><th>Categoria</th>'+mf.map(function(k){return '<th style="text-align:right">'+lbl(k)+'</th>';}).join('')+'</tr>';
-    catL.forEach(function(cat){
-      var vals=mf.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});
+    catL.forEach(function(key){
+      var vals=mf.map(function(k){var d=BAL[k].desp.find(function(x){return x.c.toLowerCase().trim()===key;});return d?d.v:0;});
       if(vals.every(function(v){return v===0;}))return;
-      h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
+      h+='<tr><td>'+toTC(catsMap[key])+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
     });
     h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
     var tbl=document.getElementById('tblDesp');
