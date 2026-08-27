@@ -1339,14 +1339,20 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
     var ch=_reg['cDespBar'];
     if(!ch)return;
     var mf=n>0?_allMeses.slice(-n):_allMeses;
-    _allMeses.forEach(function(k,i){ch.setDatasetVisibility(i,mf.indexOf(k)!==-1);});
+    _allMeses.forEach(function(k,i){ch.getDatasetMeta(i).hidden=mf.indexOf(k)===-1?true:null;});
     ch.update();
     var _el=document.getElementById('cDespBar');
-    if(_el){_el.style.minWidth=Math.max(500,ch.data.labels.length*130)+'px';_el.parentElement.style.overflowX='auto';}
+    if(_el){_el.style.minWidth=Math.max(500,mf.length*130)+'px';_el.parentElement.style.overflowX='auto';}
   }
+  var _dc=document.getElementById('cDespBar');
+  if(_dc&&window.MutationObserver){var _dp=_dc.parentElement;while(_dp&&!_dp.classList.contains('pg')){_dp=_dp.parentElement;}if(_dp){new MutationObserver(function(){if(_dp.classList.contains('on')){var _s=document.querySelector('select[onchange*="_filterDespBar"]');_filterDespBar(_s?parseInt(_s.value):12);}}).observe(_dp,{attributes:true,attributeFilter:['class']});}}
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+
+
+
 
 
 
@@ -1427,6 +1433,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
+
+
   var gV=MESES.map(function(k){return BAL[k].real-BAL[k].prev;});
 
   var gA=gV.reduce(function(a,b){return a+b;},0)/gV.length,gM=Math.max.apply(null,gV.map(Math.abs))||1;
@@ -1492,6 +1500,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
+
+
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:_cGroups.map(function(g){return{label:g.label,data:MESES.map(function(k){var s=0;BAL[k].contas.forEach(function(c){if(g.match(c.n))s+=c.s;});
 
 return s;}),backgroundColor:g.bg,borderColor:g.bd,borderWidth:1,borderRadius:3,borderSkipped:false};})},
@@ -1526,6 +1536,8 @@ return s;}),backgroundColor:g.bg,borderColor:g.bd,borderWidth:1,borderRadius:3,b
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
 
 
 

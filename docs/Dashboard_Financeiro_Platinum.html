@@ -1235,14 +1235,20 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
     var ch=_reg['cDespBar'];
     if(!ch)return;
     var mf=n>0?_allMeses.slice(-n):_allMeses;
-    _allMeses.forEach(function(k,i){ch.setDatasetVisibility(i,mf.indexOf(k)!==-1);});
+    _allMeses.forEach(function(k,i){ch.getDatasetMeta(i).hidden=mf.indexOf(k)===-1?true:null;});
     ch.update();
     var _el=document.getElementById('cDespBar');
-    if(_el){_el.style.minWidth=Math.max(500,ch.data.labels.length*130)+'px';_el.parentElement.style.overflowX='auto';}
+    if(_el){_el.style.minWidth=Math.max(500,mf.length*130)+'px';_el.parentElement.style.overflowX='auto';}
   }
+  var _dc=document.getElementById('cDespBar');
+  if(_dc&&window.MutationObserver){var _dp=_dc.parentElement;while(_dp&&!_dp.classList.contains('pg')){_dp=_dp.parentElement;}if(_dp){new MutationObserver(function(){if(_dp.classList.contains('on')){var _s=document.querySelector('select[onchange*="_filterDespBar"]');_filterDespBar(_s?parseInt(_s.value):12);}}).observe(_dp,{attributes:true,attributeFilter:['class']});}}
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+
+
+
 
 
 
@@ -1323,6 +1329,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
+
+
   var gV=MESES.map(function(k){return BAL[k].real-BAL[k].prev;});
 
   var gA=gV.reduce(function(a,b){return a+b;},0)/gV.length,gM=Math.max.apply(null,gV.map(Math.abs))||1;
@@ -1388,6 +1396,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
+
+
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
     {label:'Saldo Bancário',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:function(ctx){return ctx.raw<0?'rgba(192,57,43,.82)':'rgba(23,27,46,.82)';},borderColor:function(ctx){return ctx.raw<0?'#C0392B':'#171B2E';},borderWidth:1,borderRadius:3,borderSkipped:false}]},
@@ -1422,6 +1432,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
 
 
 

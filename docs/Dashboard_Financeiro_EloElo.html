@@ -1053,14 +1053,20 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
     var ch=_reg['cDespBar'];
     if(!ch)return;
     var mf=n>0?_allMeses.slice(-n):_allMeses;
-    _allMeses.forEach(function(k,i){ch.setDatasetVisibility(i,mf.indexOf(k)!==-1);});
+    _allMeses.forEach(function(k,i){ch.getDatasetMeta(i).hidden=mf.indexOf(k)===-1?true:null;});
     ch.update();
     var _el=document.getElementById('cDespBar');
-    if(_el){_el.style.minWidth=Math.max(500,ch.data.labels.length*130)+'px';_el.parentElement.style.overflowX='auto';}
+    if(_el){_el.style.minWidth=Math.max(500,mf.length*130)+'px';_el.parentElement.style.overflowX='auto';}
   }
+  var _dc=document.getElementById('cDespBar');
+  if(_dc&&window.MutationObserver){var _dp=_dc.parentElement;while(_dp&&!_dp.classList.contains('pg')){_dp=_dp.parentElement;}if(_dp){new MutationObserver(function(){if(_dp.classList.contains('on')){var _s=document.querySelector('select[onchange*="_filterDespBar"]');_filterDespBar(_s?parseInt(_s.value):12);}}).observe(_dp,{attributes:true,attributeFilter:['class']});}}
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+
+
+
 
 
 
@@ -1131,6 +1137,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
+
+
   var inadVals=MESES.map(function(k){return BAL[k].inad;}),inadAvg=inadVals.reduce(function(a,b){return a+b;},0)/inadVals.length;
 
   mkChart('cInad',{type:'line',data:{labels:ML,datasets:[{label:'Total em Aberto',data:inadVals,borderColor:R2,backgroundColor:'rgba(192,57,43,0.10)',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:R2,pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35,order:2},{label:'Recebido de Cotas em Atraso',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:Y,backgroundColor:'rgba(243,156,18,0.10)',borderWidth:2,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:Y,pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35,order:3},{label:'M\u00e9dia do per\u00edodo',data:MESES.map(function(){return inadAvg;}),type:'line',borderColor:'rgba(192,57,43,0.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},scales:{y:{ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y},x:{ticks:TICK,grid:GRID_X}}}});
@@ -1174,6 +1182,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
 
 
+
+
   mkChart('cBanco',{type:'bar',data:{labels:ML,datasets:[{label:'C/C Ita\u00fa',data:MESES.map(function(k){return BAL[k].banco.cdb>0?BAL[k].banco.cc:0;}),backgroundColor:'rgba(23,27,46,0.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},{label:'CDB-DI Ita\u00fa',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,0.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},{label:'ItauVest',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,0.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return '  '+ctx.dataset.label+': '+fmtR(ctx.raw);}}})},scales:{x:{stacked:true,ticks:TICK,grid:GRID_X},y:{stacked:true,ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y}}}});
 
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
@@ -1204,6 +1214,8 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
 
 
 

@@ -2546,14 +2546,20 @@ function buildCharts() {
     var ch=_reg['cDespBar'];
     if(!ch)return;
     var mf=n>0?_allMeses.slice(-n):_allMeses;
-    _allMeses.forEach(function(k,i){ch.setDatasetVisibility(i,mf.indexOf(k)!==-1);});
+    _allMeses.forEach(function(k,i){ch.getDatasetMeta(i).hidden=mf.indexOf(k)===-1?true:null;});
     ch.update();
     var _el=document.getElementById('cDespBar');
-    if(_el){_el.style.minWidth=Math.max(500,ch.data.labels.length*130)+'px';_el.parentElement.style.overflowX='auto';}
+    if(_el){_el.style.minWidth=Math.max(500,mf.length*130)+'px';_el.parentElement.style.overflowX='auto';}
   }
+  var _dc=document.getElementById('cDespBar');
+  if(_dc&&window.MutationObserver){var _dp=_dc.parentElement;while(_dp&&!_dp.classList.contains('pg')){_dp=_dp.parentElement;}if(_dp){new MutationObserver(function(){if(_dp.classList.contains('on')){var _s=document.querySelector('select[onchange*="_filterDespBar"]');_filterDespBar(_s?parseInt(_s.value):12);}}).observe(_dp,{attributes:true,attributeFilter:['class']});}}
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+
+
+
 
 
 
@@ -2706,6 +2712,8 @@ function buildCharts() {
 
 
 
+
+
   // 8. Inadimplência
 
   var inadVals     = MESES.map(function(k) { return BAL[k].inad     || 0; });
@@ -2784,6 +2792,8 @@ function buildCharts() {
 
 
 
+
+
   // 9. Saldo bancário (saldo total por mês)
 
   mkChart('cBanco', {
@@ -2834,6 +2844,8 @@ function buildCharts() {
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
 
 
 
