@@ -2053,9 +2053,10 @@ function buildCharts() {
 
 // ── Filtro de período: Despesas por Categoria ─────────────────────────────────
 (function(){
+  var _reg=typeof chartInstances!=='undefined'?chartInstances:CI;
   var _allMeses=MESES.slice();
   function _filterDespBar(n){
-    var ch=chartInstances['cDespBar'];
+    var ch=_reg['cDespBar'];
     if(!ch)return;
     var mf=n>0?_allMeses.slice(-n):_allMeses;
     _allMeses.forEach(function(k,i){ch.setDatasetVisibility(i,mf.indexOf(k)!==-1);});
@@ -2066,6 +2067,10 @@ function buildCharts() {
   _filterDespBar(12);
   window._filterDespBar=_filterDespBar;
 })();
+
+
+
+
 
 
 
@@ -2176,19 +2181,20 @@ function buildCharts() {
 
 // ── Filtro de período: Previsto × Realizado ───────────────────────────────────
 (function(){
+  var _reg=typeof chartInstances!=='undefined'?chartInstances:CI;
   var _allMesPvr=MESES.slice();
   function _filterPvr(n){
     var mf=n>0?_allMesPvr.slice(-n):_allMesPvr;
     var startIdx=_allMesPvr.length-mf.length;
     var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
-    var ch1=chartInstances['cPvr'];
+    var ch1=_reg['cPvr'];
     if(ch1){
       ch1.data.labels=mf.map(lbl);
       ch1.data.datasets[0].data=mf.map(function(k){return BAL[k].prev;});
       ch1.data.datasets[1].data=mf.map(function(k){return BAL[k].real;});
       ch1.update();
     }
-    var ch2=chartInstances['cPvrGap'];
+    var ch2=_reg['cPvrGap'];
     if(ch2){
       ch2.data.labels=mf.map(lbl);
       ch2.data.datasets[0].data=mf.map(function(k){return BAL[k].prev-BAL[k].real;});
@@ -2209,6 +2215,8 @@ function buildCharts() {
   _filterPvr(12);
   window._filterPvr=_filterPvr;
 })();
+
+
 
 
 
@@ -2247,10 +2255,11 @@ function buildCharts() {
 
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
 (function(){
+  var _reg=typeof chartInstances!=='undefined'?chartInstances:CI;
   var _allBMeses=(typeof bancoMeses!=='undefined')?bancoMeses.slice():MESES.slice();
   var _dsOrigB=null;
   function _filterBanco(n){
-    var ch=chartInstances['cBanco'];
+    var ch=_reg['cBanco'];
     if(!ch)return;
     if(!_dsOrigB){_dsOrigB=ch.data.datasets.map(function(ds){return ds.data.slice();});}
     var mf=n>0?_allBMeses.slice(-n):_allBMeses;
@@ -2272,6 +2281,8 @@ function buildCharts() {
   _filterBanco(12);
   window._filterBanco=_filterBanco;
 })();
+
+
 
 
 
