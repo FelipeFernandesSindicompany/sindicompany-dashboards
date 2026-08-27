@@ -1630,7 +1630,7 @@ function buildCharts() {
 
   function fmtM(v)  { return 'R$\u00a0' + (v/1000000).toFixed(3) + 'M'; }
 
-  function fmtR(v)  { return 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtR(v)  { return (v < 0 ? '-' : '') + 'R$\u00a0' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 
 
@@ -1788,11 +1788,11 @@ function buildCharts() {
 
   // ── 3. Barras empilhadas — saldo por conta histórico ────────────────────────
 
-  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(26,111,175,0.85)','rgba(46,158,104,0.85)'];
+  var contaColors = ['rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(26,111,175,0.85)'];
 
-  var contaBorder = ['#171B2E','#C05A10','#1A6FAF','#2E9E68'];
+  var contaBorder = ['#171B2E','#C05A10','#1A6FAF'];
 
-  var contaNames  = ['ORDINÁRIA','FUNDO DE RESERVA','SALÃO DE FESTAS','APLICACAO FINANCEIRA'];
+  var contaNames  = ['ORDINÁRIA','FUNDO DE RESERVA','SALÃO DE FESTAS'];
 
   var contaDatasets = contaNames.map(function(cn, i) {
 
