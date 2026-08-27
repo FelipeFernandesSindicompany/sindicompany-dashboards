@@ -1056,19 +1056,15 @@ function renderBal(id) {
 
     var pct = (d.v / m.tDesp * 100).toFixed(1);
 
-    h += '<tr><td>' + d.c + '</td><td class="nr">' + R(d.v) + '</td><td class="nr">' + pct + '%</td>';
+    var cat = d.c.toLowerCase().replace(/(^|[\s\/\-])(\w)/g, function(m, p1, p2){ return p1 + p2.toUpperCase(); });
+
+    h += '<tr><td>' + cat + '</td><td class="nr">' + R(d.v) + '</td><td class="nr">' + pct + '%</td>';
 
     h += '<td style="min-width:120px"><div class="pb"><div class="pbf" style="width:' + pct + '%"></div></div></td></tr>';
 
   });
 
   h += '<tr class="tot"><td>TOTAL ORDIN&Aacute;RIA</td><td class="nr">' + R(m.tDesp) + '</td><td colspan="2"></td></tr>';
-
-  if (m.fac > 0) {
-
-    h += '<tr><td style="color:var(--r)"><strong>FUNDO FACHADA</strong> (Colorcryl &ndash; reforma)</td><td class="nr" style="color:var(--r)"><strong>' + R(m.fac) + '</strong></td><td colspan="2" style="font-size:11px;color:var(--muted)">n&atilde;o entra nas despesas ordin&aacute;rias</td></tr>';
-
-  }
 
   h += '</table></div></div>';
 
