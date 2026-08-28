@@ -233,8 +233,8 @@
     }
   },
   "Dashboard_Financeiro_FattoMorumbi.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -249,15 +249,16 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 392174.42,
-      "tCred": 370224.89,
-      "tDeb": 284563.38,
-      "inad": 156596.28,
-      "tAnt": 306512.91
+      "tit": "Julho / 2026",
+      "tAtual": 485935.57,
+      "tCred": 395795.55,
+      "tDeb": 302034.4,
+      "inad": 130762.24,
+      "tAnt": 392174.42
     }
   },
   "Dashboard_Financeiro_Cores.html": {
