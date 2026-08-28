@@ -1243,7 +1243,7 @@ function updateDespPie(mesKey) {
 
           callbacks: { label: function(ctx) { var pct = total > 0 ? (ctx.parsed/total*100).toFixed(1) : '0.0'; return '  R$ ' + ctx.parsed.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '  (' + pct + '%)'; } } },
 
-        title: { display: true, text: 'Despesas Ordinárias — ' + lbl, font: { size: 13, weight: '700' }, color: '#171B2E', padding: { bottom: 10 } }
+        title: { display: false }
 
       } } });
 
