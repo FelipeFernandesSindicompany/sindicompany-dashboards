@@ -2134,13 +2134,11 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Banco Itaú (C/C)',data:MESES.map(function(k){var b=BAL[k].banco||{};return typeof b.cc==='number'?b.cc:0;}),backgroundColor:'rgba(91,45,142,.82)',borderColor:'#5B2D8E',borderWidth:1,borderRadius:0,stack:'s'},
+    {label:'Banco Itaú (C/C)',data:MESES.map(function(k){var b=BAL[k].banco||{};return typeof b.cc==='number'?b.cc:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Aplicação CDB',data:MESES.map(function(k){var b=BAL[k].banco||{};return typeof b.cdb==='number'?b.cdb:0;}),backgroundColor:'rgba(39,174,96,.72)',borderColor:'#1E8449',borderWidth:1,borderRadius:4,stack:'s'}
+    {label:'Aplicação CDB',data:MESES.map(function(k){var b=BAL[k].banco||{};return typeof b.cdb==='number'?b.cdb:0;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
-  ]},
-
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,padding:16,font:{size:12}}},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY},x:{stacked:true,ticks:TK,grid:GX}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
 (function(){
