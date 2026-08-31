@@ -1835,17 +1835,29 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>Mês</th><th style="text-align:right">Total</th></tr>';
+  var h='<tr><th>Mês</th><th style="text-align:right">Banco Itaú (C/C)</th><th style="text-align:right">Aplicação CDB</th><th style="text-align:right">Total Bancário</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k];
+    var m=BAL[k], b=m.banco||{};
 
-    var cls=m.tAtual<0?' style="color:var(--r)"':'';
+    var cc=typeof b.cc==='number'?b.cc:0;
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
+    var cdb=typeof b.cdb==='number'?b.cdb:0;
 
-    h+='<td class="nr bd"'+cls+'>'+R(m.tAtual)+'</td></tr>';
+    var tot=cc+cdb;
+
+    h+='<tr>';
+
+    h+='<td class="bd">'+ab(m.tit)+'</td>';
+
+    h+='<td class="nr"'+(cc<0?' style="color:var(--r)"':'')+'>'+R(cc)+'</td>';
+
+    h+='<td class="nr">'+(cdb>0?R(cdb):'—')+'</td>';
+
+    h+='<td class="nr bd"'+(tot<0?' style="color:var(--r)"':'')+'>'+R(tot)+'</td>';
+
+    h+='</tr>';
 
   });
 
@@ -2122,9 +2134,13 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Saldo Total',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:MESES.map(function(k){return BAL[k].tAtual<0?'rgba(192,57,43,.82)':'rgba(91,45,142,.82)';}),borderColor:MESES.map(function(k){return BAL[k].tAtual<0?'#922B21':'#5B2D8E';}),borderWidth:1,borderRadius:4,borderSkipped:false}]},
+    {label:'Banco Itaú (C/C)',data:MESES.map(function(k){var b=BAL[k].banco||{};return typeof b.cc==='number'?b.cc:0;}),backgroundColor:'rgba(91,45,142,.82)',borderColor:'#5B2D8E',borderWidth:1,borderRadius:0,stack:'s'},
 
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  Saldo Total: '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
+    {label:'Aplicação CDB',data:MESES.map(function(k){var b=BAL[k].banco||{};return typeof b.cdb==='number'?b.cdb:0;}),backgroundColor:'rgba(39,174,96,.72)',borderColor:'#1E8449',borderWidth:1,borderRadius:4,stack:'s'}
+
+  ]},
+
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,padding:16,font:{size:12}}},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY},x:{stacked:true,ticks:TK,grid:GX}}}});
 
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
 (function(){
