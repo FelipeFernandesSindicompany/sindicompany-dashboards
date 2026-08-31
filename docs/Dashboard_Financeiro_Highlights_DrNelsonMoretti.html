@@ -1444,7 +1444,7 @@ var BAL = {
     ]
 
   },
-  jul26:{tit:'Julho / 2026',per:'01/07/2026 a 31/07/2026',tAnt:200953.78,tCred:210101.93,tDeb:207382.84,tAtual:203672.87,contas:[{n:'ORDINARIA',a:17255.19,c:179461.63,d:148978.83,s:47737.99},{n:'MELHORIAS',a:29824.48,c:0,d:0,s:29824.48},{n:'IMPOSTO PREDIAL',a:-191.85,c:0,d:0,s:-191.85},{n:'FUNDO DE RESERVA',a:38530.36,c:6781.51,d:0,s:45311.87},{n:'CONSUMO AGUA',a:0,c:1655.55,d:17585.4,s:-15929.85},{n:'PROJETO SEGURANCA',a:96108.94,c:15504.62,d:9855.44,s:101758.12},{n:'CONSUMO ENERGIA ELETRICA',a:520.66,c:52.49,d:98.98,s:474.17},{n:'ALUGUEL S.FESTA /CHURRASQUEIRA',a:18906.0,c:4112.0,d:3946.4,s:19071.6},{n:'CONSUMO DE GAS',a:0,c:2534.13,d:26917.79,s:-24383.66}],prev:192956.84,real:159139.52,tDesp:148978.83,fac:829.65,inad:38500.66,inadProc:0,banco:{cc:47737.99,cdb:45311.87,priv:110623.01},desp:[{c:'PESSOAL',v:109824.46},{c:'CONSUMOS',v:179.80},{c:'CONTRATOS/MANUT.',v:29336.23},{c:'MATERIAIS/SUPRIMENTOS',v:2745.08},{c:'SERV. TERCEIRIZADOS',v:1593.45},{c:'DESP. OPERACIONAIS',v:872.10},{c:'SEGUROS',v:4427.71}]}
+  jul26:{tit:'Julho / 2026',per:'01/07/2026 a 31/07/2026',tAnt:200953.78,tCred:210101.93,tDeb:207382.84,tAtual:203672.87,contas:[{n:'ORDINARIA',a:17255.19,c:179461.63,d:148978.83,s:47737.99},{n:'MELHORIAS',a:29824.48,c:0,d:0,s:29824.48},{n:'IMPOSTO PREDIAL',a:-191.85,c:0,d:0,s:-191.85},{n:'FUNDO DE RESERVA',a:38530.36,c:6781.51,d:0,s:45311.87},{n:'CONSUMO AGUA',a:0,c:1655.55,d:17585.4,s:-15929.85},{n:'PROJETO SEGURANCA',a:96108.94,c:15504.62,d:9855.44,s:101758.12},{n:'CONSUMO ENERGIA ELETRICA',a:520.66,c:52.49,d:98.98,s:474.17},{n:'ALUGUEL S.FESTA /CHURRASQUEIRA',a:18906.0,c:4112.0,d:3946.4,s:19071.6},{n:'CONSUMO DE GAS',a:0,c:2534.13,d:26917.79,s:-24383.66}],prev:192956.84,real:159139.52,tDesp:148978.83,fac:829.65,inad:38500.66,inadProc:9221.58,banco:{cc:47737.99,cdb:45311.87,priv:110623.01},desp:[{c:'PESSOAL',v:109824.46},{c:'CONSUMOS',v:179.80},{c:'CONTRATOS/MANUT.',v:29336.23},{c:'MATERIAIS/SUPRIMENTOS',v:2745.08},{c:'SERV. TERCEIRIZADOS',v:1593.45},{c:'DESP. OPERACIONAIS',v:872.10},{c:'SEGUROS',v:4427.71}]}
 };
 
 
@@ -1855,17 +1855,17 @@ function buildInad(){
 
   var maxInad=Math.max.apply(null,MESES.map(function(k){return BAL[k].inad;}));
 
-  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>% s/ Previsto</th><th>Status</th></tr>';
+  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>Status</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k],pi=m.prev>0?(m.inad/m.prev*100).toFixed(1):'0.0';
+    var m=BAL[k];
 
     var b=m.inad>maxInad*0.8?'<span class="badge bbad">▲ Alto</span>':m.inad>maxInad*0.5?'<span class="badge bwarn">⚠ Médio</span>':'<span class="badge bok">▼ Controlado</span>';
 
     var ic=m.inad>maxInad*0.8?' style="color:var(--r)"':'';
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td class="nr"'+ic+'>'+pi+'%</td><td>'+b+'</td></tr>';
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td>'+b+'</td></tr>';
 
   });
 
