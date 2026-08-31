@@ -759,7 +759,7 @@
       "empresa_gestora": "datadigitus_pdf",
       "pasta_dados": "data/serra_da_mantiqueira",
       "html_file": "Dashboard_Financeiro_Serra_da_Mantiqueira.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#be185d",
       "unidades": 0,
       "parser_config": {

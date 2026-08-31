@@ -992,34 +992,6 @@
       "tAnt": 121898.55
     }
   },
-  "Dashboard_Financeiro_Serra_da_Mantiqueira.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
-    "allKeys": [
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26"
-    ],
-    "data": {
-      "tit": "Junho / 2026",
-      "tAtual": -10787.01,
-      "tCred": 76101.39,
-      "tDeb": 73749.94,
-      "inad": 10842.37,
-      "tAnt": -13138.46
-    }
-  },
   "Dashboard_Financeiro_SplendorSquare.html": {
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
