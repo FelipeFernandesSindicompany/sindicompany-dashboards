@@ -1819,7 +1819,7 @@ function updPie(k){
 
     options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{
 
-      legend:{position:'right',labels:{font:{size:12},boxWidth:14,padding:12,color:'#333',generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var v=chart.data.datasets[0].data[i];var p=tot>0?(v/tot*100).toFixed(1):'0.0';return{text:lbl+'  '+p+'%',fillStyle:bg[i],strokeStyle:'#fff',lineWidth:1,index:i};});}}},
+      legend:{position:'right',labels:{font:{size:10},boxWidth:12,padding:10,color:'#333',generateLabels:function(chart){return chart.data.labels.map(function(lbl,i){var v=chart.data.datasets[0].data[i];var p=tot>0?(v/tot*100).toFixed(1):'0.0';var txt=lbl.length>22?lbl.slice(0,21)+'…':lbl;return{text:txt+'  '+p+'%',fillStyle:bg[i],strokeStyle:'#fff',lineWidth:1,index:i};});}}},
 
       tooltip:{backgroundColor:'rgba(23,27,46,.92)',titleColor:'#fff',bodyColor:'#dde',padding:10,cornerRadius:8,callbacks:{label:function(ctx){var p=tot>0?(ctx.parsed/tot*100).toFixed(1):'0.0';return '  R$ '+ctx.parsed.toLocaleString('pt-BR',{minimumFractionDigits:2})+'  ('+p+'%)';}}}}}});
 
@@ -1943,7 +1943,7 @@ function buildCharts(){
 
   mkC('cPieMar',{type:'doughnut',data:{labels:pL,datasets:[{data:pD,backgroundColor:PC.slice(0,pD.length),borderColor:'#fff',borderWidth:3,hoverOffset:10}]},
 
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';return{text:l+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}});
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:Object.assign({},LG,{font:{size:10},boxWidth:12,padding:10,generateLabels:function(chart){return chart.data.labels.map(function(l,i){var p=pT>0?(pD[i]/pT*100).toFixed(1):'0.0';var txt=l.length>22?l.slice(0,21)+'…':l;return{text:txt+'  '+p+'%',fillStyle:PC[i]||'#888',strokeStyle:'#fff',lineWidth:1,index:i};});},color:'#333'})},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var p=pT>0?(c.raw/pT*100).toFixed(1):'0.0';return '  '+fR(c.raw)+'  ('+p+'%)';}}})}}});
 
 
 
