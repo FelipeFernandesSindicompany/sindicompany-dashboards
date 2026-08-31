@@ -1148,6 +1148,7 @@ class AdapterLirbaPDF(AdapterBase):
             "RENDIMENTO", "JUROS", "MULTAS", "ATUALIZACAO", "ATUALIZAÇÃO",
             "TOTAIS", "PERIOD", "PERÍODO",
             "TRANSFERENCIA", "TRANSFERÊNCIA",  # crédito de receita, não despesa
+            "COTAS ANTECIPADAS",               # adiantamento de cota = receita, não despesa
             # "CONTAS" removido: "CONTAS DE CONSUMO" é desp real; "CONTASDATA" filtrado por not_desp_norm
         }
 
