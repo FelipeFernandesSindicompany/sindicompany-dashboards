@@ -241,6 +241,9 @@ def dados_para_bal(dados, mes_str: str, parser_config: dict = None) -> dict:
             "cdb":  round(dados.banco_cdb,  2),
             "priv": round(dados.banco_priv, 2),
         }
+        # Mescla campos extras do adapter (ex: itauvest para Ciudad Real)
+        for k, v in getattr(dados, 'banco_extra', {}).items():
+            banco[k] = round(float(v), 2)
     else:
         print(f"[AVISO] banco não extraído pelo adapter — usando saldo_atual como banco.cc fallback")
         banco = {"cc": round(dados.saldo_atual, 2), "cdb": 0.0, "priv": 0.0}
@@ -513,7 +516,8 @@ def bal_para_js(bloco: dict, chave: str,
 
     # ── partes reutilizáveis ──────────────────────────────────────────────────
     b = bloco["banco"]
-    banco_js = f"{{cc:{_n(b['cc'])},cdb:{_n(b['cdb'])},priv:{_n(b['priv'])}}}"
+    # Serializa todos os campos do banco (cc/cdb/priv + extras como itauvest)
+    banco_js = "{" + ",".join(f"{k}:{_n(v)}" for k, v in b.items()) + "}"
 
     inad_rec_val = _n(bloco.get("inadRec", 0))
 

@@ -73,6 +73,7 @@ class DadosFinanceiros:
     banco_cc: float = 0.0    # conta corrente / ordinária
     banco_cdb: float = 0.0   # fundo de reserva / CDB / poupança
     banco_priv: float = 0.0  # demais fundos (melhorias, obras, etc.)
+    banco_extra: dict = field(default_factory=dict)  # campos adicionais (ex: itauvest)
     fac: float = 0.0         # faturas anteriores cobradas (juros + multas recebidos)
     historico_meses: list = field(default_factory=list)
     # [{"mes": "2026-04", "receita": ..., "despesa": ..., "saldo": ...}, ...]

@@ -148,7 +148,7 @@
     {
       "id": "ciudad_real",
       "nome": "Ciudad Real",
-      "empresa_gestora": "verticce_pdf",
+      "empresa_gestora": "gk_pdf",
       "pasta_dados": "data/ciudad_real",
       "html_file": "Dashboard_Financeiro_CidadReal.html",
       "ativo": true,
@@ -157,7 +157,8 @@
       "parser_config": {
         "observacao": "PDFs digitalizados (sem texto) — injeção manual necessária",
         "cat_map": {}
-      }
+      },
+      "observacao": "GK desde mai/2026. Adapter PDF em adapters/condominios/ciudad_real.py. Enviar PDF mensal via Admin."
     },
     {
       "id": "club_park_butanta",
