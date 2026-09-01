@@ -1659,7 +1659,7 @@ function buildCharts() {
   });
 
   // ── 7. Gap Previsto × Realizado (opacidade dinâmica + média) ─────────────────
-  var gapVals = MESES.map(function(k){ var m=BAL[k]; return m.real - m.prev; });
+  var gapVals = MESES.map(function(k){ var m=BAL[k]; return m.prev - m.real; });
   var gapAvg  = gapVals.reduce(function(a,b){ return a+b; },0) / gapVals.length;
   var gapMax  = Math.max.apply(null, gapVals.map(Math.abs)) || 1;
   mkChart('cPvrGap', {
@@ -1668,7 +1668,7 @@ function buildCharts() {
       labels: ML,
       datasets: [
         {
-          label: 'Gap (Realizado \u2212 Previsto)',
+          label: 'Diferen\u00e7a (Previsto \u2212 Realizado)',
           data: gapVals,
           backgroundColor: gapVals.map(function(g){
             var alpha = 0.45 + 0.50 * (Math.abs(g) / gapMax);
@@ -1703,7 +1703,7 @@ function buildCharts() {
             label: function(ctx){
               if (ctx.datasetIndex === 1) return '  M\u00e9dia: ' + fmtR(gapAvg);
               var v = ctx.raw;
-              return (v >= 0 ? '  \u2713 Acima do previsto: ' : '  \u2717 Abaixo do previsto: ') + fmtR(Math.abs(v));
+              return (v >= 0 ? '  \u2713 M\u00eas positivo: ' : '  \u2717 Excedeu o previsto: ') + fmtR(Math.abs(v));
             }
           }
         })
