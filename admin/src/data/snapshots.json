@@ -485,19 +485,20 @@
     }
   },
   "Dashboard_Financeiro_Jau.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": -1470.45,
-      "tCred": 78743.28,
-      "tDeb": 89245.82,
-      "inad": 108715.69,
-      "tAnt": 9032.09
+      "tit": "Julho / 2026",
+      "tAtual": 12333.09,
+      "tCred": 101520.68,
+      "tDeb": 87717.14,
+      "inad": 124265.24,
+      "tAnt": -1470.45
     }
   },
   "Dashboard_Financeiro_IGloo.html": {
