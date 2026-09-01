@@ -437,8 +437,8 @@ var CONFIG = {
 // ────────────────────────────────────────────────────────────────────────────
 //  SÉRIE HISTÓRICA — Evolução do saldo total (adicione o novo mês ao final)
 // ────────────────────────────────────────────────────────────────────────────
-var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mai/26','Jun/26'];
-var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86,459281.22,467371.11];
+var EVO_L = ['Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mai/26','Jun/26','Jul/26'];
+var EVO_V = [247889.33,308615.02,291422.86,321544.21,347687.14,332676.85,366054.98,377339.16,366194.65,390472.32,385574.86,459281.22,467371.11,456308.70];
 
 // ────────────────────────────────────────────────────────────────────────────
 //  BALANCETES MENSAIS
@@ -866,6 +866,37 @@ var BAL = {
       {c:'Despesas Diversas',     v:5687.78},
       {c:'Aplicação / Resgate',   v:100000.00},
       {c:'Transferências',        v:5479.07}
+    ]
+  },
+
+  jul26: {
+    tit: 'Julho / 2026', per: '01/07/2026 a 31/07/2026',
+    tAnt: 467371.11, tCred: 140841.40, tDeb: 151903.81, tAtual: 456308.70,
+    contas: [
+      {n:'ORDINÁRIA',                 a:243673.74, c:133824.53, d:149603.81, s:227894.46},
+      {n:'FUNDO DE RESERVA',          a:217803.08, c:7807.20,   d:2300.00,   s:223310.28},
+      {n:'SALÃO DE FESTAS/CHURRASQ.', a:656.00,    c:648.40,    d:0,         s:1304.40},
+      {n:'FACILITIES',                a:354.97,    c:396.29,    d:0,         s:751.26},
+      {n:'CRÉDITOS A IDENTIFICAR',    a:4883.32,   c:-1835.02,  d:0,         s:3048.30}
+    ],
+    prev: 107273.79, real: 93916.23, tDesp: 149603.81,
+    fac: 0, inad: 93634.99, inadProc: 8031.44,
+    banco: {cc:34220.37, cdb:214331.76, priv:118554.66, itauvest:89201.91},
+    rec: [
+      {c:'TX Condomínio',         v:93916.23},
+      {c:'Reemb. Consumo Água',   v:9972.89},
+      {c:'Fundo Reserva',         v:4695.71},
+      {c:'Cotas em Aberto',       v:8031.44}
+    ],
+    desp: [
+      {c:'Serv. Terceirizados',   v:56249.13},
+      {c:'Consumo',               v:19205.55},
+      {c:'Administrativo',        v:18089.77},
+      {c:'Manutenção',            v:7574.60},
+      {c:'Eventuais Extras',      v:33071.93},
+      {c:'Despesas Diversas',     v:2166.15},
+      {c:'Aplicação / Resgate',   v:11709.42},
+      {c:'Transferências',        v:1537.26}
     ]
   }
 
