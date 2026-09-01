@@ -1733,9 +1733,10 @@ function buildCharts() {
     var ch2=_reg['cPvrGap'];
     if(ch2){
       ch2.data.labels=mf.map(lbl);
-      ch2.data.datasets[0].data=mf.map(function(k){return BAL[k].prev-BAL[k].real;});
-      ch2.data.datasets[0].backgroundColor=mf.map(function(k){return (BAL[k].prev-BAL[k].real)>0?'rgba(192,57,43,0.75)':'rgba(39,174,96,0.75)';});
-      ch2.data.datasets[0].borderColor=mf.map(function(k){return (BAL[k].prev-BAL[k].real)>0?'#922B21':'#1E8449';});
+      var _gMax2=Math.max.apply(null,mf.map(function(k){return Math.abs(BAL[k].real-BAL[k].prev);}))||1;
+      ch2.data.datasets[0].data=mf.map(function(k){return BAL[k].real-BAL[k].prev;});
+      ch2.data.datasets[0].backgroundColor=mf.map(function(k){var g=BAL[k].real-BAL[k].prev;var a=(0.45+0.50*(Math.abs(g)/_gMax2)).toFixed(2);return g>=0?'rgba(39,174,96,'+a+')':'rgba(192,57,43,'+a+')';});
+      ch2.data.datasets[0].borderColor=mf.map(function(k){return (BAL[k].real-BAL[k].prev)>=0?'#1E8449':'#922B21';});
       ch2.update();
     }
     var tbl=document.getElementById('tblPvr');
