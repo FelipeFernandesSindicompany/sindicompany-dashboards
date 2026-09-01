@@ -103,12 +103,18 @@ class Adapter(AdapterBase):
         )
 
         # Lê páginas 8-12 (índices 7-11 zero-based) que contêm todos os dados.
-        # Margem extra caso a paginação varie ±1 entre meses.
+        # Também lê as últimas 3 páginas para capturar "Total recebido (Com baixa de recibos)"
+        # da seção Acompanhamento de Processo de Cobrança.
         with pdfplumber.open(str(caminho)) as pdf:
             total = len(pdf.pages)
             inicio = min(7, total - 1)
             fim    = min(12, total)
-            textos = [pdf.pages[i].extract_text() or '' for i in range(inicio, fim)]
+            indices = list(range(inicio, fim))
+            # Adiciona últimas 3 páginas (Acompanhamento de Cobrança) sem duplicar
+            for i in range(max(fim, total - 3), total):
+                if i not in indices:
+                    indices.append(i)
+            textos = [pdf.pages[i].extract_text() or '' for i in indices]
 
         texto = '\n'.join(textos)
         linhas = [l.strip() for l in texto.split('\n') if l.strip()]
@@ -328,10 +334,9 @@ class Adapter(AdapterBase):
 
     def _extrair_inad(self, linhas: list, dados: DadosFinanceiros):
         """
-        Extrai inad e inadProc da Posição de Devedores.
-        Linha "Totais": Total anterior | Total recebido | Devedores mês | Total atrasados
-        inad     = Total atrasados  (4ª coluna)
-        inadProc = Total recebido   (2ª coluna)
+        Extrai inad da Posição de Devedores (Total atrasados — 4ª coluna do Totais).
+        Extrai inadProc de "Total recebido (Com baixa de recibos)" na seção
+        Acompanhamento de Processo de Cobrança (última página do PDF).
         """
         em_secao = False
         for linha in linhas:
@@ -345,23 +350,28 @@ class Adapter(AdapterBase):
             if ln.startswith('TOTAIS') or ln.startswith('TOTAL'):
                 nums = re.findall(r'[\d.]+,\d{2}', linha)
                 if len(nums) >= 4:
-                    dados.inadimplencia_recebida = _num(nums[1])   # inadProc
-                    dados.inadimplencia_valor    = _num(nums[3])   # inad
-                    return
-            # Encerra seção
+                    dados.inadimplencia_valor = _num(nums[3])   # inad
+                    break
             if 'RELACAO DE COTAS' in ln or 'PARCELAS DE PROCESSO' in ln:
                 break
 
-        # Fallback: procura "Totais" com 4 números em qualquer linha
+        # Fallback para inad
         if dados.inadimplencia_valor == 0:
             for linha in linhas:
                 ln = _norm(linha)
                 if ln.startswith('TOTAIS'):
                     nums = re.findall(r'[\d.]+,\d{2}', linha)
                     if len(nums) >= 4:
-                        dados.inadimplencia_recebida = _num(nums[1])
-                        dados.inadimplencia_valor    = _num(nums[3])
-                        return
+                        dados.inadimplencia_valor = _num(nums[3])
+                        break
+
+        # inadProc = "Total recebido (Com baixa de recibos)" — Acompanhamento de Cobrança
+        for linha in linhas:
+            if 'Com baixa de recibos' in linha or 'COM BAIXA DE RECIBOS' in linha.upper():
+                nums = re.findall(r'[\d.]+,\d{2}', linha)
+                if nums:
+                    dados.inadimplencia_recebida = _num(nums[-1])
+                    return
 
     def ler_xlsx(self, caminho: Path, mes_referencia: str) -> DadosFinanceiros:
         """Redireciona para ler_pdf — GK ADM usa somente PDF."""
