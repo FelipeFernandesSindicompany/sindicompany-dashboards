@@ -365,7 +365,22 @@
       "cor": "#f59e0b",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "observacao": "PDF Lello 'Balancete Mensal' 2 páginas. prev=COTAS CONDOMINIAIS (COMPOSIÇÃO RECEITAS ORDINÁRIAS). real=créditos CONTA CONDOMÍNIO.",
+        "cat_map": {
+          "Pessoal":               "Pessoal",
+          "Encargos Sociais":      "Encargos Sociais",
+          "Manut/Conserv.":        "Manut/Conserv.",
+          "Serv. Advocatícios":    "Serv. Advocatícios",
+          "Concessão de Serv.":    "Concessão de Serv.",
+          "Materiais":             "Materiais",
+          "Administrativo":        "Administrativo",
+          "Desp. Gerais":          "Desp. Gerais",
+          "Desp. Operacionais":    "Desp. Operacionais",
+          "Seguros":               "Seguros",
+          "Bens/Equipamentos":     "Bens/Equipamentos",
+          "Síndico Profissional":  "Síndico Profissional",
+          "Caixa Local":           "Caixa Local"
+        }
       }
     },
     {
