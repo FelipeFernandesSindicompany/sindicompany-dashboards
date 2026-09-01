@@ -280,10 +280,14 @@ class Adapter(AdapterBase):
 
     def _extrair_emissoes(self, linhas: list, dados: DadosFinanceiros):
         """
-        Extrai prev e real do Resumo de Emissões Geral.
-        Linha: "ORDINARIA  EMISSÃO DO PERIODO  107.273,79  93.916,23"
+        Extrai prev e real do TOTAL do Resumo de Emissões Geral (todas as contas).
+        O total aparece como a última linha com 2 números antes de
+        "COTAS EM ABERTO EM DD/MM/AAAA" (inad do período atual).
+        Exemplo: "211.354,66  117.719,67" — sem label de conta.
         """
         em_secao = False
+        ultimo_par: tuple | None = None  # (previsto, realizado)
+
         for linha in linhas:
             ln = _norm(linha)
             if 'RESUMO DE EMISSOES' in ln or 'RESUMO DE EMISSAO' in ln:
@@ -292,26 +296,35 @@ class Adapter(AdapterBase):
             if not em_secao:
                 continue
 
+            # Fim da seção — COTAS EM ABERTO no mês de referência atual (ex: 31/07/2026)
+            if re.search(r'COTAS EM ABERTO EM \d{2}/\d{2}/\d{4}', ln) and not re.search(r'30/\d{2}/\d{4}', ln):
+                break
+            if 'POSICAO DE DEVEDORES' in ln or 'RELACAO DE COTAS' in ln:
+                break
+
+            # Qualquer linha com 2 ou mais números = candidata ao total
+            nums = re.findall(r'[\d.]+,\d{2}', linha)
+            if len(nums) >= 2:
+                v1 = _num(nums[0])
+                v2 = _num(nums[1])
+                # Guarda o par mais recente (a última linha com 2 nums = linha de total)
+                if v1 > 0 and v2 > 0:
+                    ultimo_par = (v1, v2)
+
+        if ultimo_par:
+            dados.receita_prevista = ultimo_par[0]
+            dados.receita_cotas    = ultimo_par[1]
+            return
+
+        # Fallback: usa ORDINÁRIA EMISSÃO DO PERIODO se não encontrar total
+        for linha in linhas:
+            ln = _norm(linha)
             if 'EMISSAO DO PERIODO' in ln and 'ORDINARIA' in ln:
                 nums = re.findall(r'[\d.]+,\d{2}', linha)
                 if len(nums) >= 2:
                     dados.receita_prevista = _num(nums[0])
                     dados.receita_cotas    = _num(nums[1])
                     return
-            # Encerra seção ao encontrar próxima seção
-            if 'POSICAO DE DEVEDORES' in ln or 'RELACAO DE COTAS' in ln:
-                break
-
-        # Fallback: busca sem delimitador de seção
-        if dados.receita_prevista == 0:
-            for linha in linhas:
-                ln = _norm(linha)
-                if 'EMISSAO DO PERIODO' in ln and 'ORDINARIA' in ln:
-                    nums = re.findall(r'[\d.]+,\d{2}', linha)
-                    if len(nums) >= 2:
-                        dados.receita_prevista = _num(nums[0])
-                        dados.receita_cotas    = _num(nums[1])
-                        return
 
     def _extrair_inad(self, linhas: list, dados: DadosFinanceiros):
         """

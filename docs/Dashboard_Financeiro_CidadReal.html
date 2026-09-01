@@ -429,7 +429,7 @@ var CONFIG = {
     meses: {
       abr25: 130000, mai25: 130000, jun25: 130000, jul25: 130000,
       ago25: 130000, set25: 130000, out25: 130000, nov25: 130000,
-      dez25: 130000, jan26: 130000, fev26: 130000, mai26: 196883.46, jun26: 214156.42
+      dez25: 130000, jan26: 130000, fev26: 130000, mai26: 196883.46, jun26: 214156.42, jul26: 211354.66
     }
   }
 };
@@ -879,7 +879,7 @@ var BAL = {
       {n:'FACILITIES',                a:354.97,    c:396.29,    d:0,         s:751.26},
       {n:'CRÉDITOS A IDENTIFICAR',    a:4883.32,   c:-1835.02,  d:0,         s:3048.30}
     ],
-    prev: 107273.79, real: 93916.23, tDesp: 149603.81,
+    prev: 211354.66, real: 117719.67, tDesp: 149603.81,
     fac: 0, inad: 93634.99, inadProc: 8031.44,
     banco: {cc:34220.37, cdb:214331.76, priv:118554.66, itauvest:89201.91},
     rec: [
@@ -903,7 +903,7 @@ var BAL = {
 };
 
 var MESES = Object.keys(BAL);
-function prc(k){var o=CONFIG.orcamento;return(o&&o.meses&&o.meses[k]!==undefined)?o.meses[k]:prc(k);}
+function prc(k){var o=CONFIG.orcamento;return(o&&o.meses&&o.meses[k]!==undefined)?o.meses[k]:(BAL[k]?BAL[k].prev:0);}
 
 var chartsBuilt = false;
 
