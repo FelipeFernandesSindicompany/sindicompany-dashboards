@@ -1297,7 +1297,7 @@ function buildTblPvr() {
 
 
 function buildTblBanco() {
-  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Aplic. Ordin&aacute;ria</th><th>ITAUVEST</th><th>Total</th></tr>';
+  var h = '<tr><th>M&ecirc;s</th><th>C/C Ita&uacute;</th><th>Aplica&ccedil;&atilde;o CDB</th><th>Aplic. Privil&egrave;ge</th><th>Itauvest</th><th>Total</th></tr>';
   MESES.forEach(function(k) {
     var m = BAL[k];
     var lbl = m.tit.split(' ')[0] + '/' + m.tit.split(' ')[2];
@@ -1791,7 +1791,7 @@ function buildCharts() {
           borderSkipped: false
         },
         {
-          label: 'Aplic. Ordinária',
+          label: 'Aplic. Privilege',
           data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
           backgroundColor: 'rgba(39,174,96,0.82)',
           borderColor: '#1A6B3C',
@@ -1800,7 +1800,7 @@ function buildCharts() {
           borderSkipped: false
         },
         {
-          label: 'ITAUVEST',
+          label: 'Itauvest',
           data: bancoMeses.map(function(k){ return BAL[k].banco.itauvest || 0; }),
           backgroundColor: 'rgba(41,128,185,0.82)',
           borderColor: '#1A5276',
