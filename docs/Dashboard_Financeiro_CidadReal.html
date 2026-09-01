@@ -1659,7 +1659,7 @@ function buildCharts() {
   });
 
   // ── 7. Gap Previsto × Realizado (opacidade dinâmica + média) ─────────────────
-  var gapVals = MESES.map(function(k){ var m=BAL[k]; return m.prev - m.real; });
+  var gapVals = MESES.map(function(k){ var m=BAL[k]; return m.real - m.prev; }); // positivo = arrecadou mais \u2192 VERDE
   var gapAvg  = gapVals.reduce(function(a,b){ return a+b; },0) / gapVals.length;
   var gapMax  = Math.max.apply(null, gapVals.map(Math.abs)) || 1;
   mkChart('cPvrGap', {
@@ -1668,13 +1668,13 @@ function buildCharts() {
       labels: ML,
       datasets: [
         {
-          label: 'Gap (Previsto \u2212 Realizado)',
+          label: 'Gap (Realizado \u2212 Previsto)',
           data: gapVals,
           backgroundColor: gapVals.map(function(g){
             var alpha = 0.45 + 0.50 * (Math.abs(g) / gapMax);
-            return g >= 0 ? 'rgba(192,57,43,' + alpha.toFixed(2) + ')' : 'rgba(39,174,96,' + alpha.toFixed(2) + ')';
+            return g >= 0 ? 'rgba(39,174,96,' + alpha.toFixed(2) + ')' : 'rgba(192,57,43,' + alpha.toFixed(2) + ')';
           }),
-          borderColor: gapVals.map(function(g){ return g >= 0 ? '#922B21' : '#1E8449'; }),
+          borderColor: gapVals.map(function(g){ return g >= 0 ? '#1E8449' : '#922B21'; }),
           borderWidth: 1.5,
           borderRadius: 6,
           borderSkipped: false,
@@ -1703,7 +1703,7 @@ function buildCharts() {
             label: function(ctx){
               if (ctx.datasetIndex === 1) return '  M\u00e9dia: ' + fmtR(gapAvg);
               var v = ctx.raw;
-              return (v >= 0 ? '  \u2717 D\u00e9ficit de arrecada\u00e7\u00e3o: ' : '  \u2713 Meta superada: ') + fmtR(Math.abs(v));
+              return (v >= 0 ? '  \u2713 Acima do previsto: ' : '  \u2717 Abaixo do previsto: ') + fmtR(Math.abs(v));
             }
           }
         })
