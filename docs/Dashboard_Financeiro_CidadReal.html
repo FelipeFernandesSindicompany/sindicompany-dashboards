@@ -1866,10 +1866,11 @@ function buildCharts() {
 
 
   // \u2500\u2500 Inadimpl\u00eancia (linhas com \u00e1rea) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  var inadMeses = MESES.filter(function(k){ return BAL[k].inad > 0; });
+  var inadMeses = MESES;
   var inadML    = inadMeses.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
-  var inadVals  = inadMeses.map(function(k){ return BAL[k].inad; });
-  var inadAvg   = inadVals.length > 0 ? inadVals.reduce(function(a,b){ return a+b; },0) / inadVals.length : 0;
+  var inadVals  = inadMeses.map(function(k){ return BAL[k].inad || 0; });
+  var _inadNZ   = inadVals.filter(function(v){ return v > 0; });
+  var inadAvg   = _inadNZ.length > 0 ? _inadNZ.reduce(function(a,b){ return a+b; },0) / _inadNZ.length : 0;
   mkChart('cInad', {
     type: 'line',
     data: {
