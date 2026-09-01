@@ -155,10 +155,10 @@
       "cor": "#c026d3",
       "unidades": 0,
       "parser_config": {
-        "observacao": "PDFs digitalizados (sem texto) — injeção manual necessária",
+        "observacao": "Adapter ciudad_real.py lê PDF GK ADM automaticamente. cat_map vazio — adapter já normaliza categorias internamente.",
         "cat_map": {}
       },
-      "observacao": "GK desde mai/2026. Adapter PDF em adapters/condominios/ciudad_real.py. Enviar PDF mensal via Admin."
+      "observacao": "GK desde mai/2026. Adapter PDF: adapters/condominios/ciudad_real.py. Injeção automática via Admin (upload PDF mensal)."
     },
     {
       "id": "club_park_butanta",
