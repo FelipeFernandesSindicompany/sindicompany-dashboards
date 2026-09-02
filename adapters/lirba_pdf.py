@@ -339,29 +339,35 @@ class AdapterLirbaPDF(AdapterBase):
         # Se não encontrar, usa a linha de total "X Y" dentro da seção.
         previsto_total = 0.0
 
+        # use_resumo_colunado=true: pula "Receita Prevista" e usa direto "Resumo de Emissões
+        # Colunado". Necessário para Organy Studio (e similares) onde "Receita Prevista"
+        # pode incluir CONDOMINOS EM ATRASO no total previsto, inflando prev.
+        use_resumo_colunado = pcfg.get("use_resumo_colunado", False)
+
         # Tenta padrão Lirba antigo: "RECEBIMENTO DO PERIODO  X  Y" em seção Receita Prevista
         # Captura apenas a PRIMEIRA seção (ORDINÁRIA) e usa o grupo 1 (X = emissão do
         # período sem cotas em atraso), evitando inflar previsto com FUNDO/SALAO/CONSUMO.
         in_prev = False
         previsto_capturado = False
-        for linha in texto_completo.split("\n"):
-            l = linha.strip()
-            if not previsto_capturado and re.match(r"Receita Prevista$", l, re.IGNORECASE):
-                in_prev = True
-                continue
-            if re.match(r"Receita Realizada", l, re.IGNORECASE):
-                in_prev = False
-                continue
-            if not in_prev:
-                continue
-            # "RECEBIMENTO DO PERIODO  X  Y" — usa X (emissão do período, sem atrasos)
-            m = re.match(r"^RECEBIMENTO.+?\s+([\d.,]+)\s+([\d.,]+)\s*$", l, re.IGNORECASE)
-            if m:
-                v1 = _num(m.group(1))
-                if v1 > 0:
-                    previsto_total = v1
+        if not use_resumo_colunado:
+            for linha in texto_completo.split("\n"):
+                l = linha.strip()
+                if not previsto_capturado and re.match(r"Receita Prevista$", l, re.IGNORECASE):
+                    in_prev = True
+                    continue
+                if re.match(r"Receita Realizada", l, re.IGNORECASE):
                     in_prev = False
-                    previsto_capturado = True
+                    continue
+                if not in_prev:
+                    continue
+                # "RECEBIMENTO DO PERIODO  X  Y" — usa X (emissão do período, sem atrasos)
+                m = re.match(r"^RECEBIMENTO.+?\s+([\d.,]+)\s+([\d.,]+)\s*$", l, re.IGNORECASE)
+                if m:
+                    v1 = _num(m.group(1))
+                    if v1 > 0:
+                        previsto_total = v1
+                        in_prev = False
+                        previsto_capturado = True
 
         # Tenta padrão Blue Sky: busca a linha "CONDOMINIO X Y" dentro da seção
         # "Resumo de Emissões Colunado":
@@ -493,6 +499,14 @@ class AdapterLirbaPDF(AdapterBase):
             posicao_cats = self._extrair_subcats_posicao_financeira(textos, cat_map_extra)
         else:
             posicao_cats = {}
+
+        # excluir_posicao_cats: lista de nomes canônicos a excluir da Posição Financeira.
+        # Usado quando a Posição Financeira ORDINÁRIA lista transferências para contas
+        # separadas (ex: "Consumos" → conta CONSUMO, "Fundo Para Eventuais" → conta própria)
+        # que NÃO são despesas ORDINÁRIA e não devem entrar em desp[].
+        excluir_pos = set(pcfg.get("excluir_posicao_cats", []))
+        if excluir_pos and posicao_cats:
+            posicao_cats = {k: v for k, v in posicao_cats.items() if k not in excluir_pos}
 
         if extract_cats == "posicao_financeira":
             # Método explícito: usa apenas Posição Financeira
