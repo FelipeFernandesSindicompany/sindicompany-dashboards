@@ -342,7 +342,7 @@ class AdapterLirbaPDF(AdapterBase):
         # use_resumo_colunado=true: pula "Receita Prevista" e usa direto "Resumo de Emissões
         # Colunado". Necessário para Organy Studio (e similares) onde "Receita Prevista"
         # pode incluir CONDOMINOS EM ATRASO no total previsto, inflando prev.
-        use_resumo_colunado = pcfg.get("use_resumo_colunado", False)
+        use_resumo_colunado = self.parser_config.get("use_resumo_colunado", False)
 
         # Tenta padrão Lirba antigo: "RECEBIMENTO DO PERIODO  X  Y" em seção Receita Prevista
         # Captura apenas a PRIMEIRA seção (ORDINÁRIA) e usa o grupo 1 (X = emissão do
