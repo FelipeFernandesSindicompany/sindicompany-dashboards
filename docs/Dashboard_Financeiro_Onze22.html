@@ -1216,7 +1216,7 @@ function buildCharts(){
 
   var catL=Object.keys(cats);
 
-  var BC=['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
+  var BC=['#1A237E','#E65100','#2E7D32','#B71C1C','#F9A825','#006064','#6A1B9A','#AD1457','#4E342E','#0277BD','#558B2F','#880E4F','#37474F','#00838F','#D84315','#827717'];
 
   mkC('cDespBar',{type:'bar',data:{labels:catL,datasets:MESES.map(function(k,i){var m=BAL[k],bc=BC[i]||'#888';return{label:ab(m.tit),data:catL.map(function(c){var d=m.desp.find(function(x){return x.c===c;});
 
