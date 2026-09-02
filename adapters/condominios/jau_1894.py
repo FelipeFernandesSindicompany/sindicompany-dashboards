@@ -134,7 +134,6 @@ class Adapter(AdapterBase):
                     'debitos':   abs(_num(nums[2])),
                     'saldo_atual': _num(nums[3]),
                 })
-                dados.receita_cotas = _num(nums[1])   # créditos CONTA CONDOMÍNIO → real
                 dados.banco_cc = _num(nums[3])
 
             elif 'FUNDO DE RESERVA' in ln:
