@@ -58,7 +58,8 @@ def _norm(s: str) -> str:
 _DESP_MAP = [
     ('DESPESAS COM PESSOAL',            'Pessoal'),
     ('ENCARGOS SOCIAIS',                'Encargos Sociais'),
-    ('MANUTENCAO CONSERV.',             'Manut/Conserv.'),  # captura PREVENTIVA e CORRETIVA
+    ('MANUTENCAO CONSERV.PREVENTIVA',    'Manut/Conserv. Preventiva'),
+    ('MANUTENCAO CONSERV. CORRETIVA',   'Manut/Conserv. Corretiva'),
     ('SERVICOS ADVOCATICIOS',           'Serv. Advocatícios'),
     ('CONCESSAO DE SERVICOS',           'Concessão de Serv.'),
     ('MATERIAIS P/CONSERV.',            'Materiais'),
