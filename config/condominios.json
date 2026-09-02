@@ -525,7 +525,30 @@
         ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
-        "cat_map": {}
+        "cat_map": {
+          "CONSUMOS": "Consumos",
+          "Consumos": "Consumos",
+          "DESPESAS JURÍDICAS": "Despesas Jurídicas",
+          "Despesas Jurídicas": "Despesas Jurídicas",
+          "SERVIÇOS TERCEIRIZADOS": "Serv. Terceirizados",
+          "Serviços Terceirizados": "Serv. Terceirizados",
+          "FUNDO PARA EVENTUAIS": "Fundo Para Eventuais",
+          "Fundo Para Eventuais": "Fundo Para Eventuais",
+          "MATERIAIS CONS/DIVERSOS": "Materiais Cons/Diversos",
+          "Materiais Cons/Diversos": "Materiais Cons/Diversos",
+          "PORTAL DE SERVIÇOS": "Portal De Serviços",
+          "Portal De Serviços": "Portal De Serviços",
+          "ASSESSORIA ADMINIST. /SEGUROS": "Assessoria Administ. /Seguros",
+          "Assessoria Administ. /Seguros": "Assessoria Administ. /Seguros",
+          "REEMBOLSO": "Reembolso",
+          "Reembolso": "Reembolso",
+          "Obrigações Legais": "Encargos Sociais",
+          "Aquisições": "Materiais Cons/Diversos",
+          "Seguros": "Assessoria Administ. /Seguros",
+          "Regularizações Contabeis": "Operacionais/Administrativas",
+          "Certificado Digital": "Operacionais/Administrativas",
+          "Imposto E Taxas": "Operacionais/Administrativas"
+        }
       }
     },
     {
