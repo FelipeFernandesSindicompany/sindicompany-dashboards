@@ -1716,7 +1716,7 @@ function buildCharts() {
 
 }()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},
 
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GRID_Y},x:{ticks:TK,grid:GRID_X}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LEG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fmtR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fmtK},TICK),grid:GRID_Y},x:{ticks:TICK,grid:GRID_X}}}});
 
 // ── Filtro de período: Inadimplência ─────────────────────────────────────────────────
 (function(){
