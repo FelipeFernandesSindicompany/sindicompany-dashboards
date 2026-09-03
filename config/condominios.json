@@ -527,7 +527,10 @@
         ],
         "consumo_name": "Consumos",
         "iptu_name": "IPTU",
-        "excluir_posicao_cats": ["Consumos", "Fundo Para Eventuais"],
+        "excluir_posicao_cats": [
+          "Consumos",
+          "Fundo Para Eventuais"
+        ],
         "cat_map": {
           "CONSUMOS": "Consumos",
           "Consumos": "Consumos",
@@ -715,7 +718,7 @@
       "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/platinum_building_berrini",
       "html_file": "Dashboard_Financeiro_Platinum.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#7c3aed",
       "unidades": 0,
       "parser_config": {
@@ -750,7 +753,7 @@
       "empresa_gestora": "sk_condominios_pdf",
       "pasta_dados": "data/reserva_verde",
       "html_file": "Dashboard_Financeiro_ReservaVerde.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#16a34a",
       "unidades": 0,
       "parser_config": {
@@ -973,7 +976,7 @@
       "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/res_villa_sardenha",
       "html_file": "Dashboard_Financeiro_VillaSardenha.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#7c3aed",
       "unidades": 0,
       "parser_config": {

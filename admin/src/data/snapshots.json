@@ -851,35 +851,6 @@
       "tAnt": 51010.79
     }
   },
-  "Dashboard_Financeiro_Platinum.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26"
-    ],
-    "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 303312.19,
-      "tCred": 160085.84,
-      "tDeb": 86287.11,
-      "inad": 226788.97,
-      "tAnt": 229513.46
-    }
-  },
   "Dashboard_Financeiro_PortSaintTropez.html": {
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
@@ -908,36 +879,6 @@
       "tDeb": 90141.79,
       "inad": 129761.35,
       "tAnt": 274350.25
-    }
-  },
-  "Dashboard_Financeiro_ReservaVerde.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 34796.59,
-      "tCred": 27252.22,
-      "tDeb": 24595.58,
-      "inad": 0,
-      "tAnt": 32139.95
     }
   },
   "Dashboard_Financeiro_ResidencialNapoleao.html": {
@@ -1229,35 +1170,6 @@
       "tDeb": 395447.01,
       "inad": 76251.87,
       "tAnt": 271931.86
-    }
-  },
-  "Dashboard_Financeiro_VillaSardenha.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26"
-    ],
-    "data": {
-      "tit": "Junho / 2026",
-      "tAtual": -120.04,
-      "tCred": 92876.99,
-      "tDeb": 93970.57,
-      "inad": 61035.82,
-      "tAnt": 973.54
     }
   },
   "Dashboard_Financeiro_VitaParque.html": {
