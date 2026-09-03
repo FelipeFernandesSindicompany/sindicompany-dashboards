@@ -568,7 +568,8 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
     <div class="ni" onclick="nav('orcamento',this)"><span class="ic">&#127919;</span> <span>Or&ccedil;amento</span></div>
 
-    <div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Banc&aacute;rio</span></div>
+    <div class="ni" onclick="nav('inadimp',this)"><span class="ic">&#9888;</span> <span>Inadimpl&ecirc;ncia</span></div>
+<div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Banc&aacute;rio</span></div>
 
   </div>
 
@@ -664,6 +665,16 @@ tr:nth-child(even) td{background:#FAFAFA;}
   <div class="ph"><h1>Or&ccedil;amento</h1><p>Execu&ccedil;&atilde;o or&ccedil;ament&aacute;ria: realizado &times; previsto acumulado</p></div>
 
   <div id="orc-content"></div>
+
+</div>
+
+<div id="pg-inadimp" class="pg">
+
+  <div class="ph"><h1>Inadimpl&ecirc;ncia</h1><p>Devedores em aberto e recupera&ccedil;&atilde;o mensal</p></div>
+
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128202; Evolu&ccedil;&atilde;o da Inadimpl&ecirc;ncia</h3><select onchange="window._filterInad(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cInad"></canvas></div></div>
+
+  <div class="cc"><h3>&#128203; Detalhamento por M&ecirc;s</h3><div class="tw"><table id="tblInad"></table></div></div>
 
 </div>
 
@@ -859,6 +870,8 @@ window.onload = function() {
   buildTblDesp();
 
   buildTblPvr();
+
+  buildInad();
 
   buildTblBanco();
 
@@ -1310,6 +1323,28 @@ function mkChart(id, config) {
 
 
 
+function buildInad(){
+
+  var h='<tr><th>M\u00eas</th><th>Devedores em Aberto</th><th>Recebido em Atraso</th><th>% s/ Previsto</th><th>Status</th></tr>';
+
+  MESES.forEach(function(k){
+
+    var m=BAL[k],pi=m.prev>0?(m.inad/m.prev*100).toFixed(1):'0.0';
+
+    var b=m.inad>10000?'<span class="badge bbad">\u25b2 Alto</span>':m.inad>3000?'<span class="badge bwarn">\u26a0 M\u00e9dio</span>':'<span class="badge bok">\u25bc Controlado</span>';
+
+    var ic=m.inad>10000?' style="color:var(--r)"':'';
+
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td class="nr"'+ic+'>'+pi+'%</td><td>'+b+'</td></tr>';
+
+  });
+
+  document.getElementById('tblInad').innerHTML=h;
+
+}
+
+
+
 function buildCharts() {
 
   var P='#171B2E', O='#E87722', G='#27AE60', R2='#C0392B', Y='#F39C12', B='#2980B9';
@@ -1668,7 +1703,52 @@ function buildCharts() {
 
 
 
-  var bancoML=MESES.map(function(k){ return BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2]; });
+
+  var iML=MESES.map(function(k){return BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];});
+
+  mkChart('cInad',{type:'line',data:{labels:iML,datasets:[
+
+    {label:'Devedores em Aberto',data:MESES.map(function(k){return BAL[k].inad;}),borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,.10)',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.35,order:2},
+
+    {label:'Recebido em Atraso',data:MESES.map(function(k){return BAL[k].inadProc;}),borderColor:'#F39C12',backgroundColor:'rgba(243,156,18,.12)',borderWidth:2,pointRadius:4,fill:true,tension:0.35,order:3},
+
+    {label:'Média',data:(function(){var a=MESES.map(function(k){return BAL[k].inad;}).reduce(function(x,y){return x+y;},0)/MESES.length;return MESES.map(function(){return a;});
+
+}()),type:'line',borderColor:'rgba(192,57,43,.40)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0,order:1}]},
+
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GRID_Y},x:{ticks:TK,grid:GRID_X}}}});
+
+// ── Filtro de período: Inadimplência ─────────────────────────────────────────────────
+(function(){
+  var _reg=typeof chartInstances!=='undefined'?chartInstances:CI;
+  var _allMesInad=MESES.slice();
+  var _dsOrig=null;
+  function _filterInad(n){
+    var ch=_reg['cInad'];
+    if(!ch)return;
+    if(!_dsOrig){_dsOrig=ch.data.datasets.map(function(ds){return ds.data.slice();});}
+    var mf=n>0?_allMesInad.slice(-n):_allMesInad;
+    var startIdx=_allMesInad.length-mf.length;
+    var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
+    ch.data.labels=mf.map(lbl);
+    ch.data.datasets.forEach(function(ds,di){ds.data=_dsOrig[di]?_dsOrig[di].slice(startIdx):[];});
+    ch.update();
+    var tbl=document.getElementById('tblInad');
+    if(tbl){
+      var ri=0;
+      tbl.querySelectorAll('tr').forEach(function(r){
+        if(r.querySelector('th'))return;
+        r.style.display=(ri>=startIdx)?'':'none';
+        ri++;
+      });
+      var tw=tbl.parentElement;if(tw)tw.style.overflowX='auto';
+    }
+  }
+  _filterInad(12);
+  window._filterInad=_filterInad;
+})();
+
+  var bancoML=MESES.map(function(k){ return BAL[k].tit.split(' ')[0]+'/'BAL[k].tit.split(' ')[2]; });
 
   mkChart('cBanco', {
 
