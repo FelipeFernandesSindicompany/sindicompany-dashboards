@@ -1335,7 +1335,7 @@ function buildInad(){
 
     var ic=m.inad>10000?' style="color:var(--r)"':'';
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td class="nr"'+ic+'>'+pi+'%</td><td>'+b+'</td></tr>';
+    h+='<tr><td class="bd">'+m.tit.split(' ')[0]+'/'+m.tit.split(' ')[2]+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr" style="color:var(--g)">'+R(m.inadProc)+'</td><td class="nr"'+ic+'>'+pi+'%</td><td>'+b+'</td></tr>';
 
   });
 
@@ -1748,7 +1748,7 @@ function buildCharts() {
   window._filterInad=_filterInad;
 })();
 
-  var bancoML=MESES.map(function(k){ return BAL[k].tit.split(' ')[0]+'/'BAL[k].tit.split(' ')[2]; });
+  var bancoML=MESES.map(function(k){ return BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2]; });
 
   mkChart('cBanco', {
 
