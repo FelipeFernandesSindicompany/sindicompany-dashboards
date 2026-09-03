@@ -1087,8 +1087,8 @@
     }
   },
   "Dashboard_Financeiro_VeraCruz.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -1102,15 +1102,16 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": -14826.32,
-      "tCred": 116227.39,
-      "tDeb": 127123.24,
-      "inad": 3058.05,
-      "tAnt": -3930.47
+      "tit": "Julho / 2026",
+      "tAtual": -32149.52,
+      "tCred": 114920.1,
+      "tDeb": 132243.3,
+      "inad": 2788.86,
+      "tAnt": -14826.32
     }
   },
   "Dashboard_Financeiro_Victoria.html": {
