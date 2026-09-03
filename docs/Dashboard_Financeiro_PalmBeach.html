@@ -790,7 +790,7 @@ var CONFIG = {
 
       dez25: 68909, jan26: 74414, fev26: 74414, mar26: 74414,
 
-      abr26: 74414, mai26: 74414, jun26: 74414
+      abr26: 74414, mai26: 74414, jun26: 74414, jul26: 74414
 
     }
 
@@ -800,11 +800,11 @@ var CONFIG = {
 
 
 
-var MESES = ["abr25", "mai25", "jun25", "jul25", "ago25", "set25", "out25", "nov25", "dez25", "jan26", "fev26", "mar26", "abr26", "mai26", 'jun26'];
+var MESES = ["abr25", "mai25", "jun25", "jul25", "ago25", "set25", "out25", "nov25", "dez25", "jan26", "fev26", "mar26", "abr26", "mai26", 'jun26', 'jul26'];
 
-var EVO_L = ['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26'];
+var EVO_L = ['Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26'];
 
-var EVO_V = [279782.28, 290857.95, 297675.69, 303112.76, 302043.28, 297893.13, 293604.37, 296229.68, 310368.77, 300933.26, 307242.62, 296825.05, 306071.22, 313198.21, 318107.87];
+var EVO_V = [279782.28, 290857.95, 297675.69, 303112.76, 302043.28, 297893.13, 293604.37, 296229.68, 310368.77, 300933.26, 307242.62, 296825.05, 306071.22, 313198.21, 318107.87, 332683.71];
 
 
 
@@ -1568,6 +1568,56 @@ var BAL = {
       {c:'Judicial',          v:4000.00},
 
       {c:'Seguros',           v:3361.46}
+
+    ]
+
+  },
+
+  jul26: {
+
+    tit: 'Julho / 2026', per: '01/07/2026 a 31/07/2026',
+
+    tAnt: 318107.87, tCred: 81732.02, tDeb: 67156.18, tAtual: 332683.71,
+
+    contas: [
+
+      {n:'ASSISTÊNCIA JURÍDICA', a:13631.11, c:0.00,     d:0.00,     s:13631.11},
+
+      {n:'FUNDO DE OBRAS',       a:69349.42, c:2800.03,  d:0.00,     s:72149.45},
+
+      {n:'FUNDO DE RESERVA',     a:215001.89,c:6210.04,  d:0.00,     s:221211.93},
+
+      {n:'MANUT. PINTURA',       a:25685.17, c:3640.00,  d:0.00,     s:29325.17},
+
+      {n:'ORDINÁRIA',            a:-12794.37,c:68433.55, d:67156.18, s:-11517.00},
+
+      {n:'SALAO DE FESTAS',      a:7234.65,  c:648.40,   d:0.00,     s:7883.05}
+
+    ],
+
+    prev: 74414.00, real: 81732.02, tDesp: 67156.18, fac: 0,
+
+    inad: 124496.57, inadProc: 0,
+
+    banco: {cc: 90569.19, cdb: 242114.52, priv: 0},
+
+    desp: [
+
+      {c:'Pessoal',                      v:42614.07},
+
+      {c:'Consumo',                      v:8314.31},
+
+      {c:'Tarifas',                      v:297.18},
+
+      {c:'Manutenção de Equipamentos',   v:3568.70},
+
+      {c:'Conservação e Limpeza',        v:2254.49},
+
+      {c:'Diversos',                     v:-0.02},
+
+      {c:'Administração',                v:6745.99},
+
+      {c:'Seguros',                      v:3361.46}
 
     ]
 
@@ -2558,7 +2608,7 @@ function buildCharts() {
 
     {
 
-      label: 'Taxa de Condom\u00ednio',
+      label: 'Ordin\u00e1ria',
 
       data: MESES.map(function(k) {
 
