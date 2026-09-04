@@ -1074,17 +1074,27 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>Mês</th><th class="nr">Total</th></tr>';
+  function sCor(m){var c=m.contas.find(function(x){return x.n.indexOf('Corrente')!==-1;});return c?c.s:0;}
+
+  function sInt(m){var c=m.contas.find(function(x){return x.n.indexOf('Inter')!==-1;});return c?c.s:0;}
+
+  function fmtS(v){if(v===0)return '<span style="color:var(--muted)">—</span>';var cl=v<0?'color:var(--r)':'';return '<span style="'+cl+'">'+R(v)+'</span>';}
+
+  var h='<tr><th>Mês</th><th class="nr">001 - Conta Corrente</th><th class="nr">002 - Banco Inter</th><th class="nr">Total</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k];
+    var m=BAL[k],sc=sCor(m),si=sInt(m);
 
-    var cls=m.tAtual<0?' style="color:var(--r)"':'';
+    var tcls=m.tAtual<0?' style="color:var(--r)"':'';
 
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
-    h+='<td class="nr bd"'+cls+'>'+R(m.tAtual)+'</td></tr>';
+    h+='<td class="nr bd">'+fmtS(sc)+'</td>';
+
+    h+='<td class="nr bd">'+fmtS(si)+'</td>';
+
+    h+='<td class="nr bd"'+tcls+'>'+R(m.tAtual)+'</td></tr>';
 
   });
 
@@ -1361,9 +1371,11 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Saldo Total',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:MESES.map(function(k){return BAL[k].tAtual>=0?'rgba(46,158,104,.80)':'rgba(192,57,43,.80)';}),borderColor:MESES.map(function(k){return BAL[k].tAtual>=0?'#1A6B3C':'#922B21';}),borderWidth:1.5,borderRadius:4,borderSkipped:false}]},
+    {label:'001 - Conta Corrente',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('Corrente')!==-1;});return c?c.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1.5,borderRadius:3,borderSkipped:false},
 
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  Saldo Total: '+fR(c.raw);}}})},scales:{x:{ticks:TK,grid:GX},y:{ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+    {label:'002 - Banco Inter',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('Inter')!==-1;});return c?c.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1.5,borderRadius:3,borderSkipped:false}]},
+
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
 (function(){
