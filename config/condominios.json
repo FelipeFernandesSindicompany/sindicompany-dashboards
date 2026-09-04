@@ -1046,7 +1046,14 @@
       "cor": "#0f766e",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "Mensais": "Mensais",
+          "Manutenção": "Manutenção",
+          "Serv. Terceirizados": "Outras Despesas",
+          "Síndico(a) Profissional": "Outras Despesas",
+          "Escritório Jurídico": "Outras Despesas",
+          "Diversas": "Outras Despesas"
+        }
       }
     },
     {

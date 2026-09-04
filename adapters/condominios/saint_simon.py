@@ -1,19 +1,23 @@
 """
 Adapter para Saint Simon — formato Conviver MRV (1-2 páginas).
-Receitas: "Total Receitas : R$ X"
-Despesas por grupo: "Total Mensais : R$ X", "Total Manutenção : R$ X"
-Itens diretos: "Serviços Terceirizados R$ X", "Síndico(a) ..."
-Saldos: "NNN - Conta R$ ant R$ atual"
+
+Metodologia:
+- prev = real = tCred  (garantidora LLZ; todas as cotas sempre realizadas)
+- banco{cc=tAtual, cdb=0, priv=0}
+- inad = inadProc = fac = 0
+- Suporte a 1 ou 2 contas (001-Conta Corrente + 002-Banco Inter Empresas)
+- tAnt/tAtual = soma de todos os saldos das contas encontradas
+- Categorias brutas → cat_map em condominios.json mapeia para 3 canônicas:
+    Mensais, Manutenção, Outras Despesas
 """
 import re
 import pdfplumber
 from adapters.base import AdapterBase, DadosFinanceiros
 from pathlib import Path
-from typing import Optional
 
 
 def _br(s: str) -> float:
-    """Converte número em formato BR para float."""
+    """Converte número em formato BR (possivelmente negativo) para float."""
     s = s.strip()
     neg = s.startswith('-')
     s = re.sub(r'[^\d,]', '', s).replace(',', '.')
@@ -42,23 +46,55 @@ class Adapter(AdapterBase):
 
         # Totais globais
         t_cred = find(r'Total Receitas\s*:\s*R\$\s*([\d.,]+)')
-        t_deb = find(r'Total Despesas\s*:\s*R\$\s*([\d.,]+)')
+        t_deb  = find(r'Total Despesas\s*:\s*R\$\s*([\d.,]+)')
 
-        # Saldo da conta com saldo real (não-zero)
-        t_ant = 0.0
-        t_atual = 0.0
-        conta_nome = 'Banco Inter Empresas'
+        # Coleta TODAS as contas (suporta saldos negativos com "-" antes de R$)
+        # Padrão: "NNN - Nome da Conta  R$ 1.234,56  R$ 7.890,12"
+        #          ou "NNN - Nome  -R$ 1.234,56  R$ 7.890,12"
+        contas_detalhe = []
         for m in re.finditer(
-            r'\d{3}\s+-\s+([^\n]+?)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)',
+            r'(\d{3})\s*-\s*([^\n]+?)\s+(-?R\$\s*[\d.,]+)\s+(-?R\$\s*[\d.,]+)',
             texto
         ):
-            v_ant = _br(m.group(2))
-            v_atual = _br(m.group(3))
-            if v_ant != 0.0 or v_atual != 0.0:
-                conta_nome = m.group(1).strip()
-                t_ant = v_ant
-                t_atual = v_atual
-                break
+            raw_ant   = re.sub(r'R\$\s*', '', m.group(3))
+            raw_atual = re.sub(r'R\$\s*', '', m.group(4))
+            v_ant   = _br(raw_ant)
+            v_atual = _br(raw_atual)
+            nome = m.group(2).strip()
+            contas_detalhe.append({
+                'nome':       nome,
+                'saldo_ant':  v_ant,
+                'creditos':   t_cred if 'inter' in nome.lower() else 0.0,
+                'debitos':    t_deb  if 'inter' in nome.lower() else abs(v_atual - v_ant) if v_atual != v_ant else 0.0,
+                'saldo_atual': v_atual,
+            })
+
+        # Calcula totais consolidados
+        if contas_detalhe:
+            t_ant   = round(sum(c['saldo_ant']   for c in contas_detalhe), 2)
+            t_atual = round(sum(c['saldo_atual']  for c in contas_detalhe), 2)
+            # Distribui créditos/débitos: conta com 'Inter' recebe os créditos totais
+            # Conta Corrente: saldo_ant=0 geralmente, seus débitos = |saldo_atual| se negativo
+            _has_inter = any('inter' in c['nome'].lower() for c in contas_detalhe)
+            _has_cc    = any('corrente' in c['nome'].lower() for c in contas_detalhe)
+            if _has_inter and _has_cc:
+                for c in contas_detalhe:
+                    if 'inter' in c['nome'].lower():
+                        c['creditos'] = round(t_cred, 2)
+                        c['debitos']  = round(c['saldo_ant'] + t_cred - c['saldo_atual'], 2)
+                    else:
+                        c['creditos'] = 0.0
+                        c['debitos']  = round(abs(c['saldo_atual'] - c['saldo_ant']), 2)
+            elif contas_detalhe:
+                # Conta única: todos os fluxos nela
+                contas_detalhe[0]['creditos'] = round(t_cred, 2)
+                contas_detalhe[0]['debitos']  = round(t_deb, 2)
+        else:
+            t_ant   = 0.0
+            t_atual = 0.0
+            contas_detalhe = [{'nome': 'Banco Inter Empresas',
+                                'saldo_ant': 0.0, 'creditos': round(t_cred, 2),
+                                'debitos': round(t_deb, 2), 'saldo_atual': round(t_cred - t_deb, 2)}]
 
         # Seção de despesas (após "Total Receitas")
         m_rec = re.search(r'Total Receitas\s*:', texto)
@@ -68,32 +104,24 @@ class Adapter(AdapterBase):
             m = re.search(pattern, texto_desp)
             return _br(m.group(1)) if m else 0.0
 
-        mensais = find_d(r'Total Mensais\s*:\s*R\$\s*([\d.,]+)')
+        mensais    = find_d(r'Total Mensais\s*:\s*R\$\s*([\d.,]+)')
         manutencao = find_d(r'Total Manutenção\s*:\s*R\$\s*([\d.,]+)')
-
-        # Serviços Terceirizados: linha direta (não é "Total ...")
-        serv_terc = find_d(r'Serviços Terceirizados\s+R\$\s*([\d.,]+)')
-
-        # Síndico — múltiplos padrões possíveis
-        sindico = find_d(r'Síndico\(a\) Profissional\s+R\$\s*([\d.,]+)')
+        serv_terc  = find_d(r'Serviços Terceirizados\s+R\$\s*([\d.,]+)')
+        sindico    = find_d(r'Síndico\(a\) Profissional\s+R\$\s*([\d.,]+)')
         if sindico == 0.0:
             sindico = find_d(r'Ajuda de custos\s*-\s*Síndico\(a\)\s+R\$\s*([\d.,]+)')
-
         escritorio = find_d(r'Escritório Jurídico\s+R\$\s*([\d.,]+)')
-
-        diversas = round(
-            t_deb - mensais - manutencao - serv_terc - sindico - escritorio, 2
-        )
+        diversas = round(t_deb - mensais - manutencao - serv_terc - sindico - escritorio, 2)
         if diversas < 0:
             diversas = 0.0
 
         cats: dict = {}
-        if mensais: cats['Mensais'] = round(mensais, 2)
-        if manutencao: cats['Manutenção'] = round(manutencao, 2)
-        if serv_terc: cats['Serv. Terceirizados'] = round(serv_terc, 2)
-        if sindico: cats['Síndico(a) Profissional'] = round(sindico, 2)
-        if escritorio: cats['Escritório Jurídico'] = round(escritorio, 2)
-        if diversas > 0: cats['Diversas'] = diversas
+        if mensais:    cats['Mensais']               = round(mensais, 2)
+        if manutencao: cats['Manutenção']             = round(manutencao, 2)
+        if serv_terc:  cats['Serv. Terceirizados']    = round(serv_terc, 2)
+        if sindico:    cats['Síndico(a) Profissional']= round(sindico, 2)
+        if escritorio: cats['Escritório Jurídico']    = round(escritorio, 2)
+        if diversas > 0: cats['Diversas']             = diversas
 
         return DadosFinanceiros(
             condominio_id='saint_simon',
@@ -109,11 +137,5 @@ class Adapter(AdapterBase):
             banco_cdb=0.0,
             banco_priv=0.0,
             categorias_despesa=cats,
-            contas_detalhe=[{
-                'nome': conta_nome,
-                'saldo_ant': round(t_ant, 2),
-                'creditos': round(t_cred, 2),
-                'debitos': round(t_deb, 2),
-                'saldo_atual': round(t_atual, 2),
-            }],
+            contas_detalhe=contas_detalhe,
         )

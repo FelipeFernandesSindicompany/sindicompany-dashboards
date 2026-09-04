@@ -6,6 +6,7 @@ export const ADAPTER_LABELS: Record<string, string> = {
   datadigitus_pdf: 'DataDigitus PDF',
   iello_pdf: 'Iello PDF',
   convivium_pdf: 'Convivium PDF',
+  ucondo_pdf: 'Conviver MRV PDF',
 };
 
 export const ADAPTER_COLORS: Record<string, string> = {
@@ -15,4 +16,5 @@ export const ADAPTER_COLORS: Record<string, string> = {
   datadigitus_pdf: '#F59E0B',
   iello_pdf: '#EC4899',
   convivium_pdf: '#0EA5E9',
+  ucondo_pdf: '#0f766e',
 };
