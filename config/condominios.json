@@ -843,7 +843,14 @@
       "cor": "#0d9488",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "Pessoal Contrat.": "PESSOAL CONTRATADO",
+          "Pessoal Próprio": "PESSOAL CONTRATADO",
+          "Conserv./Manut.": "CONSERVAÇÃO/MANUTENÇÃO",
+          "Manut. Contratos": "CONSERV/MANUT/CONTRATOS",
+          "Honorários/Adm.": "HONORARIOS / ADMINISTRATIVO",
+          "Desp. Bancárias": "BANCÁRIAS"
+        }
       }
     },
     {
