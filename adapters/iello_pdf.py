@@ -57,8 +57,9 @@ class AdapterIelloPDF(AdapterBase):
         # "FUNDO DE RESERVA" / "FUNDO INVESTIMENTO" = banco_cdb (somados)
         # Demais contas (SALAO DE FESTAS, BENFEITORIA, LOCACAO, etc.) = banco_priv
         # "SALDO FINAL" = totais consolidados
-        _CC_KEYS  = ("CONTA CONDOMINIO", "ORDINARI", "CORRENTE")
-        _CDB_KEYS = ("FUNDO", "RESERVA", "CDB", "APLICA", "INVESTIMENTO")
+        _CC_KEYS   = ("CONTA CONDOMINIO", "ORDINARI", "CORRENTE")
+        _CDB_KEYS  = ("FUNDO", "RESERVA", "CDB", "APLICA", "INVESTIMENTO")
+        _CDB_EXCL  = ("OBRAS", "BENFEIT", "MANUT")  # FUNDO DE OBRAS → priv, não cdb
         conta_condominio_c = None
         in_resumo = False
         for linha in linhas:
@@ -111,7 +112,7 @@ class AdapterIelloPDF(AdapterBase):
             if any(k in l_up for k in _CC_KEYS):
                 conta_condominio_c = nums_f[1]
                 dados.banco_cc = saldo_conta
-            elif any(k in l_up for k in _CDB_KEYS):
+            elif any(k in l_up for k in _CDB_KEYS) and not any(e in l_up for e in _CDB_EXCL):
                 dados.banco_cdb = round(dados.banco_cdb + saldo_conta, 2)
             else:
                 dados.banco_priv = round(dados.banco_priv + saldo_conta, 2)
