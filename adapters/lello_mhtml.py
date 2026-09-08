@@ -147,29 +147,46 @@ def _norm_cat(cat: str) -> str:
 
 # ─── helpers ─────────────────────────────────────────────────────────────────
 
-def _f(v) -> float:
-    """Converte valor BR ou numérico para float (sempre positivo)."""
-    if v is None:
-        return 0.0
-    if isinstance(v, (int, float)):
-        import math
-        return abs(float(v)) if not (math.isnan(float(v)) or math.isinf(float(v))) else 0.0
-    s = str(v).strip().replace("\xa0", "").replace(" ", "")
-    # Remove percentual: "54.274,08( 49,45%)" → "54.274,08"
+def _parse_br(s: str) -> tuple:
+    """Parseia string BR e retorna (valor_absoluto, é_negativo)."""
+    s = str(s).strip().replace(" ", "").replace(" ", "")
     s = re.sub(r"\(.*?\)", "", s).strip()
     if not s or s in ("-", ""):
-        return 0.0
-    # Formato BR: "1.234,56" → 1234.56  |  "- 7.506,96" → 7506.96
+        return 0.0, False
+    neg = s.startswith("-")
     s_clean = re.sub(r"[^\d,.\-]", "", s)
     if "," in s_clean:
         s_clean = s_clean.replace(".", "").replace(",", ".")
     s_clean = re.sub(r"[^\d.\-]", "", s_clean)
     if not s_clean or s_clean in ("-",):
-        return 0.0
+        return 0.0, False
     try:
-        return abs(float(s_clean))
+        return abs(float(s_clean)), neg
     except ValueError:
+        return 0.0, False
+
+
+def _f(v) -> float:
+    """Converte valor BR para float sempre positivo (para créditos e débitos)."""
+    if v is None:
         return 0.0
+    if isinstance(v, (int, float)):
+        import math
+        return abs(float(v)) if not (math.isnan(float(v)) or math.isinf(float(v))) else 0.0
+    val, _ = _parse_br(str(v))
+    return val
+
+
+def _fs(v) -> float:
+    """Converte valor BR para float preservando o sinal (para saldos que podem ser negativos)."""
+    if v is None:
+        return 0.0
+    if isinstance(v, (int, float)):
+        import math
+        return float(v) if not (math.isnan(float(v)) or math.isinf(float(v))) else 0.0
+    val, neg = _parse_br(str(v))
+    return -val if neg else val
+
 
 
 def _texto(celula) -> str:
@@ -290,20 +307,20 @@ class AdapterLelloMHTML(AdapterBase):
             # Linha de Total (totais globais)
             if nome == "total":
                 try:
-                    dados.saldo_anterior    = _f(linha[1])
+                    dados.saldo_anterior    = _fs(linha[1])
                     dados.receita_realizada = _f(linha[2])
                     dados.despesa_total     = _f(linha[3])
-                    dados.saldo_atual       = _f(linha[4])
+                    dados.saldo_atual       = _fs(linha[4])
                     dados.receita_prevista  = dados.receita_realizada
                 except (IndexError, ValueError):
                     pass
                 continue
-            # Linhas de contas individuais
+            # Linhas de contas individuais — saldos preservam sinal (podem ser negativos)
             try:
-                saldo_ant = _f(linha[1])
+                saldo_ant = _fs(linha[1])
                 creditos  = _f(linha[2])
                 debitos   = _f(linha[3])
-                saldo_at  = _f(linha[4])
+                saldo_at  = _fs(linha[4])
             except (IndexError, ValueError):
                 continue
 
