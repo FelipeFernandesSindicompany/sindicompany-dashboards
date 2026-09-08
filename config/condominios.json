@@ -1008,6 +1008,7 @@
       "cor": "#ea580c",
       "unidades": 0,
       "parser_config": {
+        "orcamento_mensal": 139000.00,
         "cat_map": {
           "DESPESAS COM PESSOAL": "Pessoal",
           "ENCARGOS SOCIAIS": "Encargos Sociais",
