@@ -250,9 +250,12 @@ class AdapterLelloMHTML(AdapterBase):
         if len(tabelas) > 1:
             self._processar_devedores(tabelas[1], dados)
 
-        # ── Tabela 2: ORDINARIA — receita prevista ──
+        # ── Tabela 2: ORDINARIA — emissão do período (receita_prevista) ──
         if len(tabelas) > 2:
             self._processar_ordinaria_previsto(tabelas[2], dados)
+
+        # ── DEMONSTRATIVO DE RECEITAS — receita_cotas (créditos ORDINÁRIA = real) ──
+        self._processar_demonstrativo_receitas(tabelas, dados)
 
         # ── Localizar e processar DEMONSTRATIVO DE DESPESAS ──
         tab_desp = self._encontrar_tabela(tabelas, "DEMONSTRATIVO DE DESPESAS")
@@ -376,20 +379,32 @@ class AdapterLelloMHTML(AdapterBase):
 
     def _processar_ordinaria_previsto(self, tabela, dados: DadosFinanceiros) -> None:
         """
-        Tabela 2 (ORDINARIA): extrai receita_prevista da linha 'Total Devedores' (col Previsto).
-        Col índices (após header 'Descricao | Previsto | Realizado'):
-            linha[''] | descricao | previsto | realizado
+        Tabela 2 (ORDINARIA — Resumo Emissão): não contém a emissão do período.
+        prev/real são extraídos de _processar_demonstrativo_receitas. Mantida por compatibilidade.
         """
-        linhas = _linhas(tabela)
-        for linha in linhas:
-            texto = " ".join(linha).lower()
-            if "total devedores" in texto:
-                # Localiza o valor previsto: normalmente 3ª e 4ª células não-vazias
-                vals = [c for c in linha if c.strip()]
-                if len(vals) >= 2:
-                    # O último par não-vazio são Previsto e Realizado
-                    dados.receita_prevista = _f(vals[-2])
-                return
+
+    def _processar_demonstrativo_receitas(self, tabelas, dados: DadosFinanceiros) -> None:
+        """
+        Tabela DEMONSTRATIVO DE RECEITAS: extrai prev e real da conta ORDINARIA.
+        Linhas têm formato ['', 'TOTAL LABEL', 'valor'] — label em vals[-2], valor em vals[-1].
+          prev: 'TOTAL EMISSAO DO PERIODO' (sem sufixo -AGUA/-ENERGIA) -> receita_prevista
+          real: 'TOTAL N ORDINARI[AÁ]' (padrão com código numérico)  -> receita_cotas
+        """
+        tab = self._encontrar_tabela(tabelas, "DEMONSTRATIVO DE RECEITAS")
+        if tab is None:
+            return
+        for linha in _linhas(tab):
+            vals = [c for c in linha if c.strip()]
+            if len(vals) < 2:
+                continue
+            label = vals[-2].strip()
+            valor = vals[-1]
+            # TOTAL EMISSÃO DO PERIODO sem sufixo de conta (= ORDINÁRIA)
+            if re.match(r"^TOTAL\s+EMISS[AÃ]O\s+DO\s+PERIODO\s*$", label, re.IGNORECASE):
+                dados.receita_prevista = _f(valor)
+            # TOTAL <código> ORDINARIA (ex: "TOTAL 1000 ORDINARIA")
+            elif re.match(r"^TOTAL\s+\d+\s+ORDINARI[A\xc1]\s*$", label, re.IGNORECASE):
+                dados.receita_cotas = _f(valor)
 
     def _processar_despesas(self, tabela, dados: DadosFinanceiros) -> None:
         """

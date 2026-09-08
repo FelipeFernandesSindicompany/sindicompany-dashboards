@@ -212,11 +212,14 @@ class AdapterHabitacionalXLSX(AdapterBase):
         _banco_col_override = self.config.get("parser_config", {}).get("banco_col", None)
         _banco_try_cols = ([_banco_col_override] if _banco_col_override is not None
                           else [10, 7, 8, 9])
+        _banco_from_contas = self.config.get("parser_config", {}).get("banco_from_contas", False)
         for i, row in enumerate(linhas):
             desc_h = str(col(row, 0) or "").upper()
             is_composicao  = "COMPOSI" in desc_h and "SALDO" in desc_h
             is_conciliacao = "CONCILIA" in desc_h and "BANC" in desc_h
             if is_composicao or is_conciliacao:
+                if _banco_from_contas:
+                    break  # usa valores já extraídos de _processa_resumo
                 _cc = _cdb = _priv = 0.0
                 for row2 in linhas[i + 1: i + 20]:
                     d2 = str(col(row2, 0) or "").upper()

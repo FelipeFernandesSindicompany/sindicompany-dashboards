@@ -850,7 +850,8 @@
           "Manut. Contratos": "CONSERV/MANUT/CONTRATOS",
           "Honorários/Adm.": "HONORARIOS / ADMINISTRATIVO",
           "Desp. Bancárias": "BANCÁRIAS"
-        }
+        },
+        "banco_from_contas": true
       }
     },
     {
