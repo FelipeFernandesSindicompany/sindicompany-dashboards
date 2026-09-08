@@ -60,6 +60,13 @@ _EXCLUIR_CATEGORIAS = {
     "APLICAÇÃO/RESGATE",
     "TRANSFERENCIAS",
     "TRANSFERÊNCIAS",
+    # Contas de repasse de concessionárias (água, energia) — despesas de fundo próprio,
+    # não da ORDINÁRIA; seus grupos no DEMONSTRATIVO não devem entrar em desp[]
+    "CONSUMO DE ÁGUA",
+    "CONSUMO DE AGUA",
+    "CONSUMO DE ENERGIA",
+    "TARIFAS CONCESSIONÁRIAS",
+    "TARIFAS CONCESSIONARIAS",
 }
 
 # Contas que identificam banco_cdb (fundo de reserva / aplicação)
