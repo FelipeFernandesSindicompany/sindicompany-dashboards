@@ -52,6 +52,14 @@ _EXCLUIR_CATEGORIAS = {
     "SALAO DE FESTAS",
     "GARAGEM",
     "ESTACIONAMENTO",
+    # Operações financeiras de fundos — não são despesas operacionais da ORDINÁRIA
+    "IR/IOF S/ RESGATE",
+    "IR/IOF S/RESGATE",
+    "APLICAÇÃO / RESGATE",
+    "APLICACAO / RESGATE",
+    "APLICAÇÃO/RESGATE",
+    "TRANSFERENCIAS",
+    "TRANSFERÊNCIAS",
 }
 
 # Contas que identificam banco_cdb (fundo de reserva / aplicação)
