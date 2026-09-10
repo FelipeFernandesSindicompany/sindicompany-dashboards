@@ -227,11 +227,11 @@
     ],
     "data": {
       "tit": "Julho / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tAtual": 1960072.95,
+      "tCred": 986671.56,
+      "tDeb": 914918.97,
+      "inad": 47282.2,
+      "tAnt": 1888320.36
     }
   },
   "Dashboard_Financeiro_FattoMorumbi.html": {
