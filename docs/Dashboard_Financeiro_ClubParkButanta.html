@@ -3401,7 +3401,8 @@ function renderBal(id) {
 
 
   var despOrd = m.desp.filter(function(d){ return CATS_ORD.indexOf(d.c) !== -1; });
-  var totalOrd = despOrd.reduce(function(s,d){ return s+d.v; }, 0);
+  var _contaOrdBal = m.contas.find(function(c){ return c.n.indexOf('ORDIN') !== -1; });
+  var totalOrd = _contaOrdBal ? _contaOrdBal.d : despOrd.reduce(function(s,d){ return s+d.v; }, 0);
   despOrd.forEach(function(d) {
 
 
@@ -4069,7 +4070,7 @@ function buildTblDesp() {
 
 
 
-  var tots = MESES.map(function(k){ return CATS_ORD.reduce(function(s,c){ var d = BAL[k].desp.find(function(x){ return x.c === c; }); return s + (d ? d.v : 0); }, 0); });
+  var tots = MESES.map(function(k){ var co=BAL[k].contas.find(function(c){ return c.n.indexOf('ORDIN')!==-1; }); return co ? co.d : CATS_ORD.reduce(function(s,c){ var d=BAL[k].desp.find(function(x){ return x.c===c; }); return s+(d?d.v:0); },0); });
 
 
 
@@ -4206,8 +4207,8 @@ function updateDespPie(mesKey) {
 
 
   var desp = m.desp.filter(function(d){ return CATS_ORD.indexOf(d.c) !== -1; });
-
-  var total = desp.reduce(function(a,d){ return a+d.v; }, 0);
+  var _contaOrdPie = m.contas.find(function(c){ return c.n.indexOf('ORDIN') !== -1; });
+  var total = _contaOrdPie ? _contaOrdPie.d : desp.reduce(function(a,d){ return a+d.v; }, 0);
 
 
 
@@ -5399,7 +5400,7 @@ function buildCharts() {
       if(vals.every(function(v){return v===0;}))return;
       h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
     });
-    h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){return '<td class="nr">'+R(CATS_ORD.reduce(function(s,c){var d=BAL[k].desp.find(function(x){return x.c===c;});return s+(d?d.v:0);},0))+'</td>';}).join('')+'</tr>';
+    h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){var co=BAL[k].contas.find(function(c){return c.n.indexOf('ORDIN')!==-1;});return '<td class="nr">'+R(co?co.d:CATS_ORD.reduce(function(s,c){var d=BAL[k].desp.find(function(x){return x.c===c;});return s+(d?d.v:0);},0))+'</td>';}).join('')+'</tr>';
     var tbl=document.getElementById('tblDesp');
     if(!tbl)return;
     tbl.innerHTML=h;
