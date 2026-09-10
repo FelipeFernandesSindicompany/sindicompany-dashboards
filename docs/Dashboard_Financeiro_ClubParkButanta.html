@@ -5391,9 +5391,7 @@ function buildCharts() {
 (function(){
   function _filterDespTable(n){
     var mf=n>0?MESES.slice(-n):MESES;
-    var cats={};
-    mf.forEach(function(k){BAL[k].desp.forEach(function(d){cats[d.c]=true;});});
-    var catL=Object.keys(cats);
+    var catL=CATS_ORD;
     var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
     var h='<tr><th>Categoria</th>'+mf.map(function(k){return '<th style="text-align:right">'+lbl(k)+'</th>';}).join('')+'</tr>';
     catL.forEach(function(cat){
@@ -5401,7 +5399,7 @@ function buildCharts() {
       if(vals.every(function(v){return v===0;}))return;
       h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
     });
-    h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){return '<td class="nr">'+R(BAL[k].tDesp)+'</td>';}).join('')+'</tr>';
+    h+='<tr class="tot"><td>TOTAL</td>'+mf.map(function(k){return '<td class="nr">'+R(CATS_ORD.reduce(function(s,c){var d=BAL[k].desp.find(function(x){return x.c===c;});return s+(d?d.v:0);},0))+'</td>';}).join('')+'</tr>';
     var tbl=document.getElementById('tblDesp');
     if(!tbl)return;
     tbl.innerHTML=h;
