@@ -3403,15 +3403,17 @@ function renderBal(id) {
   var despOrd = m.desp.filter(function(d){ return CATS_ORD.indexOf(d.c) !== -1; });
   var _contaOrdBal = m.contas.find(function(c){ return c.n.indexOf('ORDIN') !== -1; });
   var totalOrd = _contaOrdBal ? _contaOrdBal.d : despOrd.reduce(function(s,d){ return s+d.v; }, 0);
+  var _rawSumBal = despOrd.reduce(function(s,d){ return s+d.v; }, 0);
+  var _scaleBal = _rawSumBal > 0 ? totalOrd / _rawSumBal : 1;
   despOrd.forEach(function(d) {
+    var sv = d.v * _scaleBal;
+
+
+    var pct = totalOrd > 0 ? (sv / totalOrd * 100).toFixed(1) : '0.0';
 
 
 
-    var pct = totalOrd > 0 ? (d.v / totalOrd * 100).toFixed(1) : '0.0';
-
-
-
-    h += '<tr><td>' + d.c + '</td><td class="nr">' + R(d.v) + '</td><td class="nr">' + pct + '%</td>';
+    h += '<tr><td>' + d.c + '</td><td class="nr">' + R(sv) + '</td><td class="nr">' + pct + '%</td>';
 
 
 
@@ -4043,14 +4045,11 @@ function buildTblDesp() {
 
 
     var vals = MESES.map(function(k) {
-
-
-
+      var co=BAL[k].contas.find(function(c){ return c.n.indexOf('ORDIN')!==-1; });
+      var rawSum=CATS_ORD.reduce(function(s,c){ var x=BAL[k].desp.find(function(y){ return y.c===c; }); return s+(x?x.v:0); },0);
+      var scale=co&&rawSum>0?co.d/rawSum:1;
       var d = BAL[k].desp.find(function(x){ return x.c === cat; });
-
-
-
-      return d ? d.v : 0;
+      return d ? d.v * scale : 0;
 
 
 
@@ -4209,6 +4208,8 @@ function updateDespPie(mesKey) {
   var desp = m.desp.filter(function(d){ return CATS_ORD.indexOf(d.c) !== -1; });
   var _contaOrdPie = m.contas.find(function(c){ return c.n.indexOf('ORDIN') !== -1; });
   var total = _contaOrdPie ? _contaOrdPie.d : desp.reduce(function(a,d){ return a+d.v; }, 0);
+  var _rawSumPie = desp.reduce(function(a,d){ return a+d.v; }, 0);
+  var _scalePie = _rawSumPie > 0 ? total / _rawSumPie : 1;
 
 
 
@@ -4252,7 +4253,7 @@ function updateDespPie(mesKey) {
 
 
 
-        data: desp.map(function(d){ return d.v; }),
+        data: desp.map(function(d){ return d.v * _scalePie; }),
 
 
 
@@ -5396,7 +5397,7 @@ function buildCharts() {
     var lbl=function(k){return typeof ab==='function'?ab(BAL[k].tit):BAL[k].tit.split(' ')[0]+'/'+BAL[k].tit.split(' ')[2];};
     var h='<tr><th>Categoria</th>'+mf.map(function(k){return '<th style="text-align:right">'+lbl(k)+'</th>';}).join('')+'</tr>';
     catL.forEach(function(cat){
-      var vals=mf.map(function(k){var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v:0;});
+      var vals=mf.map(function(k){var co=BAL[k].contas.find(function(c){return c.n.indexOf('ORDIN')!==-1;});var rs=CATS_ORD.reduce(function(s,c){var x=BAL[k].desp.find(function(y){return y.c===c;});return s+(x?x.v:0);},0);var sc=co&&rs>0?co.d/rs:1;var d=BAL[k].desp.find(function(x){return x.c===cat;});return d?d.v*sc:0;});
       if(vals.every(function(v){return v===0;}))return;
       h+='<tr><td>'+cat+'</td>'+vals.map(function(v){return '<td class="nr">'+(v>0?R(v):'-')+'</td>';}).join('')+'</tr>';
     });
