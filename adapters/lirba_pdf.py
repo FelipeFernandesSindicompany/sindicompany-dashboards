@@ -149,6 +149,14 @@ def _e_hsa_balancete(textos: list) -> bool:
     return False
 
 
+def _e_gcont(textos: list) -> bool:
+    """Detecta formato GCONT (gcont.net.br) pela URL ou nome da administradora."""
+    for t in textos[:5]:
+        if "gcont.net.br" in t.lower() or "ADMINISTRADORA GCONT" in t:
+            return True
+    return False
+
+
 class AdapterLirbaPDF(AdapterBase):
     """
     Adapter para PDFs da administradora LIRBA (dois sub-formatos:
@@ -173,7 +181,9 @@ class AdapterLirbaPDF(AdapterBase):
 
         texto_completo = "\n".join(textos)
 
-        if _e_hsa_balancete(textos):
+        if _e_gcont(textos):
+            self._parsear_gcont(textos, texto_completo, dados)
+        elif _e_hsa_balancete(textos):
             self._parsear_hsa_balancete(textos, texto_completo, dados)
         elif _e_webware(textos):
             self._parsear_webware(textos, texto_completo, dados)
@@ -591,6 +601,166 @@ class AdapterLirbaPDF(AdapterBase):
     # ──────────────────────────────────────────────────────────────────────────
     # SUB-FORMATO B — Webware (NYC Berrini)
     # ──────────────────────────────────────────────────────────────────────────
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO D — GCONT (gcont.net.br)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _parsear_gcont(self, textos: list, texto_completo: str, dados: DadosFinanceiros):
+        """
+        Extrai dados do formato GCONT (administradora gcont.net.br).
+
+        Páginas relevantes:
+        - Resumo Financeiro: header "Conta Saldo ant. Créditos* Débitos* Saldo final"
+          Contas individuais → contas_detalhe e banco.
+          Total: "Saldo final  tAnt  tCred  (tDeb)  tAtual"
+        - Demonstrativo de Receitas e Despesas Resumido:
+          "Cota do Mês  value" → receita_cotas (real)
+          Itens entre "Total das Receitas" e "Total das Despesas" → categorias de despesa
+        - Resumo da inadimplência:
+          "N cobranças inadimplentes, N unidades (N%) total" → inadimplencia_valor
+        """
+
+        # ── 1. Resumo Financeiro (tAnt, tCred, tDeb, tAtual, contas_detalhe) ─
+        for txt in textos:
+            if "Resumo Financeiro" not in txt:
+                continue
+            if "Saldo ant." not in txt:
+                continue
+
+            in_resumo = False
+            for linha in txt.split("\n"):
+                l = linha.strip()
+
+                # Início da tabela
+                if re.match(r"^Conta\s+Saldo ant\.", l):
+                    in_resumo = True
+                    continue
+                if not in_resumo:
+                    continue
+                # Pula nota de rodapé
+                if l.startswith("(*) Inclui"):
+                    continue
+
+                # Extrai números (inclui formatos com parênteses: (914.918,97) e zeros "0,00")
+                # Usa padrão BR: dígitos + vírgula + 2 casas decimais (ex: 1.234,56 ou 0,00)
+                nums_raw = re.findall(r"\([\d.]+,\d{2}\)|[\d.]+,\d{2}", l)
+                nums_f = []
+                for n in nums_raw:
+                    try:
+                        nums_f.append(_num(n))  # inclui zeros
+                    except Exception:
+                        pass
+
+                if len(nums_f) < 4:
+                    continue
+
+                # Remove números do final para obter o nome
+                nome = re.sub(r"[\s\(]*[\d.,]+[\)]*", "", l).strip().upper()
+                nome = re.sub(r"\s+", " ", nome).strip()
+                if not nome:
+                    continue
+
+                if nome == "SALDO FINAL":
+                    # Linha de totais
+                    dados.saldo_anterior    = nums_f[0]
+                    dados.receita_realizada = nums_f[1]
+                    dados.despesa_total     = nums_f[2]
+                    dados.saldo_atual       = nums_f[3]
+                    in_resumo = False
+                    break
+
+                # Linha de conta individual
+                nomes_vistos = {c["nome"] for c in dados.contas_detalhe}
+                if nome and nome not in nomes_vistos:
+                    dados.contas_detalhe.append({
+                        "nome":        nome,
+                        "saldo_ant":   nums_f[0],
+                        "creditos":    nums_f[1],
+                        "debitos":     nums_f[2],
+                        "saldo_atual": nums_f[3],
+                    })
+            if dados.saldo_atual > 0:
+                break
+
+        # ── 2. Banco (cc/cdb/priv) a partir das contas individuais ───────────
+        for conta in dados.contas_detalhe:
+            nome_up = conta["nome"].upper()
+            sal = conta["saldo_atual"]
+            if "ORDINARI" in nome_up:
+                dados.banco_cc = sal
+            elif "FUNDO" in nome_up and "RESERV" in nome_up:
+                dados.banco_cdb = round(dados.banco_cdb + sal, 2)
+            elif "UTILIZ" in nome_up:
+                dados.banco_priv = round(dados.banco_priv + sal, 2)
+            # Outras contas (Taxa, Mercado, Pintura, Eventos) não entram no banco
+
+        # ── 3. Receita Prevista (orcamento_mensal em parser_config) ──────────
+        orc = self.parser_config.get("orcamento_mensal", 0.0)
+        if orc:
+            dados.receita_prevista = float(orc)
+
+        # ── 4. Demonstrativo Resumido: Cota do Mês + despesas ────────────────
+        cat_map_extra = self.parser_config.get("cat_map", {})
+
+        in_desp = False
+        for linha in texto_completo.split("\n"):
+            l = linha.strip()
+            if not l:
+                continue
+
+            # Cota do Mês → receita_cotas (real)
+            if not dados.receita_cotas:
+                m_cota = re.match(r"^Cota do M[êe]s\s+([\d.,]+)\s*$", l, re.IGNORECASE)
+                if m_cota:
+                    dados.receita_cotas = _num(m_cota.group(1))
+
+            # Início das despesas
+            if re.match(r"^Total das Receitas\s+[\d.,]+", l, re.IGNORECASE):
+                in_desp = True
+                continue
+
+            # Fim das despesas
+            if re.match(r"^Total das Despesas\s+[\d.,]+", l, re.IGNORECASE):
+                in_desp = False
+                continue
+
+            if not in_desp:
+                continue
+
+            # Cada linha de despesa: "NOME ITEM  valor" (formato BR: 1.234,56 ou 123,45)
+            m_item = re.match(r"^(.+?)\s+([\d.]+,\d{2})\s*$", l)
+            if m_item:
+                item_raw = m_item.group(1).strip()
+                val = _num(m_item.group(2))
+                if val > 0 and item_raw:
+                    # Aplica cat_map para mapear item → categoria canônica
+                    cat = cat_map_extra.get(item_raw,
+                          cat_map_extra.get(item_raw.upper(), None))
+                    if cat:
+                        dados.categorias_despesa[cat] = (
+                            dados.categorias_despesa.get(cat, 0.0) + val
+                        )
+                    # Items sem mapeamento são ignorados (não entram em desp[])
+
+        if not dados.categorias_despesa and dados.despesa_total > 0:
+            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── 5. Inadimplência ──────────────────────────────────────────────────
+        # "20 cobranças inadimplentes, 18 unidades inadimplentes (4,06%) 47.282,20"
+        m_inad = re.search(
+            r"\d+\s+cobran[çc]as?\s+inadimplentes?,\s*\d+\s+unidades?\s+"
+            r"inadimplentes?\s*\([^)]+\)\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        )
+        if m_inad:
+            dados.inadimplencia_valor = _num(m_inad.group(1))
+
+        # Percentual de inadimplência
+        if dados.receita_realizada > 0 and dados.inadimplencia_valor > 0:
+            dados.inadimplencia_percentual = round(
+                dados.inadimplencia_valor / dados.receita_realizada * 100, 2
+            )
 
     # ──────────────────────────────────────────────────────────────────────────
     # SUB-FORMATO C — HSA Condomínios (I-Gloo Alphaville)
