@@ -3400,11 +3400,13 @@ function renderBal(id) {
 
 
 
-  m.desp.forEach(function(d) {
+  var despOrd = m.desp.filter(function(d){ return CATS_ORD.indexOf(d.c) !== -1; });
+  var totalOrd = despOrd.reduce(function(s,d){ return s+d.v; }, 0);
+  despOrd.forEach(function(d) {
 
 
 
-    var pct = (d.v / m.tDesp * 100).toFixed(1);
+    var pct = totalOrd > 0 ? (d.v / totalOrd * 100).toFixed(1) : '0.0';
 
 
 
@@ -3420,7 +3422,7 @@ function renderBal(id) {
 
 
 
-  h += '<tr class="tot"><td>TOTAL ORDIN&Aacute;RIA</td><td class="nr">' + R(m.tDesp) + '</td><td colspan="2"></td></tr>';
+  h += '<tr class="tot"><td>TOTAL ORDIN&Aacute;RIA</td><td class="nr">' + R(totalOrd) + '</td><td colspan="2"></td></tr>';
 
 
 
@@ -4008,6 +4010,9 @@ function orcFiltro(tipo) {
 
 
 
+// ── CATEGORIAS CANÔNICAS ORDINÁRIA ────────────────────────────────────────────
+var CATS_ORD = ['PESSOAL','SERV. TERCEIRIZADOS','CONSUMOS','ADMINISTRATIVO','MANUT/CONSERV. ESPORÁD.','PINTURA/FACHADA'];
+
 // ── TABELAS ───────────────────────────────────────────────────────────────────
 
 
@@ -4016,27 +4021,7 @@ function buildTblDesp() {
 
 
 
-  // Coleta todas as categorias
-
-
-
-  var cats = {};
-
-
-
-  MESES.forEach(function(k) {
-
-
-
-    BAL[k].desp.forEach(function(d){ cats[d.c] = true; });
-
-
-
-  });
-
-
-
-  var catList = Object.keys(cats);
+  var catList = CATS_ORD;
 
 
 
@@ -4084,7 +4069,7 @@ function buildTblDesp() {
 
 
 
-  var tots = MESES.map(function(k){ return BAL[k].tDesp; });
+  var tots = MESES.map(function(k){ return CATS_ORD.reduce(function(s,c){ var d = BAL[k].desp.find(function(x){ return x.c === c; }); return s + (d ? d.v : 0); }, 0); });
 
 
 
@@ -4220,11 +4205,13 @@ function updateDespPie(mesKey) {
 
 
 
-  var total = m.desp.reduce(function(a,d){ return a+d.v; }, 0);
+  var desp = m.desp.filter(function(d){ return CATS_ORD.indexOf(d.c) !== -1; });
+
+  var total = desp.reduce(function(a,d){ return a+d.v; }, 0);
 
 
 
-  var bgColors  = m.desp.map(function(d,i){ return DESP_COLORS[d.c] || DEFAULT_C[i % DEFAULT_C.length]; });
+  var bgColors  = desp.map(function(d,i){ return DESP_COLORS[d.c] || DEFAULT_C[i % DEFAULT_C.length]; });
 
 
 
@@ -4256,7 +4243,7 @@ function updateDespPie(mesKey) {
 
 
 
-      labels: m.desp.map(function(d){ return d.c; }),
+      labels: desp.map(function(d){ return d.c; }),
 
 
 
@@ -4264,7 +4251,7 @@ function updateDespPie(mesKey) {
 
 
 
-        data: m.desp.map(function(d){ return d.v; }),
+        data: desp.map(function(d){ return d.v; }),
 
 
 
@@ -5262,23 +5249,11 @@ function buildCharts() {
 
 
 
-  var cats = {};
+  var catShort = {'PESSOAL':'Pessoal','SERV. TERCEIRIZADOS':'Terceiriz.','CONSUMOS':'Consumos','ADMINISTRATIVO':'Adm.','MANUT/CONSERV. ESPORÁD.':'Man. Espo.','PINTURA/FACHADA':'Pintura'};
 
+  var catList = CATS_ORD;
 
-
-  MESES.forEach(function(k){ BAL[k].desp.forEach(function(d){ cats[d.c] = true; }); });
-
-
-
-  var catShort = {'PESSOAL':'Pessoal','ENCARGOS SOCIAIS':'Enc. Soc.','SERV. TERCEIRIZADOS':'Terceiriz.','CONSUMOS':'Consumos','SEGUROS':'Seguros','ADMINISTRATIVO':'Adm.','MANUT/CONSERV. CONTRAT.':'Man. Cont.','MANUT/CONSERV. ESPORÁD.':'Man. Espo.'};
-
-
-
-  var catList = Object.keys(cats);
-
-
-
-  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593'];
+  var barColors = ['#1A237E','#E87722','#2E7D32','#C62828','#F9A825','#0277BD','#6A1B9A','#00838F','#AD1457','#4E342E','#558B2F','#00695C','#283593','#BF360C','#004D40','#880E4F'];
 
 
 
