@@ -49,12 +49,16 @@ Estrutura confirmada (Spazio Jardins da Orla):
   "202xxx Inadimplencia Prosindico no tempo.pdf" ("Anexos da Prestação de
   Contas", perto do Termo de Encerramento):
 
-      Total Valor em R$ devido na [época]: ... <valor por ano> ... <TOTAL>
+      Mês 2020 2021 2022 2023 2024 2025 2026 Total Geral
+      Total Valor em R$ devido na [época]: 2.103 9.930 ... 76.726 291.259
       NN unidades estão inadimplentes ... perfazendo XX% do total de unidades.
 
-  Se o anexo não existir no mês (ex.: Jul/26), inadimplencia_valor fica
-  0.0 — o chamador (script de injeção) deve decidir se repete o último
-  valor conhecido ou deixa em aberto.
+  O valor relevante é a INADIMPLÊNCIA DO ANO CORRENTE (penúltima coluna,
+  ex.: 76.726 = dívidas originadas em 2026), não o "Total Geral" (última
+  coluna, soma histórica de 2020 a 2026 — não é o saldo em aberto do
+  período). Se o anexo não existir no mês (ex.: Jul/26), inadimplencia_valor
+  fica 0.0 — o chamador (script de injeção) deve decidir se repete o
+  último valor conhecido ou deixa em aberto.
 
 Condomínios: Spazio Jardins da Orla
 """
@@ -192,7 +196,11 @@ class AdapterAddomusPDF(AdapterBase):
 
         # ── 5. Inadimplência (anexo "Inadimplencia Prosindico no tempo") ───
         # Linha (uma só, sem quebra): "Total Valor em R$ devido na [época:]
-        # 2.103 9.930 ... 291.259" — a última coluna é o Total Geral.
+        # 2.103 9.930 ... 76.726 291.259" — colunas = anos (cabeçalho "Mês
+        # 2020 2021 ... 2026 Total Geral") seguidas da coluna "Total Geral".
+        # Usa o valor do ANO CORRENTE (dívida originada no próprio ano),
+        # não o "Total Geral" (soma histórica desde 2020 — não é o saldo em
+        # aberto do período).
         m_inad = re.search(
             r"Total\s+Valor\s+em\s+R\$\s+devido\s+na[^\d\n]*"
             r"((?:[\d.]+\s+)*[\d.]+)",
@@ -200,8 +208,19 @@ class AdapterAddomusPDF(AdapterBase):
         )
         if m_inad:
             numeros = m_inad.group(1).split()
-            if numeros:
-                dados.inadimplencia_valor = _num(numeros[-1])  # última coluna = Total Geral
+            ano_atual = mes_referencia.split("-")[0]
+            m_anos = re.search(r"M[eê]s\s+((?:\d{4}\s+)+)Total\s+Geral", texto_total)
+            idx = None
+            if m_anos:
+                anos = m_anos.group(1).split()
+                if ano_atual in anos and len(anos) == len(numeros) - 1:
+                    idx = anos.index(ano_atual)
+            if idx is not None:
+                dados.inadimplencia_valor = _num(numeros[idx])
+            elif len(numeros) >= 2:
+                dados.inadimplencia_valor = _num(numeros[-2])  # fallback: penúltima = ano corrente
+            elif numeros:
+                dados.inadimplencia_valor = _num(numeros[-1])
         # Frase quebra em duas linhas: "NN unidades estão inadimplentes ...,
         # \nperfazendo XX% do total de unidades."
         m_pct = re.search(
