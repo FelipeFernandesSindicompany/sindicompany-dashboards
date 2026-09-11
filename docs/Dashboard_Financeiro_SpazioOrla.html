@@ -115,7 +115,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 .badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;}
 
-.bok{background:#EAF7EE;color:#1A5C35;}.bwarn{background:#FEF9EC;color:#7D4A00;}.bbad{background:#FDECEA;color:#8B1A0E;}
+.bok{background:#EAF7EE;color:#1A5C35;}.bwarn{background:#FEF9EC;color:#7D4A00;}.bbad{background:#FDECEA;color:#8B1A0E;}.val-card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;border-left:5px solid var(--p);}.val-card.ok{border-left-color:var(--g);}.val-card.warn{border-left-color:var(--y);}.val-card.bad{border-left-color:var(--r);}.val-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:14px;}.val-item{text-align:center;padding:12px;background:#F8F8F8;border-radius:8px;}.val-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}.val-value{font-size:20px;font-weight:700;margin-top:4px;}.val-pct{font-size:12px;margin-top:2px;color:var(--muted);}.progress-wrap{margin-top:12px;}.progress-bar{height:20px;background:#EEE;border-radius:10px;overflow:hidden;position:relative;}.progress-fill{height:100%;border-radius:10px;transition:width .5s;}.progress-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff;mix-blend-mode:difference;}
 
 </style>
 
@@ -527,7 +527,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
     <div class="ni" onclick="nav('despesas',this)"><span class="ic">📊</span> Despesas</div>
 
-    <div class="ni" onclick="nav('inadimp',this)"><span class="ic">⚠️</span> Inadimplência</div>
+    <div class="ni" onclick="nav('pvr',this)"><span class="ic">⚖️</span> Previsto × Realizado</div><div class="ni" onclick="nav('orc',this);buildOrcamento()"><span class="ic">🎯</span> Orçamento</div><div class="ni" onclick="nav('inadimp',this)"><span class="ic">⚠️</span> Inadimplência</div>
 
     <div class="ni" onclick="nav('banco',this)"><span class="ic">🏦</span> Saldo Bancário</div>
 
@@ -604,6 +604,35 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 
 
+<div id="pg-pvr" class="pg">
+  <div class="ph"><h1>Previsto × Realizado</h1><p>Comparativo entre a previsão orçamentária e os valores realizados</p></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">🎯 Previsto × Realizado por Mês</h3><select onchange="window._filterPvr(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">Últimos 6 meses</option><option value="12" selected>Últimos 12 meses</option><option value="18">Últimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cPvr"></canvas></div></div>
+  <div class="g2">
+    <div class="cc"><h3>📋 Tabela Comparativa</h3><div class="tw"><table id="tblPvr"></table></div></div>
+    <div class="cc"><h3>📊 Gap Previsto vs. Realizado</h3><div class="cws"><canvas id="cPvrGap"></canvas></div></div>
+  </div>
+  <div class="al inf" style="background:#EDE5F5;border-left:4px solid var(--p);border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;font-size:13px;"><span style="font-size:18px">ℹ️</span><div>O <strong>Previsto</strong> é o valor aprovado em assembleia para o período; ainda não há previsão cadastrada para todos os meses.</div></div>
+</div>
+<div id="pg-orc" class="pg">
+  <div class="ph"><h1>Orçamento</h1><p>Previsto × Realizado acumulado no período selecionado</p></div>
+  <div class="cc" style="padding:14px 20px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px">
+      <span style="font-size:13px;font-weight:600;color:var(--p)">📅 Período:</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:12px;color:var(--muted)">De</label>
+        <select id="orc-de" onchange="buildOrcamento()" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer"></select>
+        <label style="font-size:12px;color:var(--muted)">Até</label>
+        <select id="orc-ate" onchange="buildOrcamento()" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer"></select>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:4px">
+        <button id="btn-orc-all" onclick="orcFiltro('all')" style="font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid var(--p);background:var(--p);color:#fff;cursor:pointer;font-weight:600">Todos</button>
+        <button id="btn-orc-6" onclick="orcFiltro('6')" style="font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid var(--p);background:transparent;color:var(--p);cursor:pointer">Últ. 6 meses</button>
+        <button id="btn-orc-3" onclick="orcFiltro('3')" style="font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid var(--p);background:transparent;color:var(--p);cursor:pointer">Últ. 3 meses</button>
+      </div>
+    </div>
+  </div>
+  <div id="orc-content"></div>
+</div>
 <div id="pg-inadimp" class="pg">
 
   <div class="ph"><h1>Inadimplência</h1><p>Devedores em aberto e cotas em processo de cobrança</p></div>
@@ -637,7 +666,7 @@ var EVO_L=['Jun/26', 'Jul/26'];
 var EVO_V=[479384.18, 486327.39];
 var BAL={
   jun26:{tit:"Junho / 2026",per:"01/06/2026 a 30/06/2026",tAnt:436559.76,tCred:222221.09,tDeb:179396.67,tAtual:479384.18,prev:0,real:204178.88,fac:0,tDesp:107501.83,inad:76726.00,inadProc:0,contas:[{n:"FUNDO ORDINÁRIO",a:76945.42,c:2705.56,d:107501.83,t:103003.33,s:75152.48},{n:"FUNDO DE RESERVA",a:252478.37,c:42646.57,d:5287.52,t:-7362.08,s:282475.34},{n:"FUNDO DE OBRAS",a:39594.88,c:407.40,d:19169.92,t:35651.34,s:56483.70},{n:"SALÃO DE FESTAS",a:23395.77,c:240.72,d:118.01,t:-1050.00,s:22468.48},{n:"CONSUMO INDIVIDUAL",a:44145.29,c:454.21,d:29277.18,t:27481.83,s:42804.15},{n:"GARANTIDORA",a:0.03,c:175766.63,d:18042.21,t:-157724.42,s:0.03}],desp:[{c:"Despesas com Pessoal",v:62200.42},{c:"Consumo",v:6531.20},{c:"Manutenção e Conservação Recorrente",v:12404.04},{c:"Administrativas",v:11899.85},{c:"Material para Consumo e Reposição",v:6896.32},{c:"Despesas Extraordinárias",v:7570.00}],banco:{cc:75152.48,cdb:282475.34,priv:121756.36}},
-  jul26:{tit:"Julho / 2026",per:"01/07/2026 a 31/07/2026",tAnt:479384.18,tCred:186132.02,tDeb:179188.81,tAtual:486327.39,prev:0,real:164845.95,fac:0,tDesp:104774.21,inad:76726.00,inadProc:0,contas:[{n:"FUNDO ORDINÁRIO",a:75152.48,c:2999.70,d:104774.21,t:102799.33,s:76177.30},{n:"FUNDO DE RESERVA",a:282475.34,c:3341.89,d:4056.79,t:-7362.08,s:274398.36},{n:"FUNDO DE OBRAS",a:56483.70,c:668.22,d:18844.92,t:35651.34,s:73958.34},{n:"SALÃO DE FESTAS",a:22468.48,c:265.83,d:100.62,t:-1635.00,s:20998.69},{n:"CONSUMO INDIVIDUAL",a:42804.15,c:506.42,d:30126.20,t:27610.29,s:40794.66},{n:"GARANTIDORA",a:0.03,c:178349.96,d:21286.07,t:-157063.88,s:0.04}],desp:[{c:"Despesas com Pessoal",v:62200.42},{c:"Consumo",v:6993.61},{c:"Manutenção e Conservação Recorrente",v:13931.17},{c:"Administrativas",v:13266.48},{c:"Material para Consumo e Reposição",v:5652.53},{c:"Despesas Extraordinárias",v:2730.00}],banco:{cc:76177.30,cdb:274398.36,priv:135751.73}}
+  jul26:{tit:"Julho / 2026",per:"01/07/2026 a 31/07/2026",tAnt:479384.18,tCred:186132.02,tDeb:179188.81,tAtual:486327.39,prev:162154.39,real:164845.95,fac:0,tDesp:104774.21,inad:76726.00,inadProc:0,contas:[{n:"FUNDO ORDINÁRIO",a:75152.48,c:2999.70,d:104774.21,t:102799.33,s:76177.30},{n:"FUNDO DE RESERVA",a:282475.34,c:3341.89,d:4056.79,t:-7362.08,s:274398.36},{n:"FUNDO DE OBRAS",a:56483.70,c:668.22,d:18844.92,t:35651.34,s:73958.34},{n:"SALÃO DE FESTAS",a:22468.48,c:265.83,d:100.62,t:-1635.00,s:20998.69},{n:"CONSUMO INDIVIDUAL",a:42804.15,c:506.42,d:30126.20,t:27610.29,s:40794.66},{n:"GARANTIDORA",a:0.03,c:178349.96,d:21286.07,t:-157063.88,s:0.04}],desp:[{c:"Despesas com Pessoal",v:62200.42},{c:"Consumo",v:6993.61},{c:"Manutenção e Conservação Recorrente",v:13931.17},{c:"Administrativas",v:13266.48},{c:"Material para Consumo e Reposição",v:5652.53},{c:"Despesas Extraordinárias",v:2730.00}],banco:{cc:76177.30,cdb:274398.36,priv:135751.73}}
 };
 var MESES=Object.keys(BAL);
 
@@ -689,7 +718,7 @@ window.onload=function(){
 
   var anosMeses={};MESES.forEach(function(k){var ano='20'+k.slice(-2);if(!anosMeses[ano])anosMeses[ano]=[];anosMeses[ano].push(k);});var anosDisp=Object.keys(anosMeses).sort();var anoAtivoBal=anosDisp[anosDisp.length-1];var selAno=document.getElementById('bal-sel-ano');var selMesEl=document.getElementById('bal-sel-mes');function popularMeses(ano){selMesEl.innerHTML='';var lista=anosMeses[ano]||[];lista.forEach(function(k){var opt=document.createElement('option');opt.value=k;opt.textContent=BAL[k].tit.split(' / ')[0];selMesEl.appendChild(opt);});if(lista.length)selMesEl.value=lista[lista.length-1];return lista;}anosDisp.forEach(function(a){var opt=document.createElement('option');opt.value=a;opt.textContent=a;selAno.appendChild(opt);});selAno.value=anoAtivoBal;selAno.addEventListener('change',function(){anoAtivoBal=selAno.value;var lista=popularMeses(anoAtivoBal);if(lista.length)selectMes(lista[lista.length-1]);});selMesEl.addEventListener('change',function(){selectMes(selMesEl.value);});var listaMeses=popularMeses(anoAtivoBal);selectMes(listaMeses[listaMeses.length-1]);
 
-  buildDespTbl();buildInad();buildBanco();buildCharts();
+  buildDespTbl();buildInad();buildBanco();buildCharts();buildTblPvr();initOrcFiltros();buildOrcamento();
 
 };
 
@@ -861,6 +890,10 @@ function buildCharts(){
 
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[{label:'ORDINÁRIA',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},{label:'F. Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},{label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+
+  mkC('cPvr',{type:'bar',data:{labels:ML,datasets:[{label:'Previsto',data:MESES.map(function(k){return BAL[k].prev;}),backgroundColor:'rgba(91,45,142,.75)',borderColor:'#5B2D8E',borderWidth:1.5,borderRadius:5,borderSkipped:false},{label:'Realizado',data:MESES.map(function(k){return BAL[k].real;}),backgroundColor:'rgba(232,119,34,.75)',borderColor:'#C05A10',borderWidth:1.5,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
+  var _gapVals=MESES.map(function(k){return BAL[k].real-BAL[k].prev;});
+  mkC('cPvrGap',{type:'bar',data:{labels:ML,datasets:[{label:'Gap (Realizado − Previsto)',data:_gapVals,backgroundColor:_gapVals.map(function(g){return g>=0?'rgba(39,174,96,.75)':'rgba(192,57,43,.75)';}),borderColor:_gapVals.map(function(g){return g>=0?'#1E8449':'#922B21';}),borderWidth:1.5,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;return (v>=0?'  ✓ Acima do previsto: ':'  ✗ Abaixo do previsto: ')+fR(Math.abs(v));}}})},scales:{y:{ticks:Object.assign({callback:fK},TK),grid:GY},x:{ticks:TK,grid:GX}}}});
 
 
 
@@ -1234,6 +1267,109 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
   });
 
 })();
+
+
+
+function buildTblPvr(){
+  var h='<tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Diferença</th><th>Var. %</th></tr>';
+  MESES.forEach(function(k){
+    var m=BAL[k];
+    var g=m.real-m.prev;
+    var pct=m.prev>0?(g/m.prev*100).toFixed(1)+'%':'—';
+    var cs=g>=0?'color:var(--g)':'color:var(--r)';
+    var ico=g>=0?' ✓':' ✗';
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr">'+R(m.prev)+'</td><td class="nr">'+R(m.real)+'</td>';
+    h+='<td class="nr" style="'+cs+'"><strong>'+R(g)+ico+'</strong></td><td class="nr" style="'+cs+'">'+pct+'</td></tr>';
+  });
+  document.getElementById('tblPvr').innerHTML=h;
+}
+
+(function(){
+  var _reg=CI;
+  var _allMesesPvr=MESES.slice();
+  function _filterPvr(n){
+    var mf=n>0?_allMesesPvr.slice(-n):_allMesesPvr;
+    var lbl=function(k){return ab(BAL[k].tit);};
+    var ch1=_reg['cPvr'];
+    if(ch1){ch1.data.labels=mf.map(lbl);ch1.data.datasets[0].data=mf.map(function(k){return BAL[k].prev;});ch1.data.datasets[1].data=mf.map(function(k){return BAL[k].real;});ch1.update();}
+    var ch2=_reg['cPvrGap'];
+    if(ch2){var gv=mf.map(function(k){return BAL[k].real-BAL[k].prev;});ch2.data.labels=mf.map(lbl);ch2.data.datasets[0].data=gv;ch2.data.datasets[0].backgroundColor=gv.map(function(g){return g>=0?'rgba(39,174,96,.75)':'rgba(192,57,43,.75)';});ch2.data.datasets[0].borderColor=gv.map(function(g){return g>=0?'#1E8449':'#922B21';});ch2.update();}
+  }
+  window._filterPvr=_filterPvr;
+})();
+
+function initOrcFiltros(){
+  var deEl=document.getElementById('orc-de');
+  var ateEl=document.getElementById('orc-ate');
+  if(!deEl||!ateEl)return;
+  deEl.innerHTML='';ateEl.innerHTML='';
+  MESES.forEach(function(k){
+    var lbl=BAL[k].tit;
+    var o1=document.createElement('option');o1.value=k;o1.textContent=lbl;deEl.appendChild(o1);
+    var o2=document.createElement('option');o2.value=k;o2.textContent=lbl;ateEl.appendChild(o2);
+  });
+  deEl.value=MESES[0];ateEl.value=MESES[MESES.length-1];
+}
+
+function orcFiltro(tipo){
+  var deEl=document.getElementById('orc-de');
+  var ateEl=document.getElementById('orc-ate');
+  var n=parseInt(tipo);
+  if(tipo==='all'||isNaN(n)||n>=MESES.length){deEl.value=MESES[0];ateEl.value=MESES[MESES.length-1];}
+  else{deEl.value=MESES[Math.max(0,MESES.length-n)];ateEl.value=MESES[MESES.length-1];}
+  ['all','6','3'].forEach(function(t){var btn=document.getElementById('btn-orc-'+t);if(btn){if(t===tipo){btn.style.background='var(--p)';btn.style.color='#fff';btn.style.fontWeight='600';}else{btn.style.background='transparent';btn.style.color='var(--p)';btn.style.fontWeight='normal';}}});
+  buildOrcamento();
+}
+
+function buildOrcamento(){
+  var deEl=document.getElementById('orc-de');
+  var ateEl=document.getElementById('orc-ate');
+  var deMes=deEl?deEl.value:MESES[0];
+  var ateMes=ateEl?ateEl.value:MESES[MESES.length-1];
+  var iDe=MESES.indexOf(deMes),iAte=MESES.indexOf(ateMes);
+  if(iDe<0)iDe=0;
+  if(iAte<0)iAte=MESES.length-1;
+  if(iDe>iAte){var tmp=iDe;iDe=iAte;iAte=tmp;}
+  var mesesFiltro=MESES.slice(iDe,iAte+1);
+  var totalPrev=0,totalReal=0;
+  mesesFiltro.forEach(function(k){totalPrev+=(BAL[k].prev||0);totalReal+=(BAL[k].real||0);});
+  var gap=totalReal-totalPrev;
+  var pctExec=totalPrev>0?(totalReal/totalPrev*100):0;
+  var statusCls=gap>=0?'ok':(gap>-50000?'warn':'bad');
+  var h='';
+  h+='<div class="val-card '+statusCls+'" style="margin-top:0">';
+  h+='<h3 style="font-size:16px;font-weight:700;color:var(--p);margin-bottom:4px">🎯 Previsto × Realizado — Período Selecionado</h3>';
+  h+='<p style="font-size:13px;color:var(--muted)">'+mesesFiltro.length+' mês(es) no período • '+BAL[mesesFiltro[0]].tit+' a '+BAL[mesesFiltro[mesesFiltro.length-1]].tit+'</p>';
+  h+='<div class="val-grid">';
+  h+='<div class="val-item"><div class="val-label">Previsto Acumulado</div><div class="val-value" style="color:var(--o)">'+R(totalPrev)+'</div><div class="val-pct">'+mesesFiltro.length+' mês(es)</div></div>';
+  h+='<div class="val-item"><div class="val-label">Realizado Acumulado</div><div class="val-value" style="color:'+(gap>=0?'var(--g)':'var(--r)')+'">'+R(totalReal)+'</div><div class="val-pct">'+pctExec.toFixed(1)+'% do previsto</div></div>';
+  h+='<div class="val-item"><div class="val-label">Diferença (Realizado − Previsto)</div><div class="val-value" style="color:'+(gap>=0?'var(--g)':'var(--r)')+'">'+R(gap)+'</div><div class="val-pct">'+(gap>=0?'✅ Superávit':'⚠ Déficit')+'</div></div>';
+  h+='</div>';
+  var pctBar=Math.min(pctExec,100);
+  var barColor=pctExec>=100?'var(--g)':pctExec>=80?'var(--y)':'var(--r)';
+  h+='<div class="progress-wrap" style="margin-top:16px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Execução vs. Previsto do período</span><span>'+pctExec.toFixed(1)+'%</span></div>';
+  h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pctBar+'%;background:'+barColor+'"><span class="progress-label">'+pctExec.toFixed(1)+'%</span></div></div></div>';
+  h+='</div>';
+  var titDe=BAL[mesesFiltro[0]].tit,titAte=BAL[mesesFiltro[mesesFiltro.length-1]].tit;
+  h+='<div class="cc"><h3>📋 Detalhamento Mensal — '+titDe+' a '+titAte+'</h3><div class="tw"><table>';
+  h+='<tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Diferença (R−P)</th><th>% Exec.</th><th>Status</th></tr>';
+  var cumPrev=0,cumReal=0;
+  mesesFiltro.forEach(function(k){
+    var m=BAL[k],p=m.prev,r=m.real,g=r-p;
+    var pct=p>0?(r/p*100).toFixed(1)+'%':'—';
+    cumPrev+=p;cumReal+=r;
+    var cs=g>=0?'color:var(--g)':'color:var(--r)';
+    var badge=g>=0?'<span class="badge bok">✓ Acima</span>':(g>-20000?'<span class="badge bwarn">⚠ Atenção</span>':'<span class="badge bbad">✗ Déficit</span>');
+    h+='<tr><td class="bd">'+m.tit+'</td><td class="nr">'+R(p)+'</td><td class="nr">'+R(r)+'</td>';
+    h+='<td class="nr" style="'+cs+'">'+R(g)+'</td><td class="nr" style="'+cs+'">'+pct+'</td><td>'+badge+'</td></tr>';
+  });
+  var gAcc=cumReal-cumPrev;
+  var csAcc=gAcc>=0?'color:var(--g)':'color:var(--r)';
+  h+='<tr class="tot"><td>ACUMULADO</td><td class="nr">'+R(cumPrev)+'</td><td class="nr">'+R(cumReal)+'</td>';
+  h+='<td class="nr" style="'+csAcc+'">'+R(gAcc)+'</td><td class="nr" style="'+csAcc+'">'+(cumPrev>0?(cumReal/cumPrev*100).toFixed(1):'—')+'%</td><td></td></tr>';
+  h+='</table></div></div>';
+  document.getElementById('orc-content').innerHTML=h;
+}
 
 </script>
 
