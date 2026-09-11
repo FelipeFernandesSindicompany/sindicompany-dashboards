@@ -1277,5 +1277,21 @@
       "inad": 0,
       "tAnt": 0
     }
+  },
+  "Dashboard_Financeiro_SpazioOrla.html": {
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
+    "allKeys": [
+      "jun26",
+      "jul26"
+    ],
+    "data": {
+      "tit": "Julho / 2026",
+      "tAtual": 486327.39,
+      "tCred": 186132.02,
+      "tDeb": 179188.81,
+      "inad": 0,
+      "tAnt": 479384.18
+    }
   }
 }
