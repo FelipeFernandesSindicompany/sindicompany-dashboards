@@ -11,6 +11,7 @@ from adapters.manager_adm_pdf import AdapterManagerAdmPDF
 from adapters.auxiliadora_xls import AdapterAuxiliadoraXLS
 from adapters.sk_condominios_pdf import AdapterSKCondominiosPDF
 from adapters.alliz_pdf import AdapterAllizPDF
+from adapters.addomus_pdf import AdapterAddomusPDF
 
 # Mantidos para compatibilidade com o condomínio de exemplo
 from adapters.empresa_a import AdapterEmpresaA
@@ -28,6 +29,7 @@ ADAPTERS = {
     "manager_adm_pdf":    AdapterManagerAdmPDF,
     "sk_condominios_pdf": AdapterSKCondominiosPDF,
     "alliz_pdf":          AdapterAllizPDF,
+    "addomus_pdf":        AdapterAddomusPDF,
     # Legado / exemplos
     "empresa_a": AdapterEmpresaA,
     "empresa_b": AdapterEmpresaB,
