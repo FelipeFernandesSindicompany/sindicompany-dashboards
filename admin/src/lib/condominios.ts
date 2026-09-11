@@ -44,6 +44,7 @@ export const ADAPTER_LABELS: Record<string, string> = {
   lirba_pdf: 'Lirba PDF',
   datadigitus_pdf: 'DataDigitus PDF',
   iello_pdf: 'Iello PDF',
+  addomus_pdf: 'Addomus PDF',
 };
 
 export const ADAPTER_COLORS: Record<string, string> = {
@@ -52,6 +53,7 @@ export const ADAPTER_COLORS: Record<string, string> = {
   lirba_pdf: '#10B981',
   datadigitus_pdf: '#F59E0B',
   iello_pdf: '#EC4899',
+  addomus_pdf: '#8B4513',
 };
 
 export const ACCEPTED_EXTENSIONS: Record<string, string[]> = {
@@ -60,4 +62,5 @@ export const ACCEPTED_EXTENSIONS: Record<string, string[]> = {
   lirba_pdf: ['.pdf'],
   datadigitus_pdf: ['.pdf'],
   iello_pdf: ['.pdf'],
+  addomus_pdf: ['.pdf'],
 };
