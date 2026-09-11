@@ -3,21 +3,7 @@ Adapter Addomus PDF — Software Addomus (Pasta de Prestação de Contas)
 
 Estrutura confirmada (Spazio Jardins da Orla):
 
-  "Demonstrativo de Receitas e Despesas" (resumo, ~pág. 20) e
-  "Demonstrativo Analítico de Receitas e Despesas" (detalhado, bem mais
-  adiante no arquivo) — ambos contêm, ao final de cada grupo, uma linha de
-  subtotal no formato:
-
-      [TOTAL: ]1.X - Nome da Receita   valor
-      [TOTAL: ]2.X - Nome da Despesa   -valor
-
-  onde X é um único nível (ex: "2.1", "2.7"), nunca "2.1.5" ou "2.1.5.1"
-  (essas são sub-categorias e são ignoradas). O detalhado sempre prefixa
-  "TOTAL:"; o resumo às vezes não. Usamos apenas o padrão "TOTAL: N.X -"
-  (presente em ambas as seções) para não contar em dobro, e paramos de ler
-  páginas assim que virmos "TOTAL: 2 - DESPESAS" (fecha a seção detalhada).
-
-  Linha "RESULTADO":
+  Linha "RESULTADO" (resumo geral, todas as contas somadas):
       RESULTADO Saldo Inicial Receitas Despesas Resultado Saldo Final
       Do Período  <saldo_ant> <receitas> <-despesas> <resultado> <saldo_atual>
 
@@ -28,22 +14,47 @@ Estrutura confirmada (Spazio Jardins da Orla):
       Salão de Festas / Consumo individual / Garantidora
       Total do DISPONÍVEL   ← ignorado (linha de fechamento)
 
-  Tabela "FINANCEIRO" (contas bancárias reais — 6 números: saldo_ini
-  créditos débitos transferências tarifa saldo_final):
-      FINANCEIRO Saldo inicial Créditos Débitos Transferências Tarifa Saldo Final
-      Itaú / ProSíndico / Caixa Síndico /
-      Fundo Investimento PRIVILEGE / CDB iTAÚ
-      Total do FINANCEIRO   ← ignorado (linha de fechamento)
+  banco_cc / banco_cdb / banco_priv — classificação por FUNDO (não por
+  instrumento bancário; a tabela "FINANCEIRO" com Itaú/ProSíndico/CDB/
+  Privilege não é usada aqui), igual à convenção dos demais dashboards
+  Sindicompany (confirmado em Alvorada: banco.cc = saldo do fundo
+  ORDINÁRIA, banco.cdb = saldo do FUNDO DE RESERVA, banco.priv = soma dos
+  demais fundos):
+      banco_cc   = saldo atual de "Fundo Ordinário"
+      banco_cdb  = saldo atual de "Fundo de Reserva"
+      banco_priv = soma do saldo atual dos demais fundos (Obras, Salão de
+                   Festas, Consumo individual, Garantidora, ...)
 
-  Classificação bancária (banco_cc / banco_cdb / banco_priv), pelo saldo
-  final (6º número da linha):
-      conta corrente (Itaú, ProSíndico, Caixa Síndico)  → banco_cc
-      aplicação/CDB (nome contém "CDB")                 → banco_cdb
-      demais fundos de investimento (ex: PRIVILEGE)     → banco_priv
+  Despesas por categoria — SOMENTE Conta Ordinária:
+  O relatório mistura, dentro de cada categoria de despesa (2.1, 2.2, ...),
+  pagamentos feitos por fundos DIFERENTES (ex: água/esgoto sai do fundo
+  "Consumo individual", gás do "Salão de Festas", obras do "Fundo de
+  Obras"). O padrão de todos os outros dashboards Sindicompany (ver
+  adapters/datadigitus_pdf.py) é mostrar despesas apenas da CONTA
+  ORDINÁRIA — replicado aqui via as páginas "Despesa" (uma por pagamento),
+  cada uma com uma tabela "Composição da Despesa":
 
-  Inadimplência: este relatório não traz um resumo consolidado de
-  inadimplência (só o livro-razão de cobranças por unidade); fica 0.0
-  até que um relatório específico de inadimplência seja mapeado.
+      Descrição Conta Contábil Conta Disponibilidade Rat Valor
+      2.1.5.1 - Portaria                3.1 - Fundo Ordinário   Não   27.205,15
+
+  Extraímos TODAS essas linhas (código de categoria + fundo pagador +
+  valor), somamos apenas as marcadas "Fundo Ordinário" e agrupamos pelo
+  código de categoria de nível 2 (ex.: "2.1.5.1" → grupo "2.1"). A
+  categoria "2.8 — Obras e Benfeitorias" é 100% paga pelo Fundo de Obras
+  e por isso nunca aparece no resultado. O total bate exatamente com o
+  débito da linha "Fundo Ordinário" da tabela DISPONÍVEL (validado em
+  Jun/26 e Jul/26).
+
+  Inadimplência: presente apenas em alguns meses, como anexo
+  "202xxx Inadimplencia Prosindico no tempo.pdf" ("Anexos da Prestação de
+  Contas", perto do Termo de Encerramento):
+
+      Total Valor em R$ devido na [época]: ... <valor por ano> ... <TOTAL>
+      NN unidades estão inadimplentes ... perfazendo XX% do total de unidades.
+
+  Se o anexo não existir no mês (ex.: Jul/26), inadimplencia_valor fica
+  0.0 — o chamador (script de injeção) deve decidir se repete o último
+  valor conhecido ou deixa em aberto.
 
 Condomínios: Spazio Jardins da Orla
 """
@@ -76,6 +87,25 @@ _FUNDOS = [
 
 _LINHA_NUM = r"(-?[\d.]+,\d{2})"
 
+# Nome canônico de cada grupo de despesa nível 2 (código "2.X").
+_CATEGORIAS_NIVEL2 = {
+    "2.1": "Despesas com Pessoal",
+    "2.2": "Consumo",
+    "2.3": "Manutenção e Conservação Recorrente",
+    "2.4": "Administrativas",
+    "2.6": "Material para Consumo e Reposição",
+    "2.7": "Despesas Extraordinárias",
+    "2.8": "Obras e Benfeitorias (Aprovado AGO)",  # sempre Fundo de Obras — nunca somado
+}
+
+# Linha de "Composição da Despesa": código da categoria (2.X.Y...), texto
+# livre (fornecedor/descrição, pode ficar vazio se quebrar de linha), código
+# do fundo pagador (3.Y), nome do fundo, rateio (Sim/Não) e valor.
+_RE_COMPOSICAO = re.compile(
+    r"(\d\.\d+(?:\.\d+)*)\s*-\s*.*?(\d\.\d+)\s*-\s*(.*?)\s+(Sim|Não)\s+(-?[\d.]+,\d{2})\s*$",
+    re.MULTILINE,
+)
+
 
 class AdapterAddomusPDF(AdapterBase):
     """
@@ -95,25 +125,13 @@ class AdapterAddomusPDF(AdapterBase):
             mes_referencia=mes_referencia,
         )
 
-        # O documento traz o resumo (RESULTADO/DISPONÍVEL/FINANCEIRO) perto do
-        # início e o detalhamento por categoria ("Demonstrativo Analítico")
-        # bem mais adiante — só então paramos, para não ler as 300+ páginas
-        # de anexos (livro-razão por unidade) que vêm depois.
-        textos = []
+        # As páginas "Despesa" (Composição da Despesa, necessárias para o
+        # filtro por Conta Ordinária) ficam perto do fim do documento —
+        # é preciso ler o PDF inteiro (não só o resumo do início).
         with pdfplumber.open(str(caminho)) as pdf:
-            for page in pdf.pages:
-                t = page.extract_text() or ""
-                textos.append(t)
-                # "TOTAL: 2 - DESPESAS" (com dois-pontos) só aparece uma vez,
-                # fechando a seção detalhada — a versão resumida usa
-                # "Total de 2 - DESPESAS" (sem dois-pontos, casing variável),
-                # que não deve disparar a parada prematuramente.
-                if "TOTAL: 2 - DESPESAS" in t:
-                    break
+            texto_total = "\n".join(p.extract_text() or "" for p in pdf.pages)
 
-        texto_total = "\n".join(textos)
-
-        # ── 1. RESULTADO ──────────────────────────────────────────────────
+        # ── 1. RESULTADO (todas as contas somadas) ─────────────────────────
         m_result = re.search(
             r"Do Per[íi]odo\s+" + r"\s+".join([_LINHA_NUM] * 5),
             texto_total,
@@ -121,31 +139,30 @@ class AdapterAddomusPDF(AdapterBase):
         if m_result:
             dados.saldo_anterior = _num(m_result.group(1))
             dados.receita_realizada = _num(m_result.group(2))
-            dados.despesa_total = _num(m_result.group(3))
             dados.saldo_atual = _num(m_result.group(5))
 
-        # ── 2. Categorias de despesa — "TOTAL: 2.X - Nome  valor" ─────────
-        # Nível único (2.X, nunca 2.X.Y) — ignora "TOTAL: 2 - DESPESAS".
-        vistos = set()
-        for m in re.finditer(
-            r"^TOTAL:\s*2\.(\d+)\s*-\s*(.+?)\s+-?([\d.]+,\d{2})\s*$",
-            texto_total,
-            re.MULTILINE,
-        ):
-            nivel, nome, valor = m.group(1), m.group(2).strip(), m.group(3)
-            chave = f"2.{nivel}"
-            if chave in vistos:
+        # ── 2. Despesas por categoria — SOMENTE Fundo Ordinário ────────────
+        for m in _RE_COMPOSICAO.finditer(texto_total):
+            cod_categoria, cod_fundo, nome_fundo, _rat, valor = m.groups()
+            if "Fundo Ordinário" not in nome_fundo and cod_fundo != "3.1":
                 continue
-            vistos.add(chave)
-            nome_canonico = nome.strip().title() if nome.isupper() else nome.strip()
-            dados.categorias_despesa[nome_canonico] = dados.categorias_despesa.get(
-                nome_canonico, 0.0
-            ) + _num(valor)
+            partes = cod_categoria.split(".")
+            chave_nivel2 = f"{partes[0]}.{partes[1]}"
+            nome_canonico = _CATEGORIAS_NIVEL2.get(chave_nivel2)
+            if not nome_canonico:
+                continue  # categoria fora do mapa conhecido (ex: receitas "1.x")
+            dados.categorias_despesa[nome_canonico] = (
+                dados.categorias_despesa.get(nome_canonico, 0.0) + _num(valor)
+            )
 
-        if not dados.categorias_despesa and dados.despesa_total > 0:
-            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+        # despesa_total = soma das categorias da Conta Ordinária (bate com o
+        # débito do Fundo Ordinário na tabela DISPONÍVEL).
+        dados.despesa_total = sum(dados.categorias_despesa.values())
 
         # ── 3. DISPONÍVEL — contas_detalhe (fundos) ────────────────────────
+        # 6 números: saldo_ini créditos débitos TRANSFERÊNCIAS saldo_final
+        # (a 4ª coluna, "transferencias", é movimentação interna entre
+        # fundos — mostrada na tabela do Balanço Mensal, não soma no total).
         for fundo in _FUNDOS:
             m = re.search(
                 re.escape(fundo) + r"\s+" + r"\s+".join([_LINHA_NUM] * 5),
@@ -158,30 +175,48 @@ class AdapterAddomusPDF(AdapterBase):
                 "saldo_ant": _num(m.group(1)),
                 "creditos": _num(m.group(2)),
                 "debitos": _num(m.group(3)),
+                "transferencias": _num(m.group(4)) * (
+                    -1.0 if m.group(4).strip().startswith("-") else 1.0
+                ),
                 "saldo_atual": _num(m.group(5)),
             })
 
-        # ── 4. FINANCEIRO — saldos bancários reais ─────────────────────────
-        # "Nome  saldo_ini  creditos  debitos  transferencias  tarifa  saldo_final"
-        # 7 grupos ao todo: group(1)=nome, group(2..7)=os 6 números.
-        for m in re.finditer(
-            r"^([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 ./'-]*?)\s+" + r"\s+".join([_LINHA_NUM] * 6) + r"\s*$",
-            texto_total,
-            re.MULTILINE,
-        ):
-            nome_conta = m.group(1).strip()
-            if nome_conta.lower().startswith("total"):
-                continue
-            saldo_final = _num(m.group(7))
-            n = nome_conta.upper()
-            if "CDB" in n or "APLICA" in n:
-                dados.banco_cdb += saldo_final
-            elif "ITA" in n or "PROS" in n or "CAIXA" in n or "CORRENTE" in n:
-                dados.banco_cc += saldo_final
+        # ── 4. banco_cc / banco_cdb / banco_priv — por fundo ───────────────
+        for c in dados.contas_detalhe:
+            if c["nome"] == "Fundo Ordinário":
+                dados.banco_cc += c["saldo_atual"]
+            elif c["nome"] == "Fundo de Reserva":
+                dados.banco_cdb += c["saldo_atual"]
             else:
-                dados.banco_priv += saldo_final
+                dados.banco_priv += c["saldo_atual"]
 
-        dados.total_unidades = self.config.get("unidades", 0)
+        # ── 5. Inadimplência (anexo "Inadimplencia Prosindico no tempo") ───
+        # Linha (uma só, sem quebra): "Total Valor em R$ devido na [época:]
+        # 2.103 9.930 ... 291.259" — a última coluna é o Total Geral.
+        m_inad = re.search(
+            r"Total\s+Valor\s+em\s+R\$\s+devido\s+na[^\d\n]*"
+            r"((?:[\d.]+\s+)*[\d.]+)",
+            texto_total,
+        )
+        if m_inad:
+            numeros = m_inad.group(1).split()
+            if numeros:
+                dados.inadimplencia_valor = _num(numeros[-1])  # última coluna = Total Geral
+        # Frase quebra em duas linhas: "NN unidades estão inadimplentes ...,
+        # \nperfazendo XX% do total de unidades."
+        m_pct = re.search(
+            r"(\d+)\s+unidades\s+est[aã]o\s+inadimplentes[\s\S]*?perfazendo\s+(\d+)%",
+            texto_total,
+        )
+        if m_pct:
+            dados.unidades_inadimplentes = int(m_pct.group(1))
+            pct = int(m_pct.group(2))
+            if pct > 0:
+                dados.total_unidades = round(dados.unidades_inadimplentes / (pct / 100))
+            dados.inadimplencia_percentual = float(pct)
+
+        if not dados.total_unidades:
+            dados.total_unidades = self.config.get("unidades", 0)
         return dados
 
     def ler_xlsx(self, caminho: Path, mes_referencia: str) -> DadosFinanceiros:
