@@ -1133,7 +1133,7 @@
     {
       "id": "gardens_living_club",
       "nome": "Gardens Living Club I",
-      "empresa_gestora": "ucondo_pdf",
+      "empresa_gestora": "consvicta_pdf",
       "pasta_dados": "data/gardens_living_club",
       "html_file": "Dashboard_Financeiro_GardensLivingClub.html",
       "ativo": true,

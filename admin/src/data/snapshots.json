@@ -1237,6 +1237,10 @@
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
     "allKeys": [
+      "nov25",
+      "dez25",
+      "jan26",
+      "fev26",
       "mar26",
       "abr26",
       "mai26",
@@ -1245,10 +1249,10 @@
     ],
     "data": {
       "tit": "Julho / 2026",
-      "tAtual": 590011.86,
-      "tCred": 387213.14,
-      "tDeb": 390917.56,
-      "inad": 263779.58,
+      "tAtual": 597443.93,
+      "tCred": 398194.96,
+      "tDeb": 394467.31,
+      "inad": 0,
       "tAnt": 593716.28
     }
   },
