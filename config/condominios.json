@@ -1073,7 +1073,7 @@
       "cor": "#ea580c",
       "unidades": 0,
       "parser_config": {
-        "orcamento_mensal": 139000.00,
+        "orcamento_mensal": 139000.0,
         "cat_map": {
           "DESPESAS COM PESSOAL": "Pessoal",
           "ENCARGOS SOCIAIS": "Encargos Sociais",
@@ -1152,6 +1152,19 @@
       "ativo": true,
       "cor": "#6366f1",
       "unidades": 150,
+      "parser_config": {
+        "cat_map": {}
+      }
+    },
+    {
+      "id": "spazio_jardins_da_orla",
+      "nome": "Spazio Jardins da Orla",
+      "empresa_gestora": "addomus_pdf",
+      "pasta_dados": "data/spazio_jardins_da_orla",
+      "html_file": "Dashboard_Financeiro_SpazioOrla.html",
+      "ativo": true,
+      "cor": "#E87722",
+      "unidades": 0,
       "parser_config": {
         "cat_map": {}
       }
