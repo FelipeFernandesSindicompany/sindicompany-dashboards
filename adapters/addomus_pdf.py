@@ -14,16 +14,27 @@ Estrutura confirmada (Spazio Jardins da Orla):
       Salão de Festas / Consumo individual / Garantidora
       Total do DISPONÍVEL   ← ignorado (linha de fechamento)
 
-  banco_cc / banco_cdb / banco_priv — classificação por FUNDO (não por
-  instrumento bancário; a tabela "FINANCEIRO" com Itaú/ProSíndico/CDB/
-  Privilege não é usada aqui), igual à convenção dos demais dashboards
-  Sindicompany (confirmado em Alvorada: banco.cc = saldo do fundo
-  ORDINÁRIA, banco.cdb = saldo do FUNDO DE RESERVA, banco.priv = soma dos
-  demais fundos):
+  banco_cc / banco_cdb / banco_priv — classificação por FUNDO (usada no
+  gráfico "Saldo por Conta" da Visão Geral), igual à convenção dos demais
+  dashboards Sindicompany (confirmado em Alvorada: banco.cc = saldo do
+  fundo ORDINÁRIA, banco.cdb = saldo do FUNDO DE RESERVA, banco.priv =
+  soma dos demais fundos):
       banco_cc   = saldo atual de "Fundo Ordinário"
       banco_cdb  = saldo atual de "Fundo de Reserva"
       banco_priv = soma do saldo atual dos demais fundos (Obras, Salão de
                    Festas, Consumo individual, Garantidora, ...)
+
+  banco_extra — contas bancárias/aplicações REAIS (usadas na aba "Saldo
+  Bancário", diferente do "Saldo por Conta" acima que é por fundo), da
+  tabela "FINANCEIRO" (6 números: saldo_ini créditos débitos
+  transferências tarifa saldo_final — só o saldo_final é usado):
+      FINANCEIRO Saldo inicial Créditos Débitos Transferências Tarifa Saldo Final
+      Itaú / ProSíndico / Caixa Síndico /
+      Fundo Investimento PRIVILEGE / CDB iTAÚ
+      Total do FINANCEIRO   ← ignorado (linha de fechamento)
+  Restrito ao bloco entre "FINANCEIRO Saldo inicial" e "Total do
+  FINANCEIRO" — o PDF inteiro tem centenas de páginas de anexos que, por
+  coincidência, também casam "nome + 6 números" fora desse bloco.
 
   Despesas por categoria — SOMENTE Conta Ordinária:
   O relatório mistura, dentro de cada categoria de despesa (2.1, 2.2, ...),
@@ -193,6 +204,23 @@ class AdapterAddomusPDF(AdapterBase):
                 dados.banco_cdb += c["saldo_atual"]
             else:
                 dados.banco_priv += c["saldo_atual"]
+
+        # ── 4b. banco_extra — contas bancárias reais (tabela FINANCEIRO) ───
+        m_fin_ini = re.search(r"FINANCEIRO\s+Saldo\s+inicial", texto_total)
+        m_fin_fim = re.search(r"Total\s+do\s+FINANCEIRO", texto_total)
+        bloco_financeiro = (
+            texto_total[m_fin_ini.start():m_fin_fim.start()]
+            if m_fin_ini and m_fin_fim else ""
+        )
+        for m in re.finditer(
+            r"^([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 ./'-]*?)\s+" + r"\s+".join([_LINHA_NUM] * 6) + r"\s*$",
+            bloco_financeiro,
+            re.MULTILINE,
+        ):
+            nome_conta = m.group(1).strip()
+            if nome_conta.lower().startswith("total"):
+                continue
+            dados.banco_extra[nome_conta] = _num(m.group(7))  # 7º grupo = saldo final
 
         # ── 5. Inadimplência (anexo "Inadimplencia Prosindico no tempo") ───
         # Linha (uma só, sem quebra): "Total Valor em R$ devido na [época:]
