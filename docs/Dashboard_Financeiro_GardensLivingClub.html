@@ -845,11 +845,11 @@ function renderBal(id){
 
   h+='<div class="cc"><h3>📋 Resumo por Conta – '+m.tit+' <small style="color:var(--muted);font-weight:400">'+m.per+'</small></h3><div class="tw"><table>';
 
-  h+='<tr><th>Conta</th><th>Saldo Ant.</th><th>Créditos</th><th>Débitos</th><th>Transferências</th><th>Saldo Atual</th></tr>';
+  h+='<tr><th>Conta</th><th>Saldo Ant.</th><th>Créditos</th><th>Débitos</th><th>Saldo Atual</th></tr>';
 
-  m.contas.forEach(function(c){var sc=c.s<0?' style="color:var(--r)"':'';h+='<tr><td class="bd">'+c.n+'</td><td class="nr">'+R(c.a)+'</td><td class="nr" style="color:var(--g)">'+R(c.c)+'</td><td class="nr" style="color:'+(c.d>0?'var(--r)':'var(--muted)')+'">'+R(c.d)+'</td><td class="nr" style="color:var(--muted)">'+R(c.t||0)+'</td><td class="nr"'+sc+'>'+R(c.s)+'</td></tr>';});
+  m.contas.forEach(function(c){var sc=c.s<0?' style="color:var(--r)"':'';h+='<tr><td class="bd">'+c.n+'</td><td class="nr">'+R(c.a)+'</td><td class="nr" style="color:var(--g)">'+R(c.c)+'</td><td class="nr" style="color:'+(c.d>0?'var(--r)':'var(--muted)')+'">'+R(c.d)+'</td><td class="nr"'+sc+'>'+R(c.s)+'</td></tr>';});
 
-  h+='<tr class="tot"><td>TOTAL</td><td class="nr">'+R(m.tAnt)+'</td><td class="nr" style="color:var(--g)">'+R(m.tCred)+'</td><td class="nr" style="color:var(--r)">'+R(m.tDeb)+'</td><td class="nr"></td><td class="nr" style="color:var(--p)">'+R(m.tAtual)+'</td></tr>';
+  h+='<tr class="tot"><td>TOTAL</td><td class="nr">'+R(m.tAnt)+'</td><td class="nr" style="color:var(--g)">'+R(m.tCred)+'</td><td class="nr" style="color:var(--r)">'+R(m.tDeb)+'</td><td class="nr" style="color:var(--p)">'+R(m.tAtual)+'</td></tr>';
 
   h+='</table></div></div>';
 
