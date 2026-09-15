@@ -853,6 +853,19 @@ class AdapterLirbaPDF(AdapterBase):
                     })
             break
 
+        # tCred/tDeb do topo devem bater com a tabela "Grupos de saldo" (a mesma
+        # exibida no Balanço Mensal por conta), não com "Conta Principal/Aplicação"
+        # — as duas tabelas do PDF têm totais diferentes (cada uma soma suas
+        # próprias transferências internas) e usar tabelas distintas para
+        # card x tabela quebra a identidade saldo_ant+créditos-débitos=saldo_atual.
+        if dados.contas_detalhe:
+            dados.receita_realizada = round(
+                sum(c["creditos"] for c in dados.contas_detalhe), 2
+            )
+            dados.despesa_total = round(
+                sum(c["debitos"] for c in dados.contas_detalhe), 2
+            )
+
         # ── 2. Receita Prevista e Cotas ───────────────────────────────────────
         # Balancete RECEITAS: linha "Condomínio X" = cotas recebidas do mês
         in_rec = False
@@ -897,7 +910,10 @@ class AdapterLirbaPDF(AdapterBase):
             # Fundos de utilidade (Gás, Água, Benfeitorias) transitam pela
             # Ordinária e são transferidos para contas próprias: a soma das
             # categorias excede os débitos da Ordinária pelo valor transferido.
-            # Corrige subtraindo o excesso de CONSUMO e fixando despesa_total.
+            # Corrige subtraindo o excesso de CONSUMO (tDesp continua vindo da
+            # soma das categorias em injetar_mes.py; despesa_total/tDeb já foi
+            # fixado acima a partir da tabela "Grupos de saldo" e não deve ser
+            # sobrescrito aqui).
             ord_entry = next(
                 (c for c in dados.contas_detalhe
                  if 'ORDIN' in c['nome'].upper()),
@@ -930,7 +946,6 @@ class AdapterLirbaPDF(AdapterBase):
                                 dados.categorias_despesa[serv_key] = round(
                                     dados.categorias_despesa[serv_key] - remainder, 2
                                 )
-                dados.despesa_total = ordinaria_deb
 
         if not dados.categorias_despesa and dados.despesa_total > 0:
             dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
