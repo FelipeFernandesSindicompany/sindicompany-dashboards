@@ -14,6 +14,15 @@ function monthKeyToNum(key: string): number {
   return y * 12 + m;
 }
 
+/** Converte "YYYY-MM" (campo `mes` do ImportRecord) para o mesmo espaço numérico de monthKeyToNum (ano de 2 dígitos) */
+function mesToNum(mes: string): number | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(mes);
+  if (!match) return null;
+  const y = parseInt(match[1].slice(2), 10);
+  const m = parseInt(match[2], 10) - 1;
+  return y * 12 + m;
+}
+
 /** Até o dia 14 → 2 meses atrás; a partir do dia 15 → 1 mês atrás */
 function getMonthsBack(): number {
   return new Date().getDate() >= 15 ? 1 : 2;
@@ -50,8 +59,16 @@ export async function GET() {
         // "Em dia" se o dashboard tem dados do mês esperado OU mais recente
         status = monthKeyToNum(bal.lastKey) >= expectedNum ? 'current' : 'pending';
       }
-      // Só mostra erro se o dashboard NÃO está em dia
-      if (status !== 'current' && lastImport?.status === 'error') status = 'error';
+      // Só mostra erro se o dashboard NÃO está em dia E o mês que falhou ainda não
+      // foi coberto por dados mais recentes já presentes no dashboard (ex: corrigido
+      // manualmente fora do fluxo do admin, deixando o registro de erro obsoleto)
+      if (status !== 'current' && lastImport?.status === 'error') {
+        const failedMonthNum = mesToNum(lastImport.mes);
+        const dashboardNum = bal ? monthKeyToNum(bal.lastKey) : -1;
+        if (failedMonthNum === null || failedMonthNum > dashboardNum) {
+          status = 'error';
+        }
+      }
 
       return {
         condominio: condo,
