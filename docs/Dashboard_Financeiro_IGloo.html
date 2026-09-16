@@ -1097,7 +1097,7 @@ function buildPvr(){
 
 function buildInad(){
 
-  var h='<tr><th>Mês</th><th>Devedores em Aberto</th><th>Status</th></tr>';
+  var h='<tr><th>Mês</th><th class="nr">Devedores em Aberto</th><th class="nr">Status</th></tr>';
 
   MESES.forEach(function(k){
 
@@ -1107,7 +1107,7 @@ function buildInad(){
 
     var ic=m.inad>150000?' style="color:var(--r)"':'';
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td>'+b+'</td></tr>';
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr"'+ic+'>'+R(m.inad)+'</td><td class="nr">'+b+'</td></tr>';
 
   });
 
