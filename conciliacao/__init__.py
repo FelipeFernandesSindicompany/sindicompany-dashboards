@@ -10,10 +10,12 @@ from pathlib import Path
 
 from conciliacao.addomus_pdf import ConciliadorAddomusPDF
 from conciliacao.lirba_pdf import ConciliadorLirbaPDF
+from conciliacao.habitacional_xlsx import ConciliadorHabitacionalXLSX
 
 CONCILIADORES = {
     "addomus_pdf": ConciliadorAddomusPDF,
     "lirba_pdf": ConciliadorLirbaPDF,
+    "habitacional_xlsx": ConciliadorHabitacionalXLSX,
 }
 
 _CONDO_CACHE: dict | None = None

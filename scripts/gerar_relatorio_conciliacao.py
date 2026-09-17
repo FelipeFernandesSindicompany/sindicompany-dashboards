@@ -137,6 +137,10 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     gerar_achados_por_empresa = {
         "addomus_pdf": gerar_achados,
         "lirba_pdf": gerar_achados_lirba,
+        # Habitacional usa o mesmo par "despesa_listada"/"comprovante_anexado"
+        # do Lirba (só muda a origem: hyperlink do Excel em vez de página de
+        # PDF) — reaproveita a regra de matching sem duplicar.
+        "habitacional_xlsx": gerar_achados_lirba,
     }
     funcao_matching = gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
     achados: list[Achado] = funcao_matching(registros, dados_financeiros)
