@@ -42,6 +42,8 @@ function mesAtualPadrao(): string {
 
 const SEVERIDADES = ['critico', 'alto', 'atencao', 'informativo'];
 
+interface CondominioInfo { id: string; nome: string; suportado: boolean; }
+
 export default function ValidacaoCondominioPage() {
   const params = useParams();
   const condominioId = String(params.id);
@@ -53,6 +55,15 @@ export default function ValidacaoCondominioPage() {
   const [log, setLog] = useState<string[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [revisados, setRevisados] = useState<Record<string, AchadoRevisado>>({});
+  const [condoInfo, setCondoInfo] = useState<CondominioInfo | null>(null);
+  const [carregandoCondo, setCarregandoCondo] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/validacao/condominios')
+      .then(r => r.json())
+      .then(d => setCondoInfo((d.condominios ?? []).find((c: CondominioInfo) => c.id === condominioId) ?? null))
+      .finally(() => setCarregandoCondo(false));
+  }, [condominioId]);
 
   const carregarStatus = useCallback(async () => {
     const r = await fetch(`/api/validacao/status?condominioId=${condominioId}&mes=${mes}`);
@@ -131,11 +142,31 @@ export default function ValidacaoCondominioPage() {
 
   const pendentes = status?.achadosBrutos?.filter(a => !revisados[a.id] || revisados[a.id].revisado_por === 'pendente') ?? [];
 
+  if (carregandoCondo) {
+    return <div className="p-4 sm:p-8"><div className="skeleton h-24 rounded-xl max-w-4xl" /></div>;
+  }
+
+  if (!condoInfo || !condoInfo.suportado) {
+    return (
+      <div className="p-4 sm:p-8 page-enter max-w-4xl">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-primary mb-2">Validação de Balancetes</h1>
+        <div className="card p-6 text-center">
+          <p className="text-text-secondary font-medium">
+            {condoInfo ? `${condoInfo.nome} ainda não tem conciliador implementado.` : 'Condomínio não encontrado.'}
+          </p>
+          <p className="text-text-muted text-[12px] mt-1">
+            O motor de conciliação hoje só suporta a administradora Addomus — outras entram conforme forem implementadas.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-8 page-enter max-w-4xl">
       <div className="mb-5 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-text-primary">Validação de Balancetes</h1>
-        <p className="text-text-muted text-[12px] sm:text-[13px] mt-1">{condominioId}</p>
+        <p className="text-text-muted text-[12px] sm:text-[13px] mt-1">{condoInfo.nome}</p>
       </div>
 
       {/* Seleção de mês + upload */}

@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import { getCondominio } from '@/lib/condominios';
-import { rodarEtapaConciliacao } from '@/lib/validacaoProcessor';
+import { rodarEtapaConciliacao, EMPRESAS_COM_CONCILIACAO } from '@/lib/validacaoProcessor';
 import { lerStatus } from '@/lib/validacaoStorage';
 
 export const dynamic = 'force-dynamic';
@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
     }
     const condo = getCondominio(condominioId);
     if (!condo) return NextResponse.json({ error: 'Condomínio não encontrado' }, { status: 404 });
+    if (!EMPRESAS_COM_CONCILIACAO.includes(condo.empresa_gestora)) {
+      return NextResponse.json({ error: `Administradora '${condo.empresa_gestora}' ainda não tem conciliador implementado` }, { status: 400 });
+    }
 
     const ext = path.extname(arquivo.name) || '.pdf';
     tmpPath = path.join(os.tmpdir(), `sc_conciliacao_${Date.now()}${ext}`);
