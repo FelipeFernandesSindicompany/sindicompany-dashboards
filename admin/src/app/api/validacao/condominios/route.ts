@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCondominios } from '@/lib/condominios';
-import { EMPRESAS_COM_CONCILIACAO } from '@/lib/validacaoProcessor';
+import { condominioSuportado } from '@/lib/validacaoProcessor';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,7 @@ export async function GET() {
       cor: c.cor,
       empresa_gestora: c.empresa_gestora,
       pasta_dados: c.pasta_dados,
-      suportado: EMPRESAS_COM_CONCILIACAO.includes(c.empresa_gestora),
+      suportado: condominioSuportado(c),
     }))
     .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
   return NextResponse.json({ condominios });

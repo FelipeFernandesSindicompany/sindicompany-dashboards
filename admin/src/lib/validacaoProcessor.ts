@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { PROJECT_ROOT } from './paths';
 import path from 'path';
+import type { Condominio } from './types';
 
 export interface EtapaResult {
   success: boolean;
@@ -77,7 +78,25 @@ export async function rodarEtapaConciliacao(args: {
 }
 
 /** Condomínios com conciliador implementado — mesma lista de conciliacao/__init__.py::CONCILIADORES. */
-export const EMPRESAS_COM_CONCILIACAO = ['addomus_pdf'];
+export const EMPRESAS_COM_CONCILIACAO = ['addomus_pdf', 'lirba_pdf'];
+
+/**
+ * "lirba_pdf" não é um formato único — adapters/lirba_pdf.py tem 4
+ * sub-parsers (posicao_financeira/total_da_conta/webware/gcont), cada um pra
+ * um layout de PDF diferente. conciliacao/lirba_pdf.py foi construído e
+ * validado só contra o sub-formato "posicao_financeira" (piloto: 730 Padre
+ * Carvalho) — os outros 4 sub-formatos ainda não têm extrator de
+ * comprovantes correspondente, então NÃO marcamos como suportados mesmo
+ * sendo "lirba_pdf", pra não deixar alguém tentar extrair um PDF de layout
+ * totalmente diferente e receber um resultado vazio/errado.
+ */
+export function condominioSuportado(condo: Pick<Condominio, 'empresa_gestora' | 'parser_config'>): boolean {
+  if (!EMPRESAS_COM_CONCILIACAO.includes(condo.empresa_gestora)) return false;
+  if (condo.empresa_gestora === 'lirba_pdf') {
+    return condo.parser_config?.extract_cats === 'posicao_financeira';
+  }
+  return true;
+}
 
 export function condoDirConciliacao(pastaDados: string, mes: string): string {
   return path.join(PROJECT_ROOT, pastaDados, 'conciliacao', mes);

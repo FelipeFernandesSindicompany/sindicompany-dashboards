@@ -11,7 +11,7 @@ sempre em cima de fatos rastreáveis, nunca de julgamento embutido no código.
 Tipos de comprovante de pagamento (têm código de lançamento e podem ser
 pareados 1:1 com uma "despesa_interna" do mesmo código):
 """
-from conciliacao.base import Achado, RegistroComprovante
+from conciliacao.base import Achado, RegistroComprovante, chave_registro
 
 TIPOS_COMPROVANTE_PAGAMENTO = {"pix", "darf", "boleto", "debito_automatico"}
 
@@ -82,14 +82,14 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
         codigos_pagamento_usados.add(codigo)
         despesa = grupo_despesa[0]
         valor_pagamento = max(p.valor for p in pares)
-        paginas_pagamento = [f"pag{p.pagina}" for p in pares]
+        chaves_pagamento = [chave_registro(p) for p in pares]
         if _valores_batem(despesa.valor, valor_pagamento):
             achados.append(Achado(
                 id=_proximo_id(contador),
                 tipo="ok_verificado",
                 severidade_sugerida="informativo",
                 regra_aplicada="pareamento_codigo_comprovante_valor_confere",
-                registros_relacionados=[f"pag{despesa.pagina}"] + paginas_pagamento,
+                registros_relacionados=[chave_registro(despesa)] + chaves_pagamento,
                 linha_demonstrativo=despesa.categoria_demonstrativo,
                 valor_esperado=despesa.valor,
                 valor_encontrado=valor_pagamento,
@@ -101,7 +101,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
                 tipo="divergencia_valor",
                 severidade_sugerida="alto",
                 regra_aplicada="pareamento_codigo_comprovante_valor_diverge",
-                registros_relacionados=[f"pag{despesa.pagina}"] + paginas_pagamento,
+                registros_relacionados=[chave_registro(despesa)] + chaves_pagamento,
                 linha_demonstrativo=despesa.categoria_demonstrativo,
                 valor_esperado=despesa.valor,
                 valor_encontrado=valor_pagamento,
@@ -135,8 +135,8 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
                 severidade_sugerida="informativo",
                 regra_aplicada="soma_grupo_data_conta_bate_pagamento_consolidado",
                 registros_relacionados=(
-                    [f"pag{d.pagina}" for d in grupo_candidato]
-                    + [f"pag{p.pagina}" for p in grupo_pagamento]
+                    [chave_registro(d) for d in grupo_candidato]
+                    + [chave_registro(p) for p in grupo_pagamento]
                 ),
                 valor_esperado=soma,
                 valor_encontrado=valor_pagamento,
@@ -172,7 +172,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
             tipo="consolidacao_multipla_pendente_julgamento",
             severidade_sugerida="informativo",
             regra_aplicada="valor_bate_com_detalhamento_relatorio_fiscal",
-            registros_relacionados=[f"pag{despesa.pagina}", f"pag{relatorio_correspondente.pagina}"],
+            registros_relacionados=[chave_registro(despesa), chave_registro(relatorio_correspondente)],
             linha_demonstrativo=despesa.categoria_demonstrativo,
             valor_esperado=despesa.valor,
             valor_encontrado=despesa.valor,
@@ -190,7 +190,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
             tipo="sem_comprovante",
             severidade_sugerida="alto",
             regra_aplicada="despesa_interna_sem_comprovante_pagamento_pareado",
-            registros_relacionados=[f"pag{despesa.pagina}"],
+            registros_relacionados=[chave_registro(despesa)],
             linha_demonstrativo=despesa.categoria_demonstrativo,
             valor_esperado=despesa.valor,
             valor_encontrado=None,
@@ -209,7 +209,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
             tipo="sem_lancamento_correspondente",
             severidade_sugerida="atencao",
             regra_aplicada="comprovante_pagamento_sem_despesa_interna_pareada",
-            registros_relacionados=[f"pag{p.pagina}" for p in grupo_pagamento],
+            registros_relacionados=[chave_registro(p) for p in grupo_pagamento],
             valor_esperado=None,
             valor_encontrado=valor_pagamento,
             confianca_deterministica=1.0,
@@ -222,7 +222,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
             tipo="sem_lancamento_correspondente",
             severidade_sugerida="atencao",
             regra_aplicada="comprovante_pagamento_sem_codigo_extraido",
-            registros_relacionados=[f"pag{pagamento.pagina}"],
+            registros_relacionados=[chave_registro(pagamento)],
             valor_esperado=None,
             valor_encontrado=pagamento.valor,
             confianca_deterministica=0.8,
@@ -239,7 +239,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
                 tipo="duplicidade",
                 severidade_sugerida="critico",
                 regra_aplicada="mesmo_codigo_despesa_repetido_mesmo_valor",
-                registros_relacionados=[f"pag{d.pagina}" for d in grupo],
+                registros_relacionados=[chave_registro(d) for d in grupo],
                 valor_esperado=grupo[0].valor,
                 valor_encontrado=grupo[0].valor,
                 confianca_deterministica=1.0,
@@ -262,7 +262,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
             tipo="cnpj_ausente",
             severidade_sugerida="informativo",
             regra_aplicada="debito_automatico_sem_cnpj_extraido",
-            registros_relacionados=[f"pag{r.pagina}" for r in grupo],
+            registros_relacionados=[chave_registro(r) for r in grupo],
             valor_esperado=None,
             valor_encontrado=max(r.valor for r in grupo),
             confianca_deterministica=1.0,
@@ -273,7 +273,7 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
             tipo="cnpj_ausente",
             severidade_sugerida="informativo",
             regra_aplicada="debito_automatico_sem_cnpj_extraido",
-            registros_relacionados=[f"pag{r.pagina}"],
+            registros_relacionados=[chave_registro(r)],
             valor_esperado=None,
             valor_encontrado=r.valor,
             confianca_deterministica=1.0,
@@ -281,28 +281,100 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
 
     # ── 6. Divergência de total por categoria (opcional, exige DadosFinanceiros) ──
     if dados_financeiros is not None:
-        soma_por_categoria: dict[str, float] = {}
-        for d in despesas_internas:
-            if d.categoria_demonstrativo:
-                soma_por_categoria[d.categoria_demonstrativo] = (
-                    soma_por_categoria.get(d.categoria_demonstrativo, 0.0) + d.valor
-                )
-        for categoria, total_demonstrativo in dados_financeiros.categorias_despesa.items():
-            total_extraido = soma_por_categoria.get(categoria, 0.0)
-            if not _valores_batem(total_extraido, total_demonstrativo, tolerancia=0.02):
-                achados.append(Achado(
-                    id=_proximo_id(contador),
-                    tipo="divergencia_valor",
-                    severidade_sugerida="critico",
-                    regra_aplicada="soma_comprovantes_categoria_diverge_do_demonstrativo",
-                    registros_relacionados=[
-                        f"pag{d.pagina}" for d in despesas_internas
-                        if d.categoria_demonstrativo == categoria
-                    ],
-                    linha_demonstrativo=categoria,
-                    valor_esperado=total_demonstrativo,
-                    valor_encontrado=total_extraido,
-                    confianca_deterministica=1.0,
-                ))
+        achados.extend(_achados_divergencia_categoria(despesas_internas, dados_financeiros, contador))
+
+    return achados
+
+
+def _achados_divergencia_categoria(despesas: list[RegistroComprovante], dados_financeiros, contador: list) -> list[Achado]:
+    """Compara a soma dos comprovantes extraídos por categoria contra o total do
+    demonstrativo (DadosFinanceiros já lido pelo adapter existente) — reaproveitado
+    por gerar_achados() (Addomus) e gerar_achados_lirba()."""
+    soma_por_categoria: dict[str, float] = {}
+    for d in despesas:
+        if d.categoria_demonstrativo:
+            soma_por_categoria[d.categoria_demonstrativo] = (
+                soma_por_categoria.get(d.categoria_demonstrativo, 0.0) + d.valor
+            )
+    achados = []
+    for categoria, total_demonstrativo in dados_financeiros.categorias_despesa.items():
+        total_extraido = soma_por_categoria.get(categoria, 0.0)
+        if not _valores_batem(total_extraido, total_demonstrativo, tolerancia=0.02):
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="divergencia_valor",
+                severidade_sugerida="critico",
+                regra_aplicada="soma_comprovantes_categoria_diverge_do_demonstrativo",
+                registros_relacionados=[
+                    chave_registro(d) for d in despesas if d.categoria_demonstrativo == categoria
+                ],
+                linha_demonstrativo=categoria,
+                valor_esperado=total_demonstrativo,
+                valor_encontrado=total_extraido,
+                confianca_deterministica=1.0,
+            ))
+    return achados
+
+
+def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+    """
+    Regras para o formato Lirba/ContasData (ver conciliacao/lirba_pdf.py) —
+    mais simples que gerar_achados(): a página de "Comprovante de Despesa"
+    não tem texto útil (é imagem digitalizada), então não há valor pra
+    comparar — só existência ou não do comprovante pelo código.
+    """
+    contador = [0]
+    achados: list[Achado] = []
+
+    despesas = [r for r in registros if r.tipo_documento == "despesa_listada"]
+    codigos_com_comprovante = {r.codigo for r in registros if r.tipo_documento == "comprovante_anexado"}
+
+    # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa" ──
+    for d in despesas:
+        if d.codigo in codigos_com_comprovante:
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="ok_verificado",
+                severidade_sugerida="informativo",
+                regra_aplicada="codigo_tem_pagina_comprovante_anexado",
+                registros_relacionados=[chave_registro(d)],
+                linha_demonstrativo=d.categoria_demonstrativo,
+                valor_esperado=d.valor,
+                valor_encontrado=d.valor,
+                confianca_deterministica=1.0,
+            ))
+        else:
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="sem_comprovante",
+                severidade_sugerida="alto",
+                regra_aplicada="despesa_listada_sem_pagina_comprovante_anexado",
+                registros_relacionados=[chave_registro(d)],
+                linha_demonstrativo=d.categoria_demonstrativo,
+                valor_esperado=d.valor,
+                valor_encontrado=None,
+                confianca_deterministica=1.0,
+            ))
+
+    # ── 2. Duplicidade (mesmo código listado mais de uma vez, mesmo valor) ──
+    por_codigo: dict[str, list[RegistroComprovante]] = {}
+    for d in despesas:
+        por_codigo.setdefault(d.codigo, []).append(d)
+    for codigo, grupo in por_codigo.items():
+        if len(grupo) >= 2 and len({round(d.valor, 2) for d in grupo}) == 1:
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="duplicidade",
+                severidade_sugerida="critico",
+                regra_aplicada="mesmo_codigo_despesa_listada_repetido_mesmo_valor",
+                registros_relacionados=[chave_registro(d) for d in grupo],
+                valor_esperado=grupo[0].valor,
+                valor_encontrado=grupo[0].valor,
+                confianca_deterministica=1.0,
+            ))
+
+    # ── 3. Divergência de total por categoria (opcional, exige DadosFinanceiros) ──
+    if dados_financeiros is not None:
+        achados.extend(_achados_divergencia_categoria(despesas, dados_financeiros, contador))
 
     return achados

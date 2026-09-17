@@ -118,3 +118,20 @@ class ConciliadorBase(ABC):
     def extrair_comprovantes(self, caminho: Path) -> list:
         """Lê o PDF da pasta de prestação de contas e retorna list[RegistroComprovante]."""
         ...
+
+
+def chave_registro(r: "RegistroComprovante") -> str:
+    """
+    Chave única pra referenciar um RegistroComprovante dentro de
+    Achado.registros_relacionados (e para localizá-lo de volta depois, tanto
+    em conciliacao/matching.py quanto em scripts/gerar_relatorio_conciliacao.py).
+
+    Usa página + código quando o código existe — página sozinha NÃO é única
+    em formatos "listagem" (ex.: conciliacao/lirba_pdf.py), onde várias
+    despesas de códigos diferentes ficam na mesma página física; sem essa
+    combinação, o lookup por página pegaria sempre o último registro daquela
+    página, não o que o achado realmente referencia.
+    """
+    if r.codigo:
+        return f"pag{r.pagina}_cod{r.codigo}"
+    return f"pag{r.pagina}"

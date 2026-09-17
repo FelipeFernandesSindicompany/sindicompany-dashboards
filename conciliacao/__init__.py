@@ -9,9 +9,11 @@ import importlib
 from pathlib import Path
 
 from conciliacao.addomus_pdf import ConciliadorAddomusPDF
+from conciliacao.lirba_pdf import ConciliadorLirbaPDF
 
 CONCILIADORES = {
     "addomus_pdf": ConciliadorAddomusPDF,
+    "lirba_pdf": ConciliadorLirbaPDF,
 }
 
 _CONDO_CACHE: dict | None = None

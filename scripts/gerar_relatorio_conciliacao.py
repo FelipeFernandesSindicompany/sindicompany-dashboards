@@ -44,8 +44,8 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 from adapters import get_adapter
 from conciliacao import get_conciliador
 from conciliacao import storage
-from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante
-from conciliacao.matching import gerar_achados
+from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
+from conciliacao.matching import gerar_achados, gerar_achados_lirba
 from conciliacao import interpretacao
 from conciliacao import render
 from conciliacao import bal_reader
@@ -116,14 +116,30 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     storage.write_dataclass_list(version_dir / "registros_comprovantes.json", registros)
 
     dados_financeiros = None
-    try:
-        adapter = get_adapter(condo["empresa_gestora"], condo)
-        dados_financeiros = adapter.ler_pdf(entrada, mes)
-    except Exception as exc:
-        print(f"[AVISO] não foi possível ler o demonstrativo consolidado ({exc}); "
-              f"pulando a regra de divergência por categoria.")
+    # A regra de divergência por categoria (regra 6 de gerar_achados / regra 3 de
+    # gerar_achados_lirba) exige que os nomes de categoria da extração batam
+    # com os do adapter de demonstrativo já existente. Confirmado para Addomus;
+    # para Lirba, o agrupamento do adapter (adapters/lirba_pdf.py) não bate 1:1
+    # com o cat_map de condominios.json aplicado aqui (ex.: adapter mantém
+    # "Materiais de Consumo" e "Material de Expediente" separados, cat_map
+    # funde os dois em "Materiais") — pular a regra até isso ser revisado, pra
+    # não gerar falsa divergência.
+    EMPRESAS_COM_CHECAGEM_CATEGORIA = {"addomus_pdf"}
+    if condo["empresa_gestora"] in EMPRESAS_COM_CHECAGEM_CATEGORIA:
+        try:
+            adapter = get_adapter(condo["empresa_gestora"], condo)
+            dados_financeiros = adapter.ler_pdf(entrada, mes)
+        except Exception as exc:
+            print(f"[AVISO] não foi possível ler o demonstrativo consolidado ({exc}); "
+                  f"pulando a regra de divergência por categoria.")
 
-    achados: list[Achado] = gerar_achados(registros, dados_financeiros)
+    # Cada administradora tem regras de matching próprias — ver conciliacao/matching.py.
+    gerar_achados_por_empresa = {
+        "addomus_pdf": gerar_achados,
+        "lirba_pdf": gerar_achados_lirba,
+    }
+    funcao_matching = gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
+    achados: list[Achado] = funcao_matching(registros, dados_financeiros)
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
 
     storage.write_status(version_dir, "extrair", concluido=True)
@@ -168,7 +184,9 @@ def etapa_render(condo: dict, mes: str) -> Path:
         raise SystemExit(1)
 
     registros = storage.read_dataclass_list(version_dir / "registros_comprovantes.json", RegistroComprovante)
-    registros_por_pagina = {f"pag{r.pagina}": r for r in registros}
+    # Mesma chave usada em conciliacao/matching.py ao montar registros_relacionados
+    # (página sozinha não é única em formatos "listagem", ver base.py::chave_registro).
+    registros_por_pagina = {chave_registro(r): r for r in registros}
     achados_por_id = {a.id: a for a in achados}
 
     entradas_pdf = list((version_dir / "input").glob("*"))

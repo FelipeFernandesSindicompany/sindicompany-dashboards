@@ -9,6 +9,7 @@ export interface Condominio {
   cor: string;
   unidades: number;
   dashboard_url?: string;
+  parser_config?: Record<string, any>;
 }
 
 export type AdapterType =
