@@ -153,6 +153,10 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # mesma regra de matching.
         "gk_pdf": gerar_achados_lirba,
         "manager_adm_pdf": gerar_achados_lirba,
+        # Consvicta (Gardens Living Club) não tem vínculo textual entre
+        # despesa e comprovante (páginas de imagem sem "Parcela" referenciada
+        # em nenhum outro lugar) — mesmas regras de consistência do DataDigitus.
+        "consvicta_pdf": gerar_achados_datadigitus,
     }
     # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
     # ter regras de matching próprias, mesmo compartilhando empresa_gestora com

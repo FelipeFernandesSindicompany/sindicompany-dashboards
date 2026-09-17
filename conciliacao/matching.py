@@ -426,7 +426,11 @@ def gerar_achados_datadigitus(registros: list[RegistroComprovante], dados_financ
     for d in despesas:
         if not d.descricao:
             continue  # sem histórico extraído (linha com quebra) — não dá pra comparar com segurança
-        chave = (d.vencimento, round(d.valor, 2), d.categoria_demonstrativo, d.descricao.strip().upper())
+        # autenticacao (nº de documento/NF/Fatura, quando extraído — ver
+        # conciliacao/consvicta_pdf.py) entra na chave pra não confundir duas
+        # faturas distintas do mesmo fornecedor que coincidem em data+valor
+        # (ex.: duas contas de luz de medidores diferentes, mesmo R$).
+        chave = (d.vencimento, round(d.valor, 2), d.categoria_demonstrativo, d.descricao.strip().upper(), d.autenticacao)
         grupos_por_data_valor_cat.setdefault(chave, []).append(d)
     for grupo in grupos_por_data_valor_cat.values():
         if len(grupo) >= 2:
