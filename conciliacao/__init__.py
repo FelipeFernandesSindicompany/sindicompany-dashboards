@@ -24,6 +24,10 @@ CONCILIADORES = {
     # dados reais), só o adapter de demonstrativo tem regras próprias
     # (ver adapters/gk_pdf.py). Reaproveita a classe sem duplicar.
     "gk_pdf": ConciliadorLirbaPDF,
+    # "manager_adm_pdf" (ex.: Dueto Morumbi, Fatto Morumbi) também é
+    # ContasData — só tem uma coluna extra "Nº lancto." antes da data (ver
+    # conciliacao/lirba_pdf.py::_RE_DATA_INICIO).
+    "manager_adm_pdf": ConciliadorLirbaPDF,
 }
 
 _CONDO_CACHE: dict | None = None

@@ -51,7 +51,10 @@ _RE_TOTAL_LINHA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}(?:\s+[
 _RE_ITEM_LINHA = re.compile(
     r"([\d.]+,\d{2})\s+(?:[\d.]+,\d{2}\s+[\d,]+%\s+)?(\d{4})\s*$"
 )
-_RE_DATA_INICIO = re.compile(r"^(\d{2}/\d{2}/\d{4})")
+# Algumas variantes do ContasData (ex.: Dueto Morumbi/manager_adm_pdf) têm uma
+# coluna extra "Nº lancto." (número de 8 dígitos) antes da data — o prefixo
+# numérico é opcional pra continuar funcionando nas variantes sem essa coluna.
+_RE_DATA_INICIO = re.compile(r"^(?:\d+\s+)?(\d{2}/\d{2}/\d{4})")
 
 
 class ConciliadorLirbaPDF(ConciliadorBase):

@@ -149,8 +149,10 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # diferentes (duplicidade por data+valor+categoria e divergência
         # soma-x-total-declarado), ver conciliacao/matching.py.
         "datadigitus_pdf": gerar_achados_datadigitus,
-        # gk_pdf usa o mesmo motor ContasData do Lirba — mesma regra de matching.
+        # gk_pdf/manager_adm_pdf usam o mesmo motor ContasData do Lirba —
+        # mesma regra de matching.
         "gk_pdf": gerar_achados_lirba,
+        "manager_adm_pdf": gerar_achados_lirba,
     }
     # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
     # ter regras de matching próprias, mesmo compartilhando empresa_gestora com
