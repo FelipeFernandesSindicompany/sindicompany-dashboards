@@ -45,7 +45,7 @@ def _num(s) -> float:
 
 _RE_HEADER_LISTAGEM = re.compile(r"Data\s+Hist[oó]rico\s+Valor\s+Total")
 _RE_COMPROVANTE = re.compile(r"Comprovante\s+de\s+Despesa\s+(\d+)")
-_RE_TOTAL_LINHA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}\s+[\d,]+%\s*$")
+_RE_TOTAL_LINHA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}(?:\s+[\d,]+%)?\s*$")
 # Linha de item: valor individual (obrigatório) + opcionalmente total+pct do
 # mini-grupo (quando a linha fecha uma subcategoria) + código de 4 dígitos no fim.
 _RE_ITEM_LINHA = re.compile(

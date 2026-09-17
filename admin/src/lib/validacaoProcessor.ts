@@ -83,13 +83,14 @@ export const EMPRESAS_COM_CONCILIACAO = ['addomus_pdf', 'lirba_pdf', 'habitacion
 /**
  * "lirba_pdf" não é um formato único — adapters/lirba_pdf.py tem 4
  * sub-parsers (posicao_financeira/total_da_conta/webware/gcont), cada um pra
- * um layout de PDF diferente. conciliacao/lirba_pdf.py foi construído e
- * validado só contra o sub-formato "posicao_financeira" (piloto: 730 Padre
- * Carvalho) — os outros 4 sub-formatos ainda não têm extrator de
- * comprovantes correspondente, então NÃO marcamos como suportados mesmo
- * sendo "lirba_pdf", pra não deixar alguém tentar extrair um PDF de layout
- * totalmente diferente e receber um resultado vazio/errado.
+ * um layout de PDF diferente. conciliacao/lirba_pdf.py foi validado contra
+ * "posicao_financeira" (piloto: 730 Padre Carvalho) e "total_da_conta"
+ * (pilotos: Central das Artes e Residencial Blue Sky — mesma "Demonstrativo
+ * de Despesas"/"Comprovante de Despesa" do ContasData, só a tabela-resumo
+ * usada pelo adapter de demonstrativo muda). "webware" e "gcont" ainda não
+ * têm extrator de comprovantes correspondente, então continuam fora.
  */
+const SUBFORMATOS_LIRBA_VALIDADOS = new Set(['posicao_financeira', 'total_da_conta']);
 /**
  * "datadigitus_pdf" tem 2 condomínios (Cap D'Antibes, Maison Du Rhone) —
  * conciliacao/datadigitus_pdf.py só foi validado contra dados reais de Cap
@@ -102,7 +103,7 @@ const CONDOMINIOS_DATADIGITUS_VALIDADOS = new Set(['cap_d_antibes']);
 export function condominioSuportado(condo: Pick<Condominio, 'id' | 'empresa_gestora' | 'parser_config'>): boolean {
   if (!EMPRESAS_COM_CONCILIACAO.includes(condo.empresa_gestora)) return false;
   if (condo.empresa_gestora === 'lirba_pdf') {
-    return condo.parser_config?.extract_cats === 'posicao_financeira';
+    return SUBFORMATOS_LIRBA_VALIDADOS.has(condo.parser_config?.extract_cats ?? '');
   }
   if (condo.empresa_gestora === 'datadigitus_pdf') {
     return CONDOMINIOS_DATADIGITUS_VALIDADOS.has(condo.id);
