@@ -84,6 +84,7 @@ ADMINISTRADORA_LABEL = {
     "alliz_pdf": "Alliz",
     "consvicta_pdf": "Consvicta",
     "habitacional_xlsx": "Habitacional",
+    "gk_pdf": "GK ADM",
     "lfc_xlsx": "LFC",
     "lello_xls": "Lello",
     "auxiliadora_xls": "Auxiliadora Predial",
@@ -146,6 +147,8 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # diferentes (duplicidade por data+valor+categoria e divergência
         # soma-x-total-declarado), ver conciliacao/matching.py.
         "datadigitus_pdf": gerar_achados_datadigitus,
+        # gk_pdf usa o mesmo motor ContasData do Lirba — mesma regra de matching.
+        "gk_pdf": gerar_achados_lirba,
     }
     funcao_matching = gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
     achados: list[Achado] = funcao_matching(registros, dados_financeiros)

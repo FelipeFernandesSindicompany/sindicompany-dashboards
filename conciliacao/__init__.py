@@ -18,6 +18,12 @@ CONCILIADORES = {
     "lirba_pdf": ConciliadorLirbaPDF,
     "habitacional_xlsx": ConciliadorHabitacionalXLSX,
     "datadigitus_pdf": ConciliadorDatadigitusPDF,
+    # "gk_pdf" (administradora GK ADM, ex.: Ciudad Real) usa o MESMO software
+    # de exportação ContasData do Lirba — mesmíssima estrutura de
+    # "Demonstrativo de Despesas"/"Comprovante de Despesa" (confirmado em
+    # dados reais), só o adapter de demonstrativo tem regras próprias
+    # (ver adapters/gk_pdf.py). Reaproveita a classe sem duplicar.
+    "gk_pdf": ConciliadorLirbaPDF,
 }
 
 _CONDO_CACHE: dict | None = None
