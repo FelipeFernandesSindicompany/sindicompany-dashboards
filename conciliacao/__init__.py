@@ -18,6 +18,10 @@ CONCILIADORES = {
     "addomus_pdf": ConciliadorAddomusPDF,
     "lirba_pdf": ConciliadorLirbaPDF,
     "habitacional_xlsx": ConciliadorHabitacionalXLSX,
+    # "lfc_xlsx" (ex.: Guaratambé) é a mesma estrutura de planilha do
+    # Habitacional (Nº Lançto./Data/Anexo/Histórico/Valor/Total, hyperlink
+    # "Link" na coluna Anexo) — confirmado em dados reais. Reaproveita.
+    "lfc_xlsx": ConciliadorHabitacionalXLSX,
     "datadigitus_pdf": ConciliadorDatadigitusPDF,
     "consvicta_pdf": ConciliadorConsvictaPDF,
     # "gk_pdf" (administradora GK ADM, ex.: Ciudad Real) usa o MESMO software

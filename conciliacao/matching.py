@@ -331,16 +331,15 @@ def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=
     codigos_com_comprovante = {r.codigo for r in comprovantes}
 
     # Alguns exports (ex.: Habitacional XLSX de Baturité) nunca preenchem a
-    # coluna Anexo com hyperlink real e usam "0" como Nº Lançto. em toda
-    # linha — nesse caso "código" não identifica lançamento nenhum, e a
-    # ausência de comprovante_anexado é sistêmica do arquivo inteiro, não
-    # evidência de item específico sem documentação. Rodar a checagem normal
-    # geraria "sem_comprovante" em 100% dos itens (falso positivo em massa),
-    # então ela e a duplicidade por código são puladas nesse caso — só a
-    # divergência de total por categoria (regra 3) continua valendo.
-    codigos_despesa = {d.codigo for d in despesas}
-    codigo_degenerado = len(codigos_despesa) <= 1 and len(despesas) > 1
-    avaliar_comprovante = not (codigo_degenerado and not comprovantes)
+    # coluna Anexo com hyperlink real em NENHUMA linha do mês — a ausência de
+    # comprovante_anexado aí é sistêmica do arquivo inteiro, não evidência de
+    # item específico sem documentação. Rodar a checagem normal geraria
+    # "sem_comprovante" em 100% dos itens (falso positivo em massa), então
+    # ela é pulada só nesse caso — quando existe pelo menos 1 comprovante no
+    # mês (ex.: Guaratambé, Alvorada), a checagem roda normalmente (código já
+    # é único por linha mesmo quando o Nº Lançto. bruto é degenerado — ver
+    # conciliacao/habitacional_xlsx.py::extrair_comprovantes).
+    avaliar_comprovante = bool(comprovantes)
 
     if avaliar_comprovante:
         # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa" ──

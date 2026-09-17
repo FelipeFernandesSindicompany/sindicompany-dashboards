@@ -102,6 +102,16 @@ class ConciliadorHabitacionalXLSX(ConciliadorBase):
             if not transacao:
                 continue
             codigo, data = transacao
+            # Alguns exports (ex.: Baturité, Guaratambé) usam "0" como Nº
+            # Lançto. em toda linha — código deixa de identificar o
+            # lançamento e o pareamento despesa↔comprovante por código
+            # (gerar_achados_lirba) fica errado quando o arquivo tem uma
+            # MISTURA de linhas com/sem link (ex.: Guaratambé: 50 de 51 têm
+            # link — qualquer link no arquivo "confirmaria" todas as
+            # despesas). A própria linha da planilha já é um identificador
+            # único, então cai nela como código quando o valor bruto é "0".
+            if codigo == "0":
+                codigo = str(row[0].row)
 
             anexo_cell = row[2]
             historico = row[3].value

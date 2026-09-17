@@ -144,6 +144,7 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # do Lirba (só muda a origem: hyperlink do Excel em vez de página de
         # PDF) — reaproveita a regra de matching sem duplicar.
         "habitacional_xlsx": gerar_achados_lirba,
+        "lfc_xlsx": gerar_achados_lirba,
         # DataDigitus não tem comprovante escaneado nem link anexado — só a
         # listagem de despesas do próprio demonstrativo, então usa regras
         # diferentes (duplicidade por data+valor+categoria e divergência
