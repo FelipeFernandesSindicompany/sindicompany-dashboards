@@ -92,6 +92,14 @@ export const EMPRESAS_COM_CONCILIACAO = ['addomus_pdf', 'lirba_pdf', 'habitacion
  */
 const SUBFORMATOS_LIRBA_VALIDADOS = new Set(['posicao_financeira', 'total_da_conta']);
 /**
+ * Club Park Butantã é cadastrado como "lirba_pdf" mas o PDF real é do
+ * sistema GCONT (formato totalmente diferente) — tem um conciliador
+ * ESPECÍFICO por condomínio (conciliacao/condominios/club_park_butanta.py,
+ * despacho por id, não por empresa_gestora/extract_cats). Validado com 4
+ * meses reais.
+ */
+const CONDOMINIOS_LIRBA_COM_CONCILIADOR_ESPECIFICO = new Set(['club_park_butanta']);
+/**
  * "datadigitus_pdf" tem 2 condomínios (Cap D'Antibes, Maison Du Rhone) —
  * conciliacao/datadigitus_pdf.py só foi validado contra dados reais de Cap
  * D'Antibes (jan-jul/2026). Maison Du Rhone pode ter um layout de PDF
@@ -103,6 +111,7 @@ const CONDOMINIOS_DATADIGITUS_VALIDADOS = new Set(['cap_d_antibes']);
 export function condominioSuportado(condo: Pick<Condominio, 'id' | 'empresa_gestora' | 'parser_config'>): boolean {
   if (!EMPRESAS_COM_CONCILIACAO.includes(condo.empresa_gestora)) return false;
   if (condo.empresa_gestora === 'lirba_pdf') {
+    if (CONDOMINIOS_LIRBA_COM_CONCILIADOR_ESPECIFICO.has(condo.id)) return true;
     return SUBFORMATOS_LIRBA_VALIDADOS.has(condo.parser_config?.extract_cats ?? '');
   }
   if (condo.empresa_gestora === 'datadigitus_pdf') {
