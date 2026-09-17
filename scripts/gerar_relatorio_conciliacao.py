@@ -45,7 +45,7 @@ from adapters import get_adapter
 from conciliacao import get_conciliador
 from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
-from conciliacao.matching import gerar_achados, gerar_achados_lirba
+from conciliacao.matching import gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus
 from conciliacao import interpretacao
 from conciliacao import render
 from conciliacao import bal_reader
@@ -141,6 +141,11 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # do Lirba (só muda a origem: hyperlink do Excel em vez de página de
         # PDF) — reaproveita a regra de matching sem duplicar.
         "habitacional_xlsx": gerar_achados_lirba,
+        # DataDigitus não tem comprovante escaneado nem link anexado — só a
+        # listagem de despesas do próprio demonstrativo, então usa regras
+        # diferentes (duplicidade por data+valor+categoria e divergência
+        # soma-x-total-declarado), ver conciliacao/matching.py.
+        "datadigitus_pdf": gerar_achados_datadigitus,
     }
     funcao_matching = gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
     achados: list[Achado] = funcao_matching(registros, dados_financeiros)

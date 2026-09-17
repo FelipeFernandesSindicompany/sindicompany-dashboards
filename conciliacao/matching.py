@@ -392,3 +392,81 @@ def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=
         achados.extend(_achados_divergencia_categoria(despesas, dados_financeiros, contador))
 
     return achados
+
+
+def gerar_achados_datadigitus(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+    """
+    Regras para o formato DataDigitus (ver conciliacao/datadigitus_pdf.py) —
+    o "Prestação de Contas" desse software é só a listagem de despesas do
+    próprio demonstrativo, sem comprovante escaneado nem link anexado em
+    lugar nenhum do arquivo. Não há checagem de "comprovante ausente" aqui
+    (não existe evidência externa pra cruzar) — só duas checagens de
+    consistência aritmética do próprio documento:
+      1. Duplicidade: mesma data + valor + categoria repetidos.
+      2. Divergência entre a soma dos lançamentos de uma conta e o total
+         "TOTAL DA CONTA X" declarado no mesmo documento.
+    `dados_financeiros` não é usado (mantido só pra manter a mesma
+    assinatura das demais funções de matching, ver gerar_achados_por_empresa
+    em scripts/gerar_relatorio_conciliacao.py).
+    """
+    contador = [0]
+    achados: list[Achado] = []
+
+    despesas = [r for r in registros if r.tipo_documento == "despesa_listada"]
+    totais_declarados = [r for r in registros if r.tipo_documento == "total_conta_declarado"]
+
+    # ── 1. Duplicidade (mesma data + valor + categoria + histórico) ──────────
+    # Inclui o histórico na chave (não só data+valor+categoria) porque duas
+    # despesas diferentes e legítimas podem coincidir em data/valor/categoria
+    # (ex.: "COMGÁS CONSUMO - SALÃO DE FESTAS" e "COMGÁS - ZELADOR" no mesmo
+    # dia, ambas R$ 12,40, mesma categoria) — só vira achado quando o texto
+    # do histórico também é idêntico, sinal bem mais forte de lançamento
+    # repetido (ex.: mesma "TAXA ANUAL ELEVADOR/PMSP" lançada duas vezes).
+    grupos_por_data_valor_cat: dict[tuple, list[RegistroComprovante]] = {}
+    for d in despesas:
+        if not d.descricao:
+            continue  # sem histórico extraído (linha com quebra) — não dá pra comparar com segurança
+        chave = (d.vencimento, round(d.valor, 2), d.categoria_demonstrativo, d.descricao.strip().upper())
+        grupos_por_data_valor_cat.setdefault(chave, []).append(d)
+    for grupo in grupos_por_data_valor_cat.values():
+        if len(grupo) >= 2:
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="duplicidade",
+                severidade_sugerida="atencao",
+                regra_aplicada="mesma_data_valor_categoria_historico_repetidos",
+                registros_relacionados=[chave_registro(d) for d in grupo],
+                linha_demonstrativo=grupo[0].categoria_demonstrativo,
+                valor_esperado=grupo[0].valor,
+                valor_encontrado=grupo[0].valor,
+                # Sinal mais fraco que duplicidade por código (regra 4 de
+                # gerar_achados()) — aqui é por coincidência de 4 campos, sem
+                # identificador único, então confiança < 1.0 força revisão.
+                confianca_deterministica=0.85,
+            ))
+
+    # ── 2. Soma dos lançamentos de cada conta x total declarado ─────────────
+    soma_por_conta: dict[str, float] = {}
+    registros_por_conta: dict[str, list[RegistroComprovante]] = {}
+    for d in despesas:
+        soma_por_conta[d.conta] = soma_por_conta.get(d.conta, 0.0) + d.valor
+        registros_por_conta.setdefault(d.conta, []).append(d)
+    for total in totais_declarados:
+        soma_extraida = soma_por_conta.get(total.descricao, 0.0)
+        if not _valores_batem(soma_extraida, total.valor, tolerancia=0.02):
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="divergencia_valor",
+                severidade_sugerida="critico",
+                regra_aplicada="soma_lancamentos_diverge_total_da_conta_declarado",
+                registros_relacionados=(
+                    [chave_registro(d) for d in registros_por_conta.get(total.descricao, [])]
+                    + [chave_registro(total)]
+                ),
+                linha_demonstrativo=total.descricao,
+                valor_esperado=total.valor,
+                valor_encontrado=soma_extraida,
+                confianca_deterministica=1.0,
+            ))
+
+    return achados
