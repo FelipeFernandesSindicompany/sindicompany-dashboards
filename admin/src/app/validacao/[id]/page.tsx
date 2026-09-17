@@ -40,6 +40,23 @@ function mesAtualPadrao(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+const MESES_LABEL = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+
+/** Últimos `qtd` meses (o atual + qtd-1 anteriores), mais recente primeiro. */
+function opcoesDeMes(qtd = 15): { valor: string; label: string }[] {
+  const hoje = new Date();
+  const opcoes: { valor: string; label: string }[] = [];
+  for (let i = 0; i < qtd; i++) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+    const valor = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    opcoes.push({ valor, label: `${MESES_LABEL[d.getMonth()]}/${d.getFullYear()}` });
+  }
+  return opcoes;
+}
+
 const SEVERIDADES = ['critico', 'alto', 'atencao', 'informativo'];
 
 interface CondominioInfo { id: string; nome: string; suportado: boolean; }
@@ -172,8 +189,13 @@ export default function ValidacaoCondominioPage() {
       {/* Seleção de mês + upload */}
       <div className="card p-4 mb-4 space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <label className="text-[12px] text-text-muted">Competência</label>
-          <input type="month" value={mes} onChange={e => setMes(e.target.value)} className="input w-auto" />
+          <label className="text-[12px] text-text-muted">Competência a validar</label>
+          <select value={mes} onChange={e => setMes(e.target.value)} className="input w-auto">
+            {opcoesDeMes().map(o => <option key={o.valor} value={o.valor}>{o.label}</option>)}
+          </select>
+          <span className="text-[11px] text-text-muted">
+            A análise financeira compara automaticamente com o mês anterior já publicado no dashboard.
+          </span>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <label className="btn-ghost text-[12px] cursor-pointer flex items-center gap-1.5">
