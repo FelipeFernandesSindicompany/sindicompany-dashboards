@@ -327,51 +327,65 @@ def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=
     achados: list[Achado] = []
 
     despesas = [r for r in registros if r.tipo_documento == "despesa_listada"]
-    codigos_com_comprovante = {r.codigo for r in registros if r.tipo_documento == "comprovante_anexado"}
+    comprovantes = [r for r in registros if r.tipo_documento == "comprovante_anexado"]
+    codigos_com_comprovante = {r.codigo for r in comprovantes}
 
-    # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa" ──
-    for d in despesas:
-        if d.codigo in codigos_com_comprovante:
-            achados.append(Achado(
-                id=_proximo_id(contador),
-                tipo="ok_verificado",
-                severidade_sugerida="informativo",
-                regra_aplicada="codigo_tem_pagina_comprovante_anexado",
-                registros_relacionados=[chave_registro(d)],
-                linha_demonstrativo=d.categoria_demonstrativo,
-                valor_esperado=d.valor,
-                valor_encontrado=d.valor,
-                confianca_deterministica=1.0,
-            ))
-        else:
-            achados.append(Achado(
-                id=_proximo_id(contador),
-                tipo="sem_comprovante",
-                severidade_sugerida="alto",
-                regra_aplicada="despesa_listada_sem_pagina_comprovante_anexado",
-                registros_relacionados=[chave_registro(d)],
-                linha_demonstrativo=d.categoria_demonstrativo,
-                valor_esperado=d.valor,
-                valor_encontrado=None,
-                confianca_deterministica=1.0,
-            ))
+    # Alguns exports (ex.: Habitacional XLSX de Baturité) nunca preenchem a
+    # coluna Anexo com hyperlink real e usam "0" como Nº Lançto. em toda
+    # linha — nesse caso "código" não identifica lançamento nenhum, e a
+    # ausência de comprovante_anexado é sistêmica do arquivo inteiro, não
+    # evidência de item específico sem documentação. Rodar a checagem normal
+    # geraria "sem_comprovante" em 100% dos itens (falso positivo em massa),
+    # então ela e a duplicidade por código são puladas nesse caso — só a
+    # divergência de total por categoria (regra 3) continua valendo.
+    codigos_despesa = {d.codigo for d in despesas}
+    codigo_degenerado = len(codigos_despesa) <= 1 and len(despesas) > 1
+    avaliar_comprovante = not (codigo_degenerado and not comprovantes)
 
-    # ── 2. Duplicidade (mesmo código listado mais de uma vez, mesmo valor) ──
-    por_codigo: dict[str, list[RegistroComprovante]] = {}
-    for d in despesas:
-        por_codigo.setdefault(d.codigo, []).append(d)
-    for codigo, grupo in por_codigo.items():
-        if len(grupo) >= 2 and len({round(d.valor, 2) for d in grupo}) == 1:
-            achados.append(Achado(
-                id=_proximo_id(contador),
-                tipo="duplicidade",
-                severidade_sugerida="critico",
-                regra_aplicada="mesmo_codigo_despesa_listada_repetido_mesmo_valor",
-                registros_relacionados=[chave_registro(d) for d in grupo],
-                valor_esperado=grupo[0].valor,
-                valor_encontrado=grupo[0].valor,
-                confianca_deterministica=1.0,
-            ))
+    if avaliar_comprovante:
+        # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa" ──
+        for d in despesas:
+            if d.codigo in codigos_com_comprovante:
+                achados.append(Achado(
+                    id=_proximo_id(contador),
+                    tipo="ok_verificado",
+                    severidade_sugerida="informativo",
+                    regra_aplicada="codigo_tem_pagina_comprovante_anexado",
+                    registros_relacionados=[chave_registro(d)],
+                    linha_demonstrativo=d.categoria_demonstrativo,
+                    valor_esperado=d.valor,
+                    valor_encontrado=d.valor,
+                    confianca_deterministica=1.0,
+                ))
+            else:
+                achados.append(Achado(
+                    id=_proximo_id(contador),
+                    tipo="sem_comprovante",
+                    severidade_sugerida="alto",
+                    regra_aplicada="despesa_listada_sem_pagina_comprovante_anexado",
+                    registros_relacionados=[chave_registro(d)],
+                    linha_demonstrativo=d.categoria_demonstrativo,
+                    valor_esperado=d.valor,
+                    valor_encontrado=None,
+                    confianca_deterministica=1.0,
+                ))
+
+        # ── 2. Duplicidade (mesmo código listado mais de uma vez, mesmo valor) ──
+        por_codigo: dict[str, list[RegistroComprovante]] = {}
+        for d in despesas:
+            por_codigo.setdefault(d.codigo, []).append(d)
+        for codigo, grupo in por_codigo.items():
+            if len(grupo) >= 2 and len({round(d.valor, 2) for d in grupo}) == 1:
+                achados.append(Achado(
+                    id=_proximo_id(contador),
+                    tipo="duplicidade",
+                    severidade_sugerida="critico",
+                    regra_aplicada="mesmo_codigo_despesa_listada_repetido_mesmo_valor",
+                    registros_relacionados=[chave_registro(d) for d in grupo],
+                    valor_esperado=grupo[0].valor,
+                    valor_encontrado=grupo[0].valor,
+                    confianca_deterministica=1.0,
+                ))
 
     # ── 3. Divergência de total por categoria (opcional, exige DadosFinanceiros) ──
     if dados_financeiros is not None:
