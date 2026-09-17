@@ -69,7 +69,7 @@ export default function ValidacaoPage() {
                 {conteudo}
               </Link>
             ) : (
-              <div key={c.id} className="card px-4 py-3 flex items-center gap-3 opacity-60 cursor-not-allowed">
+              <div key={c.id} className="card px-4 py-3 flex items-center gap-3 opacity-60" title="Conciliador ainda não implementado para esta administradora">
                 {conteudo}
               </div>
             );
