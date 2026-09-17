@@ -14,6 +14,7 @@ import {
   Globe,
   Copy,
   Check,
+  ShieldCheck,
 } from 'lucide-react';
 
 async function logout() {
@@ -65,10 +66,11 @@ function TunnelUrl() {
 }
 
 const navItems = [
-  { href: '/',            icon: LayoutDashboard, label: 'Visão Geral', shortLabel: 'Geral'    },
-  { href: '/importar',    icon: Upload,           label: 'Importar',    shortLabel: 'Importar' },
-  { href: '/condominios', icon: Building2,        label: 'Condomínios', shortLabel: 'Condos'   },
-  { href: '/historico',   icon: History,          label: 'Histórico',   shortLabel: 'Histórico'},
+  { href: '/',            icon: LayoutDashboard, label: 'Visão Geral',          shortLabel: 'Geral'     },
+  { href: '/importar',    icon: Upload,           label: 'Importar',            shortLabel: 'Importar'  },
+  { href: '/condominios', icon: Building2,        label: 'Condomínios',         shortLabel: 'Condos'    },
+  { href: '/historico',   icon: History,          label: 'Histórico',           shortLabel: 'Histórico' },
+  { href: '/validacao',   icon: ShieldCheck,       label: 'Validação de Balancetes', shortLabel: 'Validação' },
 ];
 
 export function Sidebar() {

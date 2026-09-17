@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Anexo de Conciliação — {{ condominio_nome }} — {{ mes_titulo }}</title>
+<style>
+  :root {
+    --cor: {{ cor }};
+    --bg: #F0F2F8;
+    --text: #2C2C2C;
+    --muted: #6B6B6B;
+    --card: #fff;
+    --linha: #E3E6EE;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--text);
+    margin: 0;
+    padding: 0 6mm;
+  }
+  header.capa {
+    padding: 5mm 0 3mm;
+    border-bottom: 3px solid var(--cor);
+    margin-bottom: 0;
+  }
+  header.capa .logo { max-height: 46px; max-width: 220px; margin-bottom: 6px; }
+  header.capa h1 { font-size: 18px; margin: 3px 0 1px; color: var(--cor); }
+  header.capa .meta { font-size: 11px; color: var(--muted); }
+
+  .faixa-sindicompany {
+    background: #171B2E;
+    margin: 0 -6mm;
+    padding: 3mm 6mm;
+    text-align: left;
+  }
+  .faixa-sindicompany img { height: 22px; }
+
+  section.intro { font-size: 11px; line-height: 1.4; margin: 3mm 0; color: var(--text); }
+
+  .achado {
+    border: 1px solid var(--linha);
+    border-radius: 8px;
+    padding: 4mm;
+    margin-bottom: 4mm;
+    page-break-inside: avoid;
+  }
+  .achado h2 {
+    font-size: 13.5px;
+    color: var(--cor);
+    margin: 0 0 2px;
+  }
+  .achado .paragrafo { font-size: 11px; line-height: 1.4; margin-bottom: 2.5mm; }
+  .achado .metadados-linha {
+    display: flex; flex-wrap: wrap; gap: 1mm 6mm;
+    font-size: 10.5px; margin-bottom: 2.5mm;
+  }
+  .achado .metadados-linha .item dt { color: var(--muted); display: inline; }
+  .achado .metadados-linha .item dd { display: inline; margin: 0 0 0 3px; font-weight: 600; }
+  .achado .evidencia { margin-bottom: 2.5mm; }
+  .achado .evidencia-vetorial {
+    position: relative; width: 100%; height: 0;
+    border: 1px solid var(--linha); border-radius: 4px;
+  }
+  .achado .evidencia-vetorial .marca {
+    position: absolute; font-size: 4px; line-height: 1; color: #fff;
+  }
+  .achado .evidencia-vetorial .marca.ini { top: 0; left: 0; }
+  .achado .evidencia-vetorial .marca.fim { bottom: 0; right: 0; }
+  .achado .evidencia .sem-imagem {
+    padding: 6mm 4mm; text-align: center; color: var(--muted);
+    border: 1px dashed var(--linha); border-radius: 4px; font-size: 11px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin: 3px 0 5px;
+  }
+  .badge.critico     { background: #FCE4E4; color: #C0392B; }
+  .badge.alto        { background: #FDEBD0; color: #B9770E; }
+  .badge.atencao     { background: #FEF9E7; color: #9A7D0A; }
+  .badge.informativo { background: #EAFAF1; color: #1E8449; }
+
+  .o-que-verificar {
+    font-size: 10.5px;
+    background: var(--bg);
+    border-left: 3px solid var(--cor);
+    padding: 2.5mm 3mm;
+    border-radius: 0 4px 4px 0;
+  }
+  .o-que-verificar strong { color: var(--cor); }
+
+  footer.rodape {
+    font-size: 9px;
+    color: var(--muted);
+    border-top: 1px solid var(--linha);
+    padding: 3mm 0;
+    margin-top: 5mm;
+  }
+
+  section.analise { margin-bottom: 5mm; }
+  section.analise h2 {
+    font-size: 14px; color: var(--cor); border-bottom: 1px solid var(--linha);
+    padding-bottom: 2px; margin: 5mm 0 2.5mm;
+  }
+  section.analise p { font-size: 11px; line-height: 1.45; margin: 0 0 2mm; }
+
+  .kpis { display: flex; gap: 3mm; margin: 2.5mm 0 4mm; }
+  .kpi { flex: 1; border-radius: 6px; padding: 3mm; color: #fff; }
+  .kpi .rotulo { font-size: 9px; text-transform: uppercase; letter-spacing: .4px; opacity: .9; }
+  .kpi .valor { font-size: 14px; font-weight: 700; margin-top: 1px; }
+  .kpi.pos { background: #27AE60; }
+  .kpi.neg { background: #C0392B; }
+  .kpi.neutro { background: #5B6270; }
+
+  table.fin { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 2.5mm; }
+  table.fin th {
+    background: var(--cor); color: #fff; text-align: left; padding: 3px 7px; font-weight: 600;
+  }
+  table.fin td { padding: 3px 7px; border-bottom: 1px solid var(--linha); }
+  table.fin td.num, table.fin th.num { text-align: right; }
+  table.fin tr.deficitaria td.num.destaque { color: #C0392B; font-weight: 700; }
+  table.fin tr.total td { font-weight: 700; border-top: 2px solid var(--cor); }
+
+  ul.pontos-atencao { font-size: 11px; line-height: 1.4; margin: 0; padding-left: 5mm; }
+  ul.pontos-atencao li { margin-bottom: 1.5mm; }
+
+  .divisor-secao {
+    font-size: 14px; font-weight: 700; color: var(--cor); margin: 6mm 0 2.5mm;
+    border-bottom: 2px solid var(--cor); padding-bottom: 2px;
+  }
+</style>
+</head>
+<body>
+
+{% if logo_data_uri %}
+<div class="faixa-sindicompany"><img src="{{ logo_data_uri }}"></div>
+{% endif %}
+<header class="capa">
+  <h1>Relatório de Análise e Validação Mensal</h1>
+  <div class="meta">{{ condominio_nome }} &middot; {{ mes_titulo }} &middot; Administradora {{ administradora }} &middot; CNPJ {{ cnpj }}</div>
+</header>
+
+{% if analise %}
+<section class="analise">
+  <h2>Resumo Executivo</h2>
+  <p>{{ analise.resumo_executivo }}</p>
+  <div class="kpis">
+    <div class="kpi {{ 'pos' if not analise.contas_deficitarias else 'neg' }}">
+      <div class="rotulo">Saldo Geral</div>
+      <div class="valor">{{ analise.saldo_atual_fmt }}</div>
+    </div>
+    <div class="kpi {{ 'pos' if analise.realizado_pct_ok else 'neutro' }}">
+      <div class="rotulo">Arrecadação x Previsto</div>
+      <div class="valor">{{ analise.realizado_pct_fmt or '—' }}</div>
+    </div>
+    <div class="kpi neutro">
+      <div class="rotulo">Inadimplência Total</div>
+      <div class="valor">{{ analise.inad_atual_fmt }}</div>
+    </div>
+  </div>
+
+  <h2>Situação Financeira por Conta</h2>
+  <table class="fin">
+    <tr><th>Conta</th><th class="num">Saldo anterior</th><th class="num">Créditos</th><th class="num">Débitos</th><th class="num">Saldo atual</th></tr>
+    {% for c in analise.contas %}
+    <tr class="{{ 'deficitaria' if c.deficitaria else '' }}">
+      <td>{{ c.nome.title() }}</td>
+      <td class="num">{{ c.saldo_anterior_fmt }}</td>
+      <td class="num">{{ c.creditos_fmt }}</td>
+      <td class="num">{{ c.debitos_fmt }}</td>
+      <td class="num destaque">{{ c.saldo_atual_fmt }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Despesas por Categoria</h2>
+  <table class="fin">
+    <tr><th>Categoria</th><th class="num">Valor</th><th class="num">% do total</th></tr>
+    {% for d in analise.despesas %}
+    <tr><td>{{ d.categoria }}</td><td class="num">{{ d.valor_fmt }}</td><td class="num">{{ d.pct_fmt }}</td></tr>
+    {% endfor %}
+    <tr class="total"><td>Total</td><td class="num">{{ analise.despesas_total_fmt }}</td><td class="num">100,0%</td></tr>
+  </table>
+
+  <h2>Previsto x Realizado e Inadimplência</h2>
+  <p>
+    Previsto: <strong>{{ analise.previsto_fmt }}</strong> &middot;
+    Realizado: <strong>{{ analise.realizado_fmt }}</strong>
+    {% if analise.realizado_pct_fmt %}({{ analise.realizado_pct_fmt }} do previsto){% endif %}.
+    Inadimplência total: <strong>{{ analise.inad_atual_fmt }}</strong>
+    {% if analise.inad_anterior_fmt %}(mês anterior: {{ analise.inad_anterior_fmt }}){% endif %},
+    dos quais {{ analise.inad_proc_fmt }} recuperados no próprio mês.
+  </p>
+
+  {% if analise.pontos_atencao %}
+  <h2>Pontos de Atenção e Recomendações</h2>
+  <ul class="pontos-atencao">
+    {% for p in analise.pontos_atencao %}<li>{{ p }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <h2>Conclusão</h2>
+  <p>{{ analise.conclusao }}</p>
+</section>
+{% endif %}
+
+{% if achados %}
+<div class="divisor-secao">Divergências e Pendências da Conciliação</div>
+<section class="intro">
+  A seguir, apenas os itens com problema, divergência ou pendência de confirmação encontrados na
+  conferência dos comprovantes do período — lançamentos já confirmados como corretos não aparecem
+  aqui. Cada item traz evidência extraída da própria pasta de prestação de contas.
+</section>
+{% endif %}
+
+{% for a in achados %}
+<div class="achado">
+  <h2>{{ a.numero }}. {{ a.titulo }}</h2>
+  <span class="badge {{ a.severidade_final }}">{{ a.severidade_label }}</span>
+  <div class="paragrafo">{{ a.paragrafo }}</div>
+  <div class="metadados-linha">
+    {% if a.codigo %}<span class="item"><dt>Código</dt><dd>{{ a.codigo }}</dd></span>{% endif %}
+    {% if a.fornecedor %}<span class="item"><dt>Fornecedor/Favorecido</dt><dd>{{ a.fornecedor }}</dd></span>{% endif %}
+    {% if a.valor_formatado %}<span class="item"><dt>Valor</dt><dd>{{ a.valor_formatado }}</dd></span>{% endif %}
+    {% if a.pagina_original_texto %}<span class="item"><dt>Página na pasta original</dt><dd>{{ a.pagina_original_texto }}</dd></span>{% endif %}
+  </div>
+  <div class="evidencia">
+    {% if a.evidencia_vetorial %}
+      <div class="evidencia-vetorial" style="padding-top: {{ a.evidencia_vetorial.aspect_pct }}%;">
+        <span class="marca ini">@@EVID_INI_{{ a.numero }}@@</span><span class="marca fim">@@EVID_FIM_{{ a.numero }}@@</span>
+      </div>
+    {% else %}
+      <div class="sem-imagem">Evidência não disponível para recorte automático</div>
+    {% endif %}
+  </div>
+  <div class="o-que-verificar"><strong>O que verificar:</strong> {{ a.o_que_verificar }}</div>
+</div>
+{% endfor %}
+
+<footer class="rodape">
+  Anexo de apoio à conciliação de {{ mes_titulo }} — não substitui a assinatura do responsável técnico/contábil pela prestação de contas.
+</footer>
+
+</body>
+</html>

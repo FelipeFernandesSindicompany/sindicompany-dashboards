@@ -1160,6 +1160,7 @@
       "id": "spazio_jardins_da_orla",
       "nome": "Spazio Jardins da Orla",
       "empresa_gestora": "addomus_pdf",
+      "cnpj": "35.191.858/0001-65",
       "pasta_dados": "data/spazio_jardins_da_orla",
       "html_file": "Dashboard_Financeiro_SpazioOrla.html",
       "ativo": true,

@@ -2,6 +2,7 @@ export interface Condominio {
   id: string;
   nome: string;
   empresa_gestora: AdapterType;
+  cnpj?: string;
   pasta_dados: string;
   html_file: string;
   ativo: boolean;
@@ -16,6 +17,7 @@ export type AdapterType =
   | 'lirba_pdf'
   | 'datadigitus_pdf'
   | 'iello_pdf'
+  | 'addomus_pdf'
   | 'convivium_pdf';
 
 export interface BALEntry {
