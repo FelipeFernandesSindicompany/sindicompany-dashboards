@@ -470,3 +470,62 @@ def gerar_achados_datadigitus(registros: list[RegistroComprovante], dados_financ
             ))
 
     return achados
+
+
+def gerar_achados_gcont(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+    """
+    Regras para o formato GCONT (ver conciliacao/condominios/club_park_butanta.py)
+    — cada pagamento já vem com sua própria página de "Comprovantes de
+    despesas" auto-suficiente (o sistema só gera a página quando o pagamento
+    é efetivado), então não existe "sem comprovante" nesse formato. Só duas
+    checagens de consistência:
+      1. Duplicidade: mesmo fornecedor + documento + valor repetidos (ou
+         fornecedor + vencimento + valor, quando não há nº de documento).
+      2. Soma dos comprovantes extraídos x total declarado no Livro Caixa
+         ("N itens VALOR_TOTAL").
+    """
+    contador = [0]
+    achados: list[Achado] = []
+
+    despesas = [r for r in registros if r.tipo_documento == "despesa_com_comprovante"]
+    totais_declarados = [r for r in registros if r.tipo_documento == "total_declarado"]
+
+    # ── 1. Duplicidade ────────────────────────────────────────────────────
+    grupos: dict[tuple, list[RegistroComprovante]] = {}
+    for d in despesas:
+        fornecedor_norm = (d.fornecedor or "").strip().upper()
+        # autenticacao aqui guarda o nº de Documento/NF (ver extrator) — quando
+        # ausente (ex.: contas de concessionária sem NF), cai no fallback por
+        # vencimento pra ainda ter uma chave razoável de deduplicação.
+        chave = (fornecedor_norm, d.autenticacao or d.vencimento, round(d.valor, 2))
+        grupos.setdefault(chave, []).append(d)
+    for grupo in grupos.values():
+        if len(grupo) >= 2:
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="duplicidade",
+                severidade_sugerida="atencao",
+                regra_aplicada="mesmo_fornecedor_documento_valor_repetidos",
+                registros_relacionados=[chave_registro(d) for d in grupo],
+                linha_demonstrativo=grupo[0].categoria_demonstrativo,
+                valor_esperado=grupo[0].valor,
+                valor_encontrado=grupo[0].valor,
+                confianca_deterministica=0.8,
+            ))
+
+    # ── 2. Soma dos comprovantes x total declarado no Livro Caixa ──────────
+    soma_extraida = sum(d.valor for d in despesas)
+    for total in totais_declarados:
+        if not _valores_batem(soma_extraida, total.valor, tolerancia=0.02):
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="divergencia_valor",
+                severidade_sugerida="critico",
+                regra_aplicada="soma_comprovantes_diverge_total_livro_caixa",
+                registros_relacionados=[chave_registro(d) for d in despesas] + [chave_registro(total)],
+                valor_esperado=total.valor,
+                valor_encontrado=soma_extraida,
+                confianca_deterministica=1.0,
+            ))
+
+    return achados

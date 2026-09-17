@@ -45,7 +45,9 @@ from adapters import get_adapter
 from conciliacao import get_conciliador
 from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
-from conciliacao.matching import gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus
+from conciliacao.matching import (
+    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_gcont,
+)
 from conciliacao import interpretacao
 from conciliacao import render
 from conciliacao import bal_reader
@@ -150,7 +152,16 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # gk_pdf usa o mesmo motor ContasData do Lirba — mesma regra de matching.
         "gk_pdf": gerar_achados_lirba,
     }
-    funcao_matching = gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
+    # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
+    # ter regras de matching próprias, mesmo compartilhando empresa_gestora com
+    # outros condomínios de formato diferente (ex.: Club Park Butantã é
+    # "lirba_pdf" no cadastro, mas o PDF é do sistema GCONT, não ContasData).
+    gerar_achados_por_condo = {
+        "club_park_butanta": gerar_achados_gcont,
+    }
+    funcao_matching = gerar_achados_por_condo.get(
+        condo["id"], gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
+    )
     achados: list[Achado] = funcao_matching(registros, dados_financeiros)
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
 
@@ -255,10 +266,16 @@ def etapa_render(condo: dict, mes: str) -> Path:
         print(f"[AVISO] mês '{mes_chave}' não encontrado em {logo_html.name} — "
               f"relatório sairá sem a seção de Análise Financeira.")
 
+    # Rótulo por condomínio específico tem prioridade (ex.: Club Park Butantã
+    # é "lirba_pdf" no cadastro, mas o PDF real é do sistema GCONT).
+    ADMINISTRADORA_LABEL_POR_CONDO = {"club_park_butanta": "GCONT"}
+    administradora_label = ADMINISTRADORA_LABEL_POR_CONDO.get(
+        condo["id"], ADMINISTRADORA_LABEL.get(condo["empresa_gestora"], condo["empresa_gestora"])
+    )
     html = render.montar_html(
         condominio_nome=condo["nome"],
         cnpj=condo.get("cnpj", "não informado"),
-        administradora=ADMINISTRADORA_LABEL.get(condo["empresa_gestora"], condo["empresa_gestora"]),
+        administradora=administradora_label,
         mes_titulo=_mes_titulo(mes),
         logo_data_uri=logo_data_uri,
         cor=condo.get("cor", "#333"),
