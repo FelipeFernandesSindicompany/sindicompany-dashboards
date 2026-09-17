@@ -158,6 +158,9 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # despesa e comprovante (páginas de imagem sem "Parcela" referenciada
         # em nenhum outro lugar) — mesmas regras de consistência do DataDigitus.
         "consvicta_pdf": gerar_achados_datadigitus,
+        # Lello XLS (na verdade HTML) também não tem comprovante escaneado
+        # nem link anexado — mesmas regras de consistência do DataDigitus.
+        "lello_xls": gerar_achados_datadigitus,
     }
     # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
     # ter regras de matching próprias, mesmo compartilhando empresa_gestora com

@@ -13,6 +13,7 @@ from conciliacao.lirba_pdf import ConciliadorLirbaPDF
 from conciliacao.habitacional_xlsx import ConciliadorHabitacionalXLSX
 from conciliacao.datadigitus_pdf import ConciliadorDatadigitusPDF
 from conciliacao.consvicta_pdf import ConciliadorConsvictaPDF
+from conciliacao.lello_xls import ConciliadorLelloXLS
 
 CONCILIADORES = {
     "addomus_pdf": ConciliadorAddomusPDF,
@@ -24,6 +25,7 @@ CONCILIADORES = {
     "lfc_xlsx": ConciliadorHabitacionalXLSX,
     "datadigitus_pdf": ConciliadorDatadigitusPDF,
     "consvicta_pdf": ConciliadorConsvictaPDF,
+    "lello_xls": ConciliadorLelloXLS,
     # "gk_pdf" (administradora GK ADM, ex.: Ciudad Real) usa o MESMO software
     # de exportação ContasData do Lirba — mesmíssima estrutura de
     # "Demonstrativo de Despesas"/"Comprovante de Despesa" (confirmado em
