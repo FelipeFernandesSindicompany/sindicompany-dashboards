@@ -99,23 +99,11 @@ const SUBFORMATOS_LIRBA_VALIDADOS = new Set(['posicao_financeira', 'total_da_con
  * meses reais.
  */
 const CONDOMINIOS_LIRBA_COM_CONCILIADOR_ESPECIFICO = new Set(['club_park_butanta', 'nyc']);
-/**
- * "datadigitus_pdf" tem 2 condomínios (Cap D'Antibes, Maison Du Rhone) —
- * conciliacao/datadigitus_pdf.py só foi validado contra dados reais de Cap
- * D'Antibes (jan-jul/2026). Maison Du Rhone pode ter um layout de PDF
- * diferente (nº de contas, categorias) ainda não conferido, então fica de
- * fora até ser validado, mesmo já estando em EMPRESAS_COM_CONCILIACAO.
- */
-const CONDOMINIOS_DATADIGITUS_VALIDADOS = new Set(['cap_d_antibes']);
-
 export function condominioSuportado(condo: Pick<Condominio, 'id' | 'empresa_gestora' | 'parser_config'>): boolean {
   if (!EMPRESAS_COM_CONCILIACAO.includes(condo.empresa_gestora)) return false;
   if (condo.empresa_gestora === 'lirba_pdf') {
     if (CONDOMINIOS_LIRBA_COM_CONCILIADOR_ESPECIFICO.has(condo.id)) return true;
     return SUBFORMATOS_LIRBA_VALIDADOS.has(condo.parser_config?.extract_cats ?? '');
-  }
-  if (condo.empresa_gestora === 'datadigitus_pdf') {
-    return CONDOMINIOS_DATADIGITUS_VALIDADOS.has(condo.id);
   }
   return true;
 }
