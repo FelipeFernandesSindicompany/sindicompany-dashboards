@@ -12,7 +12,7 @@ Tipos de comprovante de pagamento (têm código de lançamento e podem ser
 pareados 1:1 com uma "despesa_interna" do mesmo código):
 """
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from conciliacao import verificacoes_historico
 from conciliacao.base import Achado, RegistroComprovante, chave_registro
@@ -64,15 +64,36 @@ def _valores_batem(a: float, b: float, tolerancia: float = TOLERANCIA_CENTAVOS) 
     return abs(a - b) <= tolerancia
 
 
+def _proximo_dia_util(data: datetime) -> datetime:
+    """
+    Sábado -> segunda-feira seguinte, domingo -> segunda-feira seguinte,
+    dia de semana -> ele mesmo. Bancos não processam pagamentos em fins de
+    semana — quando o vencimento cai em sábado/domingo, pagar na segunda
+    seguinte é o comportamento normal do sistema bancário, não atraso (não
+    considera feriados nacionais/municipais, só fim de semana — ver
+    achado_atraso_pagamento).
+    """
+    dia_semana = data.weekday()  # 0=segunda ... 5=sábado, 6=domingo
+    if dia_semana == 5:
+        return data + timedelta(days=2)
+    if dia_semana == 6:
+        return data + timedelta(days=1)
+    return data
+
+
 def achado_atraso_pagamento(registro: RegistroComprovante, contador: list) -> Achado | None:
     """
     Compara `vencimento` x `pagamento` (data efetiva) do mesmo registro —
     exige os dois campos em "DD/MM/YYYY". Retorna None (não é achado) tanto
-    quando o pagamento foi em dia quanto quando falta um dos dois campos
-    (formato de origem só registra uma data) — nesse segundo caso a checagem
-    é "não aplicável" para esse registro, não "sem atraso confirmado", e cabe
-    a quem chama decidir como isso aparece no relatório (ver seção
-    "Verificações realizadas" em scripts/gerar_relatorio_conciliacao.py).
+    quando o pagamento foi em dia (considerando o rollover de fim de semana,
+    ver _proximo_dia_util — confirmado com o usuário como falso positivo real:
+    vencimentos em 25/07/2026 (sábado) e 12/07/2026 (domingo) pagos na
+    segunda-feira seguinte estavam sendo marcados como atraso indevidamente)
+    quanto quando falta um dos dois campos (formato de origem só registra uma
+    data) — nesse segundo caso a checagem é "não aplicável" para esse
+    registro, não "sem atraso confirmado", e cabe a quem chama decidir como
+    isso aparece no relatório (ver seção "Verificações realizadas" em
+    scripts/gerar_relatorio_conciliacao.py).
     """
     if not (registro.vencimento and registro.pagamento):
         return None
@@ -81,9 +102,10 @@ def achado_atraso_pagamento(registro: RegistroComprovante, contador: list) -> Ac
         pago = datetime.strptime(registro.pagamento, "%d/%m/%Y")
     except ValueError:
         return None
-    dias_atraso = (pago - venc).days
-    if dias_atraso <= 0:
+    prazo_limite = _proximo_dia_util(venc)
+    if pago <= prazo_limite:
         return None
+    dias_atraso = (pago - prazo_limite).days
     return Achado(
         id=_proximo_id(contador),
         tipo="atraso_pagamento",

@@ -83,10 +83,6 @@ _RE_OCR_VALORES_EM_ORDEM = [
     # de "Banco destinatário" — âncora confiável mesmo com a tabela toda
     # desalinhada.
     re.compile(r"R\$\s*([\d.]+,\d{2})\s*\n\s*Banco destinat", re.IGNORECASE),
-    # Segunda via de fatura de concessionária (ex.: Eletropaulo/Enel) anexada
-    # como comprovante — o valor cobrado é o da fatura em si, não de um
-    # pagamento; usa o mesmo campo "VALOR DO DOCUMENTO" da própria fatura.
-    re.compile(r"VALOR DO DOCUMENTO:?\s*R?\$?\s*([\d.]+,\d{2})", re.IGNORECASE),
     # "Demonstrativo para Faturamento de Serviços Prestados" (ex.: Correios/
     # AGF) — fecha com "Total da Operação"/"Total do Departamento" (o mesmo
     # valor nos dois, um logo depois do outro).
@@ -120,18 +116,39 @@ _RE_OCR_PAGAMENTOS_EM_ORDEM = [
 _RE_OCR_PAGAMENTO_REALIZADO = re.compile(r"Pagamento realizado em (\d{2})\.(\d{2})\.(\d{4})", re.IGNORECASE)
 _RE_OCR_FORNECEDOR = re.compile(r"(?:Fornecedor|nome do recebedor):?\s*(.+)", re.IGNORECASE)
 _RE_OCR_CPF_CNPJ = re.compile(r"(?:CNPJ|CPF)(?:\s*/\s*CNPJ)?(?:\s*d[oa]\s*\w+)?:?\s*([\d./\-]{11,18})", re.IGNORECASE)
-# Marca a seção "Lançamento consolidado" da guia de tributos Bradesco (DARF) —
-# quando presente, é o sinal mais forte de que existe um valor INDIVIDUAL
-# dentro dela (distinto do "Valor Total" da página, que é o agregado de N
-# retenções). Confirmado em dados reais (Dueto Morumbi) que o layout dessa
-# seção às vezes sai com rótulo e valor na mesma linha ("Valor lancto: R$
-# X"), e às vezes o OCR lê todos os rótulos primeiro e todos os valores
-# depois, fora de ordem ("Valor lancto :\n...\nR$ X") — por isso, quando essa
-# seção existe, o primeiro "R$ valor" que aparecer DEPOIS dela é usado como
-# o valor individual, funcionando nos dois casos sem depender de rótulo e
-# valor estarem colados.
+# Âncoras cujo valor mora DEPOIS delas no texto, não necessariamente colado
+# ao rótulo — confirmado em dados reais que várias páginas saem com "todos
+# os rótulos primeiro, todos os valores depois" (o OCR lê a página por
+# blocos/colunas, não linha a linha) — ver _valor_apos_ancora().
+#   - "Lançamento consolidado" (guia de tributos Bradesco/DARF): sinal mais
+#     forte de que existe um valor INDIVIDUAL ali dentro, distinto do "Valor
+#     Total" da página (que é o agregado de N retenções).
+#   - "VALOR DO DOCUMENTO" (segunda via de fatura de concessionária, ex.:
+#     Eletropaulo/Enel, anexada como comprovante): o valor da fatura em si.
 _RE_LANCAMENTO_CONSOLIDADO = re.compile(r"Lan\S*amento consolidado", re.IGNORECASE)
+_RE_VALOR_DO_DOCUMENTO = re.compile(r"VALOR DO DOCUMENTO", re.IGNORECASE)
 _RE_PRIMEIRO_VALOR_RS = re.compile(r"R\$\s*([\d.]+,\d{2})")
+
+# NFS-e (Nota Fiscal Eletrônica de Serviços) mostra o valor BRUTO do serviço
+# prestado — mas a listagem sempre traz o valor LÍQUIDO já descontadas as
+# retenções de PIS/COFINS/CSLL (confirmado em dados reais: NFS-e de
+# administração mostrando R$ 3.500,00 brutos, retenção de R$ 162,75, listagem
+# com R$ 3.337,25 líquidos — os dois batem exatamente). Sem essa conta, toda
+# NFS-e anexada como comprovante de uma despesa com retenção vira um falso
+# "divergência de valor" (bruto ≠ líquido, quando na verdade os documentos
+# conferem perfeitamente).
+_RE_NFS_E_MARCADOR = re.compile(r"NOTA FISCAL ELETR\S*NICA DE SERVI\S*OS|NFS-e", re.IGNORECASE)
+_RE_NFS_E_VALOR_BRUTO = re.compile(r"VALOR TOTAL DO SERVI\S*O\s*=?\s*R\$\s*([\d.]+,\d{2})", re.IGNORECASE)
+_RE_NFS_E_RETENCAO = re.compile(r"Contribui\S*es Sociais\s*-?\s*Retidas[^\d]*?([\d.]+,\d{2})", re.IGNORECASE)
+
+
+def _valor_apos_ancora(texto: str, ancora: re.Pattern) -> re.Match | None:
+    """Acha `ancora` no texto e retorna o primeiro "R$ valor" que aparecer
+    DEPOIS dela — funciona tanto quando rótulo e valor estão colados na
+    mesma linha quanto quando o OCR lê rótulos e valores em blocos
+    separados (ver comentário acima). None se a âncora não existir."""
+    m_ancora = ancora.search(texto)
+    return _RE_PRIMEIRO_VALOR_RS.search(texto, m_ancora.end()) if m_ancora else None
 
 
 def _num(s) -> float:
@@ -156,16 +173,25 @@ def _preencher_via_ocr(registro: RegistroComprovante, caminho_pdf: Path, pagina_
     texto = ocr.ocr_pagina_pdf(caminho_pdf, pagina_1based - 1)
     if len(texto.strip()) < _OCR_TEXTO_MINIMO:
         return
-    m_valor = None
-    m_consolidado = _RE_LANCAMENTO_CONSOLIDADO.search(texto)
-    if m_consolidado:
-        m_valor = _RE_PRIMEIRO_VALOR_RS.search(texto, m_consolidado.end())
-    if not m_valor:
-        m_valor = next((m for m in (regex.search(texto) for regex in _RE_OCR_VALORES_EM_ORDEM) if m), None)
-    if not m_valor:
-        return  # texto substancial, mas nenhum valor reconhecível — não confirma nada
+
+    valor: float | None = None
+    if _RE_NFS_E_MARCADOR.search(texto):
+        m_bruto = _RE_NFS_E_VALOR_BRUTO.search(texto)
+        if m_bruto:
+            m_retencao = _RE_NFS_E_RETENCAO.search(texto)
+            retencao = _num(m_retencao.group(1)) if m_retencao else 0.0
+            valor = _num(m_bruto.group(1)) - retencao
+    if valor is None:
+        m_valor = (
+            _valor_apos_ancora(texto, _RE_LANCAMENTO_CONSOLIDADO)
+            or _valor_apos_ancora(texto, _RE_VALOR_DO_DOCUMENTO)
+            or next((m for m in (regex.search(texto) for regex in _RE_OCR_VALORES_EM_ORDEM) if m), None)
+        )
+        if not m_valor:
+            return  # texto substancial, mas nenhum valor reconhecível — não confirma nada
+        valor = _num(m_valor.group(1))
     registro.texto_bruto = texto
-    registro.valor = _num(m_valor.group(1))
+    registro.valor = valor
     m = _RE_OCR_VENCIMENTO.search(texto)
     if m:
         registro.vencimento = m.group(1)
