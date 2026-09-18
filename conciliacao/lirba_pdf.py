@@ -83,21 +83,10 @@ _RE_OCR_VALORES_EM_ORDEM = [
     # de "Banco destinatário" — âncora confiável mesmo com a tabela toda
     # desalinhada.
     re.compile(r"R\$\s*([\d.]+,\d{2})\s*\n\s*Banco destinat", re.IGNORECASE),
-    # "Demonstrativo para Faturamento de Serviços Prestados" (ex.: Correios/
-    # AGF) — fecha com "Total da Operação"/"Total do Departamento" (o mesmo
-    # valor nos dois, um logo depois do outro).
-    re.compile(r"Total d[ao] (?:Opera[cç][aã]o|Departamento):?\s*\d*\s*([\d.]+,\d{2})", re.IGNORECASE),
-    # "alor Total" (sem exigir o "V"/"v" inicial) — confirmado em dados reais
-    # que o OCR às vezes gruda um caractere solto antes ("vValor Total") —
-    # guia de tributos Bradesco (DARF) quando rótulo e valor saem na mesma
-    # linha; quando o layout da página faz o OCR ler todos os rótulos
-    # primeiro e todos os valores depois (fora de ordem), essa regra não bate
-    # e o comprovante fica "conteudo_nao_verificavel" — correto: mais vale
-    # não confirmar do que confirmar errado. É o ÚLTIMO da lista porque no
-    # DARF consolidado é o valor AGREGADO (soma de N retenções), não o valor
-    # do lançamento individual — só serve de fallback quando a regra 1 (mais
-    # específica) não encontrar a seção "Lançamento consolidado".
-    re.compile(r"alor Total:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),
+    # Comprovante Loggi (motoboy/entrega) — "Valor do pedido" aparece 2x
+    # (rótulo com o valor, e o valor sozinho de novo logo abaixo) — inline,
+    # sem o problema de coluna desalinhada dos outros formatos.
+    re.compile(r"Valor do pedido:?\s*R\$\s*([\d.]+,\d{2})", re.IGNORECASE),
 ]
 # OCR também troca "V" por "Y" com frequência (confirmado: "Vencimento" saindo
 # "Yencimento" no boleto Bradesco) — além do "Data do "/"Data de " opcional
@@ -125,9 +114,37 @@ _RE_OCR_CPF_CNPJ = re.compile(r"(?:CNPJ|CPF)(?:\s*/\s*CNPJ)?(?:\s*d[oa]\s*\w+)?:
 #     Total" da página (que é o agregado de N retenções).
 #   - "VALOR DO DOCUMENTO" (segunda via de fatura de concessionária, ex.:
 #     Eletropaulo/Enel, anexada como comprovante): o valor da fatura em si.
+#   - "Valor Total" (guia de tributos Bradesco/DARF SEM "Lançamento
+#     consolidado" — ou seja, uma retenção só, não N somadas): aqui o valor
+#     agregado da página É o valor individual, não tem ambiguidade — só
+#     testada DEPOIS de "Lançamento consolidado" na ordem de chamadas em
+#     _preencher_via_ocr, pra nunca virar o valor errado num DARF consolidado.
 _RE_LANCAMENTO_CONSOLIDADO = re.compile(r"Lan\S*amento consolidado", re.IGNORECASE)
 _RE_VALOR_DO_DOCUMENTO = re.compile(r"VALOR DO DOCUMENTO", re.IGNORECASE)
+_RE_ANCORA_VALOR_TOTAL = re.compile(r"alor Total", re.IGNORECASE)  # sem exigir "V"/"v" — OCR às vezes gruda um caractere solto antes ("vValor Total")
 _RE_PRIMEIRO_VALOR_RS = re.compile(r"R\$\s*([\d.]+,\d{2})")
+
+# "Demonstrativo para Faturamento de Serviços Prestados" (ex.: Correios/AGF)
+# fecha com "Total da Operação"/"Total do Departamento", mas os VALORES da
+# tabela não têm "R$" (célula bruta tipo "161,70") — e confirmado em dados
+# reais que essa tabela às vezes intercala uma coluna de PREÇO UNITÁRIO
+# menor ("P.Cúbico", ex.: "3,85") antes do valor total de verdade, na mesma
+# leitura fora de ordem que afeta outros formatos. Por isso pega o ÚLTIMO
+# valor "X,XX" depois da âncora "Total do Departamento" (que fecha a
+# página), não o primeiro — o total de verdade é sempre o último número
+# antes de "Voltar ao Índice".
+_RE_TOTAL_DEPARTAMENTO = re.compile(r"Total d[ao] Departamento", re.IGNORECASE)
+_RE_VALOR_BRUTO = re.compile(r"([\d.]+,\d{2})")
+
+
+def _ultimo_valor_apos_ancora(texto: str, ancora: re.Pattern) -> re.Match | None:
+    """Como _valor_apos_ancora, mas pega o ÚLTIMO valor (sem exigir "R$"),
+    não o primeiro — ver comentário acima."""
+    m_ancora = ancora.search(texto)
+    if not m_ancora:
+        return None
+    matches = list(_RE_VALOR_BRUTO.finditer(texto, m_ancora.end()))
+    return matches[-1] if matches else None
 
 # NFS-e (Nota Fiscal Eletrônica de Serviços) mostra o valor BRUTO do serviço
 # prestado — mas a listagem sempre traz o valor LÍQUIDO já descontadas as
@@ -173,6 +190,14 @@ def _preencher_via_ocr(registro: RegistroComprovante, caminho_pdf: Path, pagina_
     texto = ocr.ocr_pagina_pdf(caminho_pdf, pagina_1based - 1)
     if len(texto.strip()) < _OCR_TEXTO_MINIMO:
         return
+    # Sempre grava o texto OCR'd, mesmo se nenhum valor for reconhecido a
+    # seguir — a camada de interpretação (conciliacao/interpretacao.py) usa
+    # o tamanho de texto_bruto pra distinguir "página genuinamente em
+    # branco" de "tem conteúdo, só não reconhecido ainda" na narrativa
+    # automática; sem isso, os dois casos ficavam indistinguíveis (bug já
+    # visto: uma página de DARF real com bastante texto virou "está em
+    # branco" na narrativa, só porque nenhuma regra de valor bateu).
+    registro.texto_bruto = texto
 
     valor: float | None = None
     if _RE_NFS_E_MARCADOR.search(texto):
@@ -185,12 +210,13 @@ def _preencher_via_ocr(registro: RegistroComprovante, caminho_pdf: Path, pagina_
         m_valor = (
             _valor_apos_ancora(texto, _RE_LANCAMENTO_CONSOLIDADO)
             or _valor_apos_ancora(texto, _RE_VALOR_DO_DOCUMENTO)
+            or _valor_apos_ancora(texto, _RE_ANCORA_VALOR_TOTAL)
+            or _ultimo_valor_apos_ancora(texto, _RE_TOTAL_DEPARTAMENTO)
             or next((m for m in (regex.search(texto) for regex in _RE_OCR_VALORES_EM_ORDEM) if m), None)
         )
         if not m_valor:
             return  # texto substancial, mas nenhum valor reconhecível — não confirma nada
         valor = _num(m_valor.group(1))
-    registro.texto_bruto = texto
     registro.valor = valor
     m = _RE_OCR_VENCIMENTO.search(texto)
     if m:

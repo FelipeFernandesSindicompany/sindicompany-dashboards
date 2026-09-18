@@ -322,15 +322,14 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
         raise FileNotFoundError(f"Nenhuma versão encontrada em {base_dir} — rode --etapa extrair primeiro.")
 
     achados = storage.read_dataclass_list(version_dir / "achados_brutos.json", Achado)
-    esqueleto = interpretacao.gerar_esqueleto(achados)
+    registros = storage.read_dataclass_list(version_dir / "registros_comprovantes.json", RegistroComprovante)
+    esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     with open(version_dir / "achados_revisados.json", "w", encoding="utf-8") as f:
         json.dump(esqueleto, f, ensure_ascii=False, indent=2)
 
     storage.write_status(version_dir, "interpretar", concluido=True)
-    pendentes = sum(1 for a in esqueleto if a["revisado_por"] == "pendente")
-    print(f"[OK] Esqueleto gravado em {version_dir / 'achados_revisados.json'}")
-    print(f"[AÇÃO NECESSÁRIA] {pendentes} achado(s) aguardando revisão "
-          f"(preencher titulo/paragrafo/o_que_verificar antes de rodar --etapa render).")
+    print(f"[OK] Esqueleto gravado em {version_dir / 'achados_revisados.json'} "
+          f"(narrativa gerada automaticamente para os {len(esqueleto)} achado(s) — nenhuma revisão manual necessária).")
     return version_dir
 
 
