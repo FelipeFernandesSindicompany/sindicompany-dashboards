@@ -42,6 +42,8 @@ CONCILIADORES = {
     # ContasData — só tem uma coluna extra "Nº lancto." antes da data (ver
     # conciliacao/lirba_pdf.py::_RE_DATA_INICIO).
     "manager_adm_pdf": ConciliadorLirbaPDF,
+    # "convivium_pdf" (ex.: Vera Cruz) também é ContasData.
+    "convivium_pdf": ConciliadorLirbaPDF,
 }
 
 _CONDO_CACHE: dict | None = None

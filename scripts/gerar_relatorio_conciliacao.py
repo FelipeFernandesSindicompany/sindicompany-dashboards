@@ -87,6 +87,7 @@ ADMINISTRADORA_LABEL = {
     "consvicta_pdf": "Consvicta",
     "habitacional_xlsx": "Habitacional",
     "gk_pdf": "GK ADM",
+    "convivium_pdf": "Convivium",
     "lfc_xlsx": "LFC",
     "lello_xls": "Lello",
     "auxiliadora_xls": "Auxiliadora Predial",
@@ -155,6 +156,7 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # mesma regra de matching.
         "gk_pdf": gerar_achados_lirba,
         "manager_adm_pdf": gerar_achados_lirba,
+        "convivium_pdf": gerar_achados_lirba,
         # Consvicta (Gardens Living Club) não tem vínculo textual entre
         # despesa e comprovante (páginas de imagem sem "Parcela" referenciada
         # em nenhum outro lugar) — mesmas regras de consistência do DataDigitus.
