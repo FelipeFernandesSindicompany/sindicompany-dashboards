@@ -47,6 +47,7 @@ from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
 from conciliacao.matching import (
     gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_gcont,
+    gerar_achados_balancete_mensal,
 )
 from conciliacao import interpretacao
 from conciliacao import render
@@ -80,6 +81,7 @@ ADMINISTRADORA_LABEL = {
     "addomus_pdf": "Addomus",
     "lirba_pdf": "Lirba",
     "iello_pdf": "Iello",
+    "lello_pdf": "Lello",
     "datadigitus_pdf": "DataDigitus",
     "manager_adm_pdf": "Manager ADM",
     "sk_condominios_pdf": "SK Condomínios",
@@ -169,6 +171,8 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         "alliz_pdf": gerar_achados_datadigitus,
         "auxiliadora_xls": gerar_achados_datadigitus,
         "ucondo_pdf": gerar_achados_datadigitus,
+        "iello_pdf": gerar_achados_balancete_mensal,
+        "lello_pdf": gerar_achados_balancete_mensal,
     }
     # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
     # ter regras de matching próprias, mesmo compartilhando empresa_gestora com

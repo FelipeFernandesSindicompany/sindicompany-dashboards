@@ -532,3 +532,60 @@ def gerar_achados_gcont(registros: list[RegistroComprovante], dados_financeiros=
             ))
 
     return achados
+
+
+def gerar_achados_balancete_mensal(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+    """
+    Regras para o formato "Balancete Mensal" (ver
+    conciliacao/balancete_mensal.py) — Giardino D'Itália, Vita Parque
+    (iello_pdf) e Jaú 1894 (lello_pdf). Esse formato não tem nenhum
+    lançamento individual nem comprovante no arquivo — só totais agregados
+    por categoria/conta. Não há comprovante-a-comprovante possível, então a
+    checagem é de CONSISTÊNCIA ARITMÉTICA INTERNA do próprio balancete:
+      1. Soma dos itens de cada seção ("COMPOSIÇÃO..."/"RECEBIMENTO...")
+         x a linha "TOTAL" que fecha a seção.
+      2. Saldo anterior + créditos + débitos x saldo final de cada conta
+         em "RESUMO FINANCEIRO".
+    """
+    contador = [0]
+    achados: list[Achado] = []
+
+    secoes_calc = {r.codigo: r for r in registros if r.tipo_documento == "secao_soma_calculada"}
+    secoes_decl = {r.codigo: r for r in registros if r.tipo_documento == "secao_total_declarado"}
+    for chave, calc in secoes_calc.items():
+        decl = secoes_decl.get(chave + "-total")
+        if decl is None:
+            continue
+        if not _valores_batem(calc.valor, decl.valor, tolerancia=0.02):
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="divergencia_valor",
+                severidade_sugerida="critico",
+                regra_aplicada="soma_secao_diverge_total_declarado_no_balancete",
+                registros_relacionados=[chave_registro(calc), chave_registro(decl)],
+                linha_demonstrativo=calc.descricao,
+                valor_esperado=decl.valor,
+                valor_encontrado=calc.valor,
+                confianca_deterministica=1.0,
+            ))
+
+    contas_calc = {r.codigo: r for r in registros if r.tipo_documento == "conta_saldo_calculado"}
+    contas_decl = {r.codigo: r for r in registros if r.tipo_documento == "conta_saldo_declarado"}
+    for chave, calc in contas_calc.items():
+        decl = contas_decl.get(chave + "-total")
+        if decl is None:
+            continue
+        if not _valores_batem(calc.valor, decl.valor, tolerancia=0.02):
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="divergencia_valor",
+                severidade_sugerida="critico",
+                regra_aplicada="saldo_conta_nao_fecha_no_resumo_financeiro",
+                registros_relacionados=[chave_registro(calc), chave_registro(decl)],
+                linha_demonstrativo=calc.descricao,
+                valor_esperado=decl.valor,
+                valor_encontrado=calc.valor,
+                confianca_deterministica=1.0,
+            ))
+
+    return achados

@@ -17,6 +17,7 @@ from conciliacao.lello_xls import ConciliadorLelloXLS
 from conciliacao.alliz_pdf import ConciliadorAllizPDF
 from conciliacao.auxiliadora_xls import ConciliadorAuxiliadoraXLS
 from conciliacao.ucondo_pdf import ConciliadorUcondoPDF
+from conciliacao.balancete_mensal import ConciliadorBalanceteMensal
 
 CONCILIADORES = {
     "addomus_pdf": ConciliadorAddomusPDF,
@@ -32,6 +33,12 @@ CONCILIADORES = {
     "alliz_pdf": ConciliadorAllizPDF,
     "auxiliadora_xls": ConciliadorAuxiliadoraXLS,
     "ucondo_pdf": ConciliadorUcondoPDF,
+    # "iello_pdf" e "lello_pdf" (Giardino D'Itália, Vita Parque, Jaú 1894)
+    # compartilham o mesmo template "Balancete Mensal" — sem lançamento
+    # individual nem comprovante, só checagem de consistência aritmética
+    # interna (ver conciliacao/balancete_mensal.py).
+    "iello_pdf": ConciliadorBalanceteMensal,
+    "lello_pdf": ConciliadorBalanceteMensal,
     # "gk_pdf" (administradora GK ADM, ex.: Ciudad Real) usa o MESMO software
     # de exportação ContasData do Lirba — mesmíssima estrutura de
     # "Demonstrativo de Despesas"/"Comprovante de Despesa" (confirmado em
