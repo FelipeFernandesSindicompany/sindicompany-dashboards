@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, ChevronRight, Clock } from 'lucide-react';
+import { ShieldCheck, ChevronRight, Clock, MinusCircle } from 'lucide-react';
 
 interface CondominioConciliacao {
   id: string;
@@ -10,6 +10,7 @@ interface CondominioConciliacao {
   cor: string;
   empresa_gestora: string;
   suportado: boolean;
+  naoAplicavel: boolean;
 }
 
 export default function ValidacaoPage() {
@@ -24,6 +25,7 @@ export default function ValidacaoPage() {
   }, []);
 
   const suportados = condominios.filter(c => c.suportado).length;
+  const aplicaveis = condominios.filter(c => !c.naoAplicavel).length;
 
   return (
     <div className="p-4 sm:p-8 page-enter max-w-4xl">
@@ -35,7 +37,7 @@ export default function ValidacaoPage() {
         <p className="text-text-muted text-[12px] sm:text-[13px] mt-1">
           Conciliação comprovante-a-comprovante da pasta de prestação de contas contra o demonstrativo —
           gera um anexo com só as divergências e pendências encontradas, além da análise financeira do mês.
-          {!loading && ` ${suportados} de ${condominios.length} condomínios já suportados.`}
+          {!loading && ` ${suportados} de ${aplicaveis} condomínios já suportados.`}
         </p>
       </div>
 
@@ -55,6 +57,11 @@ export default function ValidacaoPage() {
                 </div>
                 {c.suportado ? (
                   <ChevronRight size={16} className="text-text-muted flex-shrink-0" />
+                ) : c.naoAplicavel ? (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0
+                    text-text-muted bg-bg-elevated border border-border">
+                    <MinusCircle size={10} /> Não aplicável
+                  </span>
                 ) : (
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0
                     text-text-muted bg-bg-elevated border border-border">
@@ -69,7 +76,10 @@ export default function ValidacaoPage() {
                 {conteudo}
               </Link>
             ) : (
-              <div key={c.id} className="card px-4 py-3 flex items-center gap-3 opacity-60" title="Conciliador ainda não implementado para esta administradora">
+              <div key={c.id} className="card px-4 py-3 flex items-center gap-3 opacity-60"
+                title={c.naoAplicavel
+                  ? 'Condomínio de demonstração comercial — não existe prestação de contas real por trás dele'
+                  : 'Conciliador ainda não implementado para esta administradora'}>
                 {conteudo}
               </div>
             );

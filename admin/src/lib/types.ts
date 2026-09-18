@@ -19,7 +19,8 @@ export type AdapterType =
   | 'datadigitus_pdf'
   | 'iello_pdf'
   | 'addomus_pdf'
-  | 'convivium_pdf';
+  | 'convivium_pdf'
+  | 'demo';
 
 export interface BALEntry {
   tit: string;
