@@ -31,6 +31,7 @@ Uso:
 """
 import argparse
 import json
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -253,6 +254,22 @@ def _ultimo_dia_mes(mes: str) -> str:
     return f"{ultimo:02d}/{dt.month:02d}/{dt.year}"
 
 
+# Caracteres inválidos em nome de arquivo no Windows — nome de condomínio
+# nunca deveria ter nenhum deles, mas filtra por segurança.
+_CARACTERES_INVALIDOS_ARQUIVO = str.maketrans("", "", '\\/:*?"<>|')
+
+
+def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
+    """
+    "Validação Balancete - <Nome do Condomínio> MM-AAAA.pdf" — padrão de nome
+    de arquivo pedido pelo usuário pro relatório entregue (a barra de
+    "MM/AAAA" vira hífen, já que "/" não é permitido em nome de arquivo).
+    """
+    ano, mes_num = mes.split("-")
+    nome = condo["nome"].translate(_CARACTERES_INVALIDOS_ARQUIVO)
+    return f"Validação Balancete - {nome} {mes_num}-{ano}.pdf"
+
+
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     base_dir = storage.condo_mes_dir(condo["pasta_dados"], mes)
     version_dir = storage.new_version_dir(base_dir)
@@ -423,6 +440,13 @@ def etapa_render(condo: dict, mes: str) -> Path:
     render.renderizar_pdf(html, destino)
     render.inserir_evidencias_vetoriais(destino, achados_render)
 
+    # Cópia com o nome amigável pedido pelo usuário — "relatorio_final.pdf"
+    # continua sendo o nome interno/estável (usado por storage.py e pelo
+    # admin em validacaoStorage.ts::caminhoRelatorio), nunca renomeado, pra
+    # não quebrar código que já depende dele.
+    destino_amigavel = version_dir / _nome_arquivo_relatorio(condo, mes)
+    shutil.copy2(destino, destino_amigavel)
+
     # Quais verificações (conteúdo/atraso/subconta) rodaram de fato pra esse
     # condomínio/mês NÃO entra no PDF entregue ao síndico/condomínio —
     # detalhe de implementação interno, sem sentido pra quem recebe o
@@ -433,7 +457,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         json.dump(verificacoes, f, ensure_ascii=False, indent=2)
 
     storage.write_status(version_dir, "render", concluido=True)
-    print(f"[OK] Relatório gerado: {destino}")
+    print(f"[OK] Relatório gerado: {destino_amigavel}")
     print(f"[OK] {len(achados_render)} problema(s)/divergência(s) no relatório "
           f"({numero_excluidos} achado(s) já confirmados como corretos foram omitidos).")
     return version_dir
