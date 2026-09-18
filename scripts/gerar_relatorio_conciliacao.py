@@ -161,6 +161,9 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # Lello XLS (na verdade HTML) também não tem comprovante escaneado
         # nem link anexado — mesmas regras de consistência do DataDigitus.
         "lello_xls": gerar_achados_datadigitus,
+        # Alliz também não tem pareamento por código nem "conta" confiável
+        # nas páginas de comprovante — mesmas regras de consistência.
+        "alliz_pdf": gerar_achados_datadigitus,
     }
     # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
     # ter regras de matching próprias, mesmo compartilhando empresa_gestora com
