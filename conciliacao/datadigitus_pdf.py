@@ -28,11 +28,35 @@ import re
 from conciliacao.base import ConciliadorBase, RegistroComprovante
 from adapters.datadigitus_pdf import _e_categoria, _num
 
-_RE_CONTA_HDR = re.compile(r'^\d{3}\s*-\s*(CONTA\b.+)$', re.IGNORECASE)
-_RE_TOTAL_CONTA = re.compile(r'^TOTAL DA CONTA\b(.*?)\s+([\d.]+,\d{2})\s*$', re.IGNORECASE)
+# Nem toda conta começa com a palavra "CONTA" (ex.: "006 - PROV.13O
+# SAL/FERIAS" em Maison Du Rhone) — exige só o prefixo "NNN - ", não a
+# palavra específica depois.
+_RE_CONTA_HDR = re.compile(r'^\d{3}\s*-\s*(.+)$')
+_RE_TOTAL_CONTA = re.compile(r'^TOTAL DA CONTA\b(.*?)\s+([\d.]+,\d{2})(?:\s+[\d,]+%)?\s*$', re.IGNORECASE)
 _RE_TOTAL_GERAL = re.compile(r'^TOTAL GERAL DAS DESPESAS\b', re.IGNORECASE)
 _RE_LANCAMENTO = re.compile(r'^(\d{2}/\d{2}/\d{4})\s+(.*?)\s*([\d.]+,\d{2})$')
 _RE_SUBTOTAL = re.compile(r'^[\d.]+,\d{2}$')
+
+
+def _categoria_generica(linha: str) -> str | None:
+    """
+    Fallback quando a linha não bate com o _CAT_MAP do adapter — esse mapa
+    só cobre as categorias confirmadas em Cap D'Antibes; outros condomínios
+    DataDigitus (ex.: Maison Du Rhone: "FERIAS", "SERVICOS PRESTADOS") têm
+    categorias próprias. Não altera adapters/datadigitus_pdf.py (usado pelo
+    dashboard) — qualquer cabeçalho em CAIXA ALTA que não seja um marcador
+    estrutural conhecido (conta/total/subtotal) também é aceito como
+    categoria aqui, usando o próprio texto como nome (sem mapeamento
+    canônico — só precisa ser consistente pra duplicidade, não "bonito").
+    """
+    if not linha or linha[0].isdigit():
+        return None
+    if _RE_CONTA_HDR.match(linha) or _RE_TOTAL_CONTA.match(linha) or _RE_TOTAL_GERAL.match(linha):
+        return None
+    letras = [c for c in linha if c.isalpha()]
+    if not letras or any(c.islower() for c in letras):
+        return None
+    return linha
 
 
 class ConciliadorDatadigitusPDF(ConciliadorBase):
@@ -82,7 +106,7 @@ class ConciliadorDatadigitusPDF(ConciliadorBase):
                     cat_atual = None
                     continue
 
-                nome_cat = _e_categoria(l)
+                nome_cat = _e_categoria(l) or _categoria_generica(l)
                 if nome_cat:
                     cat_atual = nome_cat
                     continue
