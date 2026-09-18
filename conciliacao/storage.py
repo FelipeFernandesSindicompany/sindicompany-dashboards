@@ -73,6 +73,28 @@ def copy_input_file(version_dir: Path, src: Path, nome_destino: str) -> Path:
     return dest
 
 
+def write_origem(version_dir: Path, arquivo_original: Path) -> None:
+    """
+    Guarda o caminho ORIGINAL (pasta do projeto) do arquivo recebido em
+    --etapa extrair — usado depois em --etapa render pra localizar o
+    arquivo do mês anterior na mesma pasta (ver
+    conciliacao/demonstrativo_reader.py). A cópia em input/ preserva o
+    nome, mas não a pasta de origem.
+    """
+    with open(version_dir / "origem.json", "w", encoding="utf-8") as f:
+        json.dump({"arquivo_original": str(arquivo_original)}, f, ensure_ascii=False, indent=2)
+
+
+def read_origem(version_dir: Path) -> Path | None:
+    p = version_dir / "origem.json"
+    if not p.exists():
+        return None
+    with open(p, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+    caminho = dados.get("arquivo_original")
+    return Path(caminho) if caminho else None
+
+
 def _to_jsonable(obj):
     if dataclasses.is_dataclass(obj):
         return dataclasses.asdict(obj)

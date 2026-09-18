@@ -43,13 +43,20 @@ def _num(s) -> float:
         return 0.0
 
 
-_RE_HEADER_LISTAGEM = re.compile(r"Data\s+Hist[oó]rico\s+Valor\s+Total")
+# A coluna "Data" às vezes não existe (ex.: Baturité a partir de jul/2026
+# passou a exportar sem data por lançamento) — prefixo opcional.
+_RE_HEADER_LISTAGEM = re.compile(r"(?:Data\s+)?Hist[oó]rico\s+Valor\s+Total")
 _RE_COMPROVANTE = re.compile(r"Comprovante\s+de\s+Despesa\s+(\d+)")
 _RE_TOTAL_LINHA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}(?:\s+[\d,]+%)?\s*$")
-# Linha de item: valor individual (obrigatório) + opcionalmente total+pct do
-# mini-grupo (quando a linha fecha uma subcategoria) + código de 4 dígitos no fim.
+# Linha de item: valor individual (obrigatório, sempre o primeiro/mais à
+# esquerda) + opcionalmente total do mini-grupo (quando a linha fecha uma
+# subcategoria) + opcionalmente um percentual + código de 4 dígitos no fim.
+# O total do mini-grupo às vezes vem SEM percentual (ex.: Baturité a partir
+# de jul/2026: "1.204,14 4.281,01 0007", sem "%") — os dois sufixos são
+# independentes um do outro, e o "search" com âncora em "$" sempre casa a
+# partir do primeiro valor decimal válido (o individual), nunca o total.
 _RE_ITEM_LINHA = re.compile(
-    r"([\d.]+,\d{2})\s+(?:[\d.]+,\d{2}\s+[\d,]+%\s+)?(\d{4})\s*$"
+    r"([\d.]+,\d{2})(?:\s+[\d.]+,\d{2})?(?:\s+[\d,]+%)?\s+(\d{4})\s*$"
 )
 # Algumas variantes do ContasData (ex.: Dueto Morumbi/manager_adm_pdf) têm uma
 # coluna extra "Nº lancto." (número de 8 dígitos) antes da data — o prefixo

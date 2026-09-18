@@ -51,8 +51,8 @@ from conciliacao.matching import (
 )
 from conciliacao import interpretacao
 from conciliacao import render
-from conciliacao import bal_reader
 from conciliacao import analise_financeira
+from conciliacao import demonstrativo_reader
 
 CONDOMINIOS_JSON = ROOT / "config" / "condominios.json"
 
@@ -60,15 +60,6 @@ MESES_FULL = {
     1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
     7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro",
 }
-MESES_ABREV_BAL = {1: "jan", 2: "fev", 3: "mar", 4: "abr", 5: "mai", 6: "jun",
-                    7: "jul", 8: "ago", 9: "set", 10: "out", 11: "nov", 12: "dez"}
-
-
-def _mes_chave_bal(mes_str: str) -> str:
-    """'2026-07' -> 'jul26' (mesma convenção usada em var BAL nos dashboards)."""
-    dt = datetime.strptime(mes_str, "%Y-%m")
-    return f"{MESES_ABREV_BAL[dt.month]}{str(dt.year)[2:]}"
-
 SEVERIDADE_LABEL = {
     "critico": "GRAVIDADE CRÍTICA",
     "alto": "GRAVIDADE ALTA",
@@ -111,12 +102,20 @@ def _mes_titulo(mes: str) -> str:
     return f"{MESES_FULL[dt.month]} / {dt.year}"
 
 
+def _ultimo_dia_mes(mes: str) -> str:
+    import calendar
+    dt = datetime.strptime(mes, "%Y-%m")
+    ultimo = calendar.monthrange(dt.year, dt.month)[1]
+    return f"{ultimo:02d}/{dt.month:02d}/{dt.year}"
+
+
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     base_dir = storage.condo_mes_dir(condo["pasta_dados"], mes)
     version_dir = storage.new_version_dir(base_dir)
     storage.write_status(version_dir, "extrair")
 
     entrada = storage.copy_input_file(version_dir, arquivo, arquivo.name)
+    storage.write_origem(version_dir, arquivo)
 
     conciliador = get_conciliador(condo["empresa_gestora"], condo)
     registros: list[RegistroComprovante] = conciliador.extrair_comprovantes(entrada)
@@ -184,6 +183,9 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # total confiável pra checar soma — só duplicidade (a mesma função
         # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
         "nyc": gerar_achados_datadigitus,
+        # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
+        # (PDF) em 2026 — mesma regra de matching do Lirba.
+        "baturite": gerar_achados_lirba,
     }
     funcao_matching = gerar_achados_por_condo.get(
         condo["id"], gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
@@ -278,19 +280,27 @@ def etapa_render(condo: dict, mes: str) -> Path:
     logo_html = ROOT / "docs" / condo["html_file"]
     logo_data_uri = render.resolver_logo(condo["nome"], logo_html)
 
-    # Seção de Análise Financeira — reaproveita os dados já publicados no
-    # dashboard (var BAL), sem reprocessar nenhum arquivo de novo. Se o mês (ou
-    # o dashboard) não tiver dados publicados ainda, a seção fica de fora do
-    # relatório em vez de falhar (achados de conciliação continuam saindo).
+    # Seção de Análise Financeira — lê DIRETO da pasta de projeto (arquivo do
+    # mês atual + mês anterior localizado automaticamente na mesma pasta),
+    # nunca do dashboard já publicado. O sistema de validação não deve se
+    # ancorar em dados do dashboard (que podem estar desatualizados ou nem
+    # existir ainda) — só nos próprios PDFs/XLSX de prestação de contas, a
+    # mesma fonte que a conciliação de comprovantes já usa.
     analise = None
-    mes_chave = _mes_chave_bal(mes)
-    bal_atual = bal_reader.ler_bal_mes(logo_html, mes_chave)
-    if bal_atual:
-        bal_anterior = bal_reader.ler_bal_mes(logo_html, bal_reader.mes_anterior(mes_chave))
-        analise = analise_financeira.montar_analise(bal_atual, bal_anterior, _mes_titulo(mes))
+    arquivo_original = storage.read_origem(version_dir)
+    if arquivo_original:
+        bal_atual, bal_anterior = demonstrativo_reader.ler_par_mes_atual_anterior(
+            condo, arquivo_original, mes, _mes_titulo(mes),
+            f"01/{mes[5:7]}/{mes[:4]} a {_ultimo_dia_mes(mes)}",
+        )
+        if bal_atual:
+            analise = analise_financeira.montar_analise(bal_atual, bal_anterior, _mes_titulo(mes))
+        else:
+            print(f"[AVISO] não foi possível ler os dados financeiros de {arquivo_original.name} — "
+                  f"relatório sairá sem a seção de Análise Financeira.")
     else:
-        print(f"[AVISO] mês '{mes_chave}' não encontrado em {logo_html.name} — "
-              f"relatório sairá sem a seção de Análise Financeira.")
+        print("[AVISO] origem do arquivo do mês atual não encontrada (versão antiga, gerada antes "
+              "dessa mudança) — relatório sairá sem a seção de Análise Financeira.")
 
     # Rótulo por condomínio específico tem prioridade (ex.: Club Park Butantã
     # é "lirba_pdf" no cadastro, mas o PDF real é do sistema GCONT).
