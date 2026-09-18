@@ -78,7 +78,7 @@ export async function rodarEtapaConciliacao(args: {
 }
 
 /** Condomínios com conciliador implementado — mesma lista de conciliacao/__init__.py::CONCILIADORES. */
-export const EMPRESAS_COM_CONCILIACAO = ['addomus_pdf', 'lirba_pdf', 'habitacional_xlsx', 'datadigitus_pdf', 'gk_pdf', 'manager_adm_pdf', 'consvicta_pdf', 'lfc_xlsx', 'lello_xls', 'alliz_pdf', 'auxiliadora_xls', 'ucondo_pdf'];
+export const EMPRESAS_COM_CONCILIACAO = ['addomus_pdf', 'lirba_pdf', 'habitacional_xlsx', 'datadigitus_pdf', 'gk_pdf', 'manager_adm_pdf', 'consvicta_pdf', 'lfc_xlsx', 'lello_xls', 'alliz_pdf', 'auxiliadora_xls', 'ucondo_pdf', 'convivium_pdf'];
 
 /**
  * "lirba_pdf" não é um formato único — adapters/lirba_pdf.py tem 4
