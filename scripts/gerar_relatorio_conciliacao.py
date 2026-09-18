@@ -87,6 +87,150 @@ ADMINISTRADORA_LABEL = {
     "ucondo_pdf": "Conviver MRV",
 }
 
+# Cada administradora tem regras de matching próprias — ver conciliacao/matching.py.
+# Definido em nível de módulo (não só dentro de etapa_extrair) porque
+# etapa_render também precisa saber qual função foi usada, para montar o
+# registro interno de verificações (verificacoes.json) — ver _montar_verificacoes().
+GERAR_ACHADOS_POR_EMPRESA = {
+    "addomus_pdf": gerar_achados,
+    "lirba_pdf": gerar_achados_lirba,
+    # Habitacional usa o mesmo par "despesa_listada"/"comprovante_anexado"
+    # do Lirba (só muda a origem: hyperlink do Excel em vez de página de
+    # PDF) — reaproveita a regra de matching sem duplicar.
+    "habitacional_xlsx": gerar_achados_lirba,
+    "lfc_xlsx": gerar_achados_lirba,
+    # DataDigitus não tem comprovante escaneado nem link anexado — só a
+    # listagem de despesas do próprio demonstrativo, então usa regras
+    # diferentes (duplicidade por data+valor+categoria e divergência
+    # soma-x-total-declarado), ver conciliacao/matching.py.
+    "datadigitus_pdf": gerar_achados_datadigitus,
+    # gk_pdf/manager_adm_pdf usam o mesmo motor ContasData do Lirba —
+    # mesma regra de matching.
+    "gk_pdf": gerar_achados_lirba,
+    "manager_adm_pdf": gerar_achados_lirba,
+    "convivium_pdf": gerar_achados_lirba,
+    # Consvicta (Gardens Living Club) não tem vínculo textual entre
+    # despesa e comprovante (páginas de imagem sem "Parcela" referenciada
+    # em nenhum outro lugar) — mesmas regras de consistência do DataDigitus.
+    "consvicta_pdf": gerar_achados_datadigitus,
+    # Lello XLS (na verdade HTML) também não tem comprovante escaneado
+    # nem link anexado — mesmas regras de consistência do DataDigitus.
+    "lello_xls": gerar_achados_datadigitus,
+    # Alliz também não tem pareamento por código nem "conta" confiável
+    # nas páginas de comprovante — mesmas regras de consistência.
+    "alliz_pdf": gerar_achados_datadigitus,
+    "auxiliadora_xls": gerar_achados_datadigitus,
+    "ucondo_pdf": gerar_achados_datadigitus,
+    "iello_pdf": gerar_achados_balancete_mensal,
+    "lello_pdf": gerar_achados_balancete_mensal,
+}
+# Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
+# ter regras de matching próprias, mesmo compartilhando empresa_gestora com
+# outros condomínios de formato diferente (ex.: Club Park Butantã é
+# "lirba_pdf" no cadastro, mas o PDF é do sistema GCONT, não ContasData).
+GERAR_ACHADOS_POR_CONDO = {
+    "club_park_butanta": gerar_achados_gcont,
+    # NYC (webware) não tem "Demonstrativo de Despesas" separado nem
+    # total confiável pra checar soma — só duplicidade (a mesma função
+    # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
+    "nyc": gerar_achados_datadigitus,
+    # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
+    # (PDF) em 2026 — mesma regra de matching do Lirba.
+    "baturite": gerar_achados_lirba,
+}
+
+
+def obter_funcao_matching(condo: dict):
+    return GERAR_ACHADOS_POR_CONDO.get(
+        condo["id"], GERAR_ACHADOS_POR_EMPRESA.get(condo["empresa_gestora"], gerar_achados)
+    )
+
+
+# ── Rodada 1 de verificações abrangentes ────────────────────────────────────
+# (ver plano em C:\Users\MF PRINTER\.claude\plans\humming-swimming-hellman.md)
+# Cobre Addomus, GCONT (Club Park Butantã) e toda a família Lirba/ContasData
+# de ponta a ponta (conteúdo do comprovante via OCR + atraso de pagamento).
+# Os demais formatos ficam "não aplicável" nesta rodada — mas de forma
+# EXPLÍCITA no relatório (ver seção "Verificações realizadas" no template),
+# nunca omitida em silêncio, até serem investigados e validados
+# individualmente numa rodada seguinte, formato por formato.
+_TEXTO_ATRASO_UMA_DATA = (
+    "não aplicável nesta rodada — este formato registra só uma data por lançamento, "
+    "sem confirmação independente da data efetiva de pagamento."
+)
+_TEXTO_CONTEUDO_NAO_ESTENDIDO = (
+    "não aplicável nesta rodada — verificação automática de conteúdo ainda não "
+    "implementada/validada para este formato."
+)
+_TEXTO_BALANCETE_MENSAL = (
+    "não aplicável — este formato só tem totais agregados por categoria/conta, "
+    "sem lançamentos nem comprovantes individuais para conferir."
+)
+
+VERIFICACOES_POR_EMPRESA = {
+    "addomus_pdf": {
+        "conteudo_comprovante": (True, "extraído diretamente do texto do comprovante (PDF pesquisável) "
+                                        "e cruzado com o valor da despesa correspondente."),
+        "atraso_pagamento": (True, "comparado vencimento x data efetiva de pagamento de cada comprovante."),
+    },
+}
+for _e in ("lirba_pdf", "gk_pdf", "manager_adm_pdf", "convivium_pdf"):
+    VERIFICACOES_POR_EMPRESA[_e] = {
+        "conteudo_comprovante": (True, "extraído por OCR quando o comprovante é uma imagem digitalizada; "
+                                        "marcado como \"conteúdo não verificável\" quando o OCR não confirma o valor."),
+        "atraso_pagamento": (True, "comparado vencimento x \"Pago em\" extraídos por OCR do comprovante, "
+                                    "quando os dois são confirmados."),
+    }
+for _e in ("habitacional_xlsx", "lfc_xlsx", "datadigitus_pdf", "consvicta_pdf",
+           "lello_xls", "alliz_pdf", "auxiliadora_xls", "ucondo_pdf"):
+    VERIFICACOES_POR_EMPRESA[_e] = {
+        "conteudo_comprovante": (False, _TEXTO_CONTEUDO_NAO_ESTENDIDO),
+        "atraso_pagamento": (False, _TEXTO_ATRASO_UMA_DATA),
+    }
+for _e in ("iello_pdf", "lello_pdf"):
+    VERIFICACOES_POR_EMPRESA[_e] = {
+        "conteudo_comprovante": (False, _TEXTO_BALANCETE_MENSAL),
+        "atraso_pagamento": (False, _TEXTO_BALANCETE_MENSAL),
+    }
+
+VERIFICACOES_POR_CONDO = {
+    "club_park_butanta": {
+        "conteudo_comprovante": (True, "extraído diretamente do texto de cada página de comprovante (GCONT) "
+                                        "e cruzado com o total declarado no Livro Caixa."),
+        "atraso_pagamento": (True, "comparado vencimento x liquidação extraídos da própria página do comprovante."),
+    },
+    "nyc": {
+        "conteudo_comprovante": (False, _TEXTO_CONTEUDO_NAO_ESTENDIDO),
+        "atraso_pagamento": (False, _TEXTO_ATRASO_UMA_DATA),
+    },
+    # Baturité migrou pra ContasData (PDF) em 2026 — mesmo perfil do Lirba,
+    # mesmo o cadastro em condominios.json ainda dizendo "habitacional_xlsx".
+    "baturite": VERIFICACOES_POR_EMPRESA["lirba_pdf"],
+}
+
+
+def _montar_verificacoes(condo: dict, funcao_matching) -> list[dict]:
+    """Monta a seção "Verificações realizadas neste relatório" — sempre as 3
+    checagens, sempre dizendo se rodaram ou por que não, nunca omitindo."""
+    perfil = VERIFICACOES_POR_CONDO.get(condo["id"]) or VERIFICACOES_POR_EMPRESA.get(
+        condo["empresa_gestora"],
+        {"conteudo_comprovante": (False, _TEXTO_CONTEUDO_NAO_ESTENDIDO),
+         "atraso_pagamento": (False, _TEXTO_ATRASO_UMA_DATA)},
+    )
+    subconta_aplicavel = funcao_matching is not gerar_achados_balancete_mensal
+    subconta_texto = (
+        "categorias comparadas contra o histórico dos últimos meses já processados deste condomínio "
+        "(quando ainda não há histórico suficiente, a checagem é pulada só para os meses sem base de comparação)."
+        if subconta_aplicavel else _TEXTO_BALANCETE_MENSAL
+    )
+    aplicavel_conteudo, texto_conteudo = perfil["conteudo_comprovante"]
+    aplicavel_atraso, texto_atraso = perfil["atraso_pagamento"]
+    return [
+        {"nome": "Conteúdo do comprovante (valor, data, fornecedor)", "aplicavel": aplicavel_conteudo, "texto": texto_conteudo},
+        {"nome": "Atraso de pagamento", "aplicavel": aplicavel_atraso, "texto": texto_atraso},
+        {"nome": "Categoria/subconta atípica", "aplicavel": subconta_aplicavel, "texto": subconta_texto},
+    ]
+
 
 def _carregar_condominio(condo_id: str) -> dict:
     with open(CONDOMINIOS_JSON, "r", encoding="utf-8") as f:
@@ -139,58 +283,13 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
             print(f"[AVISO] não foi possível ler o demonstrativo consolidado ({exc}); "
                   f"pulando a regra de divergência por categoria.")
 
-    # Cada administradora tem regras de matching próprias — ver conciliacao/matching.py.
-    gerar_achados_por_empresa = {
-        "addomus_pdf": gerar_achados,
-        "lirba_pdf": gerar_achados_lirba,
-        # Habitacional usa o mesmo par "despesa_listada"/"comprovante_anexado"
-        # do Lirba (só muda a origem: hyperlink do Excel em vez de página de
-        # PDF) — reaproveita a regra de matching sem duplicar.
-        "habitacional_xlsx": gerar_achados_lirba,
-        "lfc_xlsx": gerar_achados_lirba,
-        # DataDigitus não tem comprovante escaneado nem link anexado — só a
-        # listagem de despesas do próprio demonstrativo, então usa regras
-        # diferentes (duplicidade por data+valor+categoria e divergência
-        # soma-x-total-declarado), ver conciliacao/matching.py.
-        "datadigitus_pdf": gerar_achados_datadigitus,
-        # gk_pdf/manager_adm_pdf usam o mesmo motor ContasData do Lirba —
-        # mesma regra de matching.
-        "gk_pdf": gerar_achados_lirba,
-        "manager_adm_pdf": gerar_achados_lirba,
-        "convivium_pdf": gerar_achados_lirba,
-        # Consvicta (Gardens Living Club) não tem vínculo textual entre
-        # despesa e comprovante (páginas de imagem sem "Parcela" referenciada
-        # em nenhum outro lugar) — mesmas regras de consistência do DataDigitus.
-        "consvicta_pdf": gerar_achados_datadigitus,
-        # Lello XLS (na verdade HTML) também não tem comprovante escaneado
-        # nem link anexado — mesmas regras de consistência do DataDigitus.
-        "lello_xls": gerar_achados_datadigitus,
-        # Alliz também não tem pareamento por código nem "conta" confiável
-        # nas páginas de comprovante — mesmas regras de consistência.
-        "alliz_pdf": gerar_achados_datadigitus,
-        "auxiliadora_xls": gerar_achados_datadigitus,
-        "ucondo_pdf": gerar_achados_datadigitus,
-        "iello_pdf": gerar_achados_balancete_mensal,
-        "lello_pdf": gerar_achados_balancete_mensal,
-    }
-    # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
-    # ter regras de matching próprias, mesmo compartilhando empresa_gestora com
-    # outros condomínios de formato diferente (ex.: Club Park Butantã é
-    # "lirba_pdf" no cadastro, mas o PDF é do sistema GCONT, não ContasData).
-    gerar_achados_por_condo = {
-        "club_park_butanta": gerar_achados_gcont,
-        # NYC (webware) não tem "Demonstrativo de Despesas" separado nem
-        # total confiável pra checar soma — só duplicidade (a mesma função
-        # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
-        "nyc": gerar_achados_datadigitus,
-        # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
-        # (PDF) em 2026 — mesma regra de matching do Lirba.
-        "baturite": gerar_achados_lirba,
-    }
-    funcao_matching = gerar_achados_por_condo.get(
-        condo["id"], gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
+    # Qual função de matching usar (ver GERAR_ACHADOS_POR_EMPRESA/_POR_CONDO,
+    # definidos em nível de módulo — etapa_render também precisa saber isso
+    # pra montar a seção "Verificações realizadas neste relatório").
+    funcao_matching = obter_funcao_matching(condo)
+    achados: list[Achado] = funcao_matching(
+        registros, dados_financeiros, pasta_dados=condo["pasta_dados"], mes_atual=mes
     )
-    achados: list[Achado] = funcao_matching(registros, dados_financeiros)
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
 
     storage.write_status(version_dir, "extrair", concluido=True)
@@ -323,6 +422,15 @@ def etapa_render(condo: dict, mes: str) -> Path:
     destino = version_dir / "relatorio_final.pdf"
     render.renderizar_pdf(html, destino)
     render.inserir_evidencias_vetoriais(destino, achados_render)
+
+    # Quais verificações (conteúdo/atraso/subconta) rodaram de fato pra esse
+    # condomínio/mês NÃO entra no PDF entregue ao síndico/condomínio —
+    # detalhe de implementação interno, sem sentido pra quem recebe o
+    # relatório (feedback explícito do usuário). Fica só aqui, pra quem
+    # revisar a pasta de conciliação internamente saber o que rodou de fato.
+    verificacoes = _montar_verificacoes(condo, obter_funcao_matching(condo))
+    with open(version_dir / "verificacoes.json", "w", encoding="utf-8") as f:
+        json.dump(verificacoes, f, ensure_ascii=False, indent=2)
 
     storage.write_status(version_dir, "render", concluido=True)
     print(f"[OK] Relatório gerado: {destino}")

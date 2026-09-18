@@ -59,7 +59,7 @@
   .achado .metadados-linha .item dd { display: inline; margin: 0 0 0 3px; font-weight: 600; }
   .achado .evidencia { margin-bottom: 2.5mm; }
   .achado .evidencia-vetorial {
-    position: relative; width: 100%; height: 0;
+    position: relative; margin: 0 auto;
     border: 1px solid var(--linha); border-radius: 4px;
   }
   .achado .evidencia-vetorial .marca {
@@ -233,7 +233,7 @@
   </div>
   <div class="evidencia">
     {% if a.evidencia_vetorial %}
-      <div class="evidencia-vetorial" style="padding-top: {{ a.evidencia_vetorial.aspect_pct }}%;">
+      <div class="evidencia-vetorial" style="width: {{ a.evidencia_vetorial.largura_mm }}mm; height: {{ a.evidencia_vetorial.altura_mm }}mm;">
         <span class="marca ini">@@EVID_INI_{{ a.numero }}@@</span><span class="marca fim">@@EVID_FIM_{{ a.numero }}@@</span>
       </div>
     {% else %}

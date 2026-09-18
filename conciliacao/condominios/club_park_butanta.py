@@ -96,11 +96,11 @@ class Conciliador(ConciliadorBase):
                 if not (m_parcela and m_valor):
                     continue
 
-                fornecedor = venc = documento = None
+                fornecedor = venc = liquidacao = documento = None
                 for linha in texto.split("\n"):
                     m = _RE_LINHA_FORNECEDOR.match(linha.strip())
                     if m:
-                        fornecedor, venc, _liq, documento, _valor2 = m.groups()
+                        fornecedor, venc, liquidacao, documento, _valor2 = m.groups()
                         fornecedor = fornecedor.strip()
                         break
 
@@ -117,6 +117,11 @@ class Conciliador(ConciliadorBase):
                     codigo=m_parcela.group(1),
                     fornecedor=fornecedor,
                     vencimento=venc,
+                    # Data de "Liquidação" da coluna "Pago a:" — data efetiva do
+                    # pagamento, usada por achado_atraso_pagamento() em
+                    # conciliacao/matching.py::gerar_achados_gcont(). Antes desta
+                    # correção, essa data era extraída pelo regex e descartada.
+                    pagamento=liquidacao,
                     valor=_num(m_valor.group(1)),
                     categoria_demonstrativo=categoria,
                     # Reaproveita "autenticacao" (nº de referência impresso no

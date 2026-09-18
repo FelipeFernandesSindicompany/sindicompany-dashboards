@@ -161,6 +161,13 @@ def montar_html(
     (narrativa), no formato esperado por templates/conciliacao_relatorio.html.
     analise: saída de conciliacao/analise_financeira.py::montar_analise, ou
     None para gerar só a seção de divergências (sem resumo executivo).
+
+    Quais verificações (conteúdo/atraso/subconta) rodaram de fato pra este
+    condomínio/mês NÃO entra no PDF entregue ao síndico/condomínio — é
+    detalhe de implementação interno, sem sentido pra quem recebe o relatório
+    (feedback explícito do usuário). Esse registro fica só em
+    verificacoes.json, ao lado dos outros artefatos da versão — ver
+    scripts/gerar_relatorio_conciliacao.py::etapa_render.
     """
     env = _jinja_env()
     template = env.get_template("conciliacao_relatorio.html")
@@ -203,6 +210,19 @@ def renderizar_pdf(html: str, destino_pdf: Path) -> None:
 
 
 _GAP_MAXIMO_PT = 60  # além disso, considera o resto rodapé/marca d'água isolada, não conteúdo
+
+# Largura útil dentro de um card .achado (ver templates/conciliacao_relatorio.html):
+# A4 = 210mm - padding do body (6mm x2) - padding do .achado (4mm x2) = 190mm.
+_CONTEUDO_LARGURA_MM = 190.0
+# Acima disso, a evidência sozinha já não cabe ao lado do título/parágrafo/
+# rodapé na mesma página (margens de impressão deixam ~279mm úteis por
+# página) — o achado inteiro (page-break-inside: avoid) então pula pra
+# próxima página, deixando um vão em branco enorme no fim da página atual.
+# Um crop de recibo de página inteira (retrato, aspect_pct > 100%) alargado
+# pra 100% da largura do card facilmente passa de 240mm de altura — por isso
+# a largura é reduzida (nunca a nitidez/qualidade, só o tamanho de exibição)
+# quando isso aconteceria, mantendo o crop inteiro na mesma página do texto.
+_ALTURA_MAXIMA_EVIDENCIA_MM = 130.0
 
 
 def _bbox_conteudo(page, margem: float = 8) -> tuple | None:
@@ -268,11 +288,25 @@ def preparar_evidencia_vetorial(pdf_origem: Path, pagina: int) -> dict | None:
             if not bbox:
                 return None
             largura, altura = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            aspect_pct = (altura / largura * 100.0) if largura else 60.0
+            # Dimensões finais em mm ABSOLUTOS, não percentuais — "padding-top:
+            # X%" (o truque de caixa de proporção) é resolvido contra a
+            # largura do CONTAINING BLOCK, não a largura do próprio elemento;
+            # setar width E padding-top no mesmo elemento não reduz a altura
+            # reservada, só a largura visual (bug já cometido aqui uma vez:
+            # a evidência ficava mais estreita mas continuava alta o
+            # suficiente pra empurrar o resto do achado pra outra página).
+            altura_mm = _CONTEUDO_LARGURA_MM * (aspect_pct / 100.0)
+            largura_mm = _CONTEUDO_LARGURA_MM
+            if altura_mm > _ALTURA_MAXIMA_EVIDENCIA_MM:
+                largura_mm = _ALTURA_MAXIMA_EVIDENCIA_MM / (aspect_pct / 100.0)
+                altura_mm = _ALTURA_MAXIMA_EVIDENCIA_MM
             return {
                 "pdf_origem": str(pdf_origem),
                 "pagina_origem": pagina,
                 "bbox": bbox,
-                "aspect_pct": (altura / largura * 100.0) if largura else 60.0,
+                "largura_mm": largura_mm,
+                "altura_mm": altura_mm,
             }
     except Exception:
         return None

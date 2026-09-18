@@ -14,22 +14,79 @@ Lirba (marca "ContasData" nos rodapés).
      valor individual do lançamento, nunca o total agregado).
 
   2. "Comprovante de Despesa <código>" — página(s) de EVIDÊNCIA para aquele
-     código, mas SEM NENHUM TEXTO ÚTIL (só cabeçalho/rodapé do sistema) — o
-     comprovante em si é uma IMAGEM digitalizada embutida na página. Por
-     isso aqui não dá pra extrair código/fornecedor/valor da página de
-     evidência como no Addomus — o valor e a categoria vêm só da listagem
-     (item 1), e a página de comprovante só serve como referência de
-     evidência (para o recorte vetorial do relatório).
+     código. O cabeçalho/rodapé do sistema é texto real, mas o comprovante
+     em si é uma IMAGEM digitalizada embutida na página — sem OCR não dá
+     pra extrair código/fornecedor/valor dela como no Addomus. Um spike
+     manual (Baturité, jul+ago/2026) confirmou que essas imagens costumam
+     ser um recibo digital limpo (não scan de papel) e que o Tesseract lê
+     bem — mas o LAYOUT do recibo varia por tipo de pagamento (confirmados
+     pelo menos 4: "Comprovante de Pagamento Eletrônico"/DCTFWeb com "Valor
+     do lancto", "Comprovante de Operação Débito Automático" de
+     concessionária com "Valor:" solto, "Comprovante de Transferência"
+     PIX/TED com "valor:" minúsculo, "Comprovante de pagamento" de guia
+     tributária tipo DARE com "Valor do pagamento" sem "lancto") — por isso
+     `_preencher_via_ocr()` tenta várias regras em ordem, não uma só. O MESMO
+     spike também confirmou que a página às vezes é genuinamente uma capa
+     SEM nenhum anexo (comprovante 0001 do Baturité, página em branco) —
+     por isso o OCR aqui nunca é tratado como "confirmação" quando não
+     encontra um valor: vira um registro com `valor == 0.0`, e
+     conciliacao/matching.py::gerar_achados_lirba decide entre
+     "conteudo_nao_verificavel" (comprovante existe, sem confirmação) e
+     segue usando "sem_comprovante" para quando a página nem existe.
 
-Conclusão prática: o matching aqui é mais simples que o do Addomus — não há
-"pareamento por valor" a fazer (não existe segundo texto pra comparar), só
-"este código da listagem tem alguma página de Comprovante de Despesa
-correspondente, ou não" (ver conciliacao/matching.py::gerar_achados_lirba).
+Conclusão prática: quando o OCR confirma o valor do comprovante, o matching
+cruza esse valor contra o da listagem (item 1) igual a um pareamento por
+código; quando não confirma (OCR indisponível na máquina, imagem ilegível,
+ou capa sem anexo real), vira "conteúdo não verificável" em vez de uma
+confirmação às cegas — ver conciliacao/matching.py::gerar_achados_lirba.
 """
 import re
 from pathlib import Path
 
+from conciliacao import ocr
 from conciliacao.base import ConciliadorBase, RegistroComprovante
+
+# Abaixo desse tamanho de texto OCR, mesmo que algum trecho combine por
+# acidente com um dos padrões abaixo, não há confiança suficiente pra tratar
+# como comprovante confirmado — na prática só cabeçalho/rodapé do sistema
+# ("Página: N", "Comprovante de Despesa NNNN", "Voltar ao Índice").
+_OCR_TEXTO_MINIMO = 80
+# Regras de extração de VALOR, tentadas em ordem — a primeira que casar
+# vence. A ordem importa: quando o lançamento é um DARF/DCTFWeb
+# "(CONSOLIDADO)" que quita várias retenções de uma vez, o "Valor do
+# pagamento" é a SOMA de todas elas, não o valor do lançamento individual
+# (confirmado em dados reais: várias páginas diferentes mostravam o mesmo
+# "Valor do pagamento", uma por retenção consolidada) — "Valor do lancto" é
+# o valor individual correto nesse caso, então é tentado PRIMEIRO. Templates
+# sem o conceito de "lancto" (guia tributária tipo DARE, débito automático de
+# concessionária, transferência PIX/TED) cada um só tem uma das variantes
+# abaixo, então a ordem entre elas não muda o resultado.
+# OCR troca "V" por "W" com frequência no rótulo "Valor do lancto"
+# (confirmado em dados reais: às vezes sai "Walor"/"WValor") — [VW]+ absorve
+# qualquer uma dessas variantes sem perder a leitura.
+# NOTA: "(?:R\$)?" (o par inteiro opcional), nunca "R\$?" (que exige o "R"
+# obrigatório e só o "$" opcional) — bug já cometido aqui uma vez: nenhuma
+# das 3 regras batia contra o template de débito automático ("Valor: 53,85",
+# sem "R$" nenhum) até essa correção.
+_RE_OCR_VALORES_EM_ORDEM = [
+    re.compile(r"[VW]+alor do lan\S*to:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),        # DCTFWeb/eletrônico (individual, mesmo se consolidado)
+    re.compile(r"Valor do pagamento:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),            # guia tributária (DARE etc.) sem conceito de "lancto"
+    re.compile(r"^Valor:\s*(?:R\$)?\s*([\d.]+,\d{2})\s*$", re.IGNORECASE | re.MULTILINE),     # débito automático de concessionária
+]
+_RE_OCR_VENCIMENTO = re.compile(r"Vencimento:?\s*(\d{2}/\d{2}/\d{4})", re.IGNORECASE)
+# Data efetiva do pagamento — cada template usa um rótulo diferente; tentados
+# em ordem, a primeira que casar vence. Nenhuma delas tem uma "Vencimento"
+# correspondente nos templates de PIX/débito automático/DARE (a operação é
+# instantânea/no mesmo dia), então isso nunca gera atraso_pagamento sozinho
+# — achado_atraso_pagamento() exige os dois campos.
+_RE_OCR_PAGAMENTOS_EM_ORDEM = [
+    re.compile(r"Pago em:?\s*(\d{2}/\d{2}/\d{4})", re.IGNORECASE),                            # DCTFWeb/eletrônico
+    re.compile(r"Data d[ao] (?:transfer[eê]ncia|pagamento):?\s*(\d{2}/\d{2}/\d{4})", re.IGNORECASE),  # PIX/TED, guia tributária
+]
+# Débito automático não usa "DD/MM/YYYY" e sim "Pagamento realizado em DD.MM.YYYY".
+_RE_OCR_PAGAMENTO_REALIZADO = re.compile(r"Pagamento realizado em (\d{2})\.(\d{2})\.(\d{4})", re.IGNORECASE)
+_RE_OCR_FORNECEDOR = re.compile(r"(?:Fornecedor|nome do recebedor):?\s*(.+)", re.IGNORECASE)
+_RE_OCR_CPF_CNPJ = re.compile(r"(?:CNPJ|CPF)(?:\s*/\s*CNPJ)?(?:\s*d[oa]\s*\w+)?:?\s*([\d./\-]{11,18})", re.IGNORECASE)
 
 
 def _num(s) -> float:
@@ -41,6 +98,43 @@ def _num(s) -> float:
         return abs(float(s))
     except Exception:
         return 0.0
+
+
+def _preencher_via_ocr(registro: RegistroComprovante, caminho_pdf: Path, pagina_1based: int) -> None:
+    """
+    Roda OCR na página de "Comprovante de Despesa" e, quando encontra um
+    "Valor do pagamento" confiável, popula os campos do registro. Nunca
+    lança exceção (ver conciliacao/ocr.py) — na pior hipótese o registro
+    fica exatamente como estava (valor=0.0), sinalizando pra
+    gerar_achados_lirba() que o conteúdo não pôde ser confirmado.
+    """
+    texto = ocr.ocr_pagina_pdf(caminho_pdf, pagina_1based - 1)
+    if len(texto.strip()) < _OCR_TEXTO_MINIMO:
+        return
+    m_valor = next((m for m in (regex.search(texto) for regex in _RE_OCR_VALORES_EM_ORDEM) if m), None)
+    if not m_valor:
+        return  # texto substancial, mas nenhum valor reconhecível — não confirma nada
+    registro.texto_bruto = texto
+    registro.valor = _num(m_valor.group(1))
+    m = _RE_OCR_VENCIMENTO.search(texto)
+    if m:
+        registro.vencimento = m.group(1)
+    m_pagamento = next((m for m in (regex.search(texto) for regex in _RE_OCR_PAGAMENTOS_EM_ORDEM) if m), None)
+    if m_pagamento:
+        registro.pagamento = m_pagamento.group(1)
+    else:
+        # Débito automático não usa "DD/MM/YYYY" — só "Pagamento realizado em
+        # DD.MM.YYYY" (sem "Vencimento" correspondente, então isso nunca vira
+        # atraso_pagamento sozinho — achado_atraso_pagamento exige os dois).
+        m = _RE_OCR_PAGAMENTO_REALIZADO.search(texto)
+        if m:
+            registro.pagamento = f"{m.group(1)}/{m.group(2)}/{m.group(3)}"
+    m = _RE_OCR_FORNECEDOR.search(texto)
+    if m:
+        registro.fornecedor = m.group(1).strip()[:200]
+    m = _RE_OCR_CPF_CNPJ.search(texto)
+    if m:
+        registro.cnpj_cpf = m.group(1)
 
 
 # A coluna "Data" às vezes não existe (ex.: Baturité a partir de jul/2026
@@ -129,11 +223,13 @@ class ConciliadorLirbaPDF(ConciliadorBase):
         registros.extend(pendentes)
 
         for codigo, pagina in primeira_pagina_comprovante.items():
-            registros.append(RegistroComprovante(
+            registro = RegistroComprovante(
                 pagina=pagina,
                 tipo_documento="comprovante_anexado",
                 codigo=codigo,
                 texto_bruto=f"Comprovante de Despesa {codigo}",
-            ))
+            )
+            _preencher_via_ocr(registro, caminho, pagina)
+            registros.append(registro)
 
         return registros

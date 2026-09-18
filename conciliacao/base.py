@@ -62,6 +62,9 @@ TIPOS_ACHADO = {
     "cnpj_ausente",
     "consolidacao_multipla_pendente_julgamento",
     "ok_verificado",
+    "atraso_pagamento",         # pagamento (data efetiva) posterior ao vencimento
+    "subconta_atipica",         # categoria nunca vista no histórico recente desse condomínio (heurística)
+    "conteudo_nao_verificavel",  # comprovante existe mas OCR/extração não confirmou valor/data com confiança
 }
 
 SEVERIDADES = {"critico", "alto", "atencao", "informativo"}

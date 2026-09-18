@@ -11,11 +11,19 @@ sempre em cima de fatos rastreáveis, nunca de julgamento embutido no código.
 Tipos de comprovante de pagamento (têm código de lançamento e podem ser
 pareados 1:1 com uma "despesa_interna" do mesmo código):
 """
+import unicodedata
+from datetime import datetime
+
+from conciliacao import verificacoes_historico
 from conciliacao.base import Achado, RegistroComprovante, chave_registro
 
 TIPOS_COMPROVANTE_PAGAMENTO = {"pix", "darf", "boleto", "debito_automatico"}
 
 TOLERANCIA_CENTAVOS = 0.01
+
+# Além disso já conta como atraso relevante (severidade "alto" em vez de "atencao") —
+# ver achado_atraso_pagamento().
+_DIAS_ATRASO_GRAVE = 30
 
 
 def _proximo_id(contador: list) -> str:
@@ -23,11 +31,121 @@ def _proximo_id(contador: list) -> str:
     return f"ACH-{contador[0]:04d}"
 
 
+def _normalizar_texto(s: str) -> str:
+    s = unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode("ascii")
+    return s.upper()
+
+
+def _motivo_isencao_comprovante(descricao: str | None, categoria: str | None) -> str | None:
+    """
+    Alguns lançamentos genuinamente não têm (e não deveriam ter) comprovante
+    de pagamento a terceiro pra cobrar — não são despesas de verdade, são
+    movimentos internos ou tarifas debitadas direto pelo banco sem gerar
+    recibo. Sem esta lista, cada um deles virava um falso "sem comprovante"/
+    "conteúdo não verificável" TODO mês, indefinidamente. Confirmado com o
+    usuário (feedback explícito, dados reais de Baturité):
+      - Transferência entre contas do PRÓPRIO condomínio (ex.: "TRANSF.P/CTA
+        APLIC", movendo saldo da Ordinária pra uma conta de Aplicação) — é
+        um movimento bancário interno, não uma prestação de serviço/compra.
+      - Tarifas bancárias ("Despesas Bancárias") — debitadas direto em
+        extrato pelo próprio banco, sem comprovante individual por natureza.
+    Retorna o nome da regra (pra registrar em Achado.regra_aplicada) ou None
+    quando nenhuma isenção se aplica.
+    """
+    texto = _normalizar_texto(f"{descricao or ''} {categoria or ''}")
+    if "TRANSF" in texto and "CTA" in texto:
+        return "transferencia_interna_entre_contas_proprias"
+    if "BANCARI" in texto:
+        return "tarifa_bancaria_sem_comprovante_individual"
+    return None
+
+
 def _valores_batem(a: float, b: float, tolerancia: float = TOLERANCIA_CENTAVOS) -> bool:
     return abs(a - b) <= tolerancia
 
 
-def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+def achado_atraso_pagamento(registro: RegistroComprovante, contador: list) -> Achado | None:
+    """
+    Compara `vencimento` x `pagamento` (data efetiva) do mesmo registro —
+    exige os dois campos em "DD/MM/YYYY". Retorna None (não é achado) tanto
+    quando o pagamento foi em dia quanto quando falta um dos dois campos
+    (formato de origem só registra uma data) — nesse segundo caso a checagem
+    é "não aplicável" para esse registro, não "sem atraso confirmado", e cabe
+    a quem chama decidir como isso aparece no relatório (ver seção
+    "Verificações realizadas" em scripts/gerar_relatorio_conciliacao.py).
+    """
+    if not (registro.vencimento and registro.pagamento):
+        return None
+    try:
+        venc = datetime.strptime(registro.vencimento, "%d/%m/%Y")
+        pago = datetime.strptime(registro.pagamento, "%d/%m/%Y")
+    except ValueError:
+        return None
+    dias_atraso = (pago - venc).days
+    if dias_atraso <= 0:
+        return None
+    return Achado(
+        id=_proximo_id(contador),
+        tipo="atraso_pagamento",
+        severidade_sugerida="alto" if dias_atraso > _DIAS_ATRASO_GRAVE else "atencao",
+        regra_aplicada="data_pagamento_posterior_ao_vencimento",
+        registros_relacionados=[chave_registro(registro)],
+        linha_demonstrativo=registro.categoria_demonstrativo,
+        valor_esperado=None,
+        valor_encontrado=registro.valor,
+        confianca_deterministica=1.0,
+    )
+
+
+def achados_subconta_atipica(
+    despesas: list[RegistroComprovante], pasta_dados: str | None, mes_atual: str | None, contador: list
+) -> list[Achado]:
+    """
+    Sinaliza categorias (`categoria_demonstrativo`) nunca vistas nos últimos
+    meses processados desse condomínio (ver
+    conciliacao/verificacoes_historico.py) — é uma HEURÍSTICA, não prova de
+    erro (pode ser a primeira vez que uma categoria legítima aparece, ex.:
+    uma despesa extraordinária nova). Por isso severidade "informativo" de
+    propósito: fica registrado em achados_brutos.json/achados_revisados.json
+    para quem revisar decidir se sobe a gravidade, mas não polui o PDF final
+    por padrão (achados "informativo" não entram no relatório — ver
+    scripts/gerar_relatorio_conciliacao.py::etapa_render).
+
+    Sem `pasta_dados`/`mes_atual` (chamada sem contexto de condomínio/mês) ou
+    sem histórico ainda (primeiro mês processado) — lista vazia, para não
+    gerar falso-positivo em massa.
+    """
+    if not (pasta_dados and mes_atual):
+        return []
+    conhecidas = verificacoes_historico.categorias_conhecidas(pasta_dados, mes_atual)
+    if not conhecidas:
+        return []
+    achados: list[Achado] = []
+    categorias_ja_reportadas: set[str] = set()
+    for d in despesas:
+        cat = d.categoria_demonstrativo
+        if not cat or cat in conhecidas or cat in categorias_ja_reportadas:
+            continue
+        categorias_ja_reportadas.add(cat)
+        mesma_categoria = [x for x in despesas if x.categoria_demonstrativo == cat]
+        achados.append(Achado(
+            id=_proximo_id(contador),
+            tipo="subconta_atipica",
+            severidade_sugerida="informativo",
+            regra_aplicada="categoria_nao_vista_no_historico_recente",
+            registros_relacionados=[chave_registro(x) for x in mesma_categoria],
+            linha_demonstrativo=cat,
+            valor_esperado=None,
+            valor_encontrado=sum(x.valor for x in mesma_categoria),
+            confianca_deterministica=0.5,
+        ))
+    return achados
+
+
+def gerar_achados(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
     """
     Executa as regras determinísticas, na ordem:
       1. Pareamento código-a-código (despesa_interna x comprovante de pagamento)
@@ -35,6 +153,8 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
       3. Duplicidade (mesmo código de despesa_interna repetido com mesmo valor)
       4. CNPJ ausente (débito automático de concessionária sem CNPJ extraído)
       5. Divergência de total por categoria (se dados_financeiros for passado)
+      6. Atraso de pagamento (vencimento x pagamento de cada despesa_interna)
+      7. Subconta/categoria atípica (heurística de histórico — se pasta_dados/mes_atual forem passados)
 
     `dados_financeiros` é opcional (DadosFinanceiros do adapter existente,
     ver adapters/base.py) — quando ausente, a regra 5 é pulada.
@@ -181,9 +301,25 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
     despesas_sem_par_restantes = despesas_ainda_sem_par
 
     # ── 3. O que sobrou de despesa sem par vira achado "sem_comprovante" ────
-    # (exceto códigos já marcados como duplicidade — regra 4 cobre esses)
+    # (exceto códigos já marcados como duplicidade — regra 4 cobre esses — e
+    # lançamentos isentos de comprovante por natureza, ver
+    # _motivo_isencao_comprovante: transferência interna, tarifa bancária)
     for despesa in despesas_sem_par_restantes:
         if despesa.codigo in codigos_duplicados:
+            continue
+        motivo_isencao = _motivo_isencao_comprovante(despesa.descricao, despesa.categoria_demonstrativo)
+        if motivo_isencao:
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="ok_verificado",
+                severidade_sugerida="informativo",
+                regra_aplicada=motivo_isencao,
+                registros_relacionados=[chave_registro(despesa)],
+                linha_demonstrativo=despesa.categoria_demonstrativo,
+                valor_esperado=despesa.valor,
+                valor_encontrado=despesa.valor,
+                confianca_deterministica=1.0,
+            ))
             continue
         achados.append(Achado(
             id=_proximo_id(contador),
@@ -283,6 +419,15 @@ def gerar_achados(registros: list[RegistroComprovante], dados_financeiros=None) 
     if dados_financeiros is not None:
         achados.extend(_achados_divergencia_categoria(despesas_internas, dados_financeiros, contador))
 
+    # ── 7. Atraso de pagamento (vencimento x pagamento) ─────────────────────
+    for despesa in despesas_internas:
+        achado_atraso = achado_atraso_pagamento(despesa, contador)
+        if achado_atraso:
+            achados.append(achado_atraso)
+
+    # ── 8. Subconta/categoria atípica (heurística de histórico) ─────────────
+    achados.extend(achados_subconta_atipica(despesas_internas, pasta_dados, mes_atual, contador))
+
     return achados
 
 
@@ -316,19 +461,30 @@ def _achados_divergencia_categoria(despesas: list[RegistroComprovante], dados_fi
     return achados
 
 
-def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+def gerar_achados_lirba(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
     """
-    Regras para o formato Lirba/ContasData (ver conciliacao/lirba_pdf.py) —
-    mais simples que gerar_achados(): a página de "Comprovante de Despesa"
-    não tem texto útil (é imagem digitalizada), então não há valor pra
-    comparar — só existência ou não do comprovante pelo código.
+    Regras para o formato Lirba/ContasData (ver conciliacao/lirba_pdf.py).
+
+    A página de "Comprovante de Despesa" é uma imagem digitalizada — quando
+    o OCR (conciliacao/ocr.py, chamado no próprio extrator) consegue
+    confirmar um "Valor do pagamento" nela, o comprovante vem com
+    `valor > 0` e o conteúdo pode ser cruzado contra o valor da listagem
+    (igual a um pareamento por código, ver gerar_achados()); quando não (OCR
+    indisponível na máquina, imagem ilegível, ou a página é genuinamente uma
+    capa sem anexo — confirmado em dados reais que isso acontece, ex.:
+    comprovante 0001 do Baturité), o comprovante fica com `valor == 0.0` e o
+    achado é "conteudo_nao_verificavel" em vez de um "ok_verificado" às
+    cegas — nunca se finge ter confirmado o que não foi confirmado.
     """
     contador = [0]
     achados: list[Achado] = []
 
     despesas = [r for r in registros if r.tipo_documento == "despesa_listada"]
     comprovantes = [r for r in registros if r.tipo_documento == "comprovante_anexado"]
-    codigos_com_comprovante = {r.codigo for r in comprovantes}
+    comprovantes_por_codigo = {r.codigo: r for r in comprovantes}
 
     # Alguns exports (ex.: Habitacional XLSX de Baturité) nunca preenchem a
     # coluna Anexo com hyperlink real em NENHUMA linha do mês — a ausência de
@@ -342,27 +498,78 @@ def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=
     avaliar_comprovante = bool(comprovantes)
 
     if avaliar_comprovante:
-        # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa" ──
+        # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa",
+        #        e — quando o OCR confirmou conteúdo — o valor bate com a listagem ──
         for d in despesas:
-            if d.codigo in codigos_com_comprovante:
+            comp = comprovantes_por_codigo.get(d.codigo)
+            motivo_isencao = _motivo_isencao_comprovante(d.descricao, d.categoria_demonstrativo)
+            if motivo_isencao:
                 achados.append(Achado(
                     id=_proximo_id(contador),
                     tipo="ok_verificado",
                     severidade_sugerida="informativo",
-                    regra_aplicada="codigo_tem_pagina_comprovante_anexado",
-                    registros_relacionados=[chave_registro(d)],
+                    regra_aplicada=motivo_isencao,
+                    registros_relacionados=[chave_registro(d)] + ([chave_registro(comp)] if comp else []),
                     linha_demonstrativo=d.categoria_demonstrativo,
                     valor_esperado=d.valor,
                     valor_encontrado=d.valor,
                     confianca_deterministica=1.0,
                 ))
-            else:
+            elif comp is None:
                 achados.append(Achado(
                     id=_proximo_id(contador),
                     tipo="sem_comprovante",
                     severidade_sugerida="alto",
                     regra_aplicada="despesa_listada_sem_pagina_comprovante_anexado",
                     registros_relacionados=[chave_registro(d)],
+                    linha_demonstrativo=d.categoria_demonstrativo,
+                    valor_esperado=d.valor,
+                    valor_encontrado=None,
+                    confianca_deterministica=1.0,
+                ))
+            elif comp.valor > 0:
+                # Comprovante primeiro em registros_relacionados (não a despesa) —
+                # scripts/gerar_relatorio_conciliacao.py::etapa_render usa sempre
+                # o PRIMEIRO registro da lista pra escolher a página de evidência
+                # do relatório, e aqui o que interessa mostrar é o comprovante em
+                # si (um recibo), não a linha dele na listagem agregada de
+                # despesas (uma tabela inteira, evidência bem menos legível).
+                if _valores_batem(d.valor, comp.valor):
+                    achados.append(Achado(
+                        id=_proximo_id(contador),
+                        tipo="ok_verificado",
+                        severidade_sugerida="informativo",
+                        regra_aplicada="codigo_tem_comprovante_com_valor_confirmado_por_ocr",
+                        registros_relacionados=[chave_registro(comp), chave_registro(d)],
+                        linha_demonstrativo=d.categoria_demonstrativo,
+                        valor_esperado=d.valor,
+                        valor_encontrado=comp.valor,
+                        confianca_deterministica=1.0,
+                    ))
+                else:
+                    achados.append(Achado(
+                        id=_proximo_id(contador),
+                        tipo="divergencia_valor",
+                        severidade_sugerida="alto",
+                        regra_aplicada="valor_ocr_comprovante_diverge_valor_listagem",
+                        registros_relacionados=[chave_registro(comp), chave_registro(d)],
+                        linha_demonstrativo=d.categoria_demonstrativo,
+                        valor_esperado=d.valor,
+                        valor_encontrado=comp.valor,
+                        confianca_deterministica=0.9,  # OCR, não texto nativo — leve margem de erro de leitura
+                    ))
+                achado_atraso = achado_atraso_pagamento(comp, contador)
+                if achado_atraso:
+                    achado_atraso.linha_demonstrativo = d.categoria_demonstrativo
+                    achado_atraso.registros_relacionados.append(chave_registro(d))
+                    achados.append(achado_atraso)
+            else:
+                achados.append(Achado(
+                    id=_proximo_id(contador),
+                    tipo="conteudo_nao_verificavel",
+                    severidade_sugerida="atencao",
+                    regra_aplicada="pagina_comprovante_existe_mas_ocr_nao_confirmou_valor",
+                    registros_relacionados=[chave_registro(comp), chave_registro(d)],
                     linha_demonstrativo=d.categoria_demonstrativo,
                     valor_esperado=d.valor,
                     valor_encontrado=None,
@@ -390,23 +597,32 @@ def gerar_achados_lirba(registros: list[RegistroComprovante], dados_financeiros=
     if dados_financeiros is not None:
         achados.extend(_achados_divergencia_categoria(despesas, dados_financeiros, contador))
 
+    # ── 4. Subconta/categoria atípica (heurística de histórico) ─────────────
+    achados.extend(achados_subconta_atipica(despesas, pasta_dados, mes_atual, contador))
+
     return achados
 
 
-def gerar_achados_datadigitus(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+def gerar_achados_datadigitus(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
     """
     Regras para o formato DataDigitus (ver conciliacao/datadigitus_pdf.py) —
     o "Prestação de Contas" desse software é só a listagem de despesas do
     próprio demonstrativo, sem comprovante escaneado nem link anexado em
     lugar nenhum do arquivo. Não há checagem de "comprovante ausente" aqui
-    (não existe evidência externa pra cruzar) — só duas checagens de
-    consistência aritmética do próprio documento:
+    (não existe evidência externa pra cruzar), nem de atraso de pagamento
+    (o formato só registra uma data por lançamento, sem vencimento e
+    pagamento separados) — só:
       1. Duplicidade: mesma data + valor + categoria repetidos.
       2. Divergência entre a soma dos lançamentos de uma conta e o total
          "TOTAL DA CONTA X" declarado no mesmo documento.
-    `dados_financeiros` não é usado (mantido só pra manter a mesma
-    assinatura das demais funções de matching, ver gerar_achados_por_empresa
-    em scripts/gerar_relatorio_conciliacao.py).
+      3. Subconta/categoria atípica (heurística de histórico, se
+         pasta_dados/mes_atual forem passados).
+    Esta função também é reaproveitada, sem alteração, por Consvicta, Lello
+    XLS, Alliz, Auxiliadora e uCondo — mesma limitação de uma única data em
+    todos eles (ver scripts/gerar_relatorio_conciliacao.py::gerar_achados_por_empresa).
     """
     contador = [0]
     achados: list[Achado] = []
@@ -472,20 +688,28 @@ def gerar_achados_datadigitus(registros: list[RegistroComprovante], dados_financ
                 confianca_deterministica=1.0,
             ))
 
+    # ── 3. Subconta/categoria atípica (heurística de histórico) ─────────────
+    achados.extend(achados_subconta_atipica(despesas, pasta_dados, mes_atual, contador))
+
     return achados
 
 
-def gerar_achados_gcont(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+def gerar_achados_gcont(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
     """
     Regras para o formato GCONT (ver conciliacao/condominios/club_park_butanta.py)
     — cada pagamento já vem com sua própria página de "Comprovantes de
     despesas" auto-suficiente (o sistema só gera a página quando o pagamento
-    é efetivado), então não existe "sem comprovante" nesse formato. Só duas
-    checagens de consistência:
+    é efetivado), então não existe "sem comprovante" nesse formato. Checagens:
       1. Duplicidade: mesmo fornecedor + documento + valor repetidos (ou
          fornecedor + vencimento + valor, quando não há nº de documento).
       2. Soma dos comprovantes extraídos x total declarado no Livro Caixa
          ("N itens VALOR_TOTAL").
+      3. Atraso de pagamento (vencimento x liquidação, ambos extraídos da
+         própria página do comprovante).
+      4. Subconta/categoria atípica (heurística de histórico).
     """
     contador = [0]
     achados: list[Achado] = []
@@ -531,10 +755,22 @@ def gerar_achados_gcont(registros: list[RegistroComprovante], dados_financeiros=
                 confianca_deterministica=1.0,
             ))
 
+    # ── 3. Atraso de pagamento (vencimento x liquidação) ─────────────────────
+    for despesa in despesas:
+        achado_atraso = achado_atraso_pagamento(despesa, contador)
+        if achado_atraso:
+            achados.append(achado_atraso)
+
+    # ── 4. Subconta/categoria atípica (heurística de histórico) ─────────────
+    achados.extend(achados_subconta_atipica(despesas, pasta_dados, mes_atual, contador))
+
     return achados
 
 
-def gerar_achados_balancete_mensal(registros: list[RegistroComprovante], dados_financeiros=None) -> list[Achado]:
+def gerar_achados_balancete_mensal(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
     """
     Regras para o formato "Balancete Mensal" (ver
     conciliacao/balancete_mensal.py) — Giardino D'Itália, Vita Parque
@@ -546,6 +782,10 @@ def gerar_achados_balancete_mensal(registros: list[RegistroComprovante], dados_f
          x a linha "TOTAL" que fecha a seção.
       2. Saldo anterior + créditos + débitos x saldo final de cada conta
          em "RESUMO FINANCEIRO".
+    `pasta_dados`/`mes_atual` são aceitos só para manter a mesma assinatura
+    das demais funções de matching — subconta/categoria atípica não se
+    aplica aqui (não há `categoria_demonstrativo` por lançamento, só totais
+    agregados).
     """
     contador = [0]
     achados: list[Achado] = []
