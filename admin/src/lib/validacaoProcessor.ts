@@ -98,7 +98,7 @@ const SUBFORMATOS_LIRBA_VALIDADOS = new Set(['posicao_financeira', 'total_da_con
  * despacho por id, não por empresa_gestora/extract_cats). Validado com 4
  * meses reais.
  */
-const CONDOMINIOS_LIRBA_COM_CONCILIADOR_ESPECIFICO = new Set(['club_park_butanta']);
+const CONDOMINIOS_LIRBA_COM_CONCILIADOR_ESPECIFICO = new Set(['club_park_butanta', 'nyc']);
 /**
  * "datadigitus_pdf" tem 2 condomínios (Cap D'Antibes, Maison Du Rhone) —
  * conciliacao/datadigitus_pdf.py só foi validado contra dados reais de Cap
