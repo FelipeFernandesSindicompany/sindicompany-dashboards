@@ -261,13 +261,13 @@ _CARACTERES_INVALIDOS_ARQUIVO = str.maketrans("", "", '\\/:*?"<>|')
 
 def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
     """
-    "Validação Balancete - <Nome do Condomínio> MM-AAAA.pdf" — padrão de nome
+    "Validação Balancete - <Nome do Condomínio> MM.AAAA.pdf" — padrão de nome
     de arquivo pedido pelo usuário pro relatório entregue (a barra de
-    "MM/AAAA" vira hífen, já que "/" não é permitido em nome de arquivo).
+    "MM/AAAA" vira ponto, já que "/" não é permitido em nome de arquivo).
     """
     ano, mes_num = mes.split("-")
     nome = condo["nome"].translate(_CARACTERES_INVALIDOS_ARQUIVO)
-    return f"Validação Balancete - {nome} {mes_num}-{ano}.pdf"
+    return f"Validação Balancete - {nome} {mes_num}.{ano}.pdf"
 
 
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
