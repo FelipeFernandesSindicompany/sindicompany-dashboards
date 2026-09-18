@@ -90,6 +90,7 @@ ADMINISTRADORA_LABEL = {
     "lfc_xlsx": "LFC",
     "lello_xls": "Lello",
     "auxiliadora_xls": "Auxiliadora Predial",
+    "ucondo_pdf": "Conviver MRV",
 }
 
 
@@ -165,6 +166,7 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         # nas páginas de comprovante — mesmas regras de consistência.
         "alliz_pdf": gerar_achados_datadigitus,
         "auxiliadora_xls": gerar_achados_datadigitus,
+        "ucondo_pdf": gerar_achados_datadigitus,
     }
     # Condomínios com conciliador ESPECÍFICO (ver conciliacao/condominios/) podem
     # ter regras de matching próprias, mesmo compartilhando empresa_gestora com
