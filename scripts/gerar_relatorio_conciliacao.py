@@ -176,6 +176,10 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     # "lirba_pdf" no cadastro, mas o PDF é do sistema GCONT, não ContasData).
     gerar_achados_por_condo = {
         "club_park_butanta": gerar_achados_gcont,
+        # NYC (webware) não tem "Demonstrativo de Despesas" separado nem
+        # total confiável pra checar soma — só duplicidade (a mesma função
+        # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
+        "nyc": gerar_achados_datadigitus,
     }
     funcao_matching = gerar_achados_por_condo.get(
         condo["id"], gerar_achados_por_empresa.get(condo["empresa_gestora"], gerar_achados)
@@ -286,7 +290,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
 
     # Rótulo por condomínio específico tem prioridade (ex.: Club Park Butantã
     # é "lirba_pdf" no cadastro, mas o PDF real é do sistema GCONT).
-    ADMINISTRADORA_LABEL_POR_CONDO = {"club_park_butanta": "GCONT"}
+    ADMINISTRADORA_LABEL_POR_CONDO = {"club_park_butanta": "GCONT", "nyc": "Manager ADM"}
     administradora_label = ADMINISTRADORA_LABEL_POR_CONDO.get(
         condo["id"], ADMINISTRADORA_LABEL.get(condo["empresa_gestora"], condo["empresa_gestora"])
     )
