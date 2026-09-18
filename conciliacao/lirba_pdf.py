@@ -69,11 +69,44 @@ _OCR_TEXTO_MINIMO = 80
 # das 3 regras batia contra o template de débito automático ("Valor: 53,85",
 # sem "R$" nenhum) até essa correção.
 _RE_OCR_VALORES_EM_ORDEM = [
-    re.compile(r"[VW]+alor do lan\S*to:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),        # DCTFWeb/eletrônico (individual, mesmo se consolidado)
+    # "Valor do lancto"/"Valor lancto" (o "do" é opcional — confirmado em
+    # dados reais: o DARF/tributos Bradesco de Dueto Morumbi omite o "do" na
+    # seção "Lançamento consolidado", diferente do "Comprovante de Pagamento
+    # Eletrônico" do Baturité, que sempre tem "do") — sempre o valor
+    # INDIVIDUAL do lançamento, mesmo quando o pagamento em si é consolidado.
+    re.compile(r"[VW]+alor\s*(?:do\s*)?lan\S*to:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),
     re.compile(r"Valor do pagamento:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),            # guia tributária (DARE etc.) sem conceito de "lancto"
     re.compile(r"^Valor:\s*(?:R\$)?\s*([\d.]+,\d{2})\s*$", re.IGNORECASE | re.MULTILINE),     # débito automático de concessionária
+    re.compile(r"Valor\s*R\$:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),                  # boleto Bradesco "Pag-For" (Dueto Morumbi/manager_adm_pdf)
+    # Tabela de TED/DOC do Pag-For Bradesco: colunas viram texto solto no OCR
+    # ("... l l R$ 1.983,75"), mas o valor sempre aparece na linha logo ANTES
+    # de "Banco destinatário" — âncora confiável mesmo com a tabela toda
+    # desalinhada.
+    re.compile(r"R\$\s*([\d.]+,\d{2})\s*\n\s*Banco destinat", re.IGNORECASE),
+    # Segunda via de fatura de concessionária (ex.: Eletropaulo/Enel) anexada
+    # como comprovante — o valor cobrado é o da fatura em si, não de um
+    # pagamento; usa o mesmo campo "VALOR DO DOCUMENTO" da própria fatura.
+    re.compile(r"VALOR DO DOCUMENTO:?\s*R?\$?\s*([\d.]+,\d{2})", re.IGNORECASE),
+    # "Demonstrativo para Faturamento de Serviços Prestados" (ex.: Correios/
+    # AGF) — fecha com "Total da Operação"/"Total do Departamento" (o mesmo
+    # valor nos dois, um logo depois do outro).
+    re.compile(r"Total d[ao] (?:Opera[cç][aã]o|Departamento):?\s*\d*\s*([\d.]+,\d{2})", re.IGNORECASE),
+    # "alor Total" (sem exigir o "V"/"v" inicial) — confirmado em dados reais
+    # que o OCR às vezes gruda um caractere solto antes ("vValor Total") —
+    # guia de tributos Bradesco (DARF) quando rótulo e valor saem na mesma
+    # linha; quando o layout da página faz o OCR ler todos os rótulos
+    # primeiro e todos os valores depois (fora de ordem), essa regra não bate
+    # e o comprovante fica "conteudo_nao_verificavel" — correto: mais vale
+    # não confirmar do que confirmar errado. É o ÚLTIMO da lista porque no
+    # DARF consolidado é o valor AGREGADO (soma de N retenções), não o valor
+    # do lançamento individual — só serve de fallback quando a regra 1 (mais
+    # específica) não encontrar a seção "Lançamento consolidado".
+    re.compile(r"alor Total:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),
 ]
-_RE_OCR_VENCIMENTO = re.compile(r"Vencimento:?\s*(\d{2}/\d{2}/\d{4})", re.IGNORECASE)
+# OCR também troca "V" por "Y" com frequência (confirmado: "Vencimento" saindo
+# "Yencimento" no boleto Bradesco) — além do "Data do "/"Data de " opcional
+# que precede o rótulo (boleto Bradesco usa "do", fatura Eletropaulo usa "de").
+_RE_OCR_VENCIMENTO = re.compile(r"(?:Data d[eo] )?[VY]encimento:?\s*(\d{2}/\d{2}/\d{4})", re.IGNORECASE)
 # Data efetiva do pagamento — cada template usa um rótulo diferente; tentados
 # em ordem, a primeira que casar vence. Nenhuma delas tem uma "Vencimento"
 # correspondente nos templates de PIX/débito automático/DARE (a operação é
@@ -87,6 +120,18 @@ _RE_OCR_PAGAMENTOS_EM_ORDEM = [
 _RE_OCR_PAGAMENTO_REALIZADO = re.compile(r"Pagamento realizado em (\d{2})\.(\d{2})\.(\d{4})", re.IGNORECASE)
 _RE_OCR_FORNECEDOR = re.compile(r"(?:Fornecedor|nome do recebedor):?\s*(.+)", re.IGNORECASE)
 _RE_OCR_CPF_CNPJ = re.compile(r"(?:CNPJ|CPF)(?:\s*/\s*CNPJ)?(?:\s*d[oa]\s*\w+)?:?\s*([\d./\-]{11,18})", re.IGNORECASE)
+# Marca a seção "Lançamento consolidado" da guia de tributos Bradesco (DARF) —
+# quando presente, é o sinal mais forte de que existe um valor INDIVIDUAL
+# dentro dela (distinto do "Valor Total" da página, que é o agregado de N
+# retenções). Confirmado em dados reais (Dueto Morumbi) que o layout dessa
+# seção às vezes sai com rótulo e valor na mesma linha ("Valor lancto: R$
+# X"), e às vezes o OCR lê todos os rótulos primeiro e todos os valores
+# depois, fora de ordem ("Valor lancto :\n...\nR$ X") — por isso, quando essa
+# seção existe, o primeiro "R$ valor" que aparecer DEPOIS dela é usado como
+# o valor individual, funcionando nos dois casos sem depender de rótulo e
+# valor estarem colados.
+_RE_LANCAMENTO_CONSOLIDADO = re.compile(r"Lan\S*amento consolidado", re.IGNORECASE)
+_RE_PRIMEIRO_VALOR_RS = re.compile(r"R\$\s*([\d.]+,\d{2})")
 
 
 def _num(s) -> float:
@@ -111,7 +156,12 @@ def _preencher_via_ocr(registro: RegistroComprovante, caminho_pdf: Path, pagina_
     texto = ocr.ocr_pagina_pdf(caminho_pdf, pagina_1based - 1)
     if len(texto.strip()) < _OCR_TEXTO_MINIMO:
         return
-    m_valor = next((m for m in (regex.search(texto) for regex in _RE_OCR_VALORES_EM_ORDEM) if m), None)
+    m_valor = None
+    m_consolidado = _RE_LANCAMENTO_CONSOLIDADO.search(texto)
+    if m_consolidado:
+        m_valor = _RE_PRIMEIRO_VALOR_RS.search(texto, m_consolidado.end())
+    if not m_valor:
+        m_valor = next((m for m in (regex.search(texto) for regex in _RE_OCR_VALORES_EM_ORDEM) if m), None)
     if not m_valor:
         return  # texto substancial, mas nenhum valor reconhecível — não confirma nada
     registro.texto_bruto = texto
