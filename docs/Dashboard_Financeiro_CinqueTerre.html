@@ -814,7 +814,7 @@ var BAL = {
     ],
     prev: 328532.87, real: 318346.55, tDesp:339743.14, fac: 0,
     inad: 11515.35, inadProc: 3388.44,
-    banco: {cc:327414.82, cdb:1400969.79, priv:131562.49},
+    banco:{cc:null,cdb:null,priv:null},
     desp: [
       {c:'PESSOAL',                   v:14832.77},
       {c:'ENCARGOS SOCIAIS',          v:5839.21},
@@ -1274,7 +1274,7 @@ function buildTblBanco() {
     h += '<tr><td class="bd">' + lbl + '</td>';
     h += '<td class="nr">' + (m.banco.cc !== null ? R(m.banco.cc) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
     h += '<td class="nr">' + (m.banco.cdb !== null ? R(m.banco.cdb) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
-    h += '<td class="nr">' + R(m.banco.priv) + '</td>';
+    h += '<td class="nr">' + (m.banco.priv !== null ? R(m.banco.priv) : '<span style="color:var(--muted)">N/D</span>') + '</td>';
     h += '<td class="nr bd">' + R(m.tAtual) + '</td></tr>';
   });
   document.getElementById('tblBanco').innerHTML = h;
