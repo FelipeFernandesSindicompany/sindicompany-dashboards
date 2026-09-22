@@ -1383,27 +1383,41 @@ function buildCharts() {
   });
 
   // ── 3. Barras empilhadas — saldo por conta histórico (Cinque Terre) ──────────
-  var contaColorsSt = [
-    'rgba(23,27,46,0.85)','rgba(232,119,34,0.85)','rgba(39,174,96,0.85)',
-    'rgba(243,156,18,0.85)','rgba(41,128,185,0.85)','rgba(155,89,182,0.85)'
-  ];
-  var contaBorderSt = [P, '#C05A10', '#1A6B3C', '#C67D00', '#1A5276', '#6C3483'];
-  var contaNames = ['ORDINÁRIA','FUNDO DE RESERVA','FUNDO ÁREA COMUM','FUNDO FACHADA','MERCADINHO'];
-  var stDatasets = contaNames.map(function(cn, i) {
-    return {
-      label: cn.replace('FUNDO ','F.').replace('ÁREA COMUM','Á.Comum'),
+  var stDatasets = [
+    {
+      label: 'ORDINÁRIA',
       data: MESES.map(function(k) {
-        var keyword = cn === 'FUNDO ÁREA COMUM' ? 'ÁREA' : cn === 'FUNDO FACHADA' ? 'FACHADA' : cn === 'MERCADINHO' ? 'MERCADINHO' : cn.split(' ')[cn.split(' ').length-1];
-        var c = BAL[k].contas.find(function(x){ return x.n.indexOf(keyword) >= 0; });
+        var c = BAL[k].contas.find(function(x){ return x.n.indexOf('ORDINÁRIA') >= 0 || x.n.indexOf('ORDINARIA') >= 0; });
         return c ? Math.max(0, c.s) : 0;
       }),
-      backgroundColor: contaColorsSt[i],
-      borderColor: contaBorderSt[i],
-      borderWidth: 1,
-      borderRadius: 3,
-      borderSkipped: false
-    };
-  });
+      backgroundColor: 'rgba(23,27,46,0.85)',
+      borderColor: '#1A1C29',
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    },
+    {
+      label: 'F. DE RESERVA',
+      data: MESES.map(function(k) {
+        var c = BAL[k].contas.find(function(x){ return x.n.indexOf('RESERVA') >= 0; });
+        return c ? Math.max(0, c.s) : 0;
+      }),
+      backgroundColor: 'rgba(232,119,34,0.85)',
+      borderColor: '#C05A10',
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    },
+    {
+      label: 'Demais Fundos',
+      data: MESES.map(function(k) {
+        return BAL[k].contas.reduce(function(sum, x) {
+          if (x.n.indexOf('ORDINÁRIA') >= 0 || x.n.indexOf('ORDINARIA') >= 0) return sum;
+          if (x.n.indexOf('RESERVA') >= 0) return sum;
+          return sum + Math.max(0, x.s);
+        }, 0);
+      }),
+      backgroundColor: 'rgba(39,174,96,0.85)',
+      borderColor: '#1A6B3C',
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    }
+  ];
   mkChart('cContas', {
     type: 'bar',
     data: { labels: ML, datasets: stDatasets },
