@@ -181,6 +181,15 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Hub Home Club Tatuapé",
       "parser_config": {
         "desp_fonte": "posicao_financeira"
+      },
+      "regras": {
+        "rendimento": {
+          "contas_aplicadas": [
+            "FUNDO DE RESERVA",
+            "SALÃO DE FESTAS/CHURRASQUEIRA",
+            "MINI MERCADO"
+          ]
+        }
       }
     },
     "jau_1894": {
@@ -225,7 +234,21 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Monte Tabor"
     },
     "nyc": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete NYC Berrini"
+      "pasta_prestacao": "Dashboard de Análise de Balancete NYC Berrini",
+      "regras": {
+        "receita_negativa": {
+          "estruturais": [
+            "ESTAC"
+          ]
+        },
+        "compensacoes": [
+          {
+            "nome": "Estacionamento",
+            "regex": "ESTAC",
+            "tolerancia": 1.0
+          }
+        ]
+      }
     },
     "onze_22": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Onze 22"
@@ -277,7 +300,15 @@
       }
     },
     "patricia": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia",
+      "regras": {
+        "rendimento": {
+          "contas_aplicadas": [
+            "FUNDO DE OBRAS",
+            "SALÃO DE FESTAS/ CHURRASQUEIRA"
+          ]
+        }
+      }
     },
     "plano_estacao_campo_limpo": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Plano Estação Campo Limpo"

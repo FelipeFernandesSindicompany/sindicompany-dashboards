@@ -79,6 +79,7 @@ TIPOS_ACHADO = {
     "pagamento_sem_identificacao",  # lançamento sem fornecedor/histórico identificável
     "parcelas_mesmo_mes",        # duas (ou mais) parcelas da mesma série pagas no mesmo mês
     "lancamento_em_outra_subconta",  # fornecedor/despesa que mudou de subconta em relação ao mês anterior
+    "compensacao_nao_fecha",     # entrada e saída de um mesmo grupo (ex.: estacionamento) não se anulam no mês
 }
 
 SEVERIDADES = {"critico", "alto", "atencao", "informativo"}

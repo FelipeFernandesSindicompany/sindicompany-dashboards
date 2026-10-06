@@ -119,7 +119,9 @@ def regra_receita_negativa(dados: DadosRegras, cont: _Contador, cfg: Optional[di
     """
     cfg = cfg or {}
     tipos_ign = set(cfg.get("ignorar_tipos", []))
-    regex_ign = [re.compile(r, re.IGNORECASE) for r in cfg.get("ignorar_descricao", [])]
+    # `estruturais`: negativos que fazem parte de um par entrada/saída conferido por `compensacoes` — só esta
+    # regra os ignora (os leitores NÃO os descartam, senão a compensação não os enxerga).
+    regex_ign = [re.compile(r, re.IGNORECASE) for r in list(cfg.get("ignorar_descricao", [])) + list(cfg.get("estruturais", []))]
     grupos: dict[tuple, list] = {}
     for r in dados.receitas:
         if r.valor >= -_CENTAVO or r.tipo in tipos_ign:
@@ -143,6 +145,48 @@ def regra_receita_negativa(dados: DadosRegras, cont: _Contador, cfg: Optional[di
                       "local": r.local, "bbox": r.bbox, "tipo_receita": r.tipo, "quantidade": len(linhas),
                       "itens": [{"valor": x.valor, "data": x.data, "descricao": x.descricao, "pagina": x.pagina,
                                  "local": x.local} for x in linhas[:20]]},
+        ))
+    return achados
+
+
+# ── Compensação: o dinheiro que entra e o que sai de um mesmo grupo devem fechar ────────────
+
+def regra_compensacao(dados: DadosRegras, cont: _Contador, compensacoes: Optional[list]) -> list[Achado]:
+    """Para grupos que a administradora lança como ENTRADA e SAÍDA que se anulam (ex.: NYC — a locação do
+    estacionamento entra como receita e o desconto do mesmo valor sai como receita negativa), confere se
+    o líquido do mês fecha. Configuração por condomínio (`regras.compensacoes`):
+        [{"nome": "Estacionamento", "regex": "ESTAC", "tolerancia": 1.00}]
+    Considera todas as linhas de receita cuja descrição casa o regex (positivas = entrada, negativas = saída).
+    A verificação é OBRIGATÓRIA todo mês para o condomínio configurado: gera achado quando o líquido
+    passa da tolerância E também quando falta a entrada, a saída ou o grupo inteiro no mês."""
+    achados = []
+    for cfg in compensacoes or []:
+        rx = re.compile(cfg["regex"], re.IGNORECASE)
+        tol = float(cfg.get("tolerancia", 1.0))
+        linhas = [r for r in dados.receitas if rx.search(r.descricao or "")]
+        entrada = round(sum(r.valor for r in linhas if r.valor > 0), 2)
+        saida = round(sum(r.valor for r in linhas if r.valor < 0), 2)
+        liquido = round(entrada + saida, 2)
+        if entrada > 0 and saida < 0:
+            situacao = "liquido"
+            if abs(liquido) <= tol:
+                continue
+        elif entrada > 0:
+            situacao = "sem_saida"
+        elif saida < 0:
+            situacao = "sem_entrada"
+        else:
+            situacao = "sem_lancamentos"
+        principais = sorted(linhas, key=lambda r: -abs(r.valor))[:6]
+        achados.append(Achado(
+            id=cont.proximo(), tipo="compensacao_nao_fecha", severidade_sugerida="atencao",
+            regra_aplicada="entrada_e_saida_do_grupo_nao_se_anulam_no_mes", linha_demonstrativo=cfg.get("nome", "grupo"),
+            valor_esperado=0.0, valor_encontrado=liquido,
+            detalhes={"grupo": cfg.get("nome", "grupo"), "situacao": situacao, "entrada": entrada, "saida": saida,
+                      "liquido": liquido, "quantidade": len(linhas),
+                      "pagina": principais[0].pagina if principais else None,
+                      "local": principais[0].local if principais else None,
+                      "principais": [{"descricao": r.descricao, "valor": r.valor, "pagina": r.pagina} for r in principais]},
         ))
     return achados
 
@@ -228,7 +272,10 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
                 id=cont.proximo(), tipo="rendimento_desproporcional", severidade_sugerida="atencao",
                 regra_aplicada="conta_com_saldo_sem_rendimento_no_mes", linha_demonstrativo=c.nome,
                 valor_esperado=esperado, valor_encontrado=0.0,
-                detalhes={**resumo, "conta": c.nome, "motivo": "sem_rendimento", "pagina": c.pagina},
+                detalhes={**resumo, "conta": c.nome, "motivo": "sem_rendimento", "pagina": c.pagina,
+                          "exigida_por": "configuracao" if any(_mesma_conta(c.nome, n) for n in cfg.get("contas_aplicadas", [])) else "mes_anterior",
+                          "contas_com_rendimento": [x.nome for x in contas if x.rendimento > _CENTAVO],
+                          "rendimento_total_mes": round(sum(x.rendimento for x in contas), 2)},
             ))
     return achados
 
@@ -480,6 +527,7 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
     cob = dados.cobertura
     if cob.get("receitas"):
         achados += regra_receita_negativa(dados, cont, cfg_condo.get("receita_negativa"))
+        achados += regra_compensacao(dados, cont, cfg_condo.get("compensacoes"))
         status["receita_negativa"] = {"aplicada": True, "motivo": None}
     else:
         _nao("receita_negativa", "receitas", "o formato deste arquivo não traz as linhas de receita")

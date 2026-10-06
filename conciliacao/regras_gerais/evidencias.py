@@ -44,6 +44,8 @@ def specs_para(a: Achado) -> list[dict]:
             if i.get("pagina"):
                 specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])),
                                    "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or "")))
+    elif a.tipo == "compensacao_nao_fecha" and d.get("pagina"):
+        specs.append(_spec(d["pagina"], r"ESTAC", "Lançamentos do grupo " + (d.get("grupo") or "")))
     elif a.tipo == "rendimento_desproporcional" and d.get("pagina"):
         specs.append(_spec(d["pagina"], r"REND", "Rendimento creditado na conta " + (d.get("conta") or "")))
     return [s for s in specs if s["buscar"]]

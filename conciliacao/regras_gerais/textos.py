@@ -46,8 +46,14 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
     if d.get("motivo") == "sem_rendimento":
         titulo = f"Rendimento não creditado — {conta}"
         esp = f" (pela proporção das demais contas, cerca de {_moeda(a.valor_esperado)})" if a.valor_esperado else ""
-        paragrafo = (f"A conta {conta} tem saldo no mês, e tinha rendimento no mês anterior, mas não recebeu "
-                     f"nenhum rendimento neste mês{esp}.")
+        if d.get("exigida_por") == "configuracao" and d.get("contas_com_rendimento"):
+            onde = ", ".join(d["contas_com_rendimento"])
+            paragrafo = (f"A conta {conta} tem saldo no mês, mas não recebeu nenhum rendimento{esp}. O rendimento do mês "
+                         f"({_moeda(d.get('rendimento_total_mes'))}) foi creditado apenas em: {onde}. O rendimento das "
+                         f"aplicações deve ser distribuído entre as contas na proporção do saldo de cada uma.")
+        else:
+            paragrafo = (f"A conta {conta} tem saldo no mês, e tinha rendimento no mês anterior, mas não recebeu "
+                         f"nenhum rendimento neste mês{esp}.")
         verificar = ("Perguntar à administradora se o saldo desta conta permaneceu aplicado e por que o "
                      "rendimento do mês não foi creditado nela.")
         return titulo, paragrafo, verificar
@@ -117,12 +123,43 @@ def texto_outra_subconta(a: Achado) -> tuple[str, str, str]:
     return titulo, paragrafo, verificar
 
 
+def texto_compensacao(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    grupo = d.get("grupo") or "grupo"
+    g = grupo.lower()
+    sit = d.get("situacao", "liquido")
+    if sit == "sem_lancamentos":
+        titulo = f"{grupo}: nenhum lançamento encontrado neste mês"
+        paragrafo = (f"Todo mês o {g} deve ter uma entrada (receita) e uma saída (desconto/abatimento) que se anulam. "
+                     f"Neste mês não foi encontrado nenhum lançamento de {g} nas receitas.")
+        verificar = f"Perguntar à administradora se o {g} deixou de ser lançado neste mês e por quê."
+    elif sit == "sem_saida":
+        titulo = f"{grupo}: entrada sem a saída correspondente ({_moeda(d.get('entrada'))})"
+        paragrafo = (f"O {g} teve entrada de {_moeda(d.get('entrada'))} neste mês, mas nenhuma saída (desconto/abatimento) "
+                     f"para compensá-la; todo mês entrada e saída do {g} se anulam.")
+        verificar = f"Perguntar à administradora onde está a saída (desconto) correspondente à entrada do {g}."
+    elif sit == "sem_entrada":
+        titulo = f"{grupo}: saída sem a entrada correspondente ({_moeda(d.get('saida'))})"
+        paragrafo = (f"O {g} teve saída de {_moeda(d.get('saida'))} neste mês (desconto/abatimento lançado como receita "
+                     f"negativa), mas nenhuma entrada de locação para compensá-la.")
+        verificar = f"Perguntar à administradora onde está a entrada (receita) correspondente à saída do {g}."
+    else:
+        titulo = f"{grupo}: entrada e saída não se anulam no mês (líquido {_moeda(d.get('liquido'))})"
+        paragrafo = (f"No mês, as receitas de {g} somam entradas de {_moeda(d.get('entrada'))} e saídas "
+                     f"(descontos/abatimentos lançados como receita negativa) de {_moeda(d.get('saida'))}, em "
+                     f"{d.get('quantidade')} lançamentos; o líquido de {_moeda(d.get('liquido'))} deveria ser zero.")
+        verificar = (f"Perguntar à administradora a que se referem os abatimentos e as diferenças que fazem a entrada e a saída de "
+                     f"{g} não fecharem.")
+    return titulo, paragrafo, verificar
+
+
 TEXTOS = {
     "receita_negativa": texto_receita_negativa,
     "rendimento_desproporcional": texto_rendimento,
     "pagamento_sem_identificacao": texto_sem_identificacao,
     "parcelas_mesmo_mes": texto_parcelas,
     "lancamento_em_outra_subconta": texto_outra_subconta,
+    "compensacao_nao_fecha": texto_compensacao,
 }
 
 
