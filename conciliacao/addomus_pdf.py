@@ -86,6 +86,11 @@ _RE_CAMPO = {
 
 _MARCADORES_TIPO = [
     # (tipo_documento, padrão de detecção — primeiro que casar vence)
+    # A tela interna "Despesa" vem PRIMEIRO: quando a forma de pagamento é "Débito automático" ela contém a
+    # frase "Forma Pgto: Débito automático", que casava o marcador de comprovante de débito automático e
+    # fazia a despesa sumir (Spazio 07/2026: 6 concessionárias viravam "comprovante sem lançamento" +
+    # "CNPJ ausente" e a categoria Consumo ficava com soma 0). Só a tela interna tem "Composição da Despesa".
+    ("despesa_interna", re.compile(r"Composi[çc][ãa]o\s+da\s+Despesa", re.IGNORECASE)),
     ("pix", re.compile(r"Comprovante\s+de\s+Transfer[êe]ncia|PIX\s*-\s*pagamento\s+instant[âa]neo", re.IGNORECASE)),
     ("darf", re.compile(r"Comprovante\s+de\s+pagamento\s*-?\s*DARF|c[óo]digo\s+de\s+barras", re.IGNORECASE)),
     ("boleto", re.compile(r"Comprovante\s+de\s+pagamento\s+de\s+boleto|Dados\s+da\s+conta\s+debitada\s*/\s*Pagador", re.IGNORECASE)),
@@ -98,7 +103,10 @@ _MARCADORES_TIPO = [
     # Código/Fornecedor/Valor/Pago já rotulados) que antecede a nota fiscal ou
     # o comprovante bancário propriamente dito — fallback de baixa prioridade,
     # só quando nenhum marcador mais específico casou.
-    ("capa_comprovante", re.compile(r"Comprovantes\s+de\s+Despesas[\s\S]{0,300}C[óo]digo\s*:", re.IGNORECASE)),
+    # O sistema imprime "Comprovantes de Despesas" (plural) em 07/2026 e "Comprovante de Despesas" (singular)
+    # em 06/2026 — com o plural fixo, todas as capas de junho viravam "outro" e as despesas com anexo em
+    # imagem saíam como "sem comprovante".
+    ("capa_comprovante", re.compile(r"Comprovantes?\s+de\s+Despesas[\s\S]{0,300}C[óo]digo\s*:", re.IGNORECASE)),
 ]
 
 _MIN_CHARS_TEXTO = 20  # abaixo disso, considera página sem texto extraível (provável imagem/scan)
@@ -210,6 +218,69 @@ def _montar_registro(pagina: int, texto: str) -> RegistroComprovante:
     )
 
 
+# ── Anexos digitalizados (imagem) de despesas sem comprovante bancário em texto ──
+# A "capa" de cada anexo ("Comprovantes de Despesas ... Código: N ... Valor: X Pago: Y") é só o cabeçalho
+# que o sistema imprime em CIMA da imagem anexada (PIX/QR Code, boleto, NFS-e, cupom fiscal...). Despesas
+# cujas páginas de anexo são todas imagem não casavam com nenhum comprovante de pagamento em texto e saíam
+# como "sem comprovante" (Spazio 07/2026: Taxa de Administração, Leitura água, Garantidora 2/2 e Caixa do
+# Síndico tinham o anexo no PDF). Aqui as páginas-capa dessas despesas são lidas por OCR e, se o texto da
+# IMAGEM (sem o cabeçalho, que repete o valor) trouxer o valor da despesa junto de um marcador de prova de
+# pagamento, viram um comprovante "comprovante_imagem" — nunca se o valor não aparecer na imagem.
+_RE_CABECALHO_CAPA = re.compile(r"Comprovantes?\s+de\s+Despesas.*?Pago:\s*[\d.]*,?\d*", re.IGNORECASE | re.DOTALL)
+_RE_PROVA_PAGAMENTO = re.compile(
+    r"EFETUAD|pagamento\s+realizado|situa[çc][aã]o\s+da\s+transa|Comprovante\s+de\s+(?:pagamento|transfer)|"
+    r"Pagamento\s+com\s+QR|Transfer[êe]ncia\s+realizada|Pix\s+enviado", re.IGNORECASE)
+_RE_CUPOM = re.compile(r"NOTA\s+FISCAL\s+DE\s+CONSUMIDOR|CUPOM\s+FISCAL|\bNFC-?e\b", re.IGNORECASE)
+_MAX_PAGINAS_ANEXO_OCR = 14
+
+
+def _br(valor: float) -> str:
+    return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _confirmar_anexos_imagem(caminho: Path, registros: list) -> int:
+    """Cria registros `comprovante_imagem` para despesas internas sem comprovante de pagamento em texto,
+    cujos anexos em imagem confirmam (OCR) valor + prova de pagamento. Devolve quantos foram criados."""
+    from conciliacao import ocr
+
+    pagamento = {"pix", "darf", "boleto", "debito_automatico", "comprovante_imagem"}
+    com_pagamento = {r.codigo for r in registros if r.tipo_documento in pagamento and r.codigo}
+    despesas = {r.codigo: r for r in registros if r.tipo_documento == "despesa_interna" and r.codigo}
+    capas: dict[str, list] = {}
+    for r in registros:
+        if r.tipo_documento == "capa_comprovante" and r.codigo:
+            capas.setdefault(r.codigo, []).append(r)
+    alvos = {c: capas[c] for c in despesas if c not in com_pagamento and c in capas}
+    if not alvos or not ocr.tesseract_disponivel():
+        return 0
+    paginas = sorted({r.pagina - 1 for lst in alvos.values() for r in lst[:_MAX_PAGINAS_ANEXO_OCR]})
+    textos = ocr.ocr_paginas(Path(caminho), paginas, dpi=150)
+    criados = 0
+    for codigo, lista in alvos.items():
+        despesa = despesas[codigo]
+        alvo = _br(despesa.valor)
+        rx_valor = re.compile(r"(?<![\d.,])" + re.escape(alvo) + r"(?!\d)")
+        achou = None
+        for r in lista[:_MAX_PAGINAS_ANEXO_OCR]:
+            corpo = _RE_CABECALHO_CAPA.sub(" ", textos.get(r.pagina - 1, "") or "", count=1)
+            if not rx_valor.search(corpo):
+                continue
+            caixa = "caixa" in (despesa.conta or "").lower()
+            if _RE_PROVA_PAGAMENTO.search(corpo) or (caixa and _RE_CUPOM.search(corpo)):
+                achou = (r, textos.get(r.pagina - 1, ""))
+                break
+        if achou:
+            r, texto = achou
+            registros.append(RegistroComprovante(
+                pagina=r.pagina, tipo_documento="comprovante_imagem", codigo=codigo,
+                fornecedor=despesa.fornecedor, conta=despesa.conta, vencimento=r.vencimento,
+                pagamento=r.pagamento, valor=despesa.valor, forma_pagamento=r.forma_pagamento,
+                texto_bruto=texto,
+            ))
+            criados += 1
+    return criados
+
+
 class ConciliadorAddomusPDF(ConciliadorBase):
     """Extrai comprovantes individuais da Pasta de Prestação de Contas (Addomus)."""
 
@@ -226,4 +297,8 @@ class ConciliadorAddomusPDF(ConciliadorBase):
                 registros.append(_montar_registro(i, texto))
                 # Libera cache de layout da página — evita acúmulo de memória em PDFs grandes.
                 page.flush_cache()
+        try:
+            _confirmar_anexos_imagem(caminho, registros)
+        except Exception as exc:  # o OCR de reforço nunca derruba a extração
+            print(f"[AVISO] leitura por OCR dos anexos em imagem falhou: {exc}")
         return registros

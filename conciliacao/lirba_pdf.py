@@ -463,6 +463,260 @@ def preencher_de_texto(registro: RegistroComprovante, texto: str) -> None:
         registro.cnpj_cpf = m.group(1)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Leitura do anexo COMPLETO de uma despesa (todas as páginas "Comprovante de
+# Despesa <código>"). No ContasData o anexo de uma despesa tem 1 a dezenas de
+# páginas (guia/boleto, Nota Fiscal, comprovante bancário, contrato...), na
+# ordem em que o síndico anexou — o comprovante bancário quase nunca é a
+# primeira. A regra de ouro aqui: o valor que a LISTAGEM declara tem de ser
+# PROCURADO no texto das páginas do anexo (formatos "1.234,56" e variações de
+# OCR); só quando ele não aparece em nenhuma página (nem na leitura a 300 dpi)
+# é que se lê o valor "de verdade" do comprovante e se compara — aí a diferença
+# é divergência real, não artefato de ler a página errada.
+# ─────────────────────────────────────────────────────────────────────────────
+_MAX_PAGINAS_REOCR = 12
+# Páginas de comprovante bancário / pagamento (onde o valor efetivamente pago e as datas estão).
+_RE_PAGINA_PAGAMENTO = re.compile(
+    r"Comprovante\s+de\s+(?:Pagamento|Transfer|Opera[cç]|Dep[oó]sito|Agendamento|Liquida)|"
+    r"Dados\s+do\s+(?:Lan[cç]amento|Pagamento)|Autentica[cç][aã]o(?!\s+mec[aâ]nica)|Comprovante\s+PIX|Pagamento\s+realizado|"
+    r"Valor\s+(?:do\s+)?lan\S*to|Conta\s+de\s+d[eé]bito|Data\s+d[ao]\s+(?:pagamento|transfer)",
+    re.IGNORECASE,
+)
+
+
+def _regex_valor(valor: float) -> re.Pattern:
+    inteiro, cent = divmod(int(round(valor * 100)), 100)
+    s = str(inteiro)
+    grupos = [s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1]
+    corpo = r"[.,\s]?".join(grupos)
+    # (?<!\d[.,]) impede casar o miolo de um valor maior ("1.573,55" para 573,55)
+    # o OCR às vezes perde o zero final dos centavos ("R$ 368,1" para 368,10): aceita a forma curta quando os
+    # centavos terminam em 0 (e só se o dígito seguinte não for mais um dígito)
+    centavos = f"(?:{cent:02d}|{cent // 10})" if cent % 10 == 0 and cent else f"{cent:02d}"
+    return re.compile(rf"(?<!\d)(?<!\d[.,]){corpo}\s?[,.]\s?{centavos}(?!\d)")
+
+
+def valor_aparece_no_texto(texto: str | None, valor: float | None) -> bool:
+    """True se `valor` (ex.: 1234.5) aparece formatado como moeda no texto ("1.234,50" e variações de OCR)."""
+    if not texto or not valor or valor <= 0:
+        return False
+    return bool(_regex_valor(valor).search(texto))
+
+
+def eh_pagina_pagamento(texto: str) -> bool:
+    return bool(_RE_PAGINA_PAGAMENTO.search(texto or ""))
+
+
+# Nº de Nota Fiscal citado na descrição da listagem ("... - NF. 24282 - FORT SERV", "NF.: 14537", "NFS-e 88").
+# O número não pode ser o começo de um VALOR ("NF 200,00" é a palavra "NF" solta seguida do valor da linha).
+RE_NF_NA_DESCRICAO = re.compile(r"\bN\.?F\.?S?\.?-?E?\.?:?\s*(\d{2,})(?![\d.]*,\d{2}\b)", re.IGNORECASE)
+# Marcadores de que o texto de uma página é (ou contém) uma Nota Fiscal / documento fiscal equivalente. Inclui as
+# leituras truncadas que o OCR produz de "DANFE"/"DANFSe".
+RE_MARCADOR_NF = re.compile(
+    r"NOTA\s+FISCAL|NOTA\s+FATURA|NFS-?E|DANF[A-Z]?|NF-?E\b|CHAVE\s+DE\s+ACESSO|Identifica\S*\s+do\s+Emitente|"
+    r"Documento\s+Auxiliar|NOTA\s+DE\s+REEMBOLSO|C[oó]digo\s+de\s+Verifica\S*o|"
+    r"C[aá]lculo\s+do\s+ISS|VALOR\s+TOTAL\s+DOS\s+SERVI|TOMADOR\s+D[EO]\s+SERVI|PRESTADOR\s+D[EO]\s+SERVI",
+    re.IGNORECASE,
+)
+_RE_PAGINA_BOLETO = re.compile(r"Benefici[aá]rio|Linha\s+Digit|Recibo\s+do\s+Pagador|Sacador|Ficha\s+de\s+Compensa", re.IGNORECASE)
+_RE_SPLIT_PAGINAS = re.compile(r"\[P[aá]gina (\d+)\]\n")
+
+
+def tem_marcador_nf(texto: str | None) -> bool:
+    return bool(RE_MARCADOR_NF.search(texto or ""))
+
+
+def paginas_do_texto_bruto(texto_bruto: str | None) -> list[tuple[int, str]]:
+    """Separa o `texto_bruto` de um comprovante multi-página ("[Página N]\\n...") em [(pagina, texto)]."""
+    partes = _RE_SPLIT_PAGINAS.split(texto_bruto or "")
+    return [(int(partes[i]), partes[i + 1]) for i in range(1, len(partes) - 1, 2)]
+
+
+def numero_nf_em_documento(texto_bruto: str | None, numero: str) -> bool:
+    """O nº de NF citado na listagem aparece numa página que NÃO é comprovante bancário nem boleto (esses só
+    repetem o histórico/número do documento, não provam que a NF foi anexada)?"""
+    n = numero.lstrip("0") or numero
+    if len(n) >= 4:
+        corpo = r"[.\s]?".join([n[:-3], n[-3:]])  # "1378" também como "1.378"
+    else:
+        corpo = re.escape(n)
+    padrao = re.compile(rf"(?<!\d)0*{corpo}(?!\d)")
+    for _p, t in paginas_do_texto_bruto(texto_bruto):
+        if eh_pagina_pagamento(t) or _RE_PAGINA_BOLETO.search(t):
+            continue
+        # a própria capa "Comprovante de Despesa" repete a descrição da listagem (com o nº da NF) — não conta
+        t_sem_capa = "\n".join(l for l in t.split("\n") if not RE_NF_NA_DESCRICAO.search(l))
+        if padrao.search(t_sem_capa):
+            return True
+    return False
+
+
+# Identificador estável de uma GUIA de tributo (DARF/GPS da Receita Federal, DAMSP): o mesmo documento é anexado
+# a vários códigos de despesa (uma retenção por código, guia única consolidada). Serve para o matching agrupar
+# esses códigos em vez de comparar cada retenção com o total da guia.
+_RE_IDENT_GUIA = [
+    re.compile(r"Recibo\s*Declara.{0,4}:?\s*(\d{5,})", re.IGNORECASE),
+    re.compile(r"N[uú\S]mero\s+do\s+Documento:?\s*(\d{2}[\d.\-\s]{10,24}\d)", re.IGNORECASE),
+    re.compile(r"Documento No\.?\s*([\d\s]{8,20}\d)", re.IGNORECASE),
+]
+
+
+def identificador_guia(texto: str | None) -> str | None:
+    for rx in _RE_IDENT_GUIA:
+        m = rx.search(texto or "")
+        if m:
+            return re.sub(r"\s+", "", m.group(1))
+    return None
+
+
+def resolver_comprovante(registro: RegistroComprovante, paginas: list, esperados: list[float],
+                         definitivo: bool = False) -> str:
+    """
+    Preenche `registro` (comprovante de UM código) a partir de todas as suas páginas.
+
+    paginas: [(pagina_1based, [variantes de texto da página])] — variantes = leituras OCR da mesma página
+    (ex.: 300 dpi e 150 dpi), tentadas nessa ordem.
+    esperados: valor(es) da listagem para este código.
+
+    Retorna "confirmado" (algum valor esperado aparece no anexo: registro.valor = esse valor, registro.pagina =
+    a página que o mostra, de preferência o comprovante bancário), "lido" (nenhum valor esperado achado; o valor
+    lido do melhor comprovante vai em registro.valor para o matching comparar) ou "vazio" (nada legível).
+    "fraco": o valor listado só aparece em página que NÃO é comprovante bancário (NF, boleto...) enquanto uma página
+    de pagamento traz outro valor — pode ser erro de OCR no comprovante (relido em 300 dpi pelo chamador) ou
+    divergência real; com `definitivo=True` (última leitura) a dúvida vira "lido" (o matching compara).
+    """
+    textos = [(p, [t for t in vs if t and t.strip()]) for p, vs in paginas]
+    # todas as leituras da página (ex.: 300 dpi e 150 dpi) ficam no texto: um marcador de NF ou um valor que só uma
+    # delas leu continua visível para o matching
+    todos = "\n".join(f"[Página {p}]\n" + "\n".join(dict.fromkeys(vs)) for p, vs in textos if vs)
+    if len(todos.strip()) >= _OCR_TEXTO_MINIMO:
+        registro.texto_bruto = todos
+    else:
+        return "vazio"
+
+    def _dados_da_pagina(pagina: int, vs: list[str]) -> RegistroComprovante | None:
+        for t in vs:
+            tmp = RegistroComprovante(pagina=pagina, tipo_documento="comprovante_anexado", codigo=registro.codigo)
+            preencher_de_texto(tmp, t)
+            if tmp.valor > 0 or tmp.pagamento or tmp.vencimento:
+                return tmp
+        return None
+
+    def _copiar_datas(tmp: RegistroComprovante | None) -> None:
+        if tmp is None:
+            return
+        registro.vencimento = tmp.vencimento or registro.vencimento
+        registro.pagamento = tmp.pagamento or registro.pagamento
+        registro.fornecedor = tmp.fornecedor or registro.fornecedor
+        registro.cnpj_cpf = tmp.cnpj_cpf or registro.cnpj_cpf
+
+    # 1) o valor da listagem aparece em alguma página do anexo?
+    for esperado in esperados:
+        achados = [(p, vs) for p, vs in textos if any(valor_aparece_no_texto(t, esperado) for t in vs)]
+        if not achados:
+            continue
+        bancarias = [(p, vs) for p, vs in achados if any(eh_pagina_pagamento(t) for t in vs)]
+        fraco = False
+        if not bancarias:
+            for p, vs in textos:
+                if not any(eh_pagina_pagamento(t) for t in vs):
+                    continue
+                if any(_RE_LANCAMENTO_CONSOLIDADO.search(t) for t in vs):
+                    # recibo consolidado: o "valor pagto" é o total de vários lançamentos e não conflita; só o
+                    # "Valor do lancto" (individual), quando legível, pode contradizer a listagem
+                    for t in vs:
+                        m_l = _RE_OCR_VALORES_EM_ORDEM[0].search(t)
+                        if m_l and abs(_num(m_l.group(1)) - esperado) > 0.011:
+                            fraco = True
+                    if fraco:
+                        break
+                    continue
+                tmp = _dados_da_pagina(p, vs)
+                if tmp is not None and tmp.valor > 0 and abs(tmp.valor - esperado) > 0.011:
+                    fraco = True
+                    break
+        if fraco and definitivo:
+            continue  # cai para a leitura do comprovante bancário (passo 2): o matching compara e aponta divergência
+        p_ev, vs_ev = (bancarias or achados)[0]
+        registro.pagina = p_ev
+        registro.valor = esperado
+        # datas/fornecedor vêm da página de pagamento (a que mostra o valor, ou qualquer outra de pagamento)
+        pg_pag = bancarias[0] if bancarias else next(((p, vs) for p, vs in textos if any(eh_pagina_pagamento(t) for t in vs)), None)
+        if pg_pag:
+            _copiar_datas(_dados_da_pagina(*pg_pag))
+        return "fraco" if fraco else "confirmado"
+
+    # 1b) lançamento que soma vários documentos (ex.: salário + reembolsos pagos em comprovantes separados; vários
+    #     recibos de motoboy num reembolso): o valor da listagem é a soma dos valores principais dos documentos do
+    #     anexo — primeiro só os comprovantes bancários, depois todas as páginas (um valor por página)
+    from itertools import combinations
+    grupos_soma: list[list[tuple[int, float]]] = []
+    so_pagamento: list[tuple[int, float]] = []
+    todas_paginas: list[tuple[int, float]] = []
+    for p, vs in textos:
+        tmp = _dados_da_pagina(p, vs)
+        if tmp is not None and tmp.valor > 0:
+            todas_paginas.append((p, tmp.valor))
+            if any(eh_pagina_pagamento(t) for t in vs):
+                so_pagamento.append((p, tmp.valor))
+    # entre páginas de documentos a mesma quantia repetida costuma ser a cópia/segunda via do mesmo documento
+    unicos: dict[float, tuple[int, float]] = {}
+    for p_, v_ in todas_paginas:
+        unicos.setdefault(round(v_, 2), (p_, v_))
+    grupos_soma = [so_pagamento, list(unicos.values())]
+    for grupo in grupos_soma:
+        if not 2 <= len(grupo) <= 8:
+            continue
+        for esperado in esperados:
+            for n in range(2, len(grupo) + 1):
+                for comb in combinations(grupo, n):
+                    if abs(sum(v for _p, v in comb) - esperado) <= 0.011:
+                        registro.pagina = comb[0][0]
+                        registro.valor = esperado
+                        pg_pag = next(((p, vs) for p, vs in textos if p == comb[0][0]), None)
+                        if pg_pag:
+                            _copiar_datas(_dados_da_pagina(*pg_pag))
+                        return "confirmado"
+
+    # 1c) valor DERIVADO pela cadeia de regras (ex.: NFS-e = valor bruto menos as retenções, que nunca aparece impresso)
+    #     igual ao da listagem em alguma das leituras da página
+    for p, vs in textos:
+        for t in vs:
+            tmp = RegistroComprovante(pagina=p, tipo_documento="comprovante_anexado", codigo=registro.codigo)
+            preencher_de_texto(tmp, t)
+            if tmp.valor > 0 and any(abs(tmp.valor - e) <= 0.011 for e in esperados):
+                registro.pagina = p
+                registro.valor = tmp.valor
+                _copiar_datas(tmp)
+                return "confirmado"
+
+    # 2) nenhum valor esperado em lugar nenhum: lê o valor do melhor comprovante (bancário primeiro)
+    ordem = sorted(textos, key=lambda x: 0 if any(eh_pagina_pagamento(t) for t in x[1]) else 1)
+    for p, vs in ordem:
+        tmp = _dados_da_pagina(p, vs)
+        if tmp is not None and tmp.valor > 0:
+            registro.pagina = p
+            registro.valor = tmp.valor
+            registro.autenticacao = tmp.autenticacao or next(
+                (i for _pp, vv in textos for t in vv if (i := identificador_guia(t))), None)
+            if not registro.autenticacao and not any(eh_pagina_pagamento(t) for t in vs) and esperados:
+                # Sem comprovante bancário legível e sem guia: o valor da cadeia pode ser qualquer número do
+                # documento (ex.: "32,00" de um recibo de locação de R$ 1.600,00). Para o relatório mostrar o que o
+                # documento realmente declara, usa o valor monetário do anexo mais próximo do listado.
+                esp = esperados[0]
+                cand = [v for _pp, vv in textos for t in vv for v in _valores_monetarios(t)
+                        if 0.5 * esp <= v <= 1.5 * esp and abs(v - esp) > 0.011]
+                if cand:
+                    registro.valor = min(cand, key=lambda v: abs(v - esp))
+            _copiar_datas(tmp)
+            return "lido"
+    return "vazio"
+
+
+def _valores_monetarios(texto: str) -> list[float]:
+    return [_num(x) for x in re.findall(r"\d{1,3}(?:\.\d{3})*,\d{2}", texto or "")]
+
+
 # A coluna "Data" às vezes não existe (ex.: Baturité a partir de jul/2026
 # passou a exportar sem data por lançamento) — prefixo opcional.
 _RE_HEADER_LISTAGEM = re.compile(r"(?:Data\s+)?Hist[oó]rico\s+Valor\s+Total")
@@ -484,24 +738,170 @@ _RE_ITEM_LINHA = re.compile(
 _RE_DATA_INICIO = re.compile(r"^(?:\d+\s+)?(\d{2}/\d{2}/\d{4})")
 
 
+def _texto_em_linhas(pagina_fitz, tolerancia: float = 3.0) -> str:
+    """Texto de uma página do fitz agrupado em linhas visuais (palavras com a mesma altura, da esquerda para
+    a direita) — equivalente ao `extract_text()` do pdfplumber para as tabelas do ContasData."""
+    palavras = pagina_fitz.get_text("words")
+    palavras.sort(key=lambda w: (w[1], w[0]))
+    linhas: list[list] = []
+    for w in palavras:
+        if linhas and abs(w[1] - linhas[-1][0]) <= tolerancia:
+            linhas[-1][1].append(w)
+        else:
+            linhas.append([w[1], [w]])
+    return "\n".join(" ".join(x[4] for x in sorted(l[1], key=lambda x: x[0])) for l in linhas)
+
+
 class ConciliadorLirbaPDF(ConciliadorBase):
     """Extrai despesas listadas (Demonstrativo de Despesas) e páginas de
     evidência (Comprovante de Despesa) da pasta Lirba/ContasData."""
 
     def extrair_comprovantes(self, caminho: Path) -> list:
+        """Despesas listadas + UM registro de comprovante por código, lido a partir de TODAS as páginas
+        "Comprovante de Despesa <código>" (ver `resolver_comprovante`): o anexo de uma despesa costuma ter
+        várias páginas (guia/boleto, Nota Fiscal, comprovante bancário) e o comprovante bancário raramente é
+        a primeira — ler só a primeira (como era antes) produzia divergências e "NF ausente" falsas."""
         registros, primeira_pagina_comprovante = self._extrair_despesas_listadas(caminho)
-
+        paginas_por_codigo = dict(getattr(self, "_paginas_por_codigo", None) or {})
         for codigo, pagina in primeira_pagina_comprovante.items():
+            paginas_por_codigo.setdefault(codigo, [pagina])
+
+        esperados: dict[str, list[float]] = {}
+        for d in registros:
+            esperados.setdefault(d.codigo, []).append(d.valor)
+
+        todas = sorted({p for ps in paginas_por_codigo.values() for p in ps})
+        textos = ocr.ocr_paginas(caminho, [p - 1 for p in todas])  # {índice 0-based: texto}, 150 dpi
+        # variantes de leitura por página (índice 0-based -> textos), da mais nítida para a mais crua
+        extras: dict[int, list[str]] = {}
+
+        def _resolver(codigo: str, definitivo: bool = False) -> tuple[RegistroComprovante, str]:
+            ps = paginas_por_codigo[codigo]
             registro = RegistroComprovante(
-                pagina=pagina,
-                tipo_documento="comprovante_anexado",
-                codigo=codigo,
+                pagina=ps[0], tipo_documento="comprovante_anexado", codigo=codigo,
                 texto_bruto=f"Comprovante de Despesa {codigo}",
             )
-            _preencher_via_ocr(registro, caminho, pagina)
-            registros.append(registro)
+            variantes = [(p, extras.get(p - 1, []) + [textos.get(p - 1, "")]) for p in ps]
+            return registro, resolver_comprovante(registro, variantes, esperados.get(codigo, []), definitivo=definitivo)
 
+        def _paginas_reler(codigos: list[str]) -> list[int]:
+            """Até _MAX_PAGINAS_REOCR páginas por código (as de pagamento primeiro) — índices 0-based."""
+            alvo: set[int] = set()
+            for c in codigos:
+                ps = paginas_por_codigo[c]
+                prioridade = sorted(ps, key=lambda p: 0 if eh_pagina_pagamento(textos.get(p - 1, "")) else 1)
+                alvo.update(p - 1 for p in prioridade[:_MAX_PAGINAS_REOCR])
+            return sorted(alvo)
+
+        novos: dict[str, RegistroComprovante] = {}
+        status_por_codigo: dict[str, str] = {}
+        for codigo in paginas_por_codigo:
+            novos[codigo], status_por_codigo[codigo] = _resolver(codigo)
+
+        def _nao_confirmados() -> list[str]:
+            return [c for c, st in status_por_codigo.items() if st != "confirmado" and esperados.get(c)]
+
+        def _nf_em_duvida() -> list[str]:
+            # a listagem cita NF, mas nenhuma página lida traz marcador de Nota Fiscal (a NF pode estar
+            # numa imagem de letra miúda, como o DANFE, que o OCR a 150 dpi não lê)
+            return [c for c in paginas_por_codigo
+                    if any(RE_NF_NA_DESCRICAO.search(d.descricao or "") for d in registros if d.codigo == c)
+                    and not tem_marcador_nf(novos[c].texto_bruto)]
+
+        if ocr.tesseract_disponivel():
+            # Estágio 2 (300 dpi): páginas dos códigos cujo valor listado não apareceu em nenhuma página e
+            # dos que citam NF sem marcador de NF. O OCR a 150 dpi às vezes troca um dígito ("286,00" lido
+            # como "266,00") ou perde letra miúda; só se a leitura mais nítida também não achar o valor
+            # ele entra como divergência real.
+            pendentes_hd = sorted(set(_nao_confirmados()) | set(_nf_em_duvida()))
+            if pendentes_hd:
+                alvo = _paginas_reler(pendentes_hd)
+                hd = ocr.ocr_paginas(caminho, alvo, dpi=300)
+                for i, t in hd.items():
+                    if t.strip():
+                        extras.setdefault(i, []).insert(0, t)
+                for c in pendentes_hd:
+                    novos[c], status_por_codigo[c] = _resolver(c)
+            # Estágio 2b: a listagem cita NF e ainda não há marcador de NF em nenhuma página — a NF pode ser uma
+            # FOTO pequena/inclinada (ex.: DANFE fotografado) que só a imagem original ampliada deixa ler.
+            sem_nf = _nf_em_duvida()
+            if sem_nf:
+                alvo_nf = _paginas_reler(sem_nf)
+                for leitura in (ocr.ocr_paginas(caminho, alvo_nf, nativa=True),
+                                ocr.ocr_paginas(caminho, alvo_nf, dpi=200, rotacao=True)):  # foto / página girada
+                    for i, t in leitura.items():
+                        if t.strip():
+                            extras.setdefault(i, []).insert(0, t)
+                for c in sem_nf:
+                    novos[c], status_por_codigo[c] = _resolver(c)
+            # Estágio 3 (binarizado): texto sobre fundo cinza (ex.: quadro "TOTAL" da fatura Sabesp).
+            ainda = _nao_confirmados()
+            if ainda:
+                alvo = _paginas_reler(ainda)
+                leituras = [ocr.ocr_paginas(caminho, alvo, dpi=200, limiar=lim) for lim in (100, 130)]
+                leituras.append(ocr.ocr_paginas(caminho, alvo, dpi=200, rotacao=True))  # página de cabeça para baixo
+                leituras.append(ocr.ocr_paginas(caminho, alvo, nativa=True))  # foto pequena/inclinada de documento
+                for bin_ in leituras:
+                    for i, t in bin_.items():
+                        if t.strip():
+                            extras.setdefault(i, []).insert(0, t)
+                for c in ainda:
+                    novos[c], status_por_codigo[c] = _resolver(c)
+
+        # Última leitura: dúvidas que sobraram ("fraco") deixam de ser benefício da dúvida — o comprovante bancário
+        # relido em alta resolução continua com valor diferente do listado: o matching aponta a divergência.
+        for c in [c for c, st in status_por_codigo.items() if st == "fraco"]:
+            novos[c], status_por_codigo[c] = _resolver(c, definitivo=True)
+
+        registros.extend(novos.values())
         return registros
+
+    def _ler_linhas_listagem(self, texto: str, pagina: int, cat_map: dict, registros: list, pendentes: list) -> None:
+        for linha in texto.split("\n"):
+            m_total = _RE_TOTAL_LINHA.match(linha.strip())
+            if m_total:
+                categoria_raw = m_total.group(1).strip()
+                categoria = cat_map.get(categoria_raw, categoria_raw)
+                for r in pendentes:
+                    r.categoria_demonstrativo = categoria
+                registros.extend(pendentes)
+                pendentes.clear()
+                continue
+
+            m_item = _RE_ITEM_LINHA.search(linha)
+            if not m_item:
+                continue
+            valor_str, codigo = m_item.groups()
+            m_data = _RE_DATA_INICIO.match(linha.strip())
+            pendentes.append(RegistroComprovante(
+                pagina=pagina,
+                tipo_documento="despesa_listada",
+                codigo=codigo.zfill(4),
+                descricao=linha.strip()[:200],
+                vencimento=m_data.group(1) if m_data else None,
+                valor=_num(valor_str),
+                texto_bruto=linha,
+            ))
+
+    def _passada_plumber(self, caminho, doc_fitz, cat_map, registros, pendentes,
+                         primeira_pagina_comprovante, paginas_por_codigo) -> None:
+        """Plano B (lento): a mesma leitura, página a página, pelo pdfplumber."""
+        from conciliacao.pdf_cache import pdf_plumber_aberto
+
+        with pdf_plumber_aberto(caminho) as pdf:
+            for i in range(1, len(doc_fitz) + 1):
+                page = pdf.pages[i - 1]
+                texto = (page.extract_text() or "").replace("ContasData", " ")
+                page.flush_cache()
+                m_comp = _RE_COMPROVANTE.search(texto)
+                if m_comp:
+                    codigo = m_comp.group(1).zfill(4)
+                    primeira_pagina_comprovante.setdefault(codigo, i)
+                    if i not in paginas_por_codigo.setdefault(codigo, []):
+                        paginas_por_codigo[codigo].append(i)
+                    continue
+                if _RE_HEADER_LISTAGEM.search(texto):
+                    self._ler_linhas_listagem(texto, i, cat_map, registros, pendentes)
 
     def _extrair_despesas_listadas(self, caminho: Path) -> tuple[list[RegistroComprovante], dict[str, int]]:
         """Só a listagem (Demonstrativo de Despesas) + em que página cada
@@ -512,59 +912,51 @@ class ConciliadorLirbaPDF(ConciliadorBase):
         completo tem texto real nas páginas de comprovante — rodar OCR nelas
         só pra descartar o resultado depois seria trabalho puro perdido)."""
         try:
-            import pdfplumber
+            import pdfplumber  # noqa: F401
         except ImportError:
             raise ImportError("Instale pdfplumber: pip install pdfplumber")
+        import fitz
+
+        from conciliacao.pdf_cache import pdf_plumber_aberto
 
         cat_map = self.parser_config.get("cat_map", {})
         registros: list[RegistroComprovante] = []
         pendentes: list[RegistroComprovante] = []  # aguardando a linha "TOTAL DA CONTA X"
         primeira_pagina_comprovante: dict[str, int] = {}
+        paginas_por_codigo: dict[str, list[int]] = {}
+        self._paginas_por_codigo = paginas_por_codigo
 
-        with pdfplumber.open(str(caminho)) as pdf:
-            for i, page in enumerate(pdf.pages, start=1):
-                texto = page.extract_text() or ""
-                page.flush_cache()
-                # "ContasData" é a marca-d'água do sistema (rodapé) e às vezes cola
-                # na mesma linha de uma despesa (ex.: "... 0,40% 0034 ContasData"),
-                # empurrando o código pra fora do fim de linha que o regex espera.
-                texto = texto.replace("ContasData", " ")
-
-                m_comp = _RE_COMPROVANTE.search(texto)
+        # As páginas "Comprovante de Despesa" (75% do PDF, todas imagem) e as de listagem são lidas pelo texto
+        # nativo do fitz (instantâneo). O pdfplumber só entra como plano B (ver _passada_plumber): em PDFs
+        # grandes `pdf.pages` leva MINUTOS (cada página referencia centenas de imagens nos recursos), e a
+        # leitura do fitz agrupada em linhas (_texto_em_linhas) produz as mesmas linhas — conferido página a
+        # página contra o pdfplumber em 7 PDFs reais (zero diferença nos itens/totais extraídos).
+        doc_fitz = fitz.open(str(caminho))
+        try:
+            candidatas_listagem = 0
+            for i in range(1, len(doc_fitz) + 1):
+                pagina_fitz = doc_fitz[i - 1]
+                texto_nativo = pagina_fitz.get_text().replace("ContasData", " ")
+                m_comp = _RE_COMPROVANTE.search(texto_nativo)
                 if m_comp:
                     codigo = m_comp.group(1).zfill(4)
-                    if codigo not in primeira_pagina_comprovante:
-                        primeira_pagina_comprovante[codigo] = i
+                    primeira_pagina_comprovante.setdefault(codigo, i)
+                    paginas_por_codigo.setdefault(codigo, []).append(i)
                     continue  # página de evidência não tem linhas de despesa
-
+                # "ContasData" é a marca-d'água do sistema (rodapé) e às vezes cola na mesma linha de uma
+                # despesa (ex.: "... 0,40% 0034 ContasData"), empurrando o código pra fora do fim de linha.
+                texto = _texto_em_linhas(pagina_fitz).replace("ContasData", " ")
                 if not _RE_HEADER_LISTAGEM.search(texto):
+                    if re.search(r"Hist[oó]rico", texto_nativo) and "Valor" in texto_nativo:
+                        candidatas_listagem += 1
                     continue  # não é página de listagem nem de comprovante — ignora
-
-                for linha in texto.split("\n"):
-                    m_total = _RE_TOTAL_LINHA.match(linha.strip())
-                    if m_total:
-                        categoria_raw = m_total.group(1).strip()
-                        categoria = cat_map.get(categoria_raw, categoria_raw)
-                        for r in pendentes:
-                            r.categoria_demonstrativo = categoria
-                        registros.extend(pendentes)
-                        pendentes = []
-                        continue
-
-                    m_item = _RE_ITEM_LINHA.search(linha)
-                    if not m_item:
-                        continue
-                    valor_str, codigo = m_item.groups()
-                    m_data = _RE_DATA_INICIO.match(linha.strip())
-                    pendentes.append(RegistroComprovante(
-                        pagina=i,
-                        tipo_documento="despesa_listada",
-                        codigo=codigo.zfill(4),
-                        descricao=linha.strip()[:200],
-                        vencimento=m_data.group(1) if m_data else None,
-                        valor=_num(valor_str),
-                        texto_bruto=linha,
-                    ))
+                self._ler_linhas_listagem(texto, i, cat_map, registros, pendentes)
+            if not registros and not pendentes and candidatas_listagem:
+                # plano B: nada reconhecido pelo texto do fitz mas há páginas com cara de listagem
+                self._passada_plumber(caminho, doc_fitz, cat_map, registros, pendentes,
+                                      primeira_pagina_comprovante, paginas_por_codigo)
+        finally:
+            doc_fitz.close()
 
         # Sobras sem "TOTAL DA CONTA" explícito até o fim do documento
         # (não deveria acontecer no formato normal, mas não descarta dados).

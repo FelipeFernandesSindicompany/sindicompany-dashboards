@@ -49,7 +49,7 @@ from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
 from conciliacao.matching import (
     gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_gcont,
-    gerar_achados_balancete_mensal, gerar_achados_palm_beach,
+    gerar_achados_balancete_mensal, gerar_achados_palm_beach, gerar_achados_planilha_com_links,
 )
 from conciliacao import interpretacao
 from conciliacao import render
@@ -107,8 +107,8 @@ GERAR_ACHADOS_POR_EMPRESA = {
     # Habitacional usa o mesmo par "despesa_listada"/"comprovante_anexado"
     # do Lirba (só muda a origem: hyperlink do Excel em vez de página de
     # PDF) — reaproveita a regra de matching sem duplicar.
-    "habitacional_xlsx": gerar_achados_lirba,
-    "lfc_xlsx": gerar_achados_lirba,
+    "habitacional_xlsx": gerar_achados_planilha_com_links,
+    "lfc_xlsx": gerar_achados_planilha_com_links,
     # DataDigitus não tem comprovante escaneado nem link anexado — só a
     # listagem de despesas do próprio demonstrativo, então usa regras
     # diferentes (duplicidade por data+valor+categoria e divergência
@@ -140,18 +140,31 @@ GERAR_ACHADOS_POR_EMPRESA = {
 # ter regras de matching próprias, mesmo compartilhando empresa_gestora com
 # outros condomínios de formato diferente (ex.: Club Park Butantã é
 # "lirba_pdf" no cadastro, mas o PDF é do sistema GCONT, não ContasData).
+from conciliacao.condominios._planilha_refino import gerar_achados_planilha_refinado as _gerar_achados_planilha_refinado
+
 GERAR_ACHADOS_POR_CONDO = {
     "club_park_butanta": gerar_achados_gcont,
+    # Mesmo formato GCONT/HSA do Club Park (comprovante em página de texto nativo,
+    # "Parcela <código>") — ver conciliacao/condominios/{parque_saint_afonso,i_gloo_alphaville}.py.
+    "parque_saint_afonso": gerar_achados_gcont,
+    "i_gloo_alphaville": gerar_achados_gcont,
+    "top_nine": gerar_achados_gcont,
+    "plano_estacao_campo_limpo": gerar_achados_gcont,
+    # Planilhas Habitacional/LFC: mesmo matching de gerar_achados_planilha_com_links + isenção de "IR S/ APLICAÇÃO"
+    # (ver conciliacao/condominios/_planilha_refino.py). Baturité/Port Saint Tropez (PDF ContasData) ficam de fora.
+    **{_cid: _gerar_achados_planilha_refinado for _cid in (
+        "alvorada", "plano_cambuci", "cinque_terre_residenza", "cores", "elo_elo_duo", "go_barra_funda",
+        "go_liberdade", "guaratambe", "living_for_consolacao", "onze_22", "sublime", "victoria")},
     # NYC (webware) não tem "Demonstrativo de Despesas" separado nem
     # total confiável pra checar soma — só duplicidade (a mesma função
     # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
     "nyc": gerar_achados_datadigitus,
     # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
     # (PDF) em 2026 — mesma regra de matching do Lirba.
-    "baturite": gerar_achados_lirba,
+    "baturite": gerar_achados_planilha_com_links,
     # Port Saint Tropez migrou de habitacional_xlsx (planilha) pra ContasData
     # (PDF) em algum mês até março/2026 — mesmo padrão do Baturité.
-    "port_saint_tropez": gerar_achados_lirba,
+    "port_saint_tropez": gerar_achados_planilha_com_links,
     # Palm Beach é "lirba_pdf" no cadastro, mas o PDF real é do sistema
     # HABITAT/GROUP condomínios — inteiramente renderizado como imagem, sem
     # código pra parear despesa x comprovante (ver
@@ -657,6 +670,13 @@ def etapa_render(condo: dict, mes: str) -> Path:
         "club_park_butanta": "GCONT",
         "nyc": "Manager ADM",
         "central_das_artes": "Hausy",
+        # Cadastrados como lirba_pdf, mas o PDF é de outra administradora/sistema (lido no próprio arquivo):
+        "i_gloo_alphaville": "GCONT",
+        "parque_saint_afonso": "GCONT",
+        "top_nine": "Conister",
+        "plano_estacao_campo_limpo": "Foccus",
+        "serra_da_mantiqueira": "FL Condomínios",
+        "palm_beach": "Group Condomínios",
     }
     administradora_label = ADMINISTRADORA_LABEL_POR_CONDO.get(
         condo["id"], ADMINISTRADORA_LABEL.get(condo["empresa_gestora"], condo["empresa_gestora"])

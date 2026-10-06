@@ -419,7 +419,8 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Saint Simon"
     },
     "gardens_living_club": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club",
+      "leitor_financeiro": "regras_gerais"
     },
     "spazio_jardins_da_orla": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Spazio",

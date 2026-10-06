@@ -54,7 +54,7 @@ def executar(condo: dict, mes: str, arquivo: Path, pasta_busca_anterior: Optiona
         for k in range(MESES_HISTORICO):
             mes_k, ano_k = _mes_anterior(m_atual)
             m_atual = f"{ano_k}-{mes_k:02d}"
-            arq_k = demonstrativo_reader.localizar_arquivo_mes(pasta_busca_anterior, mes_k, ano_k)
+            arq_k = demonstrativo_reader.localizar_arquivo_mes(pasta_busca_anterior, mes_k, ano_k, preferir_sufixo=arquivo.suffix)
             if arq_k is None:
                 if k == 0:
                     avisos.append(f"arquivo de {mes_k:02d}/{ano_k} não encontrado na pasta do projeto — "

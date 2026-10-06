@@ -68,7 +68,7 @@ def localizar_do_mes(condo: dict, mes: str, arquivo: Path) -> Path | None:
     except OSError:
         pass
 
-    existente = localizar_arquivo_mes(pasta, int(mes[5:7]), int(mes[:4]))
+    existente = localizar_arquivo_mes(pasta, int(mes[5:7]), int(mes[:4]), preferir_sufixo=arquivo.suffix)
     if existente is None:
         print(f"[AVISO] o arquivo de {mes[5:7]}/{mes[:4]} não está na pasta do OneDrive do condomínio "
               f"({pasta.name}) — a validação segue, mas o mês seguinte não achará este mês para "

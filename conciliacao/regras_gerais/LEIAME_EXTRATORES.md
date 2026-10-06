@@ -81,3 +81,24 @@ Despacho dos módulos: `extratores/__init__.py` (por `empresa_gestora`, ou arqui
    `regras.rendimento = {"ignorar_contas": [...], "tolerancia": x}` para `config/validacao_balancetes.json` (descreva; não edite o arquivo).
 4. Ruído: nº médio de achados das regras por mês "normal" por condomínio; alvo ≤ 5; explique e proponha ajuste se maior (ex.: normalização de nomes de subconta entre meses).
 5. Mudanças que você acha necessárias em arquivos que não são seus.
+
+---
+## Estado em 07/10/2026 (leia antes de mexer)
+- **Cobertura:** 53 dos 54 condomínios têm extrator (só `demonstracao` não tem arquivo). Matriz regra x condomínio:
+  `data/auditoria_categorias/matriz_regras.md` (regerar com `matriz_regras.py`).
+- **Config por condomínio:** `config/validacao_balancetes.json` (mesclada sobre `config/condominios.json` por
+  `conciliacao/config_validacao.py`; o cadastro compartilhado NÃO é alterado). Chaves usadas em `regras`:
+  `rendimento` {base, tolerancia, ignorar_contas, contas_aplicadas}, `receita_negativa` {ignorar_tipos,
+  ignorar_descricao, estruturais}, `compensacoes` [{nome, regex, tolerancia}], `subcontas` {equivalentes};
+  fora de `regras`: `pasta_prestacao`, `parser_config` extra, `leitor_financeiro`, `fechamento_categorias_ignorar`.
+- **Leitores financeiros:** `conciliacao/leitores_validacao/` (adaptadores corrigidos só para a Validação) e, quando o
+  adaptador não lê o arquivo, a ponte `demonstrativo_reader._bal_pelo_extrator_das_regras`.
+- **Velocidade:** `conciliacao/pdf_cache.py` guarda em `data/cache_texto_pdf/` o texto de cada página lido pelo
+  pdfplumber (mesmo texto; chave = caminho + tamanho + data do arquivo) e evita reabrir PDF já lido por inteiro.
+  `scripts/aquecer_cache_pdf.py` lê o PDF mais recente de cada condomínio uma vez (log em `data/aquecer_cache_pdf.log`).
+  Desligar o cache: `SINDICOMPANY_SEM_CACHE_TEXTO=1`.
+- **Checagens de leitura** (`checagens_leitura.py`): período impresso x mês pedido; categorias que não fecham.
+  `localizar_arquivo_mes` ignora PDF cujo período impresso contradiz o nome do arquivo e prefere a mesma extensão.
+- **Ferramentas de teste:** `data/auditoria_categorias/` → `testar_extrator.py`, `ruido_regras.py`, `e2e_regras.py`,
+  `varredura_extrair.py` (etapa extrair completa em todos os condomínios), `auditar_categorias.py`.
+- **Planilhas com link** (Habitacional etc.): link na coluna Anexo = comprovante existe (`gerar_achados_planilha_com_links`).

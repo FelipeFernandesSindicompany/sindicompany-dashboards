@@ -57,8 +57,29 @@ _RE_TOTAL_GERAL = re.compile(r"^TOTAL\s+DAS\s+DESPESAS", re.IGNORECASE)
 _RE_DATA_INICIO = re.compile(r"^(\d{2}/\d{2}/\d{4})\s+(.*)")
 
 
+def _tem_comprovantes_embutidos(caminho: Path) -> bool:
+    """True quando o PDF é o upload COMPLETO ("Prestação de Contas MM.AAAA", ~190 páginas): traz
+    páginas "Comprovante de Despesa" embutidas (cabeçalho + código de 4 dígitos), igual ao ContasData
+    padrão. O upload PARCIAL (14 páginas, "Demonstrativo de Contas") não tem nenhuma."""
+    import fitz
+
+    with fitz.open(str(caminho)) as doc:
+        for page in doc:
+            if "Comprovante de Despesa" in page.get_text()[:200]:
+                return True
+    return False
+
+
 class Conciliador(ConciliadorBase):
     def extrair_comprovantes(self, caminho: Path) -> list:
+        # Upload completo = formato ContasData padrão (listagem COM código + páginas de comprovante
+        # embutidas): o parser genérico já cobre. Antes deste desvio o conciliador específico (feito só
+        # para o upload parcial, sem código) devolvia 0 registros em todo upload completo (ex.: 06.2026).
+        if _tem_comprovantes_embutidos(Path(caminho)):
+            from conciliacao.lirba_pdf import ConciliadorLirbaPDF
+
+            return ConciliadorLirbaPDF(self.config).extrair_comprovantes(caminho)
+
         import fitz
         import pdfplumber
 

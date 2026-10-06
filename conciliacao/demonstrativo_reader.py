@@ -59,7 +59,23 @@ def _extrair_mes_ano(nome_arquivo: str) -> tuple[int, int] | None:
     return None
 
 
-def localizar_arquivo_mes(pasta: Path, mes: int, ano: int) -> Path | None:
+def _sem_periodo_contraditorio(candidatos: list, mes: int, ano: int) -> list:
+    """Tira os PDFs cujo "Período:" impresso é de OUTRO mês que o do nome do arquivo (ex.: o "09.2026" do
+    Baturité é setembro/2025) — usar um arquivo desses como "mês anterior" compararia com o mês errado."""
+    from conciliacao.checagens_leitura import periodo_do_pdf
+
+    ficam = []
+    for a in candidatos:
+        achado = periodo_do_pdf(a) if a.suffix.lower() == ".pdf" else None
+        if achado is not None and achado != (mes, ano):
+            print(f"[AVISO] {a.name} está com o mês {mes:02d}/{ano} no nome, mas o período impresso dentro do PDF é "
+                  f"{achado[0]:02d}/{achado[1]} — arquivo ignorado na comparação; confira o nome do arquivo na pasta do projeto.")
+            continue
+        ficam.append(a)
+    return ficam
+
+
+def localizar_arquivo_mes(pasta: Path, mes: int, ano: int, preferir_sufixo: str | None = None) -> Path | None:
     """
     Procura, na pasta do condomínio, um arquivo do mês/ano pedido (convenções
     de nome em `_RE_MES_ANO_PATTERNS`, extensões de prestação de contas
@@ -86,8 +102,14 @@ def localizar_arquivo_mes(pasta: Path, mes: int, ano: int) -> Path | None:
     candidatos = _candidatos(pasta.iterdir())
     if not candidatos:
         candidatos = _candidatos(a for a in pasta.rglob("*") if a.parent != pasta)
+    candidatos = _sem_periodo_contraditorio(candidatos, mes, ano)
     if not candidatos:
         return None
+    # Pasta com o mesmo mês em dois formatos (ex.: Port Saint Tropez, planilha e PDF): prefere o da mesma
+    # extensão do arquivo em mãos (`preferir_sufixo`).
+    if preferir_sufixo:
+        iguais = [c for c in candidatos if c.suffix.lower() == preferir_sufixo.lower()]
+        candidatos = iguais or candidatos
     # Mais de um candidato (raro) — prefere o modificado mais recentemente
     # (mais provável de ser a versão final, não um rascunho antigo).
     return max(candidatos, key=lambda p: p.stat().st_mtime)
@@ -145,6 +167,45 @@ def _dados_financeiros_para_bal(d, mes_titulo: str, periodo: str) -> dict:
     }
 
 
+def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_referencia: str,
+                                  mes_titulo: str, periodo: str) -> dict | None:
+    """Monta o mesmo dict `bal` a partir do EXTRATOR das regras gerais, para formatos em que o adapter
+    antigo não lê o arquivo (Palm Beach, NYC, Top Nine, Plano Estação, Serra, Reserva Verde...). O que o
+    extrator não traz (previsto x realizado, inadimplência, bancos) fica de fora: o relatório mostra só
+    o que o arquivo comprova. Devolve None se não houver extrator ou se ele não achar contas."""
+    from conciliacao.regras_gerais.extratores import get_extrator
+
+    try:
+        extrator = get_extrator(condo)
+        if extrator is None:
+            return None
+        d = extrator.extrair(caminho_arquivo, mes_referencia)
+    except Exception as exc:
+        print(f"[AVISO] leitor das regras gerais também não leu {caminho_arquivo.name}: {exc}")
+        return None
+    if not d.contas:
+        return None
+    # linha "CONSOLIDADO (todas as contas)" é só o total do livro (conferência do extrator), não uma conta
+    contas = [{"n": c.nome, "a": c.saldo_anterior, "c": c.creditos, "d": c.debitos, "s": c.saldo_atual}
+              for c in d.contas if not c.nome.upper().startswith("CONSOLIDADO")]
+    soma_cat: dict = {}
+    if d.lancamentos:
+        for l in d.lancamentos:
+            soma_cat[l.categoria] = soma_cat.get(l.categoria, 0.0) + l.valor
+    elif d.categorias:
+        soma_cat = dict(d.categorias)
+    desp = [{"c": k, "v": round(v, 2)} for k, v in soma_cat.items() if abs(v) > 0.004]
+    return {
+        "tit": mes_titulo, "per": periodo,
+        "tAnt": sum(c["a"] for c in contas), "tCred": sum(c["c"] for c in contas),
+        "tDeb": sum(c["d"] for c in contas), "tAtual": sum(c["s"] for c in contas),
+        "contas": contas, "prev": 0.0, "real": 0.0,
+        "tDesp": round(sum(x["v"] for x in desp), 2), "inad": None, "inadProc": None,
+        "banco": {"cc": 0.0, "cdb": 0.0, "priv": 0.0}, "desp": desp,
+        "debitos_incluem_transferencias": False, "fonte": "extrator_regras_gerais",
+    }
+
+
 def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
                        mes_titulo: str = "", periodo: str = "") -> dict | None:
     """
@@ -166,8 +227,8 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         else:
             dados = adapter.ler_pdf(caminho_arquivo, mes_referencia)
     except Exception as exc:
-        print(f"[AVISO] não foi possível ler dados financeiros de {caminho_arquivo.name}: {exc}")
-        return None
+        print(f"[AVISO] não foi possível ler dados financeiros de {caminho_arquivo.name} pelo adaptador: {exc}")
+        return _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
 
     # O adapter pode "ter sucesso" tecnicamente (sem lançar exceção) e ainda
     # assim não achar nada — confirmado em dados reais (Palm Beach): o
@@ -178,10 +239,16 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
     # em tudo como se fosse um saldo real, em vez de "não foi possível ler".
     if not dados.contas_detalhe and dados.saldo_atual == 0.0 and dados.receita_realizada == 0.0:
         print(f"[AVISO] {caminho_arquivo.name} não trouxe nenhum dado financeiro reconhecível "
-              f"(adapter não encontrou as seções esperadas nesse arquivo) — tratando como falha de leitura.")
-        return None
+              f"(adapter não encontrou as seções esperadas nesse arquivo) — tentando o leitor das regras gerais.")
+        return _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
 
     bal = _dados_financeiros_para_bal(dados, mes_titulo, periodo)
+    if not bal["desp"] and not bal["tDesp"]:
+        # O adaptador "leu" mas sem despesa nenhuma (formato que ele não entende, ex.: Serra da Mantiqueira):
+        # prefere o leitor das regras gerais, que fecha com os totais do próprio arquivo.
+        alternativo = _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
+        if alternativo is not None:
+            return alternativo
 
     # A coluna "Débitos" de cada conta pode incluir transferências entre as
     # contas do próprio condomínio — mas só dá pra afirmar isso quando o PDF
@@ -194,7 +261,7 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         try:
             import pdfplumber
             with pdf_plumber_aberto(caminho_arquivo) as pdf:
-                for pagina in pdf.pages[:15]:
+                for pagina in pdf.pages[:30]:
                     if re.search(r"Inclui\s+transfer.ncia\s+entre\s+contas", pagina.extract_text() or "", re.IGNORECASE):
                         bal["debitos_incluem_transferencias"] = True
                         break
@@ -220,6 +287,16 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
                 bal["inad"] = None
         except Exception:
             pass
+
+    # Condomínio em que o adaptador antigo monta contas/categorias de modo impreciso (ex.: Gardens: débitos
+    # por conta reconstruídos e categorias de um gráfico truncado): `leitor_financeiro = "regras_gerais"`
+    # (config/validacao_balancetes.json) troca contas, categorias e totais pelos do extrator das regras
+    # gerais, que fecham com os totais impressos no arquivo. Inadimplência, bancos e previsto seguem do adaptador.
+    if condo.get("leitor_financeiro") == "regras_gerais":
+        alt = _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
+        if alt is not None:
+            for chave in ("contas", "tAnt", "tCred", "tDeb", "tAtual", "desp", "tDesp"):
+                bal[chave] = alt[chave]
 
     return bal
 
@@ -257,7 +334,7 @@ def ler_par_mes_atual_anterior(condo: dict, caminho_mes_atual: Path, mes_referen
     mes_ant_num, ano_ant = _mes_anterior_num(mes_atual_num, ano_atual)
     dados_anterior = None
     if pasta_busca.is_dir():
-        arquivo_anterior = localizar_arquivo_mes(pasta_busca, mes_ant_num, ano_ant)
+        arquivo_anterior = localizar_arquivo_mes(pasta_busca, mes_ant_num, ano_ant, preferir_sufixo=caminho_mes_atual.suffix)
         if arquivo_anterior:
             mes_ref_anterior = f"{ano_ant}-{mes_ant_num:02d}"
             titulo_anterior = f"{MESES_ABREV[mes_ant_num - 1].capitalize()}/{ano_ant}"

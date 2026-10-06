@@ -8,6 +8,10 @@ Prioridade:
 import importlib
 from pathlib import Path
 
+# cache em disco do texto das páginas de PDF (mesmo texto, sem reler; ver conciliacao/pdf_cache.py)
+from conciliacao import pdf_cache as _pdf_cache
+_pdf_cache.ativar_cache_texto()
+
 from conciliacao.addomus_pdf import ConciliadorAddomusPDF
 from conciliacao.lirba_pdf import ConciliadorLirbaPDF
 from conciliacao.habitacional_xlsx import ConciliadorHabitacionalXLSX

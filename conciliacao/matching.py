@@ -15,6 +15,7 @@ import re
 import unicodedata
 from datetime import datetime, timedelta
 
+from conciliacao import lirba_pdf as _lp
 from conciliacao import verificacoes_historico
 from conciliacao.base import Achado, RegistroComprovante, chave_registro
 
@@ -54,11 +55,37 @@ def _motivo_isencao_comprovante(descricao: str | None, categoria: str | None) ->
     quando nenhuma isenção se aplica.
     """
     texto = _normalizar_texto(f"{descricao or ''} {categoria or ''}")
+    # as regras abaixo olham só a DESCRIÇÃO do lançamento: a categoria "TARIFAS CONCESSIONÁRIAS" (água, luz, gás,
+    # telefone) não é tarifa bancária, e essas contas têm fatura a anexar
+    texto_desc = _normalizar_texto(descricao or "")
     if "TRANSF" in texto and "CTA" in texto:
         return "transferencia_interna_entre_contas_proprias"
-    if "BANCARI" in texto:
+    if "BANCARI" in texto or (_RE_TARIFA_BANCARIA.search(texto_desc) and not _RE_CONCESSIONARIA.search(texto_desc)):
         return "tarifa_bancaria_sem_comprovante_individual"
+    if _RE_ENCARGO_DEBITADO_PELO_BANCO.search(texto_desc):
+        return "encargo_debitado_pelo_banco_sem_comprovante_individual"
+    if _RE_ISENCAO_DE_COTA.search(texto_desc):
+        return "isencao_de_cota_lancamento_contabil_sem_comprovante"
     return None
+
+
+# Tarifas debitadas direto em extrato pelo próprio banco, com o histórico abreviado ("TAR/CUSTAS COBRANCA",
+# "TAR PIX QR LIQ BOLECODE", "TARIFA BOLETO", "TAR COBRANCA MENSAL", "TARIFA PLANO ADAPT") — mesma regra das
+# "Despesas Bancárias" acima: não há prestador nem recibo a anexar.
+_RE_TARIFA_BANCARIA = re.compile(r"\bTAR(?:IFAS?)?\b")
+# descrições de concessionária (água/luz/gás/telefone/internet) NUNCA são tarifa bancária, mesmo citando "tarifa"
+_RE_CONCESSIONARIA = re.compile(
+    r"ENERGIA|ELETRIC|\bAGUA\b|ESGOTO|\bGAS\b|TELEFON|SABESP|COMGAS|\bENEL\b|\bVIVO\b|\bCLARO\b|\bTIM\b|INTERNET")
+# "ISENÇÃO - RECIBO: 40354847 - UNIDADE: R - 000027": abatimento/isenção de cota de uma unidade — lançamento
+# contábil interno do condomínio, não há pagamento a terceiro nem documento a anexar.
+_RE_ISENCAO_DE_COTA = re.compile(r"\bISENCAO\s*-?\s*RECIBO")
+# NÃO isentos (decisão do dono nos relatórios aprovados): "Acerto Contábil - FORNECEDOR - NF 99" (re-lançamento de despesa
+# real) segue como "sem comprovante" (severidade alto mantida na revisão humana de Port Saint Tropez 03/2026); o mesmo vale,
+# por analogia, para "APROP DESP" e "REGULARIZAÇÕES CONTÁBEIS".
+# Imposto/encargo que o banco debita sozinho (IR/IOF sobre resgate de aplicação, juros de saldo devedor).
+_RE_ENCARGO_DEBITADO_PELO_BANCO = re.compile(
+    r"\bI\.?\s?R\.?\s?S?\s?/\s?RESGATE|\bIR\s+S/\s*RESGATE|\bIOF\b|JUROS\s+S/\s*SALDO\s+DEVEDOR"
+)
 
 
 def _valores_batem(a: float, b: float, tolerancia: float = TOLERANCIA_CENTAVOS) -> bool:
@@ -67,18 +94,15 @@ def _valores_batem(a: float, b: float, tolerancia: float = TOLERANCIA_CENTAVOS) 
 
 def _proximo_dia_util(data: datetime) -> datetime:
     """
-    Sábado -> segunda-feira seguinte, domingo -> segunda-feira seguinte,
-    dia de semana -> ele mesmo. Bancos não processam pagamentos em fins de
-    semana — quando o vencimento cai em sábado/domingo, pagar na segunda
-    seguinte é o comportamento normal do sistema bancário, não atraso (não
-    considera feriados nacionais/municipais, só fim de semana — ver
-    achado_atraso_pagamento).
+    Primeiro dia ÚTIL BANCÁRIO a partir de `data` (ela mesma, se já for): pula sábado, domingo e os feriados em que
+    os bancos fecham (ver _feriados_bancarios). Vencimento em dia sem expediente bancário pago no dia útil seguinte é
+    o comportamento normal do sistema bancário, não atraso — confirmado com o usuário para fins de semana (vencimentos
+    em 25/07/2026 (sábado) e 12/07/2026 (domingo) pagos na segunda) e, aqui, estendido aos feriados (ex.: boleto de
+    15/02/2026 pago em 18/02/2026, depois do Carnaval).
     """
-    dia_semana = data.weekday()  # 0=segunda ... 5=sábado, 6=domingo
-    if dia_semana == 5:
-        return data + timedelta(days=2)
-    if dia_semana == 6:
-        return data + timedelta(days=1)
+    # _feriados_bancarios (definida mais abaixo neste módulo) devolve `date`s
+    while data.weekday() >= 5 or data.date() in _feriados_bancarios(data.year):
+        data = data + timedelta(days=1)
     return data
 
 
@@ -120,8 +144,9 @@ def achado_atraso_pagamento(registro: RegistroComprovante, contador: list) -> Ac
     )
 
 
-_RE_NF_NA_DESCRICAO = re.compile(r"\bN\.?F\.?S?\.?-?E?\.?:?\s*(\d{2,})", re.IGNORECASE)
-_RE_NF_NO_COMPROVANTE = re.compile(r"NOTA\s+FISCAL|NFS-?E|DANFE", re.IGNORECASE)
+# Regexes de NF compartilhados com a leitura do anexo (conciliacao/lirba_pdf.py) — uma definição só.
+_RE_NF_NA_DESCRICAO = _lp.RE_NF_NA_DESCRICAO
+_RE_NF_NO_COMPROVANTE = _lp.RE_MARCADOR_NF
 # Confirmado em dados reais (Ciudad Real, formato de página embutida — ver
 # conciliacao/condominios/central_das_artes.py::_ler_comprovante_embutido)
 # que o "texto_bruto" às vezes é só a CAPA-RESUMO do comprovante embutido
@@ -140,6 +165,7 @@ def achado_nota_fiscal_ausente(
     descricao: str | None, texto_comprovante: str | None, valor_esperado: float | None,
     valor_encontrado: float | None, categoria: str | None,
     registros_relacionados: list[str], contador: list,
+    nf_em_outros_anexos=None,
 ) -> "Achado | None":
     """
     Quando a PRÓPRIA listagem já cita um número de Nota Fiscal na descrição
@@ -185,6 +211,26 @@ def achado_nota_fiscal_ausente(
     # prova que a Nota Fiscal em si foi anexada). Só um marcador de Nota
     # Fiscal de verdade ("NOTA FISCAL", "NFS-e", "DANFE") conta.
     if _RE_NF_NO_COMPROVANTE.search(texto_comp):
+        return None
+    # Página do anexo que o OCR não conseguiu LER (foto de baixa resolução, escaneada de lado...: muito texto, quase
+    # nenhuma palavra de documento): não dá para afirmar que a Nota Fiscal NÃO está ali.
+    if "[Página " in texto_comp:
+        from conciliacao import ocr as _ocr
+        for _p, _t in _lp.paginas_do_texto_bruto(texto_comp):
+            if len(_t) >= 200 and not _lp.eh_pagina_pagamento(_t) and _ocr._pontuacao_texto(_t) < 8:
+                return None
+    # "NF. 13462. REC.:" — a própria listagem diz que o documento é um RECIBO (prestador sem nota fiscal): o recibo
+    # anexado é o documento fiscal esperado.
+    if re.search(r"\bREC\b\.?", descricao or "", re.IGNORECASE) and re.search(r"RECIBO", texto_comp, re.IGNORECASE):
+        return None
+    # Anexo de várias páginas (ContasData): o documento que traz o MESMO nº de NF (ex.: recibo/fatura com
+    # "nº 1.378") conta, desde que não seja o comprovante bancário nem o boleto — esses só repetem o histórico.
+    if "[Página " in texto_comp and _lp.numero_nf_em_documento(texto_comp, m_nf.group(1)):
+        return None
+    # A NF citada pode estar anexada à despesa de OUTRO código do mesmo arquivo (caso típico: a retenção
+    # "INSS - NF. 24282 - FORNECEDOR" paga em guia; a NF 24282 acompanha a despesa do serviço). Nesse caso a
+    # NF está na pasta — "Nota Fiscal não anexada" só vale quando nenhum anexo do arquivo traz essa NF.
+    if nf_em_outros_anexos is not None and nf_em_outros_anexos(m_nf.group(1), descricao or ""):
         return None
     return Achado(
         id=_proximo_id(contador),
@@ -244,6 +290,81 @@ def achados_subconta_atipica(
     return achados
 
 
+_RE_IDENT_EXTRATO = re.compile(r"identifica[çc][ãa]o\s+no\s+extrato\s*:?\s*(?:D[AE]\s+)?([A-Za-zÀ-ÿ]{4,})", re.IGNORECASE)
+
+
+def _debito_identifica_fornecedor(r: RegistroComprovante, contexto: str = "") -> bool:
+    """O comprovante de débito automático do Itaú nunca traz o CNPJ do beneficiário, mas traz
+    "Identificação no extrato: DA <FORNECEDOR> <instalação>". Quando esse nome bate com o fornecedor/descrição
+    (ou, em `contexto`, a razão social/nome fantasia da tela interna da despesa), o beneficiário está
+    identificado e a ausência de CNPJ não é achado."""
+    m = _RE_IDENT_EXTRATO.search(r.texto_bruto or "")
+    if not m:
+        return False
+    token = _normalizar_texto(m.group(1))[:4]
+    alvo = _normalizar_texto(f"{r.fornecedor or ''} {r.descricao or ''} {contexto}")
+    return len(token) >= 4 and token in alvo
+
+
+_RE_LISTA_CODIGOS_PAGAMENTO = re.compile(
+    r"identifica[çc][ãa]o\s+(?:no\s+extrato|do\s+comprovante)\s*:?\s*((?:D\d{3,6}\b[^\S\n]*[^\S\n\dD]{0,30}){1,15})",
+    re.IGNORECASE)
+_RE_TOTAL_PAGO_TEXTO = [
+    re.compile(r"valor\s+total:?\s*R?\$?\s*([\d.]+,\d{2})", re.IGNORECASE),
+    re.compile(r"valor\s+do\s+pagamento:?\s*R?\$?\s*([\d.]+,\d{2})", re.IGNORECASE),
+    re.compile(r"\bvalor:?\s*R\$\s*([\d.]+,\d{2})", re.IGNORECASE),
+]
+
+
+def _despesas_por_composicao_fundo_ordinario(despesas: list[RegistroComprovante]) -> list[RegistroComprovante]:
+    """Pseudo-registros (mesmo código/página) com valor e categoria vindos da "Composição da Despesa" da
+    tela interna, SÓ do Fundo Ordinário — mesma regra do adapter do demonstrativo (adapters/addomus_pdf.py).
+    Sem isso, a despesa rateada entre fundos (ex.: Garantidora 2/2 = R$ 1.719,50 no Ordinário + R$ 527,04 no
+    Fundo de Obras) entrava inteira na categoria do 1º item e a soma por categoria divergia do demonstrativo
+    exatamente pelo valor que está em outro fundo (falso "soma não confere")."""
+    import dataclasses
+
+    from adapters.addomus_pdf import _CATEGORIAS_NIVEL2, _RE_COMPOSICAO
+
+    saida: list[RegistroComprovante] = []
+    for d in despesas:
+        por_categoria: dict[str, float] = {}
+        for m in _RE_COMPOSICAO.finditer(d.texto_bruto or ""):
+            cod_cat, cod_fundo, nome_fundo, _rat, valor = m.groups()
+            if "Fundo Ordin" not in nome_fundo and cod_fundo != "3.1":
+                continue
+            partes = cod_cat.split(".")
+            nome = _CATEGORIAS_NIVEL2.get(f"{partes[0]}.{partes[1]}")
+            if nome:
+                por_categoria[nome] = por_categoria.get(nome, 0.0) + float(valor.replace(".", "").replace(",", "."))
+        if not por_categoria:
+            saida.append(d)
+            continue
+        for nome, soma in por_categoria.items():
+            saida.append(dataclasses.replace(d, categoria_demonstrativo=nome, valor=round(soma, 2)))
+    return saida
+
+
+def _imposto_da_descricao(descricao: str | None) -> str | None:
+    m = re.match(r"\s*(INSS|PCC|ISS|IRRF|PIS|COFINS|CSLL|CSRF)\b", descricao or "", re.IGNORECASE)
+    return m.group(1).upper() if m else None
+
+
+def _codigos_listados_no_pagamento(texto: str | None) -> list[str]:
+    """Códigos de despesa (D1213 D1217 ...) listados na "identificação no extrato/do comprovante" de um
+    comprovante de pagamento consolidado."""
+    m = _RE_LISTA_CODIGOS_PAGAMENTO.search(texto or "")
+    return re.findall(r"D(\d{3,6})\b", m.group(1)) if m else []
+
+
+def _total_pago_no_texto(texto: str | None) -> float | None:
+    for rx in _RE_TOTAL_PAGO_TEXTO:
+        m = rx.search(texto or "")
+        if m:
+            return float(m.group(1).replace(".", "").replace(",", "."))
+    return None
+
+
 def gerar_achados(
     registros: list[RegistroComprovante], dados_financeiros=None,
     pasta_dados: str | None = None, mes_atual: str | None = None,
@@ -265,7 +386,9 @@ def gerar_achados(
     achados: list[Achado] = []
 
     despesas_internas = [r for r in registros if r.tipo_documento == "despesa_interna"]
-    pagamentos = [r for r in registros if r.tipo_documento in TIPOS_COMPROVANTE_PAGAMENTO]
+    # "comprovante_imagem" = anexo digitalizado confirmado por OCR (valor + prova de pagamento) — ver
+    # conciliacao/addomus_pdf.py::_confirmar_anexos_imagem.
+    pagamentos = [r for r in registros if r.tipo_documento in TIPOS_COMPROVANTE_PAGAMENTO | {"comprovante_imagem"}]
 
     despesas_por_codigo: dict[str, list[RegistroComprovante]] = {}
     for r in despesas_internas:
@@ -341,6 +464,61 @@ def gerar_achados(
                 valor_encontrado=valor_pagamento,
                 confianca_deterministica=1.0,
             ))
+
+    # ── 1b. Pagamento CONSOLIDADO que lista os códigos das despesas ──────────
+    # Um DARF/boleto pode quitar várias despesas de uma vez e dizer quais no próprio comprovante
+    # ("identificação no extrato: D1213 D1217 D1221 D1225"). Só vale quando a soma dos valores das
+    # despesas listadas fecha com o total pago no comprovante (±0,01); despesa sem par própria entre elas
+    # deixa de ser "sem comprovante" e fica verificada.
+    despesas_ainda_sem_par_apos_lista: list[RegistroComprovante] = []
+    cobertas_por_lista: dict[str, tuple] = {}
+    for pagamento in pagamentos:
+        codigos = _codigos_listados_no_pagamento(pagamento.texto_bruto)
+        total = _total_pago_no_texto(pagamento.texto_bruto)
+        if not codigos or not total:
+            continue
+        despesas_listadas = [despesas_por_codigo[c][0] for c in codigos if c in despesas_por_codigo]
+        if len(despesas_listadas) != len(codigos):
+            continue  # algum código listado não existe como despesa neste arquivo — não arrisca
+        # (a) a lista de códigos do comprovante fecha sozinha com o total pago
+        if len(codigos) >= 2 and _valores_batem(sum(d.valor for d in despesas_listadas), total):
+            for d in despesas_listadas:
+                cobertas_por_lista.setdefault(d.codigo, (pagamento, total, despesas_listadas))
+            continue
+        # (b) o banco TRUNCA a lista de códigos no extrato (ex.: "D892 D1136" num DARF de PCC de R$ 3.646,29
+        # que paga 8 retenções): todas as retenções do MESMO imposto, mesmo fornecedor e mesmo vencimento
+        # do pagamento somadas fecham com o total pago, ao centavo — então são todas desse pagamento.
+        imposto = _imposto_da_descricao(despesas_listadas[0].descricao)
+        if not imposto:
+            continue
+        forn = _normalizar_texto(despesas_listadas[0].fornecedor or "")
+        piscina = [d for d in despesas_internas
+                   if _imposto_da_descricao(d.descricao) == imposto
+                   and _normalizar_texto(d.fornecedor or "") == forn
+                   and d.vencimento == despesas_listadas[0].vencimento]
+        if len(piscina) > len(despesas_listadas) and _valores_batem(sum(d.valor for d in piscina), total):
+            for d in piscina:
+                cobertas_por_lista.setdefault(d.codigo, (pagamento, total, piscina))
+    for despesa in despesas_sem_par:
+        cobertura = cobertas_por_lista.get(despesa.codigo)
+        if not cobertura:
+            despesas_ainda_sem_par_apos_lista.append(despesa)
+            continue
+        pagamento, total, listadas = cobertura
+        achados.append(Achado(
+            id=_proximo_id(contador),
+            tipo="ok_verificado",
+            severidade_sugerida="informativo",
+            regra_aplicada="pagamento_consolidado_lista_codigos_e_soma_confere",
+            registros_relacionados=[chave_registro(despesa), chave_registro(pagamento)],
+            linha_demonstrativo=despesa.categoria_demonstrativo,
+            valor_esperado=despesa.valor,
+            valor_encontrado=total,
+            confianca_deterministica=1.0,
+        ))
+        if pagamento.codigo:
+            codigos_pagamento_usados.add(pagamento.codigo)
+    despesas_sem_par = despesas_ainda_sem_par_apos_lista
 
     # Grupos de comprovante de pagamento (por código) que não bateram com
     # nenhuma despesa_interna — mantidos agrupados (não uma página por vez).
@@ -418,6 +596,7 @@ def gerar_achados(
     # (exceto códigos já marcados como duplicidade — regra 4 cobre esses — e
     # lançamentos isentos de comprovante por natureza, ver
     # _motivo_isencao_comprovante: transferência interna, tarifa bancária)
+    codigos_com_anexo = {r.codigo for r in registros if r.tipo_documento == "capa_comprovante" and r.codigo}
     for despesa in despesas_sem_par_restantes:
         if despesa.codigo in codigos_duplicados:
             continue
@@ -433,6 +612,24 @@ def gerar_achados(
                 valor_esperado=despesa.valor,
                 valor_encontrado=despesa.valor,
                 confianca_deterministica=1.0,
+            ))
+            continue
+        if despesa.codigo in codigos_com_anexo:
+            # Há páginas de anexo (capa "Comprovantes de Despesas" + imagem) desta despesa no PDF, mas o
+            # OCR não confirmou valor + prova de pagamento: o comprovante EXISTE e não pôde ser lido —
+            # "conteúdo não verificável", não "sem comprovante".
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="conteudo_nao_verificavel",
+                severidade_sugerida="atencao",
+                regra_aplicada="anexo_em_imagem_presente_valor_nao_confirmado_por_ocr",
+                registros_relacionados=[chave_registro(despesa)]
+                + [chave_registro(r) for r in registros
+                   if r.tipo_documento == "capa_comprovante" and r.codigo == despesa.codigo][:3],
+                linha_demonstrativo=despesa.categoria_demonstrativo,
+                valor_esperado=despesa.valor,
+                valor_encontrado=None,
+                confianca_deterministica=0.8,
             ))
             continue
         achados.append(Achado(
@@ -500,8 +697,19 @@ def gerar_achados(
     # páginas de anexo, todas sem CNPJ em texto simples.
     debitos_sem_cnpj_por_codigo: dict[str, list[RegistroComprovante]] = {}
     debitos_sem_cnpj_sem_codigo: list[RegistroComprovante] = []
+    # Código já identificado por QUALQUER página (CNPJ ou "Identificação no extrato" do beneficiário) não é achado.
+    contexto_por_codigo = {
+        d.codigo: (d.texto_bruto or "")[:600] for d in despesas_internas if d.codigo  # razão social / nome fantasia
+    }
+    codigos_debito_identificados = {
+        r.codigo for r in registros
+        if r.tipo_documento == "debito_automatico" and r.codigo
+        and (r.cnpj_cpf or _debito_identifica_fornecedor(r, contexto_por_codigo.get(r.codigo, "")))
+    }
     for r in registros:
-        if r.tipo_documento == "debito_automatico" and not r.cnpj_cpf:
+        if r.tipo_documento == "debito_automatico" and not r.cnpj_cpf \
+                and not _debito_identifica_fornecedor(r, contexto_por_codigo.get(r.codigo or "", "")) \
+                and r.codigo not in codigos_debito_identificados:
             if r.codigo:
                 debitos_sem_cnpj_por_codigo.setdefault(r.codigo, []).append(r)
             else:
@@ -531,12 +739,13 @@ def gerar_achados(
 
     # ── 6. Divergência de total por categoria (opcional, exige DadosFinanceiros) ──
     if dados_financeiros is not None:
-        achados.extend(_achados_divergencia_categoria(despesas_internas, dados_financeiros, contador))
+        achados.extend(_achados_divergencia_categoria(
+            _despesas_por_composicao_fundo_ordinario(despesas_internas), dados_financeiros, contador))
 
     # ── 7. Atraso de pagamento (vencimento x pagamento) ─────────────────────
     for despesa in despesas_internas:
         achado_atraso = achado_atraso_pagamento(despesa, contador)
-        if achado_atraso:
+        if achado_atraso and not _pago_ate_proximo_dia_util_bancario(despesa):
             achados.append(achado_atraso)
 
     # ── 8. Subconta/categoria atípica (heurística de histórico) ─────────────
@@ -573,6 +782,52 @@ def _achados_divergencia_categoria(despesas: list[RegistroComprovante], dados_fi
                 confianca_deterministica=1.0,
             ))
     return achados
+
+
+# Palavras da descrição que NÃO identificam o fornecedor (tributos, meses, termos genéricos) — usadas para
+# amarrar uma retenção ("INSS - NF. 24282 - FORT SERV") à NF do serviço anexada em outro código.
+_PALAVRAS_GENERICAS_FORNECEDOR = {
+    "INSS", "CSLL", "COFINS", "PIS", "IRRF", "FGTS", "ISSQN", "NOTA", "FISCAL", "LTDA", "EIRELI", "REF", "PARC",
+    "JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO",
+    "DEZEMBRO", "SERVICO", "SERVICOS", "COMERCIO", "INDUSTRIA", "CONDOMINIO", "LOCACAO", "MANUTENCAO", "RETENCAO",
+}
+
+
+def _tokens_fornecedor(descricao: str) -> set[str]:
+    palavras = re.findall(r"[A-Z]{3,}", _normalizar_texto(descricao))
+    return {w for w in palavras if w not in _PALAVRAS_GENERICAS_FORNECEDOR}
+
+
+def _construir_nf_em_outros_anexos(comprovantes: list[RegistroComprovante]):
+    """Devolve f(numero_nf, descricao_listagem) -> bool: existe, no anexo de OUTRO código do mesmo arquivo, uma
+    página de Nota Fiscal (marcador de NF, não comprovante bancário) que traz esse nº de NF e algum token do
+    fornecedor citado na descrição?"""
+    paginas_nf: list[tuple[str, str, str]] = []  # (codigo, texto, texto normalizado)
+    for c in comprovantes:
+        for _p, t in _lp.paginas_do_texto_bruto(c.texto_bruto):
+            if _lp.tem_marcador_nf(t) and not _lp.eh_pagina_pagamento(t):
+                paginas_nf.append((c.codigo, t, _normalizar_texto(t)))
+    if not paginas_nf:
+        return lambda numero, descricao, codigo=None: False
+
+    def _f(numero: str, descricao: str, codigo: str | None = None) -> bool:
+        n = numero.lstrip("0") or numero
+        corpo = r"[.\s]?".join([n[:-3], n[-3:]]) if len(n) >= 4 else re.escape(n)
+        padrao = re.compile(rf"(?<!\d)0*{corpo}(?!\d)")
+        tokens = _tokens_fornecedor(descricao)
+        for cod, t, tn in paginas_nf:
+            if codigo is not None and cod == codigo:
+                continue
+            if padrao.search(t) and (not tokens or any(tok in tn for tok in tokens)):
+                return True
+        return False
+    return _f
+
+
+# Descrição de lançamento que é a retenção/recolhimento de um tributo ("INSS S/FOLHA PAGTO MAIO/2026",
+# "CSLL/COFINS/PIS 1537579 VILA VELHA", "ISS - 03/2026 - NF. ...", "FGTS ...").
+_RE_DESCRICAO_TRIBUTO = re.compile(
+    r"(?:^|[\s\-/])(?:INSS|ISS|ISSQN|PIS|COFINS|CSLL|IRRF|IRPJ|FGTS|GPS|DARF)(?:[\s/\-:]|$)", re.IGNORECASE)
 
 
 def gerar_achados_lirba(
@@ -655,6 +910,7 @@ def gerar_achados_lirba(
     # é único por linha mesmo quando o Nº Lançto. bruto é degenerado — ver
     # conciliacao/habitacional_xlsx.py::extrair_comprovantes).
     avaliar_comprovante = bool(comprovantes)
+    nf_fora = _construir_nf_em_outros_anexos(comprovantes)
 
     if avaliar_comprovante:
         # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa",
@@ -663,6 +919,16 @@ def gerar_achados_lirba(
             if d.codigo in codigos_consolidados:
                 continue  # já virou achado de consolidação no bloco 0 acima
             comp = comprovantes_por_codigo.get(d.codigo)
+            # Conciliadores de comprovante-documento único (Central das Artes, Ciudad Real, Upper Itaim: o anexo é um PDF
+            # baixado/lido inteiro) às vezes têm o texto completo mas nenhuma regra da cadeia reconhece o formato do
+            # valor (conta de gás, taxa de elevadores, extrato bancário...). Se o valor da listagem aparece, formatado
+            # como moeda, no texto de um anexo LIDO DE VERDADE (>= 300 caracteres; a capa-resumo de ~250 caracteres repete
+            # o valor da própria listagem e nunca conta), ele está confirmado. (Anexos de várias páginas do ContasData
+            # genérico já passaram por essa busca em lirba_pdf.resolver_comprovante.)
+            if (comp is not None and comp.valor <= 0 and "[Página " not in (comp.texto_bruto or "")
+                    and len(comp.texto_bruto or "") >= _TAMANHO_MINIMO_TEXTO_CONFIAVEL
+                    and _lp.valor_aparece_no_texto(comp.texto_bruto, d.valor)):
+                comp.valor = d.valor
             motivo_isencao = _motivo_isencao_comprovante(d.descricao, d.categoria_demonstrativo)
             if motivo_isencao:
                 achados.append(Achado(
@@ -707,12 +973,35 @@ def gerar_achados_lirba(
                         valor_encontrado=comp.valor,
                         confianca_deterministica=1.0,
                     ))
-                    achado_nf = achado_nota_fiscal_ausente(
+                    # Retenção/recolhimento de tributo ("INSS - NF. 24282 - FORNECEDOR", "CSLL/COFINS/PIS - NF 3832"):
+                    # o que se paga é o tributo, comprovado pela guia/DARF e pelo comprovante bancário. A Nota Fiscal
+                    # é o documento da despesa do SERVIÇO — que, quando está neste mês, tem a própria linha (e é
+                    # cobrada ali) ou, na maioria dos casos (a retenção paga no mês seguinte à competência), é de um
+                    # mês anterior e já foi conferida lá. Cobrar a NF em cada retenção gerava dezenas de "Nota Fiscal
+                    # não anexada" por mês sem nenhum documento realmente faltando.
+                    achado_nf = None if _RE_DESCRICAO_TRIBUTO.search(d.descricao or "") else achado_nota_fiscal_ausente(
                         d.descricao, comp.texto_bruto, d.valor, comp.valor, d.categoria_demonstrativo,
                         [chave_registro(comp), chave_registro(d)], contador,
+                        nf_em_outros_anexos=lambda n, desc, _c=d.codigo: nf_fora(n, desc, _c),
                     )
                     if achado_nf:
                         achados.append(achado_nf)
+                elif comp.autenticacao and comp.valor > d.valor and _RE_DESCRICAO_TRIBUTO.search(d.descricao or ""):
+                    # Retenção (INSS, CSLL/COFINS/PIS, ISS...) cujo anexo é a GUIA do tributo (DARF/GPS/DAMSP): a guia é
+                    # única e consolidada, o total dela é a soma de várias retenções — comparar a retenção com o total
+                    # da guia seria divergência falsa. Fica registrado (informativo) para julgamento, como as demais
+                    # consolidações.
+                    achados.append(Achado(
+                        id=_proximo_id(contador),
+                        tipo="consolidacao_multipla_pendente_julgamento",
+                        severidade_sugerida="informativo",
+                        regra_aplicada="guia_de_tributo_consolidada_com_total_maior_que_a_retencao_listada",
+                        registros_relacionados=[chave_registro(comp), chave_registro(d)],
+                        linha_demonstrativo=d.categoria_demonstrativo,
+                        valor_esperado=d.valor,
+                        valor_encontrado=comp.valor,
+                        confianca_deterministica=0.5,
+                    ))
                 else:
                     achados.append(Achado(
                         id=_proximo_id(contador),
@@ -768,6 +1057,28 @@ def gerar_achados_lirba(
     achados.extend(achados_subconta_atipica(despesas, pasta_dados, mes_atual, contador))
 
     return achados
+
+
+def gerar_achados_planilha_com_links(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
+    """Planilhas em que o comprovante é um HYPERLINK da coluna "Anexo" para um sistema externo (Habitacional,
+    Guaratambé, e Baturité/Port Saint Tropez nos meses em planilha).
+
+    Mesmas regras do gerar_achados_lirba (lançamento sem link = sem comprovante, duplicidade, subconta...), mas
+    SEM o achado "conteúdo não verificável" por lançamento: o comprovante está num sistema externo e o conteúdo
+    não é legível pela Validação — link presente confirma a existência, e declarar 56 lançamentos "não
+    verificáveis" em toda planilha seria ruído idêntico em todo mês. Só se aplica quando TODOS os comprovantes
+    anexados são links http; em PDF (comprovante é página) o comportamento é o de sempre."""
+    achados = gerar_achados_lirba(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    anexos = [r for r in registros if r.tipo_documento == "comprovante_anexado"]
+    so_links = bool(anexos) and all((r.texto_bruto or "").lower().startswith("http") for r in anexos)
+    if not so_links:
+        return achados
+    return [a for a in achados
+            if not (a.tipo == "conteudo_nao_verificavel"
+                    and a.regra_aplicada == "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor")]
 
 
 def gerar_achados_datadigitus(
@@ -861,6 +1172,78 @@ def gerar_achados_datadigitus(
     return achados
 
 
+def _pascoa(ano: int):
+    """Domingo de Páscoa (algoritmo gregoriano anônimo)."""
+    a, b, c = ano % 19, ano // 100, ano % 100
+    d, e = b // 4, b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    L = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * L) // 451
+    mes, dia = divmod(h + L - 7 * m + 114, 31)
+    return datetime(ano, mes, dia + 1)
+
+
+def _feriados_bancarios(ano: int) -> set:
+    """Dias sem compensação bancária: feriados nacionais fixos + Carnaval (seg/ter), Sexta-feira Santa e Corpus
+    Christi — mais 25/01 e 09/07 (São Paulo, onde estão os condomínios). Feriado municipal de outras cidades não entra."""
+    pascoa = _pascoa(ano)
+    moveis = [pascoa - timedelta(days=48), pascoa - timedelta(days=47), pascoa - timedelta(days=2),
+              pascoa + timedelta(days=60)]
+    fixos = [(1, 1), (25, 1), (21, 4), (1, 5), (9, 7), (7, 9), (12, 10), (2, 11), (15, 11), (20, 11), (25, 12)]
+    return {d.date() for d in moveis} | {datetime(ano, m, d).date() for d, m in fixos}
+
+
+def _pago_ate_proximo_dia_util_bancario(registro: RegistroComprovante) -> bool:
+    """True quando a data de pagamento é no máximo o 1º dia ÚTIL BANCÁRIO (sem fim de semana nem feriado) a partir do
+    vencimento — pagar na quarta-feira de cinzas um boleto que venceu no domingo de Carnaval não é atraso. Só é usada
+    para DESCARTAR atrasos de formatos com data de liquidação lida do próprio comprovante (GCONT, Addomus)."""
+    try:
+        venc = datetime.strptime(registro.vencimento or "", "%d/%m/%Y")
+        pago = datetime.strptime(registro.pagamento or "", "%d/%m/%Y")
+    except ValueError:
+        return False
+    limite = venc
+    feriados = _feriados_bancarios(limite.year) | _feriados_bancarios(limite.year + 1)
+    while limite.weekday() >= 5 or limite.date() in feriados:
+        limite += timedelta(days=1)
+    return pago <= limite
+
+
+_RE_COMPLEMENTO_CAPA = re.compile(r"Destina-se a:[^\n]*\n(.*?)\n\s*Valor Emitido", re.DOTALL)
+
+
+def _complemento_capa(texto_bruto: str | None) -> str:
+    """Bloco "<cód. categoria> <categoria> <complemento>" da capa GCONT (pode quebrar em 2 linhas, ex.: o nº da chapa
+    do elevador na linha de baixo), sem os valores, normalizado; "" se ausente."""
+    m = _RE_COMPLEMENTO_CAPA.search(texto_bruto or "")
+    if not m:
+        return ""
+    bloco = re.sub(r"(?<![\d.,])[\d.]+,\d{2}(?!\d)", " ", m.group(1))
+    return re.sub(r"\s+", " ", _normalizar_texto(bloco)).strip()
+
+
+_RE_RECIBO_OCR = re.compile(r"\[RECIBO OCR pag\. \d+\]\n(.*)", re.DOTALL)
+_RE_RECIBO_IDENT = re.compile(r"Identifica\S*\s+no\s+extrato\s+(.+)", re.IGNORECASE)
+_RE_RECIBO_AUTENT = re.compile(r"autentica\S*\s*:?\s*([A-Za-z0-9]{12,})", re.IGNORECASE)
+
+
+def _assinatura_recibo(texto_bruto: str | None):
+    """Identificador do recibo anexado (instalação do débito automático + autenticação), ou None
+    quando o texto não traz o recibo OCR / nada identificável."""
+    m = _RE_RECIBO_OCR.search(texto_bruto or "")
+    if not m:
+        return None
+    corpo = m.group(1)
+    ident = _RE_RECIBO_IDENT.search(corpo)
+    aut = _RE_RECIBO_AUTENT.search(corpo)
+    partes = (re.sub(r"\s+", " ", ident.group(1)).strip().upper() if ident else None,
+              aut.group(1).upper() if aut else None)
+    return partes if any(partes) else None
+
+
 def gerar_achados_gcont(
     registros: list[RegistroComprovante], dados_financeiros=None,
     pasta_dados: str | None = None, mes_atual: str | None = None,
@@ -882,7 +1265,10 @@ def gerar_achados_gcont(
     achados: list[Achado] = []
 
     despesas = [r for r in registros if r.tipo_documento == "despesa_com_comprovante"]
-    totais_declarados = [r for r in registros if r.tipo_documento == "total_declarado"]
+    # "total_declarado" = Livro Caixa (Club Park, Saint Afonso); "total_demonstrativos_declarado" =
+    # soma dos "Total de DESPESAS" dos Demonstrativos Analíticos (HSA, ex.: I-Gloo Alphaville).
+    totais_declarados = [r for r in registros
+                         if r.tipo_documento in ("total_declarado", "total_demonstrativos_declarado")]
 
     # ── 1. Duplicidade ────────────────────────────────────────────────────
     grupos: dict[tuple, list[RegistroComprovante]] = {}
@@ -891,9 +1277,24 @@ def gerar_achados_gcont(
         # autenticacao aqui guarda o nº de Documento/NF (ver extrator) — quando
         # ausente (ex.: contas de concessionária sem NF), cai no fallback por
         # vencimento pra ainda ter uma chave razoável de deduplicação.
-        chave = (fornecedor_norm, d.autenticacao or d.vencimento, round(d.valor, 2))
+        # O "Complemento" da capa ("2.6.8 Taxa de Elevadores Nº CHAPA 137900") entra na chave: a taxa municipal de
+        # elevadores tem o MESMO valor (R$ 236,35) para cada elevador, paga no mesmo dia — só a chapa diferencia,
+        # e dois pagamentos com chapas diferentes não são duplicidade (Plano & Estação, Top Nine, 06/2026).
+        chave = (fornecedor_norm, d.autenticacao or d.vencimento, round(d.valor, 2), _complemento_capa(d.texto_bruto))
         grupos.setdefault(chave, []).append(d)
+    # Conciliadores que anexam o recibo em imagem (OCR) ao texto_bruto sob "[RECIBO OCR pag. N]"
+    # (ver conciliacao/condominios/_gcont_comum.py) permitem separar pagamentos DISTINTOS de mesmo
+    # fornecedor/valor/dia (ex.: débito automático Comgás de instalações diferentes) das repetições
+    # reais (recibo idêntico). Sem assinatura legível o registro fica no mesmo balde (conservador).
+    subgrupos: list[list[RegistroComprovante]] = []
     for grupo in grupos.values():
+        if len(grupo) < 2:
+            continue
+        por_assinatura: dict = {}
+        for d in grupo:
+            por_assinatura.setdefault(_assinatura_recibo(d.texto_bruto), []).append(d)
+        subgrupos.extend(por_assinatura.values())
+    for grupo in subgrupos:
         if len(grupo) >= 2:
             achados.append(Achado(
                 id=_proximo_id(contador),
@@ -925,7 +1326,7 @@ def gerar_achados_gcont(
     # ── 3. Atraso de pagamento (vencimento x liquidação) ─────────────────────
     for despesa in despesas:
         achado_atraso = achado_atraso_pagamento(despesa, contador)
-        if achado_atraso:
+        if achado_atraso and not _pago_ate_proximo_dia_util_bancario(despesa):
             achados.append(achado_atraso)
 
     # ── 3b. Nota Fiscal ausente — GCONT tem despesa e comprovante no MESMO
