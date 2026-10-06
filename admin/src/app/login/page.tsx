@@ -7,6 +7,7 @@ import { Zap, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 export default function LoginPage() {
   const router = useRouter();
 
+  const [usuario,  setUsuario]  = useState('');
   const [password, setPassword] = useState('');
   const [show,     setShow]     = useState(false);
   const [loading,  setLoading]  = useState(false);
@@ -14,7 +15,7 @@ export default function LoginPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!password) return;
+    if (!usuario.trim() || !password) return;
 
     setLoading(true);
     setError('');
@@ -23,7 +24,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ usuario: usuario.trim(), password }),
       });
 
       if (res.ok) {
@@ -34,7 +35,8 @@ export default function LoginPage() {
         router.push(next);
         router.refresh();
       } else {
-        setError('Senha incorreta. Tente novamente.');
+        const dados = await res.json().catch(() => ({}));
+        setError(dados.error ?? 'Usuário ou senha incorretos.');
         setPassword('');
       }
     } catch {
@@ -72,14 +74,28 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[12px] text-text-muted mb-1.5">Senha de acesso</label>
+              <label className="block text-[12px] text-text-muted mb-1.5">Usuário</label>
+              <input
+                type="text"
+                value={usuario}
+                onChange={e => { setUsuario(e.target.value); setError(''); }}
+                placeholder="Digite o usuário..."
+                autoComplete="username"
+                autoCapitalize="none"
+                autoFocus
+                className={`input ${error ? 'border-danger/50 bg-danger/5' : ''}`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-[12px] text-text-muted mb-1.5">Senha</label>
               <div className="relative">
                 <input
                   type={show ? 'text' : 'password'}
                   value={password}
                   onChange={e => { setPassword(e.target.value); setError(''); }}
                   placeholder="Digite a senha..."
-                  autoFocus
+                  autoComplete="current-password"
                   className={`input pr-10 ${error ? 'border-danger/50 bg-danger/5' : ''}`}
                 />
                 <button
@@ -101,7 +117,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || !password}
+              disabled={loading || !usuario.trim() || !password}
               className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading

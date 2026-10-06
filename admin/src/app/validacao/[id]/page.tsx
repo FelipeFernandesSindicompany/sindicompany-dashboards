@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Upload, FileCheck2, Loader2, Download, Save, PlayCircle } from 'lucide-react';
+import { Upload, FileCheck2, Loader2, Download, Eye, Save, PlayCircle } from 'lucide-react';
 
 interface AchadoBruto {
   id: string;
@@ -219,6 +219,21 @@ export default function ValidacaoCondominioPage() {
         )}
       </div>
 
+      {/* Extração rodou mas não achou nenhum registro/achado — avisa
+          explicitamente em vez de deixar a tela vazia sem explicação (a
+          narrativa automática já roda mesmo com 0 achados, então isso não
+          significa erro necessariamente, mas o usuário precisa saber). */}
+      {status?.versao && status.achadosBrutos && status.achadosBrutos.length === 0 && (
+        <div className="card p-4 mb-4">
+          <p className="text-[13px] font-semibold text-text-primary">Nenhum achado nesta extração</p>
+          <p className="text-[12px] text-text-muted mt-1">
+            Ou não há nenhuma divergência a reportar, ou o arquivo enviado não pôde ser lido pelo
+            formato esperado deste condomínio — confira o log da extração acima. Mesmo assim, o
+            relatório final pode ser gerado e baixado abaixo.
+          </p>
+        </div>
+      )}
+
       {/* Revisão dos achados */}
       {status?.achadosBrutos && status.achadosBrutos.length > 0 && (
         <div className="card p-4 mb-4">
@@ -266,13 +281,19 @@ export default function ValidacaoCondominioPage() {
         </div>
       )}
 
-      {/* Geração do relatório final */}
-      {status?.achadosBrutos && status.achadosBrutos.length > 0 && (
+      {/* Geração do relatório final — aparece sempre que a extração já rodou
+          (status.versao existe), mesmo com 0 achados: um mês sem nenhuma
+          divergência ainda precisa de um relatório pra baixar/entregar. */}
+      {status?.versao && (
         <div className="card p-4 flex items-center justify-between flex-wrap gap-3">
           <div>
             <p className="text-[13px] font-semibold text-text-primary">Relatório final</p>
             <p className="text-[11px] text-text-muted">
-              {status.relatorioExiste ? 'Relatório gerado — pode ser regenerado após novas edições.' : 'Ainda não gerado.'}
+              {status.relatorioExiste
+                ? 'Relatório gerado — pode ser regenerado após novas edições.'
+                : status.achadosBrutos && status.achadosBrutos.length > 0
+                  ? 'Ainda não gerado.'
+                  : 'Nenhuma divergência encontrada nesta extração — pode gerar o relatório diretamente.'}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -281,10 +302,16 @@ export default function ValidacaoCondominioPage() {
               Gerar relatório final
             </button>
             {status.relatorioExiste && (
-              <a className="btn-ghost text-[12px] flex items-center gap-1.5"
-                href={`/api/validacao/pdf?condominioId=${condominioId}&mes=${mes}`} target="_blank" rel="noreferrer">
-                <Download size={13} /> Ver PDF
-              </a>
+              <>
+                <a className="btn-ghost text-[12px] flex items-center gap-1.5"
+                  href={`/api/validacao/pdf?condominioId=${condominioId}&mes=${mes}`} target="_blank" rel="noreferrer">
+                  <Eye size={13} /> Ver PDF
+                </a>
+                <a className="btn-ghost text-[12px] flex items-center gap-1.5"
+                  href={`/api/validacao/pdf?condominioId=${condominioId}&mes=${mes}&baixar=1`}>
+                  <Download size={13} /> Baixar PDF
+                </a>
+              </>
             )}
           </div>
         </div>

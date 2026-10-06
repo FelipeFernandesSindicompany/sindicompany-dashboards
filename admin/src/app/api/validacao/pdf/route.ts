@@ -26,11 +26,13 @@ export async function GET(request: NextRequest) {
   // filename= (fallback ASCII) + filename*= (UTF-8, RFC 5987) — acentos em
   // "Validação"/nomes de condomínio não sobrevivem no filename= puro.
   const nomeAscii = nomeArquivo.replace(/[^\x20-\x7E]/g, '_');
+  // ?baixar=1 força o download (attachment); sem o parâmetro abre no navegador (inline).
+  const disposicao = request.nextUrl.searchParams.get('baixar') === '1' ? 'attachment' : 'inline';
   return new NextResponse(buffer, {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition':
-        `inline; filename="${nomeAscii}"; filename*=UTF-8''${encodeURIComponent(nomeArquivo)}`,
+        `${disposicao}; filename="${nomeAscii}"; filename*=UTF-8''${encodeURIComponent(nomeArquivo)}`,
     },
   });
 }
