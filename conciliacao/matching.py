@@ -11,6 +11,7 @@ sempre em cima de fatos rastreáveis, nunca de julgamento embutido no código.
 Tipos de comprovante de pagamento (têm código de lançamento e podem ser
 pareados 1:1 com uma "despesa_interna" do mesmo código):
 """
+import re
 import unicodedata
 from datetime import datetime, timedelta
 
@@ -116,6 +117,85 @@ def achado_atraso_pagamento(registro: RegistroComprovante, contador: list) -> Ac
         valor_esperado=None,
         valor_encontrado=registro.valor,
         confianca_deterministica=1.0,
+    )
+
+
+_RE_NF_NA_DESCRICAO = re.compile(r"\bN\.?F\.?S?\.?-?E?\.?:?\s*(\d{2,})", re.IGNORECASE)
+_RE_NF_NO_COMPROVANTE = re.compile(r"NOTA\s+FISCAL|NFS-?E|DANFE", re.IGNORECASE)
+# Confirmado em dados reais (Ciudad Real, formato de página embutida — ver
+# conciliacao/condominios/central_das_artes.py::_ler_comprovante_embutido)
+# que o "texto_bruto" às vezes é só a CAPA-RESUMO do comprovante embutido
+# ("Comprovante de Despesa\n<código>\n<descrição>\n<valor>\n<data>\nData\n
+# Histórico\nValor\n<página>/<total>", sempre entre 230-280 caracteres) — a
+# ANEXAÇÃO de verdade (as páginas seguintes, muitas vezes até 22 páginas de
+# imagem escaneada) nunca é lida por esse leitor. Sem esse piso, TODA
+# despesa com "NF." na descrição virava "nota_fiscal_ausente" mesmo quando
+# a NF genuinamente está anexada, só não foi lida ainda — confirmado que
+# isso gerava 54 falsos positivos de 72 despesas num único mês. Comprovantes
+# de verdade (bancários ou PDF nativo) sempre passam de 300 caracteres.
+_TAMANHO_MINIMO_TEXTO_CONFIAVEL = 300
+
+
+def achado_nota_fiscal_ausente(
+    descricao: str | None, texto_comprovante: str | None, valor_esperado: float | None,
+    valor_encontrado: float | None, categoria: str | None,
+    registros_relacionados: list[str], contador: list,
+) -> "Achado | None":
+    """
+    Quando a PRÓPRIA listagem já cita um número de Nota Fiscal na descrição
+    do lançamento (ex.: "MANUT. ELEVADOR 08/2026 - OTIS - NF. 415106") — ou
+    seja, existe uma NF de verdade por trás dessa despesa —, mas o
+    comprovante anexado (já com VALOR confirmado, ver chamadores) não traz
+    nem o mesmo número nem nenhum marcador de Nota Fiscal (confirmado em
+    dados reais, Upper Itaim: a maioria dos comprovantes anexados é só um
+    "Comprovante de Pagamento Eletrônico" bancário — prova que o dinheiro
+    saiu, não prova o que foi comprado/contratado). Mesma lógica de "valor
+    confere mas documentação não está completa" já usada em
+    conciliacao/interpretacao.py pro Central das Artes, generalizada aqui
+    como função de PROPÓSITO GERAL — recebe texto/descrição já prontos (não
+    dois RegistroComprovante) porque cada formato organiza essa informação
+    de um jeito diferente: gerar_achados_lirba tem despesa+comprovante como
+    registros separados; gerar_achados (Addomus) pode ter VÁRIAS páginas de
+    comprovante pro mesmo código (concatenar antes de chamar); gerar_achados_
+    gcont tem despesa e comprovante no MESMO registro (passar o mesmo texto
+    duas vezes). Quem chama decide como montar `texto_comprovante` E
+    `registros_relacionados` pro seu próprio formato — a regra em si (o QUE
+    verificar) é a mesma pra todos, só a leitura/montagem dos dados diverge
+    (ver [[feedback_despesas_tabela_completa]]).
+
+    Escopo deliberadamente estreito: só dispara quando a LISTAGEM já cita um
+    nº de NF — nunca em despesas de folha de pagamento, tributos (INSS/FGTS)
+    ou tarifas bancárias, que legitimamente não têm Nota Fiscal nenhuma e
+    cuja descrição não cita "NF." (evita alarme falso em massa).
+    """
+    m_nf = _RE_NF_NA_DESCRICAO.search(descricao or "")
+    if not m_nf:
+        return None
+    texto_comp = texto_comprovante or ""
+    if len(texto_comp) < _TAMANHO_MINIMO_TEXTO_CONFIAVEL:
+        # Não temos confiança de que já lemos o CONTEÚDO do comprovante (só
+        # uma capa-resumo, ou nada) — "não achamos NF" não é a mesma coisa
+        # que "confirmamos que a NF não está lá" (ver comentário acima).
+        return None
+    # Não basta o NÚMERO da NF aparecer no texto do comprovante — o campo
+    # "Histórico" de um comprovante bancário sempre REPETE a mesma descrição
+    # da listagem (confirmado em dados reais, Upper Itaim: "Histórico: MANUT.
+    # ELEVADOR 08/2026 - OTIS - NF. 415106" aparece dentro do PRÓPRIO
+    # comprovante de pagamento, só porque o sistema copia a descrição — não
+    # prova que a Nota Fiscal em si foi anexada). Só um marcador de Nota
+    # Fiscal de verdade ("NOTA FISCAL", "NFS-e", "DANFE") conta.
+    if _RE_NF_NO_COMPROVANTE.search(texto_comp):
+        return None
+    return Achado(
+        id=_proximo_id(contador),
+        tipo="nota_fiscal_ausente",
+        severidade_sugerida="atencao",
+        regra_aplicada="descricao_cita_nf_mas_comprovante_nao_traz_nf",
+        registros_relacionados=registros_relacionados,
+        linha_demonstrativo=categoria,
+        valor_esperado=valor_esperado,
+        valor_encontrado=valor_encontrado,
+        confianca_deterministica=0.8,
     )
 
 
@@ -237,6 +317,18 @@ def gerar_achados(
                 valor_encontrado=valor_pagamento,
                 confianca_deterministica=1.0,
             ))
+            # Um código pode ter VÁRIAS páginas de comprovante pareadas (capa
+            # + continuação do mesmo boleto/fatura) — concatena o texto de
+            # todas antes de checar, senão um marcador de NF numa página
+            # posterior nunca seria visto (ver achado_nota_fiscal_ausente).
+            texto_pares = "\n\n---\n\n".join(p.texto_bruto or "" for p in pares)
+            achado_nf = achado_nota_fiscal_ausente(
+                despesa.descricao, texto_pares, despesa.valor, valor_pagamento,
+                despesa.categoria_demonstrativo,
+                [chave_registro(despesa)] + chaves_pagamento, contador,
+            )
+            if achado_nf:
+                achados.append(achado_nf)
         else:
             achados.append(Achado(
                 id=_proximo_id(contador),
@@ -508,6 +600,51 @@ def gerar_achados_lirba(
     comprovantes = [r for r in registros if r.tipo_documento == "comprovante_anexado"]
     comprovantes_por_codigo = {r.codigo: r for r in comprovantes}
 
+    # ── 0. Consolidação: comprovantes que compartilham o mesmo identificador
+    #      "autenticacao" (ex.: N° Recibo Declaração de uma guia consolidada
+    #      da Receita Federal, ver conciliacao/lirba_pdf.py junto de
+    #      _RE_TOTAL_DO_DOCUMENTO) e o mesmo valor agregado NÃO são N
+    #      comprovantes individuais — são o MESMO documento referenciado por
+    #      N códigos de despesa diferentes (confirmado em dados reais: Port
+    #      Saint Tropez, 11 códigos distintos, mesmo recibo, mesmo total).
+    #      Comparar cada um sozinho contra o valor agregado geraria N
+    #      "divergência de valor" falsas — em vez disso agrupa e emite UM
+    #      achado de consolidação por grupo (mesmo padrão já usado pro
+    #      Addomus em gerar_achados(), "soma do grupo bate com o pagamento
+    #      consolidado"), comparando a SOMA das despesas do grupo contra o
+    #      valor agregado do documento compartilhado.
+    grupos_consolidados: dict[tuple[str, float], list[RegistroComprovante]] = {}
+    for r in comprovantes:
+        if r.autenticacao and r.valor > 0:
+            grupos_consolidados.setdefault((r.autenticacao, round(r.valor, 2)), []).append(r)
+
+    codigos_consolidados: set[str] = set()
+    for (_autenticacao, valor_total), grupo_comp in grupos_consolidados.items():
+        codigos_do_grupo = {c.codigo for c in grupo_comp}
+        if len(codigos_do_grupo) < 2:
+            continue  # documento referenciado por um único código — segue o fluxo normal abaixo
+        despesas_do_grupo = [d for d in despesas if d.codigo in codigos_do_grupo]
+        if not despesas_do_grupo:
+            continue
+        soma = sum(d.valor for d in despesas_do_grupo)
+        achados.append(Achado(
+            id=_proximo_id(contador),
+            tipo="consolidacao_multipla_pendente_julgamento",
+            severidade_sugerida="informativo",
+            regra_aplicada="comprovantes_compartilham_mesma_guia_consolidada",
+            registros_relacionados=(
+                [chave_registro(d) for d in despesas_do_grupo]
+                + [chave_registro(c) for c in grupo_comp]
+            ),
+            valor_esperado=soma,
+            valor_encontrado=valor_total,
+            # Julgamento de negócio ainda necessário (confirma que a guia é
+            # legítima e cobre exatamente esses códigos, não uma prova cega) —
+            # confiança deliberadamente < 1.0, igual à consolidação do Addomus.
+            confianca_deterministica=0.6 if _valores_batem(soma, valor_total) else 0.4,
+        ))
+        codigos_consolidados.update(codigos_do_grupo)
+
     # Alguns exports (ex.: Habitacional XLSX de Baturité) nunca preenchem a
     # coluna Anexo com hyperlink real em NENHUMA linha do mês — a ausência de
     # comprovante_anexado aí é sistêmica do arquivo inteiro, não evidência de
@@ -523,6 +660,8 @@ def gerar_achados_lirba(
         # ── 1. Cada despesa listada tem (ou não) uma página "Comprovante de Despesa",
         #        e — quando o OCR confirmou conteúdo — o valor bate com a listagem ──
         for d in despesas:
+            if d.codigo in codigos_consolidados:
+                continue  # já virou achado de consolidação no bloco 0 acima
             comp = comprovantes_por_codigo.get(d.codigo)
             motivo_isencao = _motivo_isencao_comprovante(d.descricao, d.categoria_demonstrativo)
             if motivo_isencao:
@@ -568,6 +707,12 @@ def gerar_achados_lirba(
                         valor_encontrado=comp.valor,
                         confianca_deterministica=1.0,
                     ))
+                    achado_nf = achado_nota_fiscal_ausente(
+                        d.descricao, comp.texto_bruto, d.valor, comp.valor, d.categoria_demonstrativo,
+                        [chave_registro(comp), chave_registro(d)], contador,
+                    )
+                    if achado_nf:
+                        achados.append(achado_nf)
                 else:
                     achados.append(Achado(
                         id=_proximo_id(contador),
@@ -783,6 +928,18 @@ def gerar_achados_gcont(
         if achado_atraso:
             achados.append(achado_atraso)
 
+    # ── 3b. Nota Fiscal ausente — GCONT tem despesa e comprovante no MESMO
+    # registro ("despesa_com_comprovante", auto-suficiente por natureza, ver
+    # docstring acima), então descrição e texto do comprovante vêm do mesmo
+    # objeto (ver achado_nota_fiscal_ausente).
+    for despesa in despesas:
+        achado_nf = achado_nota_fiscal_ausente(
+            despesa.descricao, despesa.texto_bruto, despesa.valor, despesa.valor,
+            despesa.categoria_demonstrativo, [chave_registro(despesa)], contador,
+        )
+        if achado_nf:
+            achados.append(achado_nf)
+
     # ── 4. Subconta/categoria atípica (heurística de histórico) ─────────────
     achados.extend(achados_subconta_atipica(despesas, pasta_dados, mes_atual, contador))
 
@@ -847,6 +1004,102 @@ def gerar_achados_balancete_mensal(
                 linha_demonstrativo=calc.descricao,
                 valor_esperado=decl.valor,
                 valor_encontrado=calc.valor,
+                confianca_deterministica=1.0,
+            ))
+
+    return achados
+
+
+def gerar_achados_palm_beach(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
+    """
+    Regras para Palm Beach (ver conciliacao/condominios/palm_beach.py) —
+    duas seções tratadas de formas diferentes, nenhuma com pareamento
+    despesa-a-despesa no sentido usual (não existe "sem_comprovante" nem
+    "divergencia_valor" aqui — ver docstring do módulo pra por quê):
+      - "anexo_despesa_com_valor"/"anexo_despesa_sem_valor_identificado":
+        página-capa de "Despesas > Anexos", já vem com fornecedor/nº doc/
+        categoria de texto real — confirma o valor quando o OCR conseguiu
+        ler (ok_verificado), ou sinaliza quando não (conteudo_nao_verificavel,
+        mais acionável que os de "Outros documentos" porque já se sabe a
+        qual despesa esse anexo pertence).
+      - "comprovante_com_valor"/"comprovante_valor_suspeito"/
+        "comprovante_sem_valor_identificado"/"documento_apoio_sem_valor":
+        documentos da seção "Outros documentos" (sem vínculo com uma
+        despesa específica) — ver docstring do módulo.
+    """
+    contador = [0]
+    achados: list[Achado] = []
+
+    for r in registros:
+        if r.tipo_documento == "anexo_despesa_com_valor":
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="ok_verificado",
+                severidade_sugerida="informativo",
+                regra_aplicada="anexo_despesa_com_valor_confirmado_por_ocr",
+                registros_relacionados=[chave_registro(r)],
+                linha_demonstrativo=r.categoria_demonstrativo,
+                valor_esperado=None,
+                valor_encontrado=r.valor,
+                confianca_deterministica=0.85,
+            ))
+        elif r.tipo_documento == "anexo_despesa_sem_valor_identificado":
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="conteudo_nao_verificavel",
+                severidade_sugerida="atencao",
+                regra_aplicada="anexo_despesa_com_valor_nao_confirmado_por_ocr",
+                registros_relacionados=[chave_registro(r)],
+                linha_demonstrativo=r.categoria_demonstrativo,
+                valor_esperado=None,
+                valor_encontrado=None,
+                confianca_deterministica=1.0,
+            ))
+        elif r.tipo_documento == "comprovante_com_valor":
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="ok_verificado",
+                severidade_sugerida="informativo",
+                regra_aplicada="documento_outros_documentos_com_valor_confirmado_por_ocr",
+                registros_relacionados=[chave_registro(r)],
+                valor_esperado=None,
+                valor_encontrado=r.valor,
+                confianca_deterministica=0.8,
+            ))
+        elif r.tipo_documento == "comprovante_valor_suspeito":
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="conteudo_nao_verificavel",
+                severidade_sugerida="atencao",
+                regra_aplicada="valor_lido_implausivel_possivel_erro_ocr",
+                registros_relacionados=[chave_registro(r)],
+                valor_esperado=None,
+                valor_encontrado=r.valor,
+                confianca_deterministica=0.4,
+            ))
+        elif r.tipo_documento == "comprovante_sem_valor_identificado":
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="conteudo_nao_verificavel",
+                severidade_sugerida="atencao",
+                regra_aplicada="documento_outros_documentos_tipo_nao_reconhecido",
+                registros_relacionados=[chave_registro(r)],
+                valor_esperado=None,
+                valor_encontrado=None,
+                confianca_deterministica=1.0,
+            ))
+        elif r.tipo_documento == "documento_apoio_sem_valor":
+            achados.append(Achado(
+                id=_proximo_id(contador),
+                tipo="ok_verificado",
+                severidade_sugerida="informativo",
+                regra_aplicada="documento_de_apoio_sem_valor_individual_comparavel",
+                registros_relacionados=[chave_registro(r)],
+                valor_esperado=None,
+                valor_encontrado=None,
                 confianca_deterministica=1.0,
             ))
 

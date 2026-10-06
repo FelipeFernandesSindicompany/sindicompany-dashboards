@@ -22,9 +22,11 @@ texto é gerado automaticamente, o `revisado_por` deixa isso explícito
 ("sistema:narrativa_automatica", nunca "pendente" nem se passando por
 revisão humana).
 """
+import re
 from datetime import datetime, timezone
 
 from conciliacao.base import SEVERIDADES, Achado, AchadoRevisado, RegistroComprovante, chave_registro
+from conciliacao.regras_gerais.textos import TEXTOS as _TEXTOS_REGRAS_GERAIS, texto_subconta_nova as _texto_subconta_nova
 
 
 def _fmt_moeda(v: float | None) -> str:
@@ -109,6 +111,35 @@ def _texto_atraso_pagamento(achado: Achado, registro: RegistroComprovante | None
 
 
 def _texto_conteudo_nao_verificavel(achado: Achado, registro: RegistroComprovante | None) -> tuple[str, str, str]:
+    if achado.regra_aplicada == "anexo_despesa_com_valor_nao_confirmado_por_ocr":
+        # Palm Beach — anexo de despesa identificado (fornecedor/nº doc de
+        # texto real), mas o OCR não confirmou o valor na capa do anexo.
+        fornecedor = registro.fornecedor if registro and registro.fornecedor else "fornecedor não identificado"
+        doc = f" (Doc. {registro.codigo})" if registro and registro.codigo else ""
+        titulo = f"Comprovante anexado, valor não confirmado — {fornecedor}{doc}"
+        paragrafo = f"Existe um anexo de despesa para {fornecedor}{doc}, categoria \"{achado.linha_demonstrativo or 'não identificada'}\", mas o sistema não conseguiu ler o valor na capa do anexo."
+        o_que_verificar = "Conferir visualmente no recorte anexado qual é o valor do documento."
+        return titulo, paragrafo, o_que_verificar
+    if achado.regra_aplicada == "valor_lido_implausivel_possivel_erro_ocr":
+        # Palm Beach — valor OCR'd acima do teto de plausibilidade (ver
+        # _VALOR_MAXIMO_PLAUSIVEL em conciliacao/condominios/palm_beach.py).
+        valor_lido = _fmt_moeda(achado.valor_encontrado)
+        titulo = f"Valor lido implausível — possível erro de leitura do OCR ({valor_lido})"
+        paragrafo = (
+            f"O valor lido neste documento ({valor_lido}) é alto demais pra ser plausível como uma despesa "
+            f"individual do condomínio — provavelmente um erro de leitura do OCR (dígito extra ou separador "
+            f"decimal trocado), não um valor real."
+        )
+        o_que_verificar = "Conferir visualmente o valor no recorte do comprovante anexado."
+        return titulo, paragrafo, o_que_verificar
+    if achado.regra_aplicada == "documento_outros_documentos_tipo_nao_reconhecido":
+        # Palm Beach — documento presente, mas nenhum classificador (extrato/
+        # FOPAG/certidão/recibo/valor de transação) reconheceu o tipo.
+        titulo = "Documento anexado, tipo não reconhecido automaticamente"
+        paragrafo = "O documento está presente na pasta de \"Outros documentos\", mas o sistema não reconheceu o tipo nem conseguiu extrair um valor de transação."
+        o_que_verificar = "Conferir visualmente no recorte anexado o que é este documento."
+        return titulo, paragrafo, o_que_verificar
+
     categoria = _categoria(achado, registro)
     valor = _fmt_moeda(achado.valor_esperado)
     # texto_bruto curto (só cabeçalho/rodapé) é sinal de página genuinamente
@@ -197,7 +228,98 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             "revisado_em": agora,
             "motivo_divergencia_da_sugestao": None,
         }
-        if achado.tipo == "ok_verificado":
+        if achado.tipo == "ok_verificado" and achado.regra_aplicada == "anexo_despesa_com_valor_confirmado_por_ocr":
+            # Palm Beach — página-capa de "Despesas > Anexos": fornecedor/nº
+            # doc vêm de texto real (ver conciliacao/condominios/palm_beach.py).
+            fornecedor = registro.fornecedor if registro and registro.fornecedor else "fornecedor não identificado"
+            doc = f" (Doc. {registro.codigo})" if registro and registro.codigo else ""
+            valor = _fmt_moeda(achado.valor_encontrado)
+            titulo = f"Comprovante confirmado — {fornecedor}{doc} ({valor})"
+            paragrafo = f"Anexo da despesa a {fornecedor}{doc}, categoria \"{achado.linha_demonstrativo or 'não identificada'}\" — valor {valor} confirmado na própria capa do anexo."
+            o_que_verificar = "Nenhuma ação necessária."
+            base["confianca_ia"] = 0.85
+        elif achado.tipo == "ok_verificado" and achado.regra_aplicada == "documento_de_apoio_sem_valor_individual_comparavel":
+            # Palm Beach (ver conciliacao/condominios/palm_beach.py) — extrato
+            # bancário, certidão, folha de pagamento ou recibo de entrega: não
+            # é um comprovante de pagamento com valor a conferir, só confirma
+            # que o documento de apoio existe na pasta.
+            descricao_doc = (registro.descricao if registro and registro.descricao else "documento de apoio")
+            titulo = f"Documento de apoio confirmado — {descricao_doc}"
+            paragrafo = f"Documento anexado ({descricao_doc}) confirmado como presente na pasta — não é um comprovante de pagamento com valor individual a conferir."
+            o_que_verificar = "Nenhuma ação necessária."
+            base["confianca_ia"] = 1.0
+            base["revisado_por"] = "sistema:regra_deterministica"
+        elif achado.tipo == "ok_verificado" and achado.regra_aplicada == "documento_outros_documentos_com_valor_confirmado_por_ocr":
+            valor = _fmt_moeda(achado.valor_encontrado)
+            titulo = f"Comprovante confirmado — valor lido por OCR ({valor})"
+            paragrafo = (
+                f"Documento de pagamento confirmado, {valor} lido do próprio comprovante. Este formato não tem uma "
+                f"listagem de despesas individual com código pra cruzar (ver seção de metodologia) — a confirmação "
+                f"é da leitura do documento em si, não de um pareamento com a despesa correspondente."
+            )
+            o_que_verificar = "Nenhuma ação necessária."
+        elif achado.tipo == "ok_verificado" and registro and "não foi enviado para a administradora" in (registro.texto_bruto or "").lower():
+            # "DEMONSTRATIVO DE PAGAMENTO" (sistema Robotton, ver
+            # conciliacao/condominios/central_das_artes.py) é um aviso
+            # GERADO PELO PRÓPRIO SISTEMA quando o documento original (conta/
+            # nota/fatura) não chegou até o fechamento da pasta de prestação
+            # de contas — o texto do próprio documento confirma isso
+            # ("...que até o fechamento da pasta de prestação de contas não
+            # foi enviado para a Administradora..."). O valor bater com a
+            # listagem NÃO resolve essa pendência — o valor está só nesse
+            # demonstrativo interno, não no documento original em si.
+            # Confirmado com o síndico: bater o valor não é o mesmo que ter
+            # o documento — precisa continuar aparecendo como pendência.
+            valor = _fmt_moeda(achado.valor_encontrado)
+            titulo = f"Documento original não enviado — {achado.linha_demonstrativo or 'despesa'} ({valor})"
+            paragrafo = (
+                f"O valor deste lançamento ({valor}) confere, mas o comprovante disponível é só um "
+                f"\"Demonstrativo de Pagamento\" interno — o documento original (conta/fatura) ainda não "
+                f"foi enviado para a administradora, segundo o próprio sistema."
+            )
+            o_que_verificar = "Solicitar a conta/fatura original referente ao lançamento."
+            base["confianca_ia"] = 1.0
+            base["revisado_por"] = "sistema:regra_deterministica"
+            base["severidade_final"] = "atencao"
+            base["motivo_divergencia_da_sugestao"] = (
+                "Valor confere, mas o documento original não foi enviado para a administradora "
+                "(aviso do próprio sistema) — pendência de documentação, não de valor."
+            )
+        elif achado.tipo == "ok_verificado" and registro and re.search(
+            r"CART[AÃ]O\s+DE\s+CR[EÉ]DITO|\b(?:VISA|MASTERCARD)\b", registro.texto_bruto or "", re.IGNORECASE
+        ) and not re.search(r"NOTA\s+FISCAL|NFS-?E|DANFE", registro.texto_bruto or "", re.IGNORECASE):
+            # Marcador ESTREITO de propósito — "cart" sozinho (ex.:
+            # "Carteira", campo padrão de boleto bancário) já gerou falso
+            # positivo confirmado em dados reais (Upper Itaim, código 0016:
+            # um pagamento comum com Nota Fiscal genuinamente anexada, só
+            # que o boleto também incluído no mesmo texto tem o campo
+            # "Carteira") — exige a frase completa "cartão de crédito" ou a
+            # bandeira do cartão, e NUNCA dispara se o texto já tem um
+            # marcador de Nota Fiscal de verdade (documentação já está
+            # completa nesse caso, não faz sentido pedir de novo).
+            # Fatura de cartão de crédito — o valor TOTAL bater não comprova
+            # o que foi efetivamente comprado; precisa das notas fiscais
+            # individuais de cada compra pra isso. Mesma lógica do
+            # "documento original não enviado" acima: bater o valor não
+            # encerra a pendência de documentação.
+            valor = _fmt_moeda(achado.valor_encontrado)
+            titulo = f"Notas fiscais do cartão de crédito pendentes — {achado.linha_demonstrativo or 'despesa'} ({valor})"
+            paragrafo = (
+                f"O valor total da fatura do cartão de crédito ({valor}) confere, mas isso não comprova o "
+                f"que foi efetivamente comprado — faltam as notas fiscais individuais de cada compra."
+            )
+            o_que_verificar = (
+                "Solicitar que sejam anexadas as notas fiscais do que foi gasto no cartão de crédito "
+                "— é preciso comprovar o que foi comprado."
+            )
+            base["confianca_ia"] = 1.0
+            base["revisado_por"] = "sistema:regra_deterministica"
+            base["severidade_final"] = "atencao"
+            base["motivo_divergencia_da_sugestao"] = (
+                "Valor total da fatura confere, mas faltam as notas fiscais individuais das compras — "
+                "pendência de documentação, não de valor."
+            )
+        elif achado.tipo == "ok_verificado":
             titulo = "Verificado sem irregularidade"
             paragrafo = (
                 f"Comprovante confere com o lançamento correspondente (valor R$ {achado.valor_encontrado:.2f})."
@@ -218,8 +340,40 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             titulo, paragrafo, o_que_verificar = _texto_cnpj_ausente(achado, registro)
         elif achado.tipo == "duplicidade":
             titulo, paragrafo, o_que_verificar = _texto_duplicidade(achado)
+        elif achado.tipo == "nota_fiscal_ausente":
+            categoria = _categoria(achado, registro)
+            valor = _fmt_moeda(achado.valor_encontrado)
+            descricao_curta = (registro.descricao or categoria) if registro else categoria
+            titulo = f"Nota Fiscal não anexada — {descricao_curta} ({valor})"
+            paragrafo = (
+                f"O valor deste lançamento ({valor}) confere, mas a própria listagem cita um número de "
+                f"Nota Fiscal e o comprovante anexado é só a confirmação bancária do pagamento — não traz "
+                f"a Nota Fiscal em si."
+            )
+            o_que_verificar = "Solicitar que a Nota Fiscal correspondente seja anexada junto ao comprovante de pagamento."
+            base["confianca_ia"] = 0.8
+            base["revisado_por"] = "sistema:regra_deterministica"
+        elif achado.tipo == "lancamento_removido_mes_anterior":
+            categoria = _categoria(achado, registro)
+            valor = _fmt_moeda(achado.valor_encontrado)
+            descricao = (registro.descricao if registro else None) or categoria
+            titulo = f"Lançamento recorrente ausente este mês — {descricao} ({valor} no mês anterior)"
+            paragrafo = (
+                f"Um lançamento muito parecido com este ({descricao}, {valor}) apareceu no mês anterior e "
+                f"não tem equivalente neste mês — pode ser um cancelamento legítimo ou uma despesa que "
+                f"deixou de ser cobrada/lançada por engano."
+            )
+            o_que_verificar = "Confirmar com a administradora se este lançamento recorrente foi legitimamente descontinuado."
+            base["confianca_ia"] = 0.6
+            base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "consolidacao_multipla_pendente_julgamento":
             titulo, paragrafo, o_que_verificar = _texto_consolidacao(achado)
+        elif achado.tipo in _TEXTOS_REGRAS_GERAIS:
+            titulo, paragrafo, o_que_verificar = _TEXTOS_REGRAS_GERAIS[achado.tipo](achado)
+            base["revisado_por"] = "sistema:regra_deterministica"
+        elif achado.tipo == "subconta_atipica" and (achado.detalhes.get("lancamentos") or achado.detalhes.get("so_total")):
+            titulo, paragrafo, o_que_verificar = _texto_subconta_nova(achado)
+            base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "subconta_atipica":
             titulo, paragrafo, o_que_verificar = _texto_subconta_atipica(achado)
         elif achado.tipo == "sem_lancamento_correspondente":

@@ -37,6 +37,7 @@
   .faixa-sindicompany img { height: 22px; }
 
   section.intro { font-size: 11px; line-height: 1.4; margin: 3mm 0; color: var(--text); }
+  p.nota { font-size: 10px; line-height: 1.4; margin: 2mm 0 4mm; color: var(--muted); }
 
   .achado {
     border: 1px solid var(--linha);
@@ -50,7 +51,7 @@
     color: var(--cor);
     margin: 0 0 2px;
   }
-  .achado .paragrafo { font-size: 11px; line-height: 1.4; margin-bottom: 2.5mm; }
+  .achado .paragrafo { font-size: 11px; line-height: 1.4; margin-bottom: 2.5mm; white-space: pre-line; }
   .achado .metadados-linha {
     display: flex; flex-wrap: wrap; gap: 1mm 6mm;
     font-size: 10.5px; margin-bottom: 2.5mm;
@@ -67,6 +68,12 @@
   }
   .achado .evidencia-vetorial .marca.ini { top: 0; left: 0; }
   .achado .evidencia-vetorial .marca.fim { bottom: 0; right: 0; }
+  .achado .evidencias-extras { display: flex; flex-wrap: wrap; gap: 0 3mm; }
+  .achado .evidencia-extra { flex: 0 0 100%; margin-bottom: 2.5mm; break-inside: avoid; }
+  .achado .evidencia-extra.meia { flex: 0 0 calc(50% - 1.5mm); max-width: calc(50% - 1.5mm); }
+  .achado .evidencia-extra .legenda-evidencia {
+    font-size: 10.5px; font-weight: 600; color: var(--text); margin-bottom: 1.2mm; line-height: 1.35;
+  }
   .achado .evidencia .sem-imagem {
     padding: 6mm 4mm; text-align: center; color: var(--muted);
     border: 1px dashed var(--linha); border-radius: 4px; font-size: 11px;
@@ -100,11 +107,15 @@
     font-size: 9px;
     color: var(--muted);
     border-top: 1px solid var(--linha);
-    padding: 3mm 0;
-    margin-top: 5mm;
+    padding: 2mm 0;
+    margin-top: 2mm;
+    /* nunca sozinho numa página: se não couber junto do último achado, vai com ele */
+    break-before: avoid;
+    page-break-before: avoid;
   }
 
   section.analise { margin-bottom: 5mm; }
+  h2, h3 { break-after: avoid; page-break-after: avoid; }
   section.analise h2 {
     font-size: 14px; color: var(--cor); border-bottom: 1px solid var(--linha);
     padding-bottom: 2px; margin: 5mm 0 2.5mm;
@@ -144,7 +155,7 @@
 {% endif %}
 <header class="capa">
   <h1>Relatório de Análise e Validação Mensal</h1>
-  <div class="meta">{{ condominio_nome }} &middot; {{ mes_titulo }} &middot; Administradora {{ administradora }} &middot; CNPJ {{ cnpj }}</div>
+  <div class="meta">{{ condominio_nome }} &middot; {{ mes_titulo }} &middot; Administradora {{ administradora }}{% if cnpj %} &middot; CNPJ {{ cnpj }}{% endif %}</div>
 </header>
 
 {% if analise %}
@@ -162,7 +173,7 @@
     </div>
     <div class="kpi neutro">
       <div class="rotulo">Inadimplência Total</div>
-      <div class="valor">{{ analise.inad_atual_fmt }}</div>
+      <div class="valor">{{ analise.inad_atual_fmt or '—' }}</div>
     </div>
   </div>
 
@@ -188,16 +199,59 @@
     {% endfor %}
     <tr class="total"><td>Total</td><td class="num">{{ analise.despesas_total_fmt }}</td><td class="num">100,0%</td></tr>
   </table>
+  {% if analise.nota_transferencia_entre_contas_fmt %}
+  <p class="nota">
+    Nota: a soma dos débitos da tabela "Situação Financeira por Conta" acima ({{ analise.soma_debitos_contas_fmt }})
+    é maior que o total de "Despesas por Categoria" ({{ analise.despesas_total_fmt }}) — diferença de
+    {{ analise.nota_transferencia_entre_contas_fmt }}. O próprio demonstrativo explica isso: a coluna de
+    débitos inclui transferências entre as contas do próprio condomínio (ex.: repasse da Ordinária para o
+    Fundo de Reserva), que não são despesa com terceiros e por isso não entram na tabela de categorias.
+  </p>
+  {% endif %}
 
-  <h2>Previsto x Realizado e Inadimplência</h2>
+  {% set reclassificados = categorias_novas | selectattr('possivel_reclassificacao') | list %}
+  {% if reclassificados %}
+  <h2>Lançamentos Reclassificados Este Mês</h2>
+  <table class="fin">
+    <tr><th>Fornecedor</th><th>Mês anterior</th><th>Este mês</th><th class="num">Valor</th></tr>
+    {% for c in reclassificados %}
+    <tr>
+      <td>{{ c.fornecedor_reclassificado }}</td>
+      <td>{{ c.categoria_anterior }}</td>
+      <td>{{ c.categoria }}</td>
+      <td class="num">{{ c.valor_fmt }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="nota">
+    No mês anterior, o fornecedor estava classificado na categoria da coluna "Mês anterior"; neste mês, o mesmo
+    fornecedor está classificado na categoria da coluna "Este mês". Lançamentos novos (sem equivalente no mês
+    anterior) não entram nesta tabela.
+  </p>
+  {% endif %}
+
+  {% if analise.previsto_fmt or analise.inad_disponivel %}
+  <h2>
+    {%- if analise.previsto_fmt and analise.inad_disponivel -%}
+      Previsto x Realizado e Inadimplência
+    {%- elif analise.previsto_fmt -%}
+      Previsto x Realizado
+    {%- else -%}
+      Inadimplência
+    {%- endif -%}
+  </h2>
   <p>
+    {% if analise.previsto_fmt %}
     Previsto: <strong>{{ analise.previsto_fmt }}</strong> &middot;
     Realizado: <strong>{{ analise.realizado_fmt }}</strong>
     {% if analise.realizado_pct_fmt %}({{ analise.realizado_pct_fmt }} do previsto){% endif %}.
+    {% endif %}
+    {% if analise.inad_disponivel %}
     Inadimplência total: <strong>{{ analise.inad_atual_fmt }}</strong>
-    {% if analise.inad_anterior_fmt %}(mês anterior: {{ analise.inad_anterior_fmt }}){% endif %},
-    dos quais {{ analise.inad_proc_fmt }} recuperados no próprio mês.
+    {% if analise.inad_anterior_fmt %}(mês anterior: {{ analise.inad_anterior_fmt }}){% endif %}{% if analise.inad_proc_fmt %}, dos quais {{ analise.inad_proc_fmt }} recuperados no próprio mês{% endif %}.
+    {% endif %}
   </p>
+  {% endif %}
 
   {% if analise.pontos_atencao %}
   <h2>Pontos de Atenção e Recomendações</h2>
@@ -236,8 +290,24 @@
       <div class="evidencia-vetorial" style="width: {{ a.evidencia_vetorial.largura_mm }}mm; height: {{ a.evidencia_vetorial.altura_mm }}mm;">
         <span class="marca ini">@@EVID_INI_{{ a.numero }}@@</span><span class="marca fim">@@EVID_FIM_{{ a.numero }}@@</span>
       </div>
-    {% else %}
+    {% elif a.e_achado_agregado and not a.evidencias_extras %}
+      <div class="sem-imagem">Divergência sobre o total do período — não há um único lançamento como evidência</div>
+    {% elif not a.evidencias_extras and a.evidencia_texto %}
+      <div class="sem-imagem">{{ a.evidencia_texto }}</div>
+    {% elif not a.evidencias_extras %}
       <div class="sem-imagem">Evidência não disponível para recorte automático</div>
+    {% endif %}
+    {% if a.evidencias_extras %}
+    <div class="evidencias-extras">
+    {% for ev in a.evidencias_extras %}
+      <div class="evidencia-extra{% if ev.meia_largura %} meia{% endif %}">
+        <div class="legenda-evidencia">{{ ev.legenda }}</div>
+        <div class="evidencia-vetorial" style="width: {{ ev.largura_mm }}mm; height: {{ ev.altura_mm }}mm;{% if ev.meia_largura %} margin: 0;{% endif %}">
+          <span class="marca ini">@@EVX_INI_{{ a.numero }}_{{ loop.index }}@@</span><span class="marca fim">@@EVX_FIM_{{ a.numero }}_{{ loop.index }}@@</span>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
     {% endif %}
   </div>
   <div class="o-que-verificar"><strong>O que verificar:</strong> {{ a.o_que_verificar }}</div>

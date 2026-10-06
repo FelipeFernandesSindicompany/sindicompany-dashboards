@@ -26,6 +26,16 @@ def _fmt_pct(v: float) -> str:
     return f"{v:,.1f}%".replace(".", ",")
 
 
+def _fmt_pct_arrecadacao(v: float) -> str:
+    """
+    2 casas decimais (não 1, como _fmt_pct) — confirmado em dados reais
+    (Club Park Butantã, ago/2026) que um déficit real de arrecadação pode
+    ficar tão perto de 100% (ex.: 99,9516%) que 1 casa decimal arredonda pra
+    "100,0%", escondendo que o previsto não foi batido.
+    """
+    return f"{v:,.2f}%".replace(".", ",")
+
+
 def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) -> dict:
     saldo_atual = bal_atual["tAtual"]
     saldo_anterior_mes = bal_anterior["tAtual"] if bal_anterior else None
@@ -47,6 +57,8 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
         })
     contas_deficitarias = [c for c in contas if c["deficitaria"]]
 
+    soma_debitos_contas = sum(c["debitos"] for c in contas)
+
     despesas_total = sum(d["v"] for d in bal_atual.get("desp", []))
     despesas = sorted(
         [
@@ -64,13 +76,46 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
         d["pct_fmt"] = _fmt_pct(d["pct"])
     maior_despesa = despesas[0] if despesas else None
 
+    # Confirmado em dados reais (Club Park Butantã, ago/2026 — nota de
+    # rodapé do próprio demonstrativo GCONT: "Inclui transferência entre
+    # contas."): a coluna "Débitos" de cada conta soma TUDO que saiu dela,
+    # inclusive repasses pra OUTRA conta do mesmo condomínio (ex.: Ordinária
+    # → Fundo de Reserva) — que não é despesa, é só uma movimentação
+    # interna. Por isso a soma dos débitos pode ficar MAIOR que o total de
+    # "Despesas por Categoria" (que só soma despesa de verdade, com
+    # terceiros). Só mostra a nota quando a diferença é real (>R$1,00).
+    # Só afirma a causa (transferência entre contas) quando o próprio PDF do
+    # condomínio traz essa nota (bal_atual["debitos_incluem_transferencias"],
+    # ver demonstrativo_reader.py) — em outros formatos a diferença pode ter
+    # outra origem e a nota seria uma afirmação sem base.
+    diferenca_debitos_despesas = round(soma_debitos_contas - despesas_total, 2)
+    nota_transferencia_entre_contas = (
+        diferenca_debitos_despesas
+        if abs(diferenca_debitos_despesas) > 1.0 and bal_atual.get("debitos_incluem_transferencias")
+        else None
+    )
+
     previsto = bal_atual.get("prev", 0.0)
     realizado = bal_atual.get("real", 0.0)
-    realizado_pct = (realizado / previsto * 100.0) if previsto else None
+    # Confirmado em dados reais (Central das Artes, agosto/2026 — upload
+    # parcial só com a listagem de despesas, sem a seção "Resumo de
+    # Emissões"): quando o adapter não encontra o previsto de verdade no
+    # arquivo, ele cai num fallback "previsto = realizado" pra nunca devolver
+    # um campo vazio — isso finge 100% de arrecadação, que é enganoso, não
+    # um dado real. 100% de arrecadação batendo exatamente ao centavo é
+    # praticamente impossível na prática — previsto==realizado é o sinal
+    # confiável desse fallback, não de uma coincidência genuína.
+    previsto_confiavel = previsto > 0 and previsto != realizado
+    realizado_pct = (realizado / previsto * 100.0) if previsto_confiavel else None
 
-    inad_atual = bal_atual.get("inad", 0.0)
+    # bal_atual["inad"] vem None (não 0.0) quando conciliacao/demonstrativo_
+    # reader.py::ler_dados_arquivo() não achou nenhuma seção de
+    # inadimplência/devedores no arquivo — distingue de "genuinamente zero
+    # inadimplência este mês", que também é um valor real e válido.
+    inad_disponivel = bal_atual.get("inad") is not None
+    inad_atual = bal_atual.get("inad") or 0.0
     inad_proc = bal_atual.get("inadProc", 0.0)
-    inad_anterior = bal_anterior.get("inad") if bal_anterior else None
+    inad_anterior = bal_anterior.get("inad") if (bal_anterior and inad_disponivel) else None
     inad_variacao = (inad_atual - inad_anterior) if inad_anterior is not None else None
 
     # ── Pontos de atenção (regras determinísticas, cada uma citando um número real) ──
@@ -88,7 +133,7 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
         )
     if realizado_pct is not None and realizado_pct < LIMIAR_ARRECADACAO_BAIXA_PCT:
         pontos_atencao.append(
-            f"Arrecadação do mês ficou em {_fmt_pct(realizado_pct)} do previsto "
+            f"Arrecadação do mês ficou em {_fmt_pct_arrecadacao(realizado_pct)} do previsto "
             f"({_fmt_r(realizado)} de {_fmt_r(previsto)} orçados) — investigar causa da diferença."
         )
     if inad_variacao is not None and inad_variacao > 0:
@@ -115,11 +160,11 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
     if realizado_pct is not None:
         if realizado_pct >= 100.0:
             frases.append(
-                f"A arrecadação do mês superou o previsto ({_fmt_pct(realizado_pct)} do orçado)."
+                f"A arrecadação do mês superou o previsto ({_fmt_pct_arrecadacao(realizado_pct)} do orçado)."
             )
         else:
             frases.append(
-                f"A arrecadação do mês ficou em {_fmt_pct(realizado_pct)} do previsto."
+                f"A arrecadação do mês ficou em {_fmt_pct_arrecadacao(realizado_pct)} do previsto."
             )
     if inad_variacao is not None:
         if inad_variacao < 0:
@@ -141,11 +186,19 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
             if not contas_deficitarias
             else f", com {len(contas_deficitarias)} conta(s) devedora(s) que merecem acompanhamento."
         )
-        + (
-            f" A inadimplência total é de {_fmt_r(inad_atual)}, dos quais {_fmt_r(inad_proc)} foram "
-            f"recuperados no próprio mês."
-        )
     )
+    if inad_disponivel:
+        conclusao += f" A inadimplência total é de {_fmt_r(inad_atual)}"
+        # Mesma convenção já usada no dashboard publicado (ver "m.inadProc > 0
+        # ? R(m.inadProc) : '-'" em docs/Dashboard_Financeiro_*.html): inadProc
+        # não é extraído por todos os formatos de adapter (ex.: GCONT/Club Park
+        # Butantã nunca popula inadimplencia_recebida, só fica no default
+        # 0.0 do dataclass) — tratar como "zero recuperado" seria inventar um
+        # dado que nunca foi confirmado, não um fato real sobre o mês.
+        if inad_proc > 0:
+            conclusao += f", dos quais {_fmt_r(inad_proc)} foram recuperados no próprio mês."
+        else:
+            conclusao += "."
 
     return {
         "saldo_atual": saldo_atual,
@@ -156,13 +209,19 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
         "contas": contas,
         "contas_deficitarias": contas_deficitarias,
         "despesas": despesas,
+        "despesas_total": despesas_total,
         "despesas_total_fmt": _fmt_r(despesas_total),
-        "previsto_fmt": _fmt_r(previsto),
-        "realizado_fmt": _fmt_r(realizado),
-        "realizado_pct_fmt": _fmt_pct(realizado_pct) if realizado_pct is not None else None,
+        "soma_debitos_contas_fmt": _fmt_r(soma_debitos_contas),
+        "nota_transferencia_entre_contas_fmt": (
+            _fmt_r(nota_transferencia_entre_contas) if nota_transferencia_entre_contas is not None else None
+        ),
+        "previsto_fmt": _fmt_r(previsto) if previsto_confiavel else None,
+        "realizado_fmt": _fmt_r(realizado) if previsto_confiavel else None,
+        "realizado_pct_fmt": _fmt_pct_arrecadacao(realizado_pct) if realizado_pct is not None else None,
         "realizado_pct_ok": (realizado_pct is not None and realizado_pct >= 100.0),
-        "inad_atual_fmt": _fmt_r(inad_atual),
-        "inad_proc_fmt": _fmt_r(inad_proc),
+        "inad_disponivel": inad_disponivel,
+        "inad_atual_fmt": _fmt_r(inad_atual) if inad_disponivel else None,
+        "inad_proc_fmt": _fmt_r(inad_proc) if (inad_disponivel and inad_proc > 0) else None,
         "inad_anterior_fmt": _fmt_r(inad_anterior) if inad_anterior is not None else None,
         "banco": bal_atual.get("banco", {}),
         "pontos_atencao": pontos_atencao,

@@ -1,0 +1,1733 @@
+"""
+Adapter LIRBA PDF — Prestação de Contas MM.YYYY.PDF (formato LIRBA administradora)
+
+Dois sub-formatos detectados:
+
+──────────────────────────────────────────────────────────────────
+SUB-FORMATO A — Lirba (software próprio Lirba)
+Exemplos: Gravura Residencial (355 pgs), Blue Sky (344 pgs)
+
+  Pág 2: ÍNDICE — contém nomes de todas as seções (armadilha para
+         detecção por keyword); NÃO tem "Período:"
+
+  Pág 4-14 (Gravura) / Pág 18-19 (Blue Sky): "Resumo de Emissões"
+    Lirba antigo: "Receita Prevista / Receita Realizada" com total por linha
+    Lirba Blue Sky: "Resumo de Emissões Colunado  Previsto  Realizado"
+
+  Pág 15 (Gravura) / Pág 304 (Blue Sky): "Resumo Financeiro Contábil"
+    Header: "Resumo Financeiro Contábil Saldo anterior Créditos Débitos Saldo atual"
+    Linhas de conta: NOME  saldo_ant  creditos  debitos  saldo_atual
+    Linha TOTAL:     TOTAL  saldo_ant  creditos  debitos  saldo_atual
+    Após TOTAL (Gravura): "FUNDO DE INVESTIMENTO - ITAU PRIVILEGE RF REF DI  123.328,60"
+
+  Pág 22-24 (Gravura) / Pág 36-38 (Blue Sky): "Demonstrativo de Despesas"
+    Fim de cada conta: "TOTAL DA CONTA NOME  valor"
+    Contas a excluir das despesas: ORDINARIA, MELHORAMENTOS/BENFEITORIAS,
+      FUNDO DE RESERVA, SALAO FESTAS, FUNDO EMERGENCIAL, FUNDO OBRAS, etc.
+
+  Pág 350 (Gravura) / Pág 320 (Blue Sky): "RELAÇÃO DE COTAS EM ABERTO"
+    "Total da unidade: 3.342,28" por devedor
+    "Total geral: 19.089,92" no final de todos os devedores
+
+  Detecção robusta: páginas com dados reais têm "Período: dd/mm/YYYY"
+  O índice (pág 2) tem os nomes das seções mas SEM "Período:" → ignorado
+
+──────────────────────────────────────────────────────────────────
+SUB-FORMATO B — Webware (NYC Berrini, software Webware)
+Exemplos: NYC Berrini (44 pgs)
+
+  Pág 1: "Demonstrações Por Conta" — Resumo de Emissão (Previsto/Realizado)
+    "COTAS EM ATRASO EM 31/03/2026  45.945,98  5.990,84"
+    Total previsto / realizado nas linhas de subtotais
+    "COTAS EM ATRASO EM 30/04/2026  47.174,43"  ← inadimplência do período
+
+  Pág 4-5: Posição Financeira de cada conta + "Resumo Financeiro Contábil"
+    Header: "Conta Saldo Anterior Créditos Débitos Saldo Atual"  ← tem "Conta"
+    Linhas: NOME  saldo_ant  creditos  debitos  saldo_atual
+    Linha TOTAL: "TOTAL  saldo_ant  creditos  debitos  saldo_atual"
+    Conciliação bancária logo abaixo com valores por banco
+
+  Pág 38-44: "Demonstrativo de Despesas" com "TOTAL DA CONTA NOME  valor  pct%"
+    Último "TOTAL DA CONTA NOME" fecha a última conta (ORDINARIA)
+
+──────────────────────────────────────────────────────────────────
+Condomínios: Gravura Residencial, Gravura Studio, Highlights, Organy Residencial,
+             Organy Studio, Padre Carvalho, Praça Saúde, Residencial Napoleão,
+             Saint Afonso, Serra da Mantiqueira, Upper Itaim, Vibra Butantã,
+             Villa Sardenha, Reserva Verde, Top Nine, Blue Sky, Club Park Butantã,
+             I-Gloo, Monte Tabor, Palm Beach, Plano & Mooca,
+             Plano Estação Campo Limpo, Plano Rio Bonito, Platinum, Patrícia,
+             NYC Berrini (Webware)
+"""
+from pathlib import Path
+import re
+import unicodedata
+from adapters.base import AdapterBase, DadosFinanceiros
+
+# Contas que são fundos/reservas e NÃO devem entrar como categorias de despesa
+# quando existem sub-categorias dentro delas (ex: Blue Sky tem SALÁRIOS dentro de ORDINÁRIA)
+_CONTAS_AGREGADO = {
+    "ORDINARIA", "ORDINÁRIA",
+}
+
+# Contas que são exclusivamente fundos/reservas e nunca entram como despesa operacional
+_EXCLUIR_SEMPRE = {
+    "FUNDO DE RESERVA", "FUNDO RESERVA",
+    "FUNDO EMERGENCIAL",
+    "FUNDO DE OBRAS", "FUNDO OBRAS",
+    "FUNDO TRABALHISTA",
+    "FUNDO 13O SALARIO", "FUNDO 13o SALARIO",
+    "LOCACOES", "LOCAÇÕES",
+    "INDIVIDUALIZAÇÃO", "INDIVIDUALIZACAO",
+}
+
+# Contas que são conta corrente / aplicação / CDB
+_CONTAS_CC   = {"ORDINARIA", "ORDINÁRIA"}
+_CONTAS_CDB  = {
+    "FUNDO DE RESERVA", "FUNDO RESERVA",
+    "CDB", "POUPANÇA", "POUPANCA",
+    "APLICAÇÃO", "APLICACAO",
+    "INVESTIMENTO", "FUNDO DE OBRAS",
+    "FUNDO EMERGENCIAL", "FUNDO TRABALHISTA",
+}
+
+
+def _num(s) -> float:
+    """Converte string monetária BR (1.234,56) para float, ignorando sinal."""
+    if s is None:
+        return 0.0
+    if isinstance(s, (int, float)):
+        return abs(float(s))
+    s = re.sub(r"[^\d,.\-]", "", str(s).strip())
+    if not s:
+        return 0.0
+    s = s.replace(".", "").replace(",", ".")
+    try:
+        return abs(float(s))
+    except Exception:
+        return 0.0
+
+
+def _num_signed(s) -> float:
+    """Converte string monetária BR (1.234,56 ou -1.234,56) para float, preservando sinal."""
+    if s is None:
+        return 0.0
+    if isinstance(s, (int, float)):
+        return float(s)
+    negativo = str(s).strip().startswith('-')
+    s = re.sub(r"[^\d,.\-]", "", str(s).strip())
+    if not s:
+        return 0.0
+    s = s.replace(".", "").replace(",", ".")
+    # remove possível sinal extra após limpeza
+    s = s.lstrip('-')
+    try:
+        v = float(s)
+        return -v if negativo else v
+    except Exception:
+        return 0.0
+
+
+def _fold(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").upper().strip()
+
+
+def _e_pagina_dados(txt: str) -> bool:
+    """Retorna True se a página tem dados reais (não é o índice)."""
+    return bool(re.search(r"Per[íi]odo:\s*\d{2}/\d{2}/\d{4}", txt))
+
+
+def _e_webware(textos: list) -> bool:
+    """Detecta sub-formato Webware (NYC Berrini) pela presença do URL Webware."""
+    for t in textos[:3]:
+        if "webware.com.br" in t or "Webware" in t:
+            return True
+    return False
+
+
+def _e_hsa_balancete(textos: list) -> bool:
+    """Detecta sub-formato HSA Condomínios (I-Gloo Alphaville) pelo URL hsacondominios.com.br."""
+    for t in textos:
+        if "hsacondominios.com.br" in t.lower():
+            return True
+    return False
+
+
+def _e_gcont(textos: list) -> bool:
+    """Detecta formato GCONT (gcont.net.br) pela URL ou nome da administradora."""
+    for t in textos[:5]:
+        if "gcont.net.br" in t.lower() or "ADMINISTRADORA GCONT" in t:
+            return True
+    return False
+
+
+class AdapterLirbaPDF(AdapterBase):
+    """
+    Adapter para PDFs da administradora LIRBA (dois sub-formatos:
+    Lirba e Webware). Implementa ler_pdf(); ler_xlsx() redireciona
+    para ler_pdf() ao encontrar um PDF correspondente.
+    """
+
+    def ler_pdf(self, caminho: Path, mes_referencia: str) -> DadosFinanceiros:
+        try:
+            import pdfplumber
+        except ImportError:
+            raise ImportError("Instale pdfplumber: pip install pdfplumber")
+
+        dados = DadosFinanceiros(
+            condominio_id=self.config.get("id", ""),
+            mes_referencia=mes_referencia,
+            total_unidades=self.config.get("unidades", 0),
+        )
+
+        with pdfplumber.open(str(caminho)) as pdf:
+            textos = [p.extract_text() or "" for p in pdf.pages]
+
+        texto_completo = "\n".join(textos)
+
+        if _e_gcont(textos):
+            self._parsear_gcont(textos, texto_completo, dados)
+        elif _e_hsa_balancete(textos):
+            self._parsear_hsa_balancete(textos, texto_completo, dados)
+        elif _e_webware(textos):
+            self._parsear_webware(textos, texto_completo, dados)
+        else:
+            self._parsear_lirba(textos, texto_completo, dados)
+
+        # Calcula inadimplência percentual
+        if dados.receita_realizada > 0 and dados.inadimplencia_valor > 0:
+            dados.inadimplencia_percentual = round(
+                dados.inadimplencia_valor / dados.receita_realizada * 100, 2
+            )
+
+        return dados
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO A — Lirba
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _parsear_lirba(self, textos: list, texto_completo: str, dados: DadosFinanceiros):
+        """Extrai dados do formato Lirba (Gravura, Blue Sky, etc.)."""
+
+        # ── 1. Resumo Financeiro Contábil ──────────────────────────────────────
+        # A página real tem "Período:" (o índice na pág 2 não tem).
+        # A tabela pode ser multi-página: continua até encontrar a linha TOTAL.
+        total_encontrado = False
+        for txt in textos:
+            if "Resumo Financeiro" not in txt:
+                continue
+            if not _e_pagina_dados(txt):
+                continue  # Índice — ignora
+
+            # Extrai cada linha de conta: "NOME  num  num  num  num"
+            # A linha TOTAL termina o bloco
+            linhas = txt.split("\n")
+            in_resumo = False
+            for linha in linhas:
+                l = linha.strip()
+                if "Resumo Financeiro" in l and "Saldo" in l:
+                    in_resumo = True
+                    continue
+                if not in_resumo:
+                    continue
+
+                # Busca 4 números consecutivos na linha (podem ter sinal negativo)
+                # Valores monetários (sempre com 2 decimais): o regex antigo pegava o "13" de
+                # "FUNDO 13o SALARIO" como se fosse saldo (Blue Sky jun/2026).
+                nums_raw = re.findall(r"-?\d[\d.]*,\d{2}(?!\d)", l)
+                nums_f = []
+                for n in nums_raw:
+                    try:
+                        v = _num(n)
+                        nums_f.append(v)
+                    except Exception:
+                        pass
+
+                if len(nums_f) < 4:
+                    continue
+
+                nome = re.sub(r"[\s\d.,\-]+$", "", l).strip().upper()
+                if not nome:
+                    continue
+                # Exclui carimbos de emissão que têm data/hora no nome
+                # Ex: "EMITIDO EM 12/06/2026 13:36:" aparece no rodapé dos PDFs Lirba
+                if re.search(r'\d{2}/\d{2}/\d{4}', nome) or re.search(r'\d{2}:\d{2}', nome):
+                    continue
+
+                # Saldo anterior e saldo atual preservam sinal (podem ser negativos)
+                sa  = _num_signed(nums_raw[0]) if nums_raw else 0.0
+                cr, db = nums_f[1], nums_f[2]
+                sal = _num_signed(nums_raw[3]) if len(nums_raw) >= 4 else nums_f[3]
+
+                if nome.startswith("TOTAL"):
+                    dados.saldo_anterior    = sa
+                    dados.receita_realizada = cr
+                    dados.despesa_total     = db
+                    dados.saldo_atual       = abs(sal)  # total sempre positivo
+                    in_resumo = False
+                    total_encontrado = True
+                    break
+
+                # Evita duplicatas quando a página de continuação repete contas já extraídas
+                nomes_ja_vistos = {c["nome"] for c in dados.contas_detalhe}
+                if nome not in nomes_ja_vistos:
+                    dados.contas_detalhe.append({
+                        "nome":       nome,
+                        "saldo_ant":  sa,
+                        "creditos":   cr,
+                        "debitos":    db,
+                        "saldo_atual": sal,  # com sinal: conta corrente pode ser negativa
+                    })
+
+            # CDB externo: linha como "FUNDO DE INVESTIMENTO - ITAU ... 123.328,60"
+            for linha in linhas:
+                if re.search(r"(APLICA[ÇC][AÃ]O|INVESTIMENTO|PRIVILEGE|FUNDO.+INV)",
+                             linha, re.IGNORECASE):
+                    nums = re.findall(r"[\d.,]{6,}", linha)
+                    if nums:
+                        val = _num(nums[-1])
+                        if val > 0 and dados.banco_cdb == 0:
+                            dados.banco_cdb = val
+            if total_encontrado:
+                break  # TOTAL encontrado — Resumo Financeiro completo
+
+        # ── Banco: tenta "Conta Bancária" primeiro, fallback no Resumo Contábil ──
+        conta_banc = self._extrair_conta_bancaria(textos)
+        if conta_banc:
+            # "Conta Bancária" é a fonte mais precisa — saldos reais de banco.
+            # Classifica por nome para evitar CC/CDB trocados quando a ordem no PDF varia.
+            _CC_KEYS  = ("ORDINARI", "CORRENTE", "C/C")
+            _CDB_KEYS = ("FUNDO DE RESERVA", "FUNDO RESERVA", "CDB", "APLICA", "INVESTIMENTO", "POUPAN")
+            account_list = list(conta_banc.items())
+            dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
+            for nome_conta, saldo_conta in account_list:
+                nome_up = nome_conta.upper()
+                if any(k in nome_up for k in _CC_KEYS):
+                    dados.banco_cc += saldo_conta
+                elif any(k in nome_up for k in _CDB_KEYS):
+                    dados.banco_cdb += saldo_conta
+                else:
+                    dados.banco_priv = round(dados.banco_priv + saldo_conta, 2)
+            # Fallback se nenhuma conta foi classificada por nome
+            if not any([dados.banco_cc, dados.banco_cdb, dados.banco_priv]) and account_list:
+                saldo = account_list[0][1]
+                dados.banco_cc = saldo if saldo > 0 else 0.0
+
+        # Se conta_banc classificou tudo em banco_priv (conta única sem keyword CC/CDB),
+        # usa contas_detalhe para split correto (ex: Organy Studio com BANCO ITAU S/A).
+        if dados.banco_cc == 0 and dados.banco_cdb == 0 and dados.contas_detalhe:
+            dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
+            positivos_priv: list = []
+            negativos_priv: list = []
+            for conta in dados.contas_detalhe:
+                nome_fold = "".join(
+                    c for c in unicodedata.normalize("NFD", conta["nome"])
+                    if unicodedata.category(c) != "Mn"
+                ).upper()
+                sal_real = conta["saldo_atual"]  # mantém sinal
+                if "ORDINARI" in nome_fold:
+                    dados.banco_cc = sal_real
+                elif any(kw in nome_fold for kw in (
+                    "FUNDO DE RESERVA", "FUNDO RESERVA",
+                    "CDB", "APLICA", "INVESTIMENTO",
+                )):
+                    dados.banco_cdb += sal_real
+                else:
+                    if sal_real < 0:
+                        negativos_priv.append(sal_real)
+                    else:
+                        positivos_priv.append(sal_real)
+            dados.banco_priv = round(
+                sum(positivos_priv) + sum(negativos_priv), 2
+            )
+
+        # ── 2. Receita Prevista ─────────────────────────────────────────────────
+        # Lirba antigo (Gravura): seção "Receita Prevista" por conta com:
+        #   "RECEBIMENTO DO PERIODO  previsto  total_previsto_com_atrasos"
+        #   A soma dos "total_previsto_com_atrasos" de todas as contas = receita prevista
+        #
+        # Lirba novo (Blue Sky): "Resumo de Emissões Colunado  Previsto  Realizado"
+        #   Linha de sub-total: "CONDOMINIO  previsto  realizado"
+        #   Linha de total:     "valor_previsto_total  valor_realizado_total"  (dois nums)
+        #
+        # Estratégia: coleta o "RECEBIMENTO DO PERIODO X Y" da seção Receita Prevista,
+        # onde Y é o total previsto (inclui atrasos). Soma de todos = receita_prevista.
+        # Se não encontrar, usa a linha de total "X Y" dentro da seção.
+        previsto_total = 0.0
+
+        # use_resumo_colunado=true: pula "Receita Prevista" e usa direto "Resumo de Emissões
+        # Colunado". Necessário para Organy Studio (e similares) onde "Receita Prevista"
+        # pode incluir CONDOMINOS EM ATRASO no total previsto, inflando prev.
+        use_resumo_colunado = self.parser_config.get("use_resumo_colunado", False)
+
+        # Tenta padrão Lirba antigo: "RECEBIMENTO DO PERIODO  X  Y" em seção Receita Prevista
+        # Captura apenas a PRIMEIRA seção (ORDINÁRIA) e usa o grupo 1 (X = emissão do
+        # período sem cotas em atraso), evitando inflar previsto com FUNDO/SALAO/CONSUMO.
+        in_prev = False
+        previsto_capturado = False
+        if not use_resumo_colunado:
+            for linha in texto_completo.split("\n"):
+                l = linha.strip()
+                if not previsto_capturado and re.match(r"Receita Prevista$", l, re.IGNORECASE):
+                    in_prev = True
+                    continue
+                if re.match(r"Receita Realizada", l, re.IGNORECASE):
+                    in_prev = False
+                    continue
+                if not in_prev:
+                    continue
+                # "RECEBIMENTO DO PERIODO  X  Y" — usa X (emissão do período, sem atrasos)
+                m = re.match(r"^RECEBIMENTO.+?\s+([\d.,]+)\s+([\d.,]+)\s*$", l, re.IGNORECASE)
+                if m:
+                    v1 = _num(m.group(1))
+                    if v1 > 0:
+                        previsto_total = v1
+                        in_prev = False
+                        previsto_capturado = True
+
+        # Tenta padrão Blue Sky: busca a linha "CONDOMINIO X Y" dentro da seção
+        # "Resumo de Emissões Colunado":
+        #   X = emissão mensal (previsto)  → dados.receita_prevista
+        #   Y = cotas efetivamente recebidas (realizado) → dados.receita_realizada
+        # ATENÇÃO: NÃO somar múltiplas seções; usar apenas a primeira linha
+        # "CONDOMINIO" encontrada (conta principal, não fundos).
+        realizado_colunado  = 0.0
+        inadimplencia_rec   = 0.0
+        if previsto_total == 0.0:
+            in_col = False
+            found_condo = False
+            for linha in texto_completo.split("\n"):
+                l = linha.strip()
+                if re.search(r"Resumo de Emiss[oõ]es Colunado", l, re.IGNORECASE):
+                    in_col = True
+                    continue
+                if not in_col:
+                    continue
+                # Linha: "CONDOMINIO X Y" ou "CONDOMÍNIO X Y"
+                m_condo = re.match(
+                    r"^CONDOM[IÍ]N[IO]+\s+([\d.,]+)\s+([\d.,]+)\s*$",
+                    l, re.IGNORECASE
+                )
+                if m_condo and not found_condo:
+                    v1 = _num(m_condo.group(1))  # previsto mensal (emissão)
+                    v2 = _num(m_condo.group(2))  # realizado (cotas recebidas)
+                    if v1 > 1000:
+                        previsto_total     = v1
+                        realizado_colunado = v2   # para receita_cotas
+                        found_condo        = True
+                    continue  # continua para capturar INADIMPLENCIA
+
+                # Linha: "INADIMPLENCIA X Y" → Y = recebido de cotas em atraso
+                m_inad = re.match(
+                    r"^INADIMP\w*\s+([\d.,]+)\s+([\d.,]+)\s*$",
+                    l, re.IGNORECASE
+                )
+                if m_inad:
+                    inadimplencia_rec = _num(m_inad.group(2))  # realizado
+                    if found_condo:
+                        break  # já temos tudo — para
+                    continue
+
+                # Reset se sair da seção (Posição Financeira = próxima seção)
+                if re.match(r"(Posi[çc][ãa]o Financeira|SALDO ANTERIOR)", l, re.IGNORECASE):
+                    if found_condo:
+                        break
+                    in_col = False
+
+        if previsto_total > 0:
+            dados.receita_prevista = previsto_total
+            # receita_cotas = cotas recebidas (para 'real' no BAL)
+            # receita_realizada mantém total de créditos (para 'tCred' e balanço)
+            if realizado_colunado > 0:
+                dados.receita_cotas = realizado_colunado
+            # inadimplencia_recebida = recebido de cotas em atraso (para 'inadRec')
+            if inadimplencia_rec > 0:
+                dados.inadimplencia_recebida = inadimplencia_rec
+        else:
+            dados.receita_prevista = dados.receita_realizada  # último fallback
+
+        # ── 3. Despesas por categoria ───────────────────────────────────────────
+        # O método é determinado pelo campo parser_config.extract_cats do condomínio:
+        #
+        #   "posicao_financeira" → Lê da seção Posição Financeira da conta ORDINÁRIA
+        #       Padrão da maioria dos condomínios Lirba (Vibra, Organy, Palm Beach etc.)
+        #       Linhas entre MULTAS e TOTAIS na Posição Financeira são as categorias.
+        #
+        #   "total_da_conta" → Usa linhas "TOTAL DA CONTA NOME  valor"
+        #       Usado por Blue Sky, Gravura — têm TOTAL DA CONTA individual por sub-cat.
+        #
+        #   "webware" → Formato Webware (NYC Berrini) — detectado automaticamente.
+        #       Já tratado em _parsear_webware().
+        #
+        #   "auto" (padrão quando parser_config ausente) → Tenta posicao_financeira
+        #       e faz fallback para total_da_conta se não encontrar.
+
+        # Lê configuração do condomínio
+        pcfg          = self.parser_config           # dict vazio se não configurado
+        extract_cats  = pcfg.get("extract_cats", "auto")
+        cat_map_extra = pcfg.get("cat_map", {})      # overrides de nome canônico
+        contas_sep    = [c.upper() for c in pcfg.get("contas_separadas",
+                         ["CONSUMO", "CONSUMOS", "I.P.T.U.", "IPTU"])]
+        consumo_name  = pcfg.get("consumo_name", "Consumos")
+        iptu_name     = pcfg.get("iptu_name", "IPTU")
+        excluir_extra = {c.upper() for c in pcfg.get("excluir_contas", [])}
+
+        # Mapeamento canônico base para contas de nível alto
+        _conta_canonical: dict = {
+            "CONSUMO": consumo_name, "CONSUMOS": consumo_name,
+            "I.P.T.U.": iptu_name, "IPTU": iptu_name, "I P T U": iptu_name,
+            "MELHORAMENTOS": "Melhoramentos",
+            "BENFEITORIAS": "Benfeitorias",
+            "MATERIAL IMPLANTACAO": "Mat. Implantação",
+            "MATERIAL IMPLANTAÇÃO": "Mat. Implantação",
+        }
+        # Aplica overrides do parser_config
+        for k, v in cat_map_extra.items():
+            _conta_canonical[k.upper()] = v
+
+        # ── 3a. TOTAL DA CONTA → contas de nível alto (CONSUMO, IPTU, etc.) ───────
+        todos_totais = {}  # conta_upper -> valor
+        for m in re.finditer(
+            r"TOTAL DA CONTA\s+([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ /\-\.0-9]+?)\s+([\d.,]+)(?:\s|$)",
+            texto_completo, re.IGNORECASE
+        ):
+            conta = m.group(1).strip().upper()
+            val   = _num(m.group(2))
+            if val > 0:
+                todos_totais[conta] = todos_totais.get(conta, 0) + val
+
+        # Separa: excluídas sempre, excluídas por config, agregados (ORDINÁRIA),
+        # operacionais (contas de nível alto como CONSUMO, IPTU)
+        operacionais = {}
+        val_ordinaria = 0.0
+        for conta, val in todos_totais.items():
+            if any(ex in conta for ex in _EXCLUIR_SEMPRE):
+                continue
+            if conta in excluir_extra:
+                continue
+            if any(ag == conta for ag in _CONTAS_AGREGADO):
+                val_ordinaria = val
+                continue
+            operacionais[conta] = val
+
+        # ── 3b. Sub-categorias de ORDINÁRIA ──────────────────────────────────────
+        if extract_cats in ("posicao_financeira", "auto"):
+            posicao_cats = self._extrair_subcats_posicao_financeira(textos, cat_map_extra)
+        else:
+            posicao_cats = {}
+
+        # excluir_posicao_cats: lista de nomes canônicos a excluir da Posição Financeira.
+        # Usado quando a Posição Financeira ORDINÁRIA lista transferências para contas
+        # separadas (ex: "Consumos" → conta CONSUMO, "Fundo Para Eventuais" → conta própria)
+        # que NÃO são despesas ORDINÁRIA e não devem entrar em desp[].
+        excluir_pos = set(pcfg.get("excluir_posicao_cats", []))
+        if excluir_pos and posicao_cats:
+            posicao_cats = {k: v for k, v in posicao_cats.items() if k not in excluir_pos}
+
+        # ── Trava de reconciliação (PATCH) ───────────────────────────────────────
+        # desp[] deve fechar com o débito da conta ORDINÁRIA do Resumo Financeiro Contábil.
+        # Se a Posição Financeira não fechou (página descartada, linha de crédito entrando
+        # como despesa, seção sem MULTAS...), usa as linhas "TOTAL DA CONTA x" que antecedem
+        # "TOTAL DA CONTA ORDINÁRIA" no Demonstrativo de Despesas — mas só se ESSAS fecharem.
+        if extract_cats in ("posicao_financeira", "auto"):
+            deb_ord = next((c["debitos"] for c in dados.contas_detalhe
+                            if _fold(c["nome"]).startswith("ORDINARIA")), 0.0)
+            if deb_ord > 0 and abs(sum(posicao_cats.values()) - deb_ord) > 0.01:
+                bloco_ord = self._extrair_cats_bloco_ordinaria(texto_completo, cat_map_extra)
+                if bloco_ord and abs(sum(bloco_ord.values()) - deb_ord) <= 0.01:
+                    posicao_cats = {k: v for k, v in bloco_ord.items() if k not in excluir_pos}
+                # senão: segue o caminho de antes (o ramo "TOTAL DA CONTA" abaixo pode
+                # resolver). Se no fim as categorias não fecharem, quem avisa é
+                # conciliacao/checagens_leitura.py, que olha o resultado FINAL.
+
+        if extract_cats == "posicao_financeira":
+            # Método explícito: usa apenas Posição Financeira
+            sub_cats = posicao_cats
+
+        elif extract_cats == "total_da_conta":
+            # Método explícito: usa apenas TOTAL DA CONTA (Blue Sky, Gravura)
+            # Sub-cats são as contas que estão dentro de ORDINÁRIA (soma ≈ ORDINÁRIA)
+            soma_op = sum(operacionais.values())
+            if val_ordinaria > 0 and abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
+                # IMPORTANTE: SOMA quando múltiplas contas mapeiam para o mesmo
+                # nome canônico (ex: CONTRATOS + ELEVADORES → MANUT/CONSERV. CONTRAT.)
+                sub_cats = {}
+                for k, v in operacionais.items():
+                    cat_key = _conta_canonical.get(k.upper(), k.title())
+                    sub_cats[cat_key] = sub_cats.get(cat_key, 0.0) + v
+                operacionais = {}  # já tratadas em sub_cats
+            else:
+                # Contas de nível alto independentes (Gravura: MELHORAMENTOS, BENFEITORIAS)
+                sub_cats = {}
+
+        else:  # "auto"
+            # Tenta Posição Financeira; se vazia, faz fallback para total_da_conta
+            if posicao_cats:
+                sub_cats = posicao_cats
+            else:
+                sub_cats = {}
+                # Fallback: analisa operacionais vs ORDINÁRIA
+                soma_op = sum(operacionais.values())
+                if val_ordinaria > 0:
+                    if abs(soma_op - val_ordinaria) / max(val_ordinaria, 1) < 0.05:
+                        sub_cats = {}
+                        for k, v in operacionais.items():
+                            cat_key = _conta_canonical.get(k.upper(), k.title())
+                            sub_cats[cat_key] = sub_cats.get(cat_key, 0.0) + v
+                        operacionais = {}
+                    else:
+                        operacionais["ORDINÁRIA"] = val_ordinaria
+                if not operacionais and not sub_cats and val_ordinaria > 0:
+                    operacionais["ORDINÁRIA"] = val_ordinaria
+
+        # ── 3c. Combina sub-categorias + contas de nível alto ─────────────────────
+        final_cats: dict = dict(sub_cats)
+
+        # Quando posicao_financeira já forneceu categorias completas de ORDINÁRIA,
+        # não adicionar operacionais de TOTAL DA CONTA (evita duplicatas e itens de
+        # outras contas como CONSUMO, FUNDO PARA EVENTUAIS, REEMBOLSO, etc.).
+        if extract_cats != 'posicao_financeira' or not sub_cats:
+            # SOMA quando várias contas mapeiam para o mesmo nome canônico (ex.:
+            # Padre Carvalho: MATERIAL DE EXPEDIENTE + MATERIAIS DE CONSUMO →
+            # Materiais). Antes a primeira vencia e as demais sumiam da tabela
+            # (R$ 5.269,86 a menos que o total da ORDINÁRIA em jul/2026).
+            de_operacionais: dict = {}
+            for conta_upper, val in operacionais.items():
+                cat_name = _conta_canonical.get(conta_upper.upper(), conta_upper.title())
+                # Aplica overrides do parser_config se existirem para esta conta
+                cat_name = cat_map_extra.get(conta_upper, cat_map_extra.get(conta_upper.title(), cat_name))
+                de_operacionais[cat_name] = de_operacionais.get(cat_name, 0.0) + val
+            for cat_name, val in de_operacionais.items():
+                if cat_name not in final_cats:
+                    final_cats[cat_name] = val
+
+        for cat, val in final_cats.items():
+            dados.categorias_despesa[cat] = dados.categorias_despesa.get(cat, 0) + val
+
+        # Fallback final
+        if not dados.categorias_despesa and dados.despesa_total > 0:
+            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── 4. Inadimplência ────────────────────────────────────────────────────
+        # "Total geral: 19.089,92" na seção "RELAÇÃO DE COTAS EM ABERTO"
+        m_inad = re.search(r"Total geral:\s*([\d.,]+)", texto_completo, re.IGNORECASE)
+        if m_inad:
+            dados.inadimplencia_valor = _num(m_inad.group(1))
+        else:
+            # Fallback: soma de "Total da unidade: X" (cada devedor)
+            total_u = sum(
+                _num(m.group(1))
+                for m in re.finditer(
+                    r"Total da unidade:\s*([\d.,]+)", texto_completo
+                )
+            )
+            if total_u > 0:
+                dados.inadimplencia_valor = total_u
+
+        # ── 5. FAC (Faturas Anteriores Cobradas = juros + multas recebidos) ────
+        dados.fac = self._extrair_fac(textos)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO B — Webware (NYC Berrini)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO D — GCONT (gcont.net.br)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _parsear_gcont(self, textos: list, texto_completo: str, dados: DadosFinanceiros):
+        """
+        Extrai dados do formato GCONT (administradora gcont.net.br).
+
+        Páginas relevantes:
+        - Resumo Financeiro: header "Conta Saldo ant. Créditos* Débitos* Saldo final"
+          Contas individuais → contas_detalhe e banco.
+          Total: "Saldo final  tAnt  tCred  (tDeb)  tAtual"
+        - Demonstrativo de Receitas e Despesas Resumido:
+          "Cota do Mês  value" → receita_cotas (real)
+          Itens entre "Total das Receitas" e "Total das Despesas" → categorias de despesa
+        - Resumo da inadimplência:
+          "N cobranças inadimplentes, N unidades (N%) total" → inadimplencia_valor
+        """
+
+        # ── 1. Resumo Financeiro (tAnt, tCred, tDeb, tAtual, contas_detalhe) ─
+        for txt in textos:
+            if "Resumo Financeiro" not in txt:
+                continue
+            if "Saldo ant." not in txt:
+                continue
+
+            in_resumo = False
+            for linha in txt.split("\n"):
+                l = linha.strip()
+
+                # Início da tabela
+                if re.match(r"^Conta\s+Saldo ant\.", l):
+                    in_resumo = True
+                    continue
+                if not in_resumo:
+                    continue
+                # Pula nota de rodapé
+                if l.startswith("(*) Inclui"):
+                    continue
+
+                # Extrai números (inclui formatos com parênteses: (914.918,97) e zeros "0,00")
+                # Usa padrão BR: dígitos + vírgula + 2 casas decimais (ex: 1.234,56 ou 0,00)
+                nums_raw = re.findall(r"\([\d.]+,\d{2}\)|[\d.]+,\d{2}", l)
+                nums_f = []
+                for n in nums_raw:
+                    try:
+                        nums_f.append(_num(n))  # inclui zeros
+                    except Exception:
+                        pass
+
+                if len(nums_f) < 4:
+                    continue
+
+                # Remove números do final para obter o nome
+                nome = re.sub(r"[\s\(]*[\d.,]+[\)]*", "", l).strip().upper()
+                nome = re.sub(r"\s+", " ", nome).strip()
+                if not nome:
+                    continue
+
+                if nome == "SALDO FINAL":
+                    # Linha de totais
+                    dados.saldo_anterior    = nums_f[0]
+                    dados.receita_realizada = nums_f[1]
+                    dados.despesa_total     = nums_f[2]
+                    dados.saldo_atual       = nums_f[3]
+                    in_resumo = False
+                    break
+
+                # Linha de conta individual
+                nomes_vistos = {c["nome"] for c in dados.contas_detalhe}
+                if nome and nome not in nomes_vistos:
+                    dados.contas_detalhe.append({
+                        "nome":        nome,
+                        "saldo_ant":   nums_f[0],
+                        "creditos":    nums_f[1],
+                        "debitos":     nums_f[2],
+                        "saldo_atual": nums_f[3],
+                    })
+            if dados.saldo_atual > 0:
+                break
+
+        # ── 2. Banco (cc/cdb/priv) a partir das contas individuais ───────────
+        for conta in dados.contas_detalhe:
+            nome_up = conta["nome"].upper()
+            sal = conta["saldo_atual"]
+            if "ORDINARI" in nome_up:
+                dados.banco_cc = sal
+            elif "FUNDO" in nome_up and "RESERV" in nome_up:
+                dados.banco_cdb = round(dados.banco_cdb + sal, 2)
+            elif "UTILIZ" in nome_up:
+                dados.banco_priv = round(dados.banco_priv + sal, 2)
+            # Outras contas (Taxa, Mercado, Pintura, Eventos) não entram no banco
+
+        # ── 3. Receita Prevista (orcamento_mensal em parser_config) ──────────
+        orc = self.parser_config.get("orcamento_mensal", 0.0)
+        if orc:
+            dados.receita_prevista = float(orc)
+
+        # ── 4. Demonstrativo Resumido: Cota do Mês + despesas ────────────────
+        cat_map_extra = self.parser_config.get("cat_map", {})
+
+        in_desp = False
+        for linha in texto_completo.split("\n"):
+            l = linha.strip()
+            if not l:
+                continue
+
+            # Cota do Mês → receita_cotas (real)
+            if not dados.receita_cotas:
+                m_cota = re.match(r"^Cota do M[êe]s\s+([\d.,]+)\s*$", l, re.IGNORECASE)
+                if m_cota:
+                    dados.receita_cotas = _num(m_cota.group(1))
+
+            # Início das despesas
+            if re.match(r"^Total das Receitas\s+[\d.,]+", l, re.IGNORECASE):
+                in_desp = True
+                continue
+
+            # Fim das despesas
+            if re.match(r"^Total das Despesas\s+[\d.,]+", l, re.IGNORECASE):
+                in_desp = False
+                continue
+
+            if not in_desp:
+                continue
+
+            # Cada linha de despesa: "NOME ITEM  valor" (formato BR: 1.234,56 ou 123,45)
+            m_item = re.match(r"^(.+?)\s+([\d.]+,\d{2})\s*$", l)
+            if m_item:
+                item_raw = m_item.group(1).strip()
+                val = _num(m_item.group(2))
+                if val > 0 and item_raw:
+                    # Aplica cat_map para mapear item → categoria canônica
+                    cat = cat_map_extra.get(item_raw,
+                          cat_map_extra.get(item_raw.upper(), None))
+                    if cat:
+                        dados.categorias_despesa[cat] = (
+                            dados.categorias_despesa.get(cat, 0.0) + val
+                        )
+                    # Items sem mapeamento são ignorados (não entram em desp[])
+
+        if not dados.categorias_despesa and dados.despesa_total > 0:
+            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── 5. Inadimplência ──────────────────────────────────────────────────
+        # "20 cobranças inadimplentes, 18 unidades inadimplentes (4,06%) 47.282,20"
+        m_inad = re.search(
+            r"\d+\s+cobran[çc]as?\s+inadimplentes?,\s*\d+\s+unidades?\s+"
+            r"inadimplentes?\s*\([^)]+\)\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        )
+        if m_inad:
+            dados.inadimplencia_valor = _num(m_inad.group(1))
+
+        # Percentual de inadimplência
+        if dados.receita_realizada > 0 and dados.inadimplencia_valor > 0:
+            dados.inadimplencia_percentual = round(
+                dados.inadimplencia_valor / dados.receita_realizada * 100, 2
+            )
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO C — HSA Condomínios (I-Gloo Alphaville)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _parsear_hsa_balancete(self, textos: list, texto_completo: str,
+                                dados: DadosFinanceiros):
+        """
+        Extrai dados do formato HSA Condomínios (I-Gloo Alphaville).
+
+        Estrutura do PDF:
+        - Pág 19-20: Balancete simplificado (RECEITAS / DESPESAS hierárquicas)
+        - Pág 34:    Resumo Financeiro — DUAS tabelas na mesma página:
+            Tabela 1 (Conta Principal / Aplicação): totais e banco_cc/banco_cdb
+            Tabela 2 (Grupos de saldo): Ordinária, Fundo Reserva, etc. → contas_detalhe
+        - Pág 49-56: Inadimplentes → "N unidades inadimplentes (X%) principal total"
+        """
+
+        def _parse_signed_nums(linha: str) -> list:
+            """Extrai valores monetários preservando sinal: (X.XXX,XX) = negativo."""
+            result = []
+            for m in re.finditer(r'\(([\d.,]+)\)|([\d.,]+)', linha):
+                if m.group(1) and len(m.group(1)) >= 4 and ',' in m.group(1):
+                    result.append(-_num(m.group(1)))
+                elif m.group(2) and len(m.group(2)) >= 4 and ',' in m.group(2):
+                    result.append(_num(m.group(2)))
+            return result
+
+        # ── 1. Resumo Financeiro ──────────────────────────────────────────────
+        # Tabela 1 — header: "Conta Saldo ant. Créditos* Débitos* Saldo final"
+        #   Conta Principal + Aplicação → banco_cc, banco_cdb, totais
+        # Tabela 2 — header: "Grupos de saldo Saldo ant. Créditos* Débitos* Saldo final"
+        #   Ordinária, Fundo Reserva, Benfeitorias, Gás, Água → contas_detalhe
+        for txt in textos:
+            if "Resumo Financeiro" not in txt:
+                continue
+            if "Conta Saldo ant." not in txt:
+                continue
+
+            # 'primeira' = tabela Conta Principal/Aplicação; 'segunda' = Grupos de saldo
+            table = None
+            for linha in txt.split("\n"):
+                l = linha.strip()
+
+                if re.match(r"^Conta\s+Saldo ant\.", l):
+                    table = "primeira"
+                    continue
+                if re.match(r"^Grupos de saldo", l):
+                    table = "segunda"
+                    continue
+                if l.startswith("(*) Inclui"):
+                    continue
+                if table is None:
+                    continue
+
+                nums = _parse_signed_nums(l)
+                if len(nums) < 4:
+                    continue
+
+                if l.upper().startswith("SALDO FINAL"):
+                    if table == "primeira":
+                        dados.saldo_anterior    = abs(nums[0])
+                        dados.receita_realizada = abs(nums[1])
+                        dados.despesa_total     = abs(nums[2])
+                        dados.saldo_atual       = abs(nums[3])
+                    # Saldo final da segunda tabela = fim do bloco
+                    table = None
+                    continue
+
+                nome_m = re.match(r"^([A-Za-zÀ-ú][A-Za-zÀ-ú\s]+?)\s+[\d.,()]+", l)
+                if not nome_m:
+                    continue
+                nome = nome_m.group(1).strip()
+                sa, cr, db, sal = abs(nums[0]), abs(nums[1]), abs(nums[2]), nums[3]
+
+                if table == "primeira":
+                    # Classifica banco (não adiciona em contas_detalhe)
+                    nome_up = nome.upper()
+                    if "PRINCIPAL" in nome_up or "CORRENTE" in nome_up:
+                        dados.banco_cc = sal
+                    elif "APLICA" in nome_up or "INVEST" in nome_up or "CDB" in nome_up:
+                        dados.banco_cdb = sal
+                    else:
+                        dados.banco_priv = round(dados.banco_priv + sal, 2)
+                elif table == "segunda":
+                    # Contas detalhadas (Ordinária, Fundo Reserva, Benfeitorias, Gás, Água)
+                    dados.contas_detalhe.append({
+                        "nome": nome, "saldo_ant": sa, "creditos": cr,
+                        "debitos": db, "saldo_atual": sal,
+                    })
+            break
+
+        # tCred/tDeb do topo devem bater com a tabela "Grupos de saldo" (a mesma
+        # exibida no Balanço Mensal por conta), não com "Conta Principal/Aplicação"
+        # — as duas tabelas do PDF têm totais diferentes (cada uma soma suas
+        # próprias transferências internas) e usar tabelas distintas para
+        # card x tabela quebra a identidade saldo_ant+créditos-débitos=saldo_atual.
+        if dados.contas_detalhe:
+            dados.receita_realizada = round(
+                sum(c["creditos"] for c in dados.contas_detalhe), 2
+            )
+            dados.despesa_total = round(
+                sum(c["debitos"] for c in dados.contas_detalhe), 2
+            )
+
+        # ── 2. Receita Prevista e Cotas ───────────────────────────────────────
+        # Balancete RECEITAS: linha "Condomínio X" = cotas recebidas do mês
+        in_rec = False
+        for linha in texto_completo.split("\n"):
+            l = linha.strip()
+            if re.match(r"^RECEITAS\s*$", l):
+                in_rec = True
+                continue
+            if re.match(r"^Total de RECEITAS", l, re.IGNORECASE):
+                in_rec = False
+                continue
+            if not in_rec:
+                continue
+            m = re.match(r"^Condom[íi]nio\s+([\d.,]+)\s*$", l)
+            if m:
+                v = _num(m.group(1))
+                if v > 0:
+                    dados.receita_prevista = v
+                    dados.receita_cotas    = v
+                in_rec = False
+
+        if dados.receita_prevista == 0 and dados.receita_realizada > 0:
+            dados.receita_prevista = dados.receita_realizada
+
+        # ── 3. Despesas por categoria ─────────────────────────────────────────
+        cat_map_extra = self.parser_config.get("cat_map", {})
+
+        # Usa apenas páginas do Balancete simplificado (não Demonstrativo Analítico)
+        balancete_pages = [
+            txt for txt in textos
+            if "Balancete:" in txt
+            and "Demonstrativo" not in txt
+            and "W020A" not in txt
+            and "W063A" not in txt
+            and "Comparativo" not in txt
+        ]
+        if balancete_pages:
+            cats = self._extrair_cats_hsa_despesas(
+                "\n".join(balancete_pages), cat_map_extra
+            )
+            dados.categorias_despesa.update(cats)
+            # Fundos de utilidade (Gás, Água, Benfeitorias) transitam pela
+            # Ordinária e são transferidos para contas próprias: a soma das
+            # categorias excede os débitos da Ordinária pelo valor transferido.
+            # Corrige subtraindo o excesso de CONSUMO (tDesp continua vindo da
+            # soma das categorias em injetar_mes.py; despesa_total/tDeb já foi
+            # fixado acima a partir da tabela "Grupos de saldo" e não deve ser
+            # sobrescrito aqui).
+            ord_entry = next(
+                (c for c in dados.contas_detalhe
+                 if 'ORDIN' in c['nome'].upper()),
+                None
+            )
+            if ord_entry:
+                total_cats = round(sum(dados.categorias_despesa.values()), 2)
+                ordinaria_deb = ord_entry['debitos']
+                diff = round(total_cats - ordinaria_deb, 2)
+                if diff > 0:
+                    consumo_key = next(
+                        (k for k in dados.categorias_despesa
+                         if 'CONSUMO' in k.upper()), None
+                    )
+                    if consumo_key:
+                        consumo_val = dados.categorias_despesa[consumo_key]
+                        if diff <= consumo_val:
+                            dados.categorias_despesa[consumo_key] = round(
+                                consumo_val - diff, 2
+                            )
+                        else:
+                            # CONSUMO não absorve tudo; sobra vai para SERVIÇOS
+                            remainder = round(diff - consumo_val, 2)
+                            dados.categorias_despesa[consumo_key] = 0.0
+                            serv_key = next(
+                                (k for k in dados.categorias_despesa
+                                 if 'SERVI' in k.upper()), None
+                            )
+                            if serv_key:
+                                dados.categorias_despesa[serv_key] = round(
+                                    dados.categorias_despesa[serv_key] - remainder, 2
+                                )
+
+        if not dados.categorias_despesa and dados.despesa_total > 0:
+            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── 4. Inadimplência ──────────────────────────────────────────────────
+        # "N unidades inadimplentes (X,XX%) principal_total total_com_encargos"
+        m_inad = re.search(
+            r"(\d+)\s+unidades\s+inadimplentes\s+\(([^)]+)\)\s+([\d.,]+)\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        )
+        if m_inad:
+            dados.inadimplencia_valor = _num(m_inad.group(4))  # total atualizado
+            pct_str = re.sub(r"[^\d,.]", "", m_inad.group(2))
+            try:
+                dados.inadimplencia_percentual = _num(pct_str)
+            except Exception:
+                pass
+        else:
+            # Fallback: "Total geral" ou soma de devedores individuais
+            m_tg = re.search(r"Total geral:\s*([\d.,]+)", texto_completo, re.IGNORECASE)
+            if m_tg:
+                dados.inadimplencia_valor = _num(m_tg.group(1))
+
+        # ── 5. FAC ────────────────────────────────────────────────────────────
+        dados.fac = self._extrair_fac(textos)
+
+    def _extrair_cats_hsa_despesas(self, texto_balancete: str, cat_map_extra: dict) -> dict:
+        """
+        Extrai categorias top-level do balancete HSA usando rastreamento de pilha.
+
+        Algoritmo: processa o bloco DESPESAS...Total de DESPESAS com uma pilha
+        de seções. "Total de X" fecha a seção X mais recente; quando a pilha fica
+        vazia após o fechamento, X é categoria top-level.
+        """
+        cats: dict = {}
+        stack: list = []
+        in_desp = False
+
+        # Padrões de linhas de cabeçalho de página a ignorar dentro de DESPESAS
+        _SKIP = re.compile(
+            r"^(Condom[íi]nio:|S[íi]ndico|Balancete:|Rua\s|HSA\s|"
+            r"\(\d{2}\)\s+\d|www\.|_{3,}|Saldo [Tt]otal|Saldo\s+[\"\"]\w)",
+            re.IGNORECASE,
+        )
+
+        for raw_linha in texto_balancete.split("\n"):
+            l = raw_linha.strip()
+            # Remove marca d'água SÍNDICO(A) que aparece sobreposta ao texto
+            l = re.sub(r"\s*S[IÍ]NDICO\(A\)\s*", "", l).strip()
+            if not l:
+                continue
+
+            if _SKIP.search(l):
+                continue
+
+            # Entra em modo DESPESAS (linha exata)
+            if re.match(r"^DESPESAS\s*$", l):
+                if not in_desp:
+                    in_desp = True
+                    stack = []
+                continue
+
+            if not in_desp:
+                continue
+
+            # Condições de saída
+            if re.match(r"^(Total de DESPESAS|SALDO ATUAL|_{3,})", l):
+                break
+
+            # "Total de X Y" — fecha seção X
+            m_total = re.match(r"^Total de (.+?)\s+([\d.,]+)\s*$", l)
+            if m_total:
+                cat_name = m_total.group(1).strip()
+                val      = _num(m_total.group(2))
+                cat_up   = cat_name.upper()
+
+                if stack:
+                    matched_idx = None
+                    for idx in range(len(stack) - 1, -1, -1):
+                        s_up = stack[idx].upper()
+                        if s_up == cat_up or s_up.startswith(cat_up):
+                            matched_idx = idx
+                            break
+
+                    if matched_idx is not None:
+                        del stack[matched_idx:]
+                        if len(stack) == 0:  # categoria top-level
+                            display = cat_map_extra.get(cat_name,
+                                      cat_map_extra.get(cat_up, cat_name))
+                            # Normaliza ALL-CAPS para title case
+                            if display == display.upper():
+                                display = display.title()
+                            cats[display] = cats.get(display, 0.0) + val
+                continue
+
+            # Linha sem dígitos = cabeçalho de seção
+            if not re.search(r"\d", l):
+                stack.append(l)
+
+        return cats
+
+    def _parsear_webware(self, textos: list, texto_completo: str, dados: DadosFinanceiros):
+        """Extrai dados do formato Webware (NYC Berrini)."""
+
+        # ── 1. Resumo Financeiro Contábil ──────────────────────────────────────
+        # Aparece como seção "Resumo Financeiro Contábil" com header
+        # "Conta Saldo Anterior Créditos Débitos Saldo Atual" (diferente do Lirba)
+        # Estratégia: usa o padrão de linha "NOME  num  num  num  num" depois do header
+        for txt in textos:
+            if "Resumo Financeiro" not in txt:
+                continue
+
+            linhas = txt.split("\n")
+            in_resumo = False
+            for linha in linhas:
+                l = linha.strip()
+                if "Resumo Financeiro" in l:
+                    in_resumo = True
+                    continue
+                if not in_resumo:
+                    continue
+                # Pula linhas de cabeçalho e linhas de navegação
+                if re.match(r"^(Conta\b|Per[íi]odo|Condom[íi]nio|https?://)", l,
+                             re.IGNORECASE):
+                    continue
+                # Para se chegou à Conciliação ou fim da seção
+                if re.match(r"^(Concilia[çc][aã]o|Demonstrativo de Receitas)", l,
+                             re.IGNORECASE):
+                    in_resumo = False
+                    break
+
+                # Extrai números: podem ser negativos (conta corrente negativa)
+                # Padrão: "NOME -saldo_ant creditos debitos saldo_atual"
+                nums = re.findall(r"-?[\d.]+,\d{2}", l)
+                nums_f = [_num_signed(n) for n in nums]
+                if len(nums_f) < 4:
+                    continue
+
+                # Nome = parte antes dos números (remove todos os números do final)
+                nome = re.sub(r"[\s\-]*-?[\d.,]+(?:\s+-?[\d.,]+)+\s*$", "", l).strip().upper()
+                if not nome or re.search(r"\d", nome):
+                    continue  # ainda tem número no nome → linha mal parseada
+
+                sa, cr, db, sal = nums_f[0], nums_f[1], nums_f[2], nums_f[3]
+
+                if nome.startswith("TOTAL"):
+                    dados.saldo_anterior    = sa
+                    dados.receita_realizada = cr
+                    dados.despesa_total     = db
+                    dados.saldo_atual       = sal
+                    in_resumo = False
+                    break
+
+                dados.contas_detalhe.append({
+                    "nome":       nome,
+                    "saldo_ant":  sa,
+                    "creditos":   cr,
+                    "debitos":    db,
+                    "saldo_atual": sal,
+                })
+
+                nome_up = nome.upper()
+                if "ORDINARI" in nome_up:
+                    dados.banco_cc += sal
+                elif any(kw in nome_up for kw in (
+                    "FUNDO DE RESERVA", "FUNDO RESERVA",
+                    "CDB", "APLICA", "INVESTIMENTO", "INVEST",
+                )):
+                    dados.banco_cdb += sal
+                else:
+                    dados.banco_priv += sal
+            break
+
+        # Webware: "Conciliação Bancaria" lista saldos reais por banco (mais preciso)
+        # "Saldo Conta Corrente Banco X  1,00"
+        # "Saldo Aplicação Bco. Y - Invest facil  5.180,53"
+        # "Valor total  5.181,53"  ← corresponde ao saldo_atual
+        banco_cc_concil  = 0.0
+        banco_cdb_concil = 0.0
+        for linha in texto_completo.split("\n"):
+            l = linha.strip()
+            m = re.match(r"Saldo\s+(.+?)\s+([\d.,]+)\s*$", l, re.IGNORECASE)
+            if not m:
+                continue
+            desc = m.group(1).upper()
+            val  = _num(m.group(2))
+            if "APLICA" in desc or "INVEST" in desc or "CDB" in desc or "POUPAN" in desc:
+                banco_cdb_concil += val
+            elif "CORRENTE" in desc or "C/C" in desc or "CONTA" in desc:
+                banco_cc_concil += val
+
+        # Usa dados de Conciliação se disponíveis (mais precisos)
+        if banco_cc_concil > 0 or banco_cdb_concil > 0:
+            dados.banco_cc  = banco_cc_concil
+            dados.banco_cdb = banco_cdb_concil
+
+        # ── 2. Receita Prevista ─────────────────────────────────────────────────
+        # Pág 1: "Resumo de Emissão  Previsto  Realizado"
+        # As linhas seguintes têm "ITEM  previsto  realizado"
+        # A linha de subtotais "215.227,27  168.052,84" (dois núms sem texto) é o total
+        previsto = 0.0
+        in_emissao = False
+        for linha in texto_completo.split("\n"):
+            l = linha.strip()
+            if re.match(r"Resumo de Emiss[aã]o\b", l, re.IGNORECASE):
+                in_emissao = True
+                continue
+            if not in_emissao:
+                continue
+            # Linha de subtotal: apenas dois números
+            m = re.match(r"^([\d.,]+)\s+([\d.,]+)$", l)
+            if m:
+                v1, v2 = _num(m.group(1)), _num(m.group(2))
+                if v1 > 1000:
+                    previsto += v1
+                in_emissao = False
+            # "Devedores e Acordos" indica fim da seção de emissão
+            if re.match(r"Devedores", l, re.IGNORECASE):
+                in_emissao = False
+
+        if previsto > 0:
+            dados.receita_prevista = previsto
+        else:
+            dados.receita_prevista = dados.receita_realizada
+
+        # ── 3. Despesas por categoria ───────────────────────────────────────────
+        # "TOTAL DA CONTA NOME  valor  pct%" (Webware inclui percentual no final)
+        # Em NYC: as sub-categorias (PESSOAL, CONSUMO, CONTRATOS, MANUTENCAO, etc.)
+        # são o que queremos; ORDINARIA é o agregado de tudo.
+        todos_totais_w = {}
+        for m in re.finditer(
+            r"TOTAL DA CONTA\s+([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ /\-\.0-9]+?)\s+([\d.,]+)"
+            r"(?:\s+[\d.,]+%?)?(?:\s|$)",
+            texto_completo, re.IGNORECASE
+        ):
+            conta = m.group(1).strip().upper()
+            val   = _num(m.group(2))
+            if val > 0:
+                todos_totais_w[conta] = todos_totais_w.get(conta, 0) + val
+
+        cat_map_w = self.parser_config.get("cat_map", {})
+        for conta, val in todos_totais_w.items():
+            if any(ex in conta for ex in _EXCLUIR_SEMPRE):
+                continue
+            if conta in _CONTAS_AGREGADO:
+                continue  # ORDINARIA é o agregado
+            if "TOTAL DAS DESPESAS" in conta or "TOTAL DESPESAS" in conta:
+                continue
+            cat = cat_map_w.get(conta, cat_map_w.get(conta.title(), conta.title()))
+            dados.categorias_despesa[cat] = (
+                dados.categorias_despesa.get(cat, 0) + val
+            )
+
+        # Fallback
+        if not dados.categorias_despesa and dados.despesa_total > 0:
+            dados.categorias_despesa["Despesas Gerais"] = dados.despesa_total
+
+        # ── 4. Inadimplência ────────────────────────────────────────────────────
+        # Webware: "COTAS EM ATRASO EM dd/mm/yyyy  valor" no Resumo de Emissão
+        # Filtra pelo mês/ano de referência para não pegar valores de meses anteriores.
+        inad_by_data: dict = {}
+        for m in re.finditer(
+            r"COTAS EM ATRASO EM\s+(\d{2}/\d{2}/\d{4})\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        ):
+            inad_by_data[m.group(1)] = _num(m.group(2))
+
+        if inad_by_data:
+            # Tenta match com o mês/ano de referência ("/MM/AAAA")
+            mes_ref = dados.mes_referencia
+            if "-" in mes_ref:
+                ano_r, mes_r = mes_ref.split("-")[:2]
+                sufixo = f"/{mes_r}/{ano_r}"
+                target = next((v for dt, v in inad_by_data.items() if dt.endswith(sufixo)), None)
+            else:
+                target = None
+            dados.inadimplencia_valor = target if target is not None else max(inad_by_data.values())
+        else:
+            # Fallback: soma "Total da unidade:"
+            total_u = sum(
+                _num(m.group(1))
+                for m in re.finditer(
+                    r"Total da unidade:\s*([\d.,]+)", texto_completo
+                )
+            )
+            if total_u > 0:
+                dados.inadimplencia_valor = total_u
+
+        # ── 5. Inadimplência recebida ────────────────────────────────────────
+        # Webware: "RECEBIMENTO DE COTAS EM ATRASO  valor"
+        rec_m = re.search(
+            r"RECEBIMENTO\s+DE\s+COTAS\s+EM\s+ATRASO\s+([\d.,]+)",
+            texto_completo, re.IGNORECASE
+        )
+        if rec_m:
+            dados.inadimplencia_recebida = _num(rec_m.group(1))
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Métodos auxiliares compartilhados (Lirba + Webware)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    # Linhas que aparecem na Posição Financeira mas NÃO são despesas
+    _POS_NAO_DESPESA = {
+        "SALDO ANTERIOR CREDOR", "SALDO ANTERIOR DEVEDOR", "SALDO ANTERIOR",
+        "CONDOMINOS EM ATRASO", "CONDOMÍNOS EM ATRASO",
+        "RECEBIMENTO DO PERIODO", "RECEBIMENTO DO PERÍODO",
+        "OUTRAS PREVISOES", "OUTRAS PREVISÕES",
+        "OUTRAS RECEITAS",
+        "REEMBOLSO CUSTAS PROCESSUAIS",
+        "RENDIMENTOS APLICACAO", "RENDIMENTOS APLICAÇÃO",
+        "RENDIMENTOS DE APLICACAO", "RENDIMENTOS DE APLICAÇÃO",
+        "JUROS", "MULTAS",
+        "ATUALIZACAO MONETARIA", "ATUALIZAÇÃO MONETÁRIA",
+        "TOTAIS",
+        "SALDO ATUAL CREDOR", "SALDO ATUAL DEVEDOR", "SALDO ATUAL",
+        "CONTASDATA", "CONTAS",
+        "DÉBITO/CRÉDITO NÃO IDENTIFICAD", "DEBITO/CREDITO NAO IDENTIFICAD",
+    }
+
+    # Mapeamento nome_upper → canonical para categorias de despesa na Posição Financeira
+    _POS_CAT_MAP = {
+        "NR'S NORMAS REGULAMENTADORAS":  "Normas Reg.",
+        "NRS NORMAS REGULAMENTADORAS":   "Normas Reg.",
+        "NORMAS REGULAMENTADORAS":       "Normas Reg.",
+        "TERCEIRIZACAO":                 "Terceirização",
+        "TERCEIRIZAÇÃO":                 "Terceirização",
+        "MANUTENCAO":                    "Manutenção",
+        "MANUTENÇÃO":                    "Manutenção",
+        "CONSERVACAO PREDIAL":           "Conserv. Predial",
+        "CONSERVAÇÃO PREDIAL":           "Conserv. Predial",
+        "MATERIAL DE CONSUMO":           "Mat. de Consumo",
+        "ADMINISTRATIVO":                "Administrativo",
+        "DESPESAS OPERACIONAIS":         "Desp. Operacionais",
+        "SEGURANCA":                     "Segurança",
+        "SEGURANÇA":                     "Segurança",
+        "OUTRAS DESPESAS":               "Outras Desp.",
+        "MAT. IMPLANTACAO":              "Mat. Implantação",
+        "MAT. IMPLANTAÇÃO":              "Mat. Implantação",
+        "MATERIAL DE IMPLANTACAO":       "Mat. Implantação",
+        "MATERIAL DE IMPLANTAÇÃO":       "Mat. Implantação",
+        "MATERIAL IMPLANTACAO":          "Mat. Implantação",
+        "MATERIAL IMPLANTAÇÃO":          "Mat. Implantação",
+        "SALARIOS":                      "Salários",
+        "SALÁRIOS":                      "Salários",
+        "SERVICOS TERCEIRIZADOS":        "Serv. Terceirizados",
+        "SERVIÇOS TERCEIRIZADOS":        "Serv. Terceirizados",
+        "UTILIDADES":                    "Utilidades",
+        "AGUA":                          "Água",
+        "ÁGUA":                          "Água",
+        "ENERGIA ELETRICA":              "Energia Elétrica",
+        "ENERGIA ELÉTRICA":              "Energia Elétrica",
+        "GAS":                           "Gás",
+        "GÁS":                           "Gás",
+        "LIMPEZA":                       "Limpeza",
+        "VIGILANCIA":                    "Vigilância",
+        "VIGILÂNCIA":                    "Vigilância",
+    }
+
+    def _extrair_cats_bloco_ordinaria(self, texto_completo: str, cat_map_extra: dict = None) -> dict:
+        """Categorias da ORDINÁRIA no Demonstrativo de Despesas: linhas 'TOTAL DA CONTA <cat> <valor>'
+        que antecedem a linha 'TOTAL DA CONTA ORDINÁRIA'. {} se essa linha de fechamento não existir."""
+        res: dict = {}
+        for linha in texto_completo.split("\n"):
+            linha = re.sub(r"\s+(ContasData|Voltar ao [íi]ndice|RelatDemon\w*|Panel\d+|Doctos)\s*$", "", linha, flags=re.IGNORECASE)
+            m = re.match(r"^\s*TOTAL DA CONTA\s+(.+?)\s+(\d{1,3}(?:\.\d{3})*,\d{2})(?:\s+\d{1,3},\d{2}%)?\s*$", linha, re.IGNORECASE)
+            if not m:
+                continue
+            nome = m.group(1).strip().upper()
+            if _fold(nome).startswith("ORDINARIA"):
+                return res
+            canonical = ((cat_map_extra or {}).get(nome) or (cat_map_extra or {}).get(nome.title())
+                         or self._POS_CAT_MAP.get(nome) or self._POS_CAT_MAP.get(_fold(nome))
+                         or nome.title())
+            res[canonical] = res.get(canonical, 0.0) + _num(m.group(2))
+        return {}
+
+    def _extrair_subcats_posicao_financeira(self, pages_text: list,
+                                              cat_map_extra: dict = None) -> dict:
+        """
+        Extrai sub-categorias de despesa da seção 'Posição Financeira' da conta ORDINÁRIA.
+
+        A Posição Financeira de ORDINÁRIA tem o layout:
+          Posição Financeira Débito Crédito
+          SALDO ANTERIOR CREDOR dd/mm/YYYY  value
+          CONDOMINOS EM ATRASO  value            ← créditos (não despesas)
+          RECEBIMENTO DO PERIODO  value
+          ContasData
+          OUTRAS PREVISOES  value
+          ...
+          JUROS  value
+          ATUALIZACAO MONETARIA  value
+          MULTAS  value
+          NR'S NORMAS REGULAMENTADORAS  value    ← ← ← despesas começam aqui
+          TERCEIRIZAÇÃO  value
+          MANUTENÇÃO  value
+          ...
+          DÉBITO/CRÉDITO NÃO IDENTIFICAD  value  ← crédito de ajuste (excluir)
+          TOTAIS  total_deb  total_cred
+
+        Retorna dict {canonical_name: valor} das categorias encontradas.
+        Retorna {} se a seção não for encontrada ou não houver categorias.
+        """
+        import unicodedata
+
+        def _norm(s: str) -> str:
+            s = unicodedata.normalize("NFD", s)
+            return "".join(c for c in s if unicodedata.category(c) != "Mn").upper().strip()
+
+        BR_NUM = re.compile(r"^([\d]{1,3}(?:\.[\d]{3})*,[\d]{2})\s*$")
+        SINGLE_VAL = re.compile(r"^(.+?)\s+([\d]{1,3}(?:\.[\d]{3})*,[\d]{2})\s*$")
+
+        # Linhas a ignorar (não são despesas)
+        not_desp_norm = {_norm(k) for k in self._POS_NAO_DESPESA}
+        # Prefixos de linhas de crédito/data
+        not_desp_prefixes = {
+            "SALDO", "CONDOMINO", "RECEBIMENTO", "OUTRAS",
+            "RENDIMENTO", "JUROS", "MULTAS", "ATUALIZACAO", "ATUALIZAÇÃO",
+            "TOTAIS", "PERIOD", "PERÍODO",
+            "TRANSFERENCIA", "TRANSFERÊNCIA",  # crédito de receita, não despesa
+            "COTAS ANTECIPADAS",               # adiantamento de cota = receita, não despesa
+            "ANTECIPACOES", "ANTECIPACAO",     # idem ("ANTECIPAÇÕES" normalizado) — Plano Rio Bonito/Upper Itaim
+            # "CONTAS" removido: "CONTAS DE CONSUMO" é desp real; "CONTASDATA" filtrado por not_desp_norm
+        }
+
+        # Marcadores para entrar na zona de despesas
+        MULTAS_NORM = "MULTAS"
+        ATUALIZACAO_NORM = "ATUALIZACAO MONETARIA"
+
+        results: dict = {}
+
+        for pg_idx, text in enumerate(pages_text):
+            if "Posição Financeira" not in text and "Posicao Financeira" not in text:
+                continue
+            if "Resumo Financeiro" in text:
+                # Página diferente (contém Resumo Financeiro, não Posição Financeira de conta)
+                continue
+
+            lines = [l.strip() for l in text.split("\n") if l.strip()]
+
+            in_pos = False
+            past_multas = False
+            found_cats = {}
+
+            for line in lines:
+                ll_norm = _norm(line)
+
+                # Inicia quando encontra "Posição Financeira"
+                if not in_pos:
+                    if re.match(r"Posi[çc][aã]o Financeira", line, re.IGNORECASE):
+                        in_pos = True
+                    continue
+
+                # Para ao encontrar "TOTAIS" ou nova seção
+                if ll_norm.startswith("TOTAIS"):
+                    break
+
+                # Detecta passagem por MULTAS/ATUALIZACAO → próximas linhas são despesas
+                if ll_norm in (MULTAS_NORM, ATUALIZACAO_NORM) or ll_norm.startswith("MULTAS"):
+                    past_multas = True
+                    continue
+
+                if not past_multas:
+                    continue
+
+                # Pula linhas de ajuste conhecidas
+                if any(ll_norm.startswith(p) for p in not_desp_prefixes):
+                    continue
+                if ll_norm in not_desp_norm:
+                    continue
+
+                # Pula DÉBITO/CRÉDITO NÃO IDENTIFICAD (ajuste de conta, não despesa)
+                if "NÃO IDENTIFICAD" in ll_norm or "NAO IDENTIFICAD" in ll_norm:
+                    continue
+
+                # Remove artefatos de navegação PDF que seguem o valor na mesma linha
+                line_clean = re.sub(
+                    r'\s+(ContasData|Voltar ao [íi]ndice|RelatDemon\w*|Panel\d+|Doctos)\s*$',
+                    '', line, flags=re.IGNORECASE
+                )
+                # Linha de categoria: "NOME_CATEGORIA  valor"
+                m = SINGLE_VAL.match(line_clean)
+                if m:
+                    name_raw = m.group(1).strip().upper()
+                    val = _num(m.group(2))
+                    if val > 0:
+                        # Prioridade: 1) cat_map do parser_config  2) _POS_CAT_MAP  3) title()
+                        name_norm = _norm(name_raw)
+                        canonical = None
+                        if cat_map_extra:
+                            canonical = cat_map_extra.get(name_raw) or \
+                                        cat_map_extra.get(name_raw.title())
+                        if canonical is None:
+                            canonical = self._POS_CAT_MAP.get(name_raw) or \
+                                        self._POS_CAT_MAP.get(name_norm)
+                        if canonical is None:
+                            canonical = name_raw.title()
+                        found_cats[canonical] = found_cats.get(canonical, 0.0) + val
+
+            if found_cats:
+                results = found_cats
+                break  # Usa apenas a primeira Posição Financeira (ORDINÁRIA)
+
+        return results
+
+    # Mapeamento de cabeçalhos de seção → nome canônico (usado no Demonstrativo
+    # de PDFs Vibra/Lirba que não têm "TOTAL DA CONTA" por sub-seção).
+    # Chaves em maiúsculas sem acentos (normalizado) para match robusto.
+    _DEMO_SECTION_MAP = {
+        # Normalizado (sem acento) : canônico
+        "NR'S NORMAS REGULAMENTADORAS": "Normas Reg.",
+        "NRS NORMAS REGULAMENTADORAS":  "Normas Reg.",
+        "NORMAS REGULAMENTADORAS":      "Normas Reg.",
+        "TERCEIRIZACAO":                "Terceirização",
+        "TERCEIRIZAÇÃO":                "Terceirização",
+        "MANUTENCAO":                   "Manutenção",
+        "MANUTENÇÃO":                   "Manutenção",
+        "MANUTENÇÃO.":                  "Manutenção",    # com ponto no PDF
+        "CONSERVACAO PREDIAL":          "Conserv. Predial",
+        "CONSERVAÇÃO PREDIAL":          "Conserv. Predial",
+        "MATERIAL DE CONSUMO":          "Mat. de Consumo",
+        "ADMINISTRATIVO":               "Administrativo",
+        "DESPESAS OPERACIONAIS":        "Desp. Operacionais",
+        "SEGURANCA":                    "Segurança",
+        "SEGURANÇA":                    "Segurança",
+        "OUTRAS DESPESAS":              "Outras Desp.",
+        "MAT. IMPLANTACAO":             "Mat. Implantação",
+        "MAT. IMPLANTAÇÃO":             "Mat. Implantação",
+        "MATERIAL DE IMPLANTACAO":      "Mat. Implantação",
+        "MATERIAL DE IMPLANTAÇÃO":      "Mat. Implantação",
+        # Contas de nível alto que podem aparecer sem sub-seções:
+        "I.P.T.U.":                     "IPTU",
+        "IPTU":                         "IPTU",
+        "CONSUMO":                      "Consumos",
+        "CONSUMOS":                     "Consumos",
+        # Excluir (retorna None):
+        "DEBITO/CREDITO NAO IDENTIFICAD":  None,
+        "DÉBITO/CRÉDITO NÃO IDENTIFICAD":  None,
+        "ORDINARIA":                       None,
+        "ORDINÁRIA":                       None,
+    }
+
+    def _extrair_subcategorias_demonstrativo(self, texto_completo: str) -> dict:
+        """
+        Extrai sub-categorias do Demonstrativo de Despesas quando os PDFs Lirba
+        não possuem 'TOTAL DA CONTA' individual para cada sub-seção dentro de ORDINÁRIA.
+
+        Algoritmo:
+        - Localiza a seção "Demonstrativo de Despesas" no texto
+        - Rastreia cabeçalhos de seção (linhas ALL-CAPS sem números, match em _DEMO_SECTION_MAP)
+        - O ÚLTIMO número acumulado antes do próximo cabeçalho (ou fim) é o total da seção
+        - Retorna dict {nome_upper: valor} a ser mesclado em operacionais
+
+        Valores de "TOTAL DA CONTA X" explícitos são sempre preferidos; este método
+        é chamado apenas como fallback quando há poucas categorias extraídas.
+        """
+        # Encontra início do Demonstrativo de Despesas
+        demo_start = texto_completo.lower().find("demonstrativo de despesas")
+        if demo_start < 0:
+            return {}
+
+        texto_demo = texto_completo[demo_start:]
+
+        # Cabeçalhos conhecidos (norm key → canonical)
+        smap = self._DEMO_SECTION_MAP
+
+        # Padrão para linha de cabeçalho de seção:
+        # linha ALL-CAPS, sem dígitos no meio, comprimento razoável
+        # Pega o nome normalizado para match
+        def _normalize(s: str) -> str:
+            import unicodedata
+            s = unicodedata.normalize("NFD", s)
+            s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+            return s.upper().strip()
+
+        # Padrão de número monetário com separador de milhar + 2 casas decimais
+        # Formato BR: 86.087,03  ou 1.234,56  ou 42.875,97
+        NUM_RE = re.compile(r"\b(\d{1,3}(?:\.\d{3})*,\d{2})\b")
+        # Linha de transação geralmente termina com: valor_acum  num_lancamento
+        TRANSAC_RE = re.compile(
+            r"(\d{1,3}(?:\.\d{3})*,\d{2})\s+(\d{4})\s*$"
+        )
+        # "TOTAL DA CONTA" e "TOTAL DAS DESPESAS" — parar ao encontrar esses
+        TOTAL_RE = re.compile(r"TOTAL\s+D[AO]S?\s+(CONTA|DESPESAS)", re.IGNORECASE)
+
+        results: dict = {}           # canonical_name -> valor
+        current_section: str = None  # chave em smap (str upper)
+        last_cumul: float = 0.0      # último valor acumulado visto na seção
+
+        skip_lines = {
+            "demonstrativo de despesas", "página:", "periodo:", "condominio:",
+            "nº lancto.", "voltar ao índice", "contasdata", "relatdemon", "panel",
+        }
+
+        for raw_line in texto_demo.split("\n"):
+            line = raw_line.strip()
+            if not line:
+                continue
+
+            # Pula cabeçalhos de página
+            ll = line.lower()
+            if any(sk in ll for sk in skip_lines):
+                continue
+            if re.match(r"^(página|periodo|condominio|nº lancto)", ll, re.IGNORECASE):
+                continue
+
+            # Se encontra TOTAL DA CONTA ou TOTAL DAS DESPESAS, encerra seção atual
+            if TOTAL_RE.search(line):
+                if current_section and last_cumul > 0:
+                    canonical = smap.get(current_section)
+                    if canonical is not None:
+                        results[canonical] = results.get(canonical, 0.0) + last_cumul
+                current_section = None
+                last_cumul = 0.0
+                continue
+
+            # Tenta match de cabeçalho de seção
+            line_norm = _normalize(line)
+            # Só considera cabeçalho se:
+            # 1. Está no mapa de seções
+            # 2. Linha não contém dígitos (além do ponto e vírgula monetários)
+            candidate = line_norm.rstrip(".")
+            is_header = candidate in smap or line_norm in smap
+            if is_header:
+                norm_key = line_norm if line_norm in smap else candidate
+                # Fecha seção anterior
+                if current_section and last_cumul > 0:
+                    canonical = smap.get(current_section)
+                    if canonical is not None:
+                        results[canonical] = results.get(canonical, 0.0) + last_cumul
+                current_section = norm_key
+                last_cumul = 0.0
+                continue
+
+            # Dentro de uma seção: captura valor acumulado em linha de transação
+            if current_section:
+                m_t = TRANSAC_RE.search(line)
+                if m_t:
+                    val = _num(m_t.group(1))
+                    if val > 0:
+                        last_cumul = val
+                else:
+                    # Tenta qualquer número isolado ao final da linha
+                    nums = NUM_RE.findall(line)
+                    if nums:
+                        v = _num(nums[-1])
+                        if v > 0:
+                            last_cumul = v
+
+        # Fecha última seção
+        if current_section and last_cumul > 0:
+            canonical = smap.get(current_section)
+            if canonical is not None:
+                results[canonical] = results.get(canonical, 0.0) + last_cumul
+
+        # Retorna como {UPPER_KEY: valor} para mesclagem no operacionais
+        return {k.upper(): v for k, v in results.items() if v > 0}
+
+    def _extrair_conta_bancaria(self, pages_text: list) -> dict:
+        """
+        Extrai saldos reais da seção 'Conta bancária' do PDF.
+        Retorna {nome_conta: saldo_atual} com sinal (podem ser negativos).
+        Retorna {} se a seção não existir no PDF.
+        """
+        BR_NUM = re.compile(r'-?[\d]{1,3}(?:[.,][\d]{3})*,[\d]{2}')
+
+        def br_to_float(s: str) -> float:
+            return float(s.strip().replace('.', '').replace(',', '.'))
+
+        for text in pages_text:
+            if 'conta banc' not in text.lower():
+                continue
+            lines = [l.strip() for l in text.split('\n') if l.strip()]
+            for i, line in enumerate(lines):
+                if 'conta banc' not in line.lower():
+                    continue
+                # Cabeçalho pode estar na MESMA linha ("Conta bancária Saldo anterior...")
+                # OU na linha seguinte ("Conta bancária\nSaldo anterior Créditos...")
+                header_same_line  = 'saldo' in line.lower()
+                header_next_line  = (i + 1 < len(lines) and
+                                     'saldo' in lines[i + 1].lower())
+                if not header_same_line and not header_next_line:
+                    continue
+                # Se o cabeçalho está na linha seguinte, pula ela antes de parsear
+                parse_start = i + 1 if header_same_line else i + 2
+                # Parse das linhas de conta
+                contas: dict = {}
+                for j in range(parse_start, min(i + 30, len(lines))):
+                    ln = lines[j]
+                    if ln.upper().startswith('TOTAL'):
+                        break
+                    # Ignora linhas de cabeçalho ou de outras seções
+                    if any(kw in ln.lower() for kw in [
+                        'saldo anterior', 'resumo', 'posicao', 'posição',
+                        'ordinaria', 'ordinária', 'demonstrativo', 'creditos',
+                        'débitos', 'debitos',
+                    ]):
+                        continue
+                    nums = BR_NUM.findall(ln)
+                    if len(nums) >= 4:
+                        name = BR_NUM.sub('', ln).strip()
+                        # Remove caracteres residuais de separação
+                        name = re.sub(r'\s{2,}', ' ', name).strip()
+                        saldo_atual = br_to_float(nums[-1])
+                        if name:
+                            contas[name] = saldo_atual
+                if contas:
+                    return contas
+        return {}
+
+    def _extrair_fac(self, pages_text: list) -> float:
+        """
+        Extrai total de JUROS + MULTAS recebidos (FAC = Faturas Anteriores Cobradas).
+        Soma todas as linhas 'JUROS X' e 'MULTAS X' nos detalhes de movimentação.
+        """
+        BR_NUM = re.compile(r'[\d]{1,3}(?:[.,][\d]{3})*,[\d]{2}')
+
+        def br_to_float(s: str) -> float:
+            return float(s.strip().replace('.', '').replace(',', '.'))
+
+        total = 0.0
+        for text in pages_text:
+            lines = [l.strip() for l in text.split('\n') if l.strip()]
+            for line in lines:
+                upper = line.upper()
+                # Linhas como "JUROS 28,24" ou "MULTAS 55,07"
+                # Exclui linhas que são totais ou apenas cabeçalhos
+                if (upper.startswith('JUROS ') or upper.startswith('MULTAS ')) \
+                        and 'TOTAL' not in upper:
+                    nums = BR_NUM.findall(line)
+                    if len(nums) == 1:
+                        total += br_to_float(nums[0])
+                    elif len(nums) >= 2:
+                        # Pega o primeiro número (valor individual, não acumulado)
+                        total += br_to_float(nums[0])
+        return round(total, 2)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # ler_xlsx — redireciona para ler_pdf
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def ler_xlsx(self, caminho: Path, mes_referencia: str) -> DadosFinanceiros:
+        """Redireciona para ler_pdf — LIRBA usa PDF, não XLSX."""
+        # Tenta trocar extensão
+        for ext in [".pdf", ".PDF"]:
+            p = caminho.parent / (caminho.stem + ext)
+            if p.exists():
+                return self.ler_pdf(p, mes_referencia)
+        # Busca qualquer PDF na pasta
+        pdfs = sorted(
+            list(caminho.parent.glob("*.pdf")) +
+            list(caminho.parent.glob("*.PDF")),
+            key=lambda x: x.stat().st_mtime, reverse=True
+        )
+        if pdfs:
+            return self.ler_pdf(pdfs[0], mes_referencia)
+        raise FileNotFoundError(f"Nenhum PDF Lirba encontrado em {caminho.parent}")

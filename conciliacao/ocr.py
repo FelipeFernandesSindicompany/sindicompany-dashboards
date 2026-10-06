@@ -16,6 +16,7 @@ faz as aspas irem literalmente para o caminho que o tesseract tenta abrir
 (o subprocess não passa por um shell que as interpretaria). A variável de
 ambiente TESSDATA_PREFIX não tem esse problema.
 """
+import io
 import os
 import shutil
 import tempfile
@@ -65,20 +66,53 @@ def tesseract_disponivel() -> bool:
     return True
 
 
-def ocr_pagina_pdf(caminho_pdf: Path, indice_pagina_0based: int, dpi: int = 300, lang: str = "por") -> str:
+def _angulo_correcao(caminho_png: str) -> int:
     """
-    Renderiza 1 página do PDF (via pymupdf, já dependência do projeto) e roda
-    OCR nela. Retorna "" em qualquer falha — inclusive OCR indisponível,
-    página inexistente ou imagem ilegível — nunca lança exceção, para não
-    derrubar a extração inteira por causa de 1 página problemática.
+    Detecção de orientação do próprio Tesseract (OSD — Orientation and
+    Script Detection): confirmado em dados reais (Palm Beach) que algumas
+    imagens embutidas vêm giradas 90°/180°/270° dentro da página (não a
+    página em si — `page.rotation` do PyMuPDF continua 0, é a imagem que
+    está rotacionada), o que produz texto completamente embaralhado no OCR
+    direto. Retorna o ângulo a girar EM SENTIDO HORÁRIO pra corrigir (0 se
+    não detectar necessidade ou se a detecção falhar — nunca lança).
+    """
+    try:
+        import pytesseract
+
+        osd = pytesseract.image_to_osd(caminho_png)
+        for linha in osd.split("\n"):
+            if linha.startswith("Rotate:"):
+                return int(linha.split(":")[1].strip())
+    except Exception:
+        pass
+    return 0
+
+
+def ocr_pagina_pdf(caminho_pdf: Path, indice_pagina_0based: int, dpi: int = 300, lang: str = "por",
+                    doc_aberto=None) -> str:
+    """
+    Renderiza 1 página do PDF (via pymupdf, já dependência do projeto),
+    corrige rotação se necessário (ver _angulo_correcao) e roda OCR. Retorna
+    "" em qualquer falha — inclusive OCR indisponível, página inexistente ou
+    imagem ilegível — nunca lança exceção, para não derrubar a extração
+    inteira por causa de 1 página problemática.
+
+    `doc_aberto` (opcional): um `fitz.Document` já aberto, reaproveitado em
+    vez de reabrir `caminho_pdf` do zero — confirmado em dados reais (Club
+    Park Butantã, arquivo de 333MB/1042 páginas, ~166 chamadas no mesmo
+    arquivo) que reabrir o PDF inteiro a cada chamada é o gargalo real, não
+    o OCR em si. Quem chama é dono do `doc_aberto` (abre e fecha fora desta
+    função) — quando omitido, o comportamento é o de sempre (abre e fecha
+    aqui, continua seguro pra uso avulso/1 chamada só).
     """
     if not tesseract_disponivel():
         return ""
     try:
         import fitz
         import pytesseract
+        from PIL import Image
 
-        doc = fitz.open(str(caminho_pdf))
+        doc = doc_aberto if doc_aberto is not None else fitz.open(str(caminho_pdf))
         try:
             if not (0 <= indice_pagina_0based < len(doc)):
                 return ""
@@ -87,11 +121,46 @@ def ocr_pagina_pdf(caminho_pdf: Path, indice_pagina_0based: int, dpi: int = 300,
                 tmp_path = tmp.name
             try:
                 pix.save(tmp_path)
+                angulo = _angulo_correcao(tmp_path)
+                if angulo:
+                    # PIL.Image.rotate() gira ANTI-horário por padrão — o
+                    # ângulo do Tesseract é EM SENTIDO HORÁRIO, daí o sinal
+                    # trocado (confirmado empiricamente contra dados reais).
+                    Image.open(tmp_path).rotate(-angulo, expand=True).save(tmp_path)
                 return pytesseract.image_to_string(tmp_path, lang=lang)
             finally:
                 Path(tmp_path).unlink(missing_ok=True)
         finally:
-            doc.close()
+            if doc_aberto is None:
+                doc.close()
     except Exception as exc:
         print(f"[AVISO] OCR falhou na página {indice_pagina_0based + 1} de {caminho_pdf.name}: {exc}")
+        return ""
+
+
+def ocr_imagem_bytes(dados: bytes, lang: str = "por") -> str:
+    """
+    Como ocr_pagina_pdf, mas para uma imagem já em mãos (ex.: comprovante
+    baixado de um sistema externo via link, não embutido no PDF — ver
+    conciliacao/condominios/central_das_artes.py). Mesma correção de
+    rotação e mesma política de nunca lançar exceção.
+    """
+    if not tesseract_disponivel():
+        return ""
+    try:
+        import pytesseract
+        from PIL import Image
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            Image.open(io.BytesIO(dados)).convert("RGB").save(tmp_path)
+            angulo = _angulo_correcao(tmp_path)
+            if angulo:
+                Image.open(tmp_path).rotate(-angulo, expand=True).save(tmp_path)
+            return pytesseract.image_to_string(tmp_path, lang=lang)
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+    except Exception as exc:
+        print(f"[AVISO] OCR de imagem falhou: {exc}")
         return ""

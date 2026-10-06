@@ -12,6 +12,7 @@ Setup manual necessário uma única vez (não roda em runtime):
     pip install playwright
     playwright install chromium
 """
+from conciliacao.pdf_cache import pdf_plumber_aberto, total_paginas
 import base64
 import hashlib
 import re
@@ -147,7 +148,7 @@ def _jinja_env() -> Environment:
 def montar_html(
     *,
     condominio_nome: str,
-    cnpj: str,
+    cnpj: str | None,
     administradora: str,
     mes_titulo: str,
     logo_data_uri: str | None,
@@ -155,6 +156,7 @@ def montar_html(
     achados: list[dict],
     gerado_em: str,
     analise: dict | None = None,
+    categorias_novas: list[dict] | None = None,
 ) -> str:
     """
     achados: lista de dicts já mesclando Achado (fatos) + AchadoRevisado
@@ -182,6 +184,7 @@ def montar_html(
         achados=achados,
         gerado_em=gerado_em,
         analise=analise,
+        categorias_novas=categorias_novas or [],
     )
 
 
@@ -260,7 +263,7 @@ def _bbox_conteudo(page, margem: float = 8) -> tuple | None:
     )
 
 
-def preparar_evidencia_vetorial(pdf_origem: Path, pagina: int) -> dict | None:
+def preparar_evidencia_vetorial(pdf_origem: Path, pagina: int, bbox_override: tuple | None = None) -> dict | None:
     """
     Localiza o bloco de conteúdo da página `pagina` (1-based) do PDF original
     — não rasteriza nada aqui. Quem embute de fato é
@@ -275,16 +278,29 @@ def preparar_evidencia_vetorial(pdf_origem: Path, pagina: int) -> dict | None:
     seja tecnicamente alta. Copiar o PDF de origem como vetor elimina essa
     diferença por completo: a evidência fica com a mesma nitidez do resto do
     relatório em qualquer zoom.
+
+    `bbox_override` (x0, top, x1, bottom, em pontos pdfplumber) recorta só
+    ESSA região da página em vez do bloco de conteúdo inteiro — usado
+    quando quem chama já sabe exatamente qual LINHA mostrar (ex.: um
+    lançamento "sem_comprovante" da listagem, ver RegistroComprovante.
+    bbox_crop) e uma página inteira de dezenas de despesas seria ruído.
     """
     try:
         import pdfplumber
     except ImportError:
         return None
     try:
-        with pdfplumber.open(str(pdf_origem)) as pdf:
-            if not (1 <= pagina <= len(pdf.pages)):
-                return None
-            bbox = _bbox_conteudo(pdf.pages[pagina - 1])
+        with pdf_plumber_aberto(pdf_origem) as pdf:
+            if bbox_override:
+                # Recorte já conhecido: só confere que a página existe, sem
+                # listar as páginas pelo pdfplumber (minutos num PDF de 89 MB).
+                if not (1 <= pagina <= total_paginas(pdf_origem)):
+                    return None
+                bbox = bbox_override
+            else:
+                if not (1 <= pagina <= len(pdf.pages)):
+                    return None
+                bbox = _bbox_conteudo(pdf.pages[pagina - 1])
             if not bbox:
                 return None
             largura, altura = bbox[2] - bbox[0], bbox[3] - bbox[1]
@@ -302,6 +318,7 @@ def preparar_evidencia_vetorial(pdf_origem: Path, pagina: int) -> dict | None:
                 largura_mm = _ALTURA_MAXIMA_EVIDENCIA_MM / (aspect_pct / 100.0)
                 altura_mm = _ALTURA_MAXIMA_EVIDENCIA_MM
             return {
+                "tipo": "pdf",
                 "pdf_origem": str(pdf_origem),
                 "pagina_origem": pagina,
                 "bbox": bbox,
@@ -310,6 +327,148 @@ def preparar_evidencia_vetorial(pdf_origem: Path, pagina: int) -> dict | None:
             }
     except Exception:
         return None
+
+
+def preparar_evidencia_externa(caminho_arquivo: str) -> dict | None:
+    """
+    Como preparar_evidencia_vetorial, mas para uma evidência que NÃO é uma
+    página do PDF de origem — um arquivo separado, salvo em disco à parte
+    (ver RegistroComprovante.arquivo_evidencia_externa), tipicamente baixado
+    de um sistema externo (ex.: conciliacao/condominios/
+    central_das_artes.py, comprovantes do sistema Robotton). Sem isso o
+    relatório não tem como mostrar essa evidência: não existe página
+    nenhuma do PDF original pra recortar.
+
+    PDF avulso (ex.: fatura de concessionária anexada como PDF de verdade):
+    reaproveita preparar_evidencia_vetorial na própria página 1 desse
+    arquivo — mesmo recorte vetorial nítido de sempre.
+
+    Imagem (JPEG, ex.: comprovante bancário Robotton): não tem vetor pra
+    copiar de uma imagem já rasterizada — embute como raster mesmo (ver
+    inserir_evidencias_vetoriais), só calcula aqui as dimensões finais em mm.
+    """
+    caminho = Path(caminho_arquivo)
+    if not caminho.exists():
+        return None
+    if caminho.suffix.lower() == ".pdf":
+        return preparar_evidencia_vetorial(caminho, 1)
+    try:
+        from PIL import Image
+        with Image.open(caminho) as img:
+            largura_px, altura_px = img.size
+        aspect_pct = (altura_px / largura_px * 100.0) if largura_px else 60.0
+        altura_mm = _CONTEUDO_LARGURA_MM * (aspect_pct / 100.0)
+        largura_mm = _CONTEUDO_LARGURA_MM
+        if altura_mm > _ALTURA_MAXIMA_EVIDENCIA_MM:
+            largura_mm = _ALTURA_MAXIMA_EVIDENCIA_MM / (aspect_pct / 100.0)
+            altura_mm = _ALTURA_MAXIMA_EVIDENCIA_MM
+        return {
+            "tipo": "imagem",
+            "arquivo": str(caminho),
+            "largura_mm": largura_mm,
+            "altura_mm": altura_mm,
+        }
+    except Exception:
+        return None
+
+
+def _pagina_isolada(src_doc, indice_0based: int):
+    """
+    Devolve um fitz.Document de 1 página só, com o mesmo conteúdo da página
+    `indice_0based` de `src_doc`, sem os XObjects (imagens) que o conteúdo
+    da página não desenha (operador "Do" no content stream).
+
+    Por quê: confirmado em dados reais (Club Park Butantã, PDF de 1042
+    páginas / 333MB) que o GCONT aponta o dicionário /Resources de CADA
+    página pra TODAS as imagens do arquivo (976 imagens referenciadas, 1
+    desenhada). Page.show_pdf_page e Document.insert_pdf copiam tudo que
+    está referenciado, então um relatório de 3 páginas saía com ~330MB —
+    praticamente o PDF de origem inteiro dentro dele. Aqui só poda o
+    dicionário /XObject do nível da própria página (formulários aninhados
+    ficam intactos, com os resources deles) e só quando o conteúdo da
+    página desenha pelo menos 1 XObject; em qualquer dúvida segue sem poda
+    (pior caso = comportamento anterior, nunca perde evidência).
+    """
+    import re
+
+    import fitz
+
+    pagina_src = src_doc[indice_0based]
+    resources_original = None
+    try:
+        # Nomes de XObject que o conteúdo da página realmente desenha ("/Im12 Do").
+        # Lê o content stream em vez de Page.get_image_info/get_images, que
+        # levavam ~160s por página neste PDF (976 imagens nos resources).
+        usados = {
+            n.decode("latin-1")
+            for n in re.findall(rb"/([^\s/<>\[\]()]+)\s+Do\b", pagina_src.read_contents())
+        }
+
+        if usados:
+            tipo, valor = src_doc.xref_get_key(pagina_src.xref, "Resources")
+            if tipo == "xref":
+                texto_res = src_doc.xref_object(int(valor.split()[0]), compressed=False)
+            elif tipo == "dict":
+                texto_res = valor
+            else:
+                texto_res = None
+
+            if texto_res is not None:
+                def _podar(dict_texto: str) -> str:
+                    pares = re.findall(r"/([^\s/<>\[\]()]+)\s+(\d+)\s+0\s+R", dict_texto)
+                    return "<<" + " ".join(
+                        f"/{n} {x} 0 R" for n, x in pares if n in usados
+                    ) + ">>"
+
+                m_ref = re.search(r"/XObject\s+(\d+)\s+0\s+R", texto_res)
+                m_inline = re.search(r"/XObject\s*(<<.*?>>)", texto_res, re.DOTALL)
+                novo_res = None
+                if m_ref:
+                    podado = _podar(src_doc.xref_object(int(m_ref.group(1)), compressed=False))
+                    novo_res = texto_res.replace(m_ref.group(0), f"/XObject {podado}")
+                elif m_inline:
+                    novo_res = texto_res.replace(m_inline.group(0), f"/XObject {_podar(m_inline.group(1))}")
+
+                if novo_res is not None:
+                    # Troca SÓ o /Resources desta página, em memória (o arquivo
+                    # em disco nunca é tocado) e antes de copiar — o dicionário
+                    # original é compartilhado pelas outras páginas, então é
+                    # restaurado logo depois do insert_pdf, no finally.
+                    resources_original = (tipo, valor)
+                    src_doc.xref_set_key(pagina_src.xref, "Resources", novo_res)
+    except Exception:
+        resources_original = None
+
+    mini = fitz.open()
+    try:
+        mini.insert_pdf(src_doc, from_page=indice_0based, to_page=indice_0based)
+    finally:
+        if resources_original is not None:
+            src_doc.xref_set_key(pagina_src.xref, "Resources", resources_original[1])
+    return mini
+
+
+def _desenhar_destaques(pagina_destino, rect_destino, bbox_origem, destaques) -> None:
+    """Retângulos amarelos (borda vermelha, semitransparentes — o texto de baixo
+    continua legível) sobre as regiões `destaques`, dadas no espaço do recorte
+    de origem `bbox_origem` (x0, top, x1, bottom) e convertidas pro retângulo
+    final `rect_destino` do relatório."""
+    import fitz
+
+    if not destaques:
+        return
+    cx0, ctop, cx1, _ = bbox_origem
+    escala = rect_destino.width / (cx1 - cx0)
+    for hx0, htop, hx1, hbottom in destaques:
+        pagina_destino.draw_rect(
+            fitz.Rect(
+                rect_destino.x0 + (hx0 - cx0) * escala,
+                rect_destino.y0 + (htop - ctop) * escala,
+                rect_destino.x0 + (hx1 - cx0) * escala,
+                rect_destino.y0 + (hbottom - ctop) * escala,
+            ),
+            color=(0.8, 0.1, 0.1), fill=(1.0, 0.92, 0.0), fill_opacity=0.35, width=1.3,
+        )
 
 
 def inserir_evidencias_vetoriais(destino_pdf: Path, achados: list[dict]) -> None:
@@ -334,12 +493,37 @@ def inserir_evidencias_vetoriais(destino_pdf: Path, achados: list[dict]) -> None
 
     dest = fitz.open(str(destino_pdf))
     fontes_origem: dict[str, fitz.Document] = {}
+    paginas_isoladas: dict[tuple, fitz.Document] = {}
     try:
         for a in relevantes:
             ev = a["evidencia_vetorial"]
+            # "imagem" (ver render.py::preparar_evidencia_externa) — sem
+            # página de PDF nenhuma pra copiar como vetor, é um arquivo
+            # raster (JPEG) já em disco; embute direto via insert_image.
+            if ev.get("tipo") == "imagem":
+                marca_ini, marca_fim = f"@@EVID_INI_{a['numero']}@@", f"@@EVID_FIM_{a['numero']}@@"
+                for pagina_destino in dest:
+                    rects_ini = pagina_destino.search_for(marca_ini)
+                    rects_fim = pagina_destino.search_for(marca_fim)
+                    if not (rects_ini and rects_fim):
+                        continue
+                    rect_destino = fitz.Rect(
+                        rects_ini[0].x0, rects_ini[0].y0, rects_fim[0].x1, rects_fim[0].y1
+                    )
+                    pagina_destino.insert_image(rect_destino, filename=ev["arquivo"])
+                    if ev.get("bbox"):
+                        _desenhar_destaques(pagina_destino, rect_destino, ev["bbox"], ev.get("destaque"))
+                    break
+                continue
+
             if ev["pdf_origem"] not in fontes_origem:
                 fontes_origem[ev["pdf_origem"]] = fitz.open(ev["pdf_origem"])
-            src_doc = fontes_origem[ev["pdf_origem"]]
+            chave_pagina = (ev["pdf_origem"], ev["pagina_origem"])
+            if chave_pagina not in paginas_isoladas:
+                paginas_isoladas[chave_pagina] = _pagina_isolada(
+                    fontes_origem[ev["pdf_origem"]], ev["pagina_origem"] - 1
+                )
+            src_doc = paginas_isoladas[chave_pagina]
 
             marca_ini, marca_fim = f"@@EVID_INI_{a['numero']}@@", f"@@EVID_FIM_{a['numero']}@@"
             for pagina_destino in dest:
@@ -352,15 +536,161 @@ def inserir_evidencias_vetoriais(destino_pdf: Path, achados: list[dict]) -> None
                 )
                 x0, top, x1, bottom = ev["bbox"]
                 pagina_destino.show_pdf_page(
-                    rect_destino, src_doc, ev["pagina_origem"] - 1,
+                    rect_destino, src_doc, 0,
                     clip=fitz.Rect(x0, top, x1, bottom),
                 )
+                _desenhar_destaques(pagina_destino, rect_destino, ev["bbox"], ev.get("destaque"))
                 break
 
         temp_path = destino_pdf.with_name(destino_pdf.stem + "_tmp" + destino_pdf.suffix)
-        dest.save(str(temp_path))
+        dest.save(str(temp_path), garbage=4, deflate=True)
     finally:
         dest.close()
         for doc in fontes_origem.values():
+            doc.close()
+        for doc in paginas_isoladas.values():
+            doc.close()
+    temp_path.replace(destino_pdf)
+
+
+def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
+    """
+    Evidência ADICIONAL de um achado (um achado pode ter várias, cada uma
+    com legenda e destaque) — usada principalmente nos achados agregados
+    ("soma não confere"), que não têm um lançamento único pra mostrar e
+    onde um print marcando EXATAMENTE as linhas que causam a divergência é
+    o que torna o achado verificável.
+
+    `spec` (vem de evidencias_extra.json da versão, curado pra aquele
+    relatório): {"pagina": int, "legenda": str} mais UM dos formatos:
+      - "buscar": regex de texto a localizar na página (pdfplumber.search,
+        sem acentos — usar "." no lugar, o texto extraído do GCONT vem com
+        acento quebrado). Recorta a linha achada + `linhas_contexto` linhas
+        acima/abaixo (default 3) e destaca a linha inteira.
+      - sem "buscar": recorta `bbox` [x0, top, x1, bottom] (pontos
+        pdfplumber) ou, se omitido, o bloco de conteúdo da página;
+        `destaques` = lista de [x0, top, x1, bottom] a marcar (opcional).
+    Devolve None se a página/trecho não for encontrado — o achado sai sem
+    esse print em vez de derrubar o relatório.
+    """
+    try:
+        import pdfplumber
+    except ImportError:
+        return None
+    pagina = spec["pagina"]
+    destaques: list[tuple] = []
+    bbox = spec.get("bbox")
+    try:
+        if spec.get("buscar"):
+            with pdf_plumber_aberto(pdf_origem) as pdf:
+                if not (1 <= pagina <= len(pdf.pages)):
+                    return None
+                page = pdf.pages[pagina - 1]
+                achados = page.search(spec["buscar"], regex=True, case=False)
+                if not achados:
+                    return None
+                m = achados[0]
+                palavras = page.extract_words()
+                if not palavras:
+                    return None
+                esquerda = max(0.0, min(w["x0"] for w in palavras) - 4)
+                direita = min(float(page.width), max(w["x1"] for w in palavras) + 4)
+                altura_linha = m["bottom"] - m["top"]
+                contexto = altura_linha * (spec.get("linhas_contexto", 3) + 0.6)
+                topo = max(0.0, m["top"] - contexto)
+                base = min(float(page.height), m["bottom"] + contexto)
+                # Estende o recorte até linhas inteiras — um corte no meio de
+                # uma linha de texto deixa meia linha visível no topo/base.
+                for _ in range(6):
+                    mudou = False
+                    for w in palavras:
+                        if w["top"] < topo < w["bottom"]:
+                            topo, mudou = max(0.0, w["top"] - 0.5), True
+                        if w["top"] < base < w["bottom"]:
+                            base, mudou = min(float(page.height), w["bottom"] + 0.5), True
+                    if not mudou:
+                        break
+                bbox = (esquerda, topo, direita, base)
+                da_linha = [w for w in palavras if w["top"] >= m["top"] - 2 and w["bottom"] <= m["bottom"] + 2]
+                x_ini = min([w["x0"] for w in da_linha] + [m["x0"]])
+                destaques = [(x_ini - 2, m["top"] - 1.5, m["x1"] + 2, m["bottom"] + 1.5)]
+        else:
+            destaques = [tuple(d) for d in spec.get("destaques", [])]
+    except Exception:
+        return None
+
+    ev = preparar_evidencia_vetorial(pdf_origem, pagina, bbox_override=tuple(bbox) if bbox else None)
+    if ev is None:
+        return None
+    ev["destaque"] = destaques
+    ev["legenda"] = spec.get("legenda", "")
+    # "meia_largura": dois prints lado a lado (cada um em ~metade da página);
+    # "largura_mm": largura explícita. Altura sempre pela proporção do recorte.
+    ev["meia_largura"] = bool(spec.get("meia_largura"))
+    largura = spec.get("largura_mm") or (92.0 if ev["meia_largura"] else None)
+    if largura and ev.get("bbox"):
+        bx0, btop, bx1, bbottom = ev["bbox"]
+        ev["largura_mm"] = float(largura)
+        ev["altura_mm"] = float(largura) * (bbottom - btop) / (bx1 - bx0)
+    return ev
+
+
+def inserir_evidencias_extras(destino_pdf: Path, achados: list[dict]) -> None:
+    """
+    Como inserir_evidencias_vetoriais, mas pra achado["evidencias_extras"]
+    (lista de preparar_evidencia_extra): cada item tem seu próprio par de
+    marcadores "@@EVX_INI_<numero>_<k>@@"/"@@EVX_FIM_<numero>_<k>@@" (k a
+    partir de 1) no template, e leva um retângulo de destaque (amarelo com
+    borda vermelha, semitransparente pro texto de baixo continuar legível)
+    por cima de cada região em ev["destaque"], convertida das coordenadas
+    da página de origem pras do relatório.
+    """
+    extras = [
+        (a, k, ev)
+        for a in achados
+        for k, ev in enumerate(a.get("evidencias_extras") or [], start=1)
+    ]
+    if not extras:
+        return
+
+    import fitz  # PyMuPDF
+
+    dest = fitz.open(str(destino_pdf))
+    fontes_origem: dict[str, fitz.Document] = {}
+    paginas_isoladas: dict[tuple, fitz.Document] = {}
+    try:
+        for a, k, ev in extras:
+            if ev["pdf_origem"] not in fontes_origem:
+                fontes_origem[ev["pdf_origem"]] = fitz.open(ev["pdf_origem"])
+            chave_pagina = (ev["pdf_origem"], ev["pagina_origem"])
+            if chave_pagina not in paginas_isoladas:
+                paginas_isoladas[chave_pagina] = _pagina_isolada(
+                    fontes_origem[ev["pdf_origem"]], ev["pagina_origem"] - 1
+                )
+            src_doc = paginas_isoladas[chave_pagina]
+
+            marca_ini, marca_fim = f"@@EVX_INI_{a['numero']}_{k}@@", f"@@EVX_FIM_{a['numero']}_{k}@@"
+            for pagina_destino in dest:
+                rects_ini = pagina_destino.search_for(marca_ini)
+                rects_fim = pagina_destino.search_for(marca_fim)
+                if not (rects_ini and rects_fim):
+                    continue
+                rect_destino = fitz.Rect(
+                    rects_ini[0].x0, rects_ini[0].y0, rects_fim[0].x1, rects_fim[0].y1
+                )
+                cx0, ctop, cx1, cbottom = ev["bbox"]
+                pagina_destino.show_pdf_page(
+                    rect_destino, src_doc, 0, clip=fitz.Rect(cx0, ctop, cx1, cbottom),
+                )
+                _desenhar_destaques(pagina_destino, rect_destino, ev["bbox"], ev.get("destaque"))
+                break
+
+        temp_path = destino_pdf.with_name(destino_pdf.stem + "_tmp" + destino_pdf.suffix)
+        dest.save(str(temp_path), garbage=4, deflate=True)
+    finally:
+        dest.close()
+        for doc in fontes_origem.values():
+            doc.close()
+        for doc in paginas_isoladas.values():
             doc.close()
     temp_path.replace(destino_pdf)

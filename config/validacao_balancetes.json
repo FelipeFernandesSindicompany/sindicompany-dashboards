@@ -1,0 +1,417 @@
+{
+  "_doc": "Configuração PRÓPRIA do módulo Validação de Balancetes. Não é lida pela injeção dos dashboards. Cada entrada é mesclada sobre o cadastro de config/condominios.json (somente leitura aqui) apenas dentro da Validação: pasta_prestacao e parser_config (dicts são mesclados, ex.: cat_map).",
+  "condominios": {
+    "alvorada": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Alvorada",
+      "regras": {
+        "rendimento": {
+          "base": "atual",
+          "tolerancia": 0.1
+        }
+      }
+    },
+    "baturite": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Baturité",
+      "regras": {
+        "rendimento": {
+          "contas_aplicadas": [
+            "APLICACAO FDO OBRAS",
+            "APLICACAO FR",
+            "APLICACOES FINANCEIRAS"
+          ],
+          "tolerancia": 0.45
+        }
+      }
+    },
+    "plano_cambuci": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Plano Cambuci Independencia",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINARIA"
+          ]
+        }
+      }
+    },
+    "residencial_blue_sky": {
+      "pasta_prestacao": "Dashboard de Analise de Balancete Blue Sky",
+      "parser_config": {
+        "excluir_contas": [
+          "ORDINÁRIA APLICAÇÃO",
+          "IR S/ RESGATE APLICAÇÃO"
+        ],
+        "fechamento_categorias_ignorar": "desp[] = TOTAL DA CONTA ORDINÁRIA do Demonstrativo; o débito da ORDINÁRIA no Resumo inclui a transferência para a conta de aplicação (jun/2026: 14.277,00), que não é despesa",
+        "cat_map": {
+          "IMPOSTO E TAXAS": "ADMINISTRATIVO",
+          "REEMBOLSO": "ADMINISTRATIVO",
+          "SERVIÇOS PREST/CONSERTOS": "MANUT/CONSERV. ESPORÁD."
+        }
+      },
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ],
+          "contas_aplicadas": [
+            "ORDINÁRIA APLICAÇÃO"
+          ]
+        }
+      }
+    },
+    "cap_d_antibes": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Cap D Antibes"
+    },
+    "central_das_artes": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Central das Artes",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ],
+          "contas_aplicadas": [
+            "APLICACAO FINANCEIRA"
+          ]
+        }
+      }
+    },
+    "cinque_terre_residenza": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Cinque Terre",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINARIA",
+            "FUNDO FACHADA"
+          ]
+        }
+      }
+    },
+    "ciudad_real": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Ciudad Real",
+      "regras": {
+        "rendimento": {
+          "tolerancia": 0.35
+        }
+      }
+    },
+    "club_park_butanta": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Club Park Butantã",
+      "parser_config": {
+        "cat_map": {
+          "CESTA BASICA": "PESSOAL",
+          "VALE TRANSPORTE": "PESSOAL",
+          "TARIFA DE SERVIÇO BENEFICIOS": "PESSOAL",
+          "MANUTENÇÃO DE PISO ELEVADOR": "SERV. TERCEIRIZADOS",
+          "MATS.-SERVS. PINTURA": "PINTURA/FACHADA",
+          "CARTORIO": "ADMINISTRATIVO",
+          "SERVICOS MOTOBOY-UBER": "SERV. TERCEIRIZADOS"
+        }
+      },
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "Ordinaria"
+          ],
+          "contas_aplicadas": [
+            "Fundo de Reserva"
+          ]
+        }
+      }
+    },
+    "fatto_morumbi": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Fatto Morumbi",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINARIA"
+          ],
+          "tolerancia": 0.4
+        },
+        "receita_negativa": {
+          "ignorar_descricao": [
+            "PROVIS[AÃ]O IR S/ REND"
+          ]
+        }
+      }
+    },
+    "cores": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Condomínio Cores"
+    },
+    "elo_elo_duo": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Elo & Elo",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "CAIXA ORDINARIO"
+          ]
+        }
+      }
+    },
+    "giardino_d_italia": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Giardino D'Itália"
+    },
+    "go_barra_funda": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Go Barra Funda",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINARIA",
+            "PROVISAO INADIMPLENCIA"
+          ]
+        }
+      }
+    },
+    "go_liberdade": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Go Liberdade",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINARIA",
+            "CAIXA ORDINARIO"
+          ]
+        }
+      }
+    },
+    "guaratambe": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Guaratambé"
+    },
+    "highlights_dr_nelson_moretti": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Highlights Dr. Nelson Moretti"
+    },
+    "hub_home_club_tatuape": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Hub Home Club Tatuapé",
+      "parser_config": {
+        "desp_fonte": "posicao_financeira"
+      }
+    },
+    "jau_1894": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Jaú 1894"
+    },
+    "i_gloo_alphaville": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete I-Gloo",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "Ordinária"
+          ],
+          "contas_aplicadas": [
+            "Fundo Reserva"
+          ],
+          "tolerancia": 0.5
+        }
+      }
+    },
+    "living_for_consolacao": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Living For Consolação",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ]
+        }
+      }
+    },
+    "maison_du_rhone": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Maison Du Rhone",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "CONTA ORDINARIA"
+          ],
+          "tolerancia": 0.25
+        }
+      }
+    },
+    "monte_tabor": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Monte Tabor"
+    },
+    "nyc": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete NYC Berrini"
+    },
+    "onze_22": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Onze 22"
+    },
+    "organy_residencial": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Organy - Residencial",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ],
+          "contas_aplicadas": [
+            "FUNDO DE RESERVA"
+          ]
+        }
+      }
+    },
+    "organy_studio": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Organy - Studio"
+    },
+    "730_padre_carvalho": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Padre Carvalho",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ],
+          "contas_aplicadas": [
+            "FUNDO DE RESERVA"
+          ]
+        }
+      }
+    },
+    "palm_beach": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Palm Beach",
+      "regras": {
+        "rendimento": {
+          "contas_aplicadas": [
+            "FUNDO DE RESERVA"
+          ],
+          "ignorar_contas": [
+            "ASSISTENCIA JURIDICA",
+            "FUNDO DE OBRAS",
+            "MANUTENCAO DE PINTURA",
+            "SALAO DE FESTAS"
+          ],
+          "tolerancia": 0.25
+        }
+      }
+    },
+    "patricia": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia"
+    },
+    "plano_estacao_campo_limpo": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Plano Estação Campo Limpo"
+    },
+    "plano_mooca_praca_lion_iii": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Plano & Mooca"
+    },
+    "plano_rio_bonito": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Plano Rio Bonito"
+    },
+    "platinum_building_berrini": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Platinum"
+    },
+    "port_saint_tropez": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Tropez",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ]
+        }
+      }
+    },
+    "reserva_verde": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Reserva Verde"
+    },
+    "residencial_napoleao": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Residencial Napoleão"
+    },
+    "parque_saint_afonso": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Afonso"
+    },
+    "serra_da_mantiqueira": {
+      "pasta_prestacao": "Dashboard de Analise de Balancete Serra da Mantiqueira"
+    },
+    "splendor_square": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Splendor",
+      "parser_config": {
+        "fechamento_categorias_ignorar": "desp[] = Total ORDINARIA do Demonstrativo; o débito da conta no Resumo inclui TRANSFERÊNCIAS e APLICAÇÃO/RESGATE (jul/2026: 6.758,64 + 29.001,86), que não são despesa"
+      },
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINARIA"
+          ],
+          "contas_aplicadas": [
+            "FUNDO DE RESERVA"
+          ]
+        }
+      }
+    },
+    "sublime": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Sublime"
+    },
+    "top_nine": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Top Nine"
+    },
+    "upper_itaim": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Upper Itaim"
+    },
+    "vibra_butanta": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Vibra Butantã"
+    },
+    "vera_cruz": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Vera Cruz"
+    },
+    "victoria": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Victoria",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "ORDINÁRIA"
+          ]
+        }
+      }
+    },
+    "residencial_villa_park_osasco": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Villa Park Osasco",
+      "parser_config": {
+        "fechamento_categorias_ignorar": "desp[] = Total ORDINARIA do Demonstrativo; o débito da conta no Resumo inclui APLICAÇÃO/RESGATE e IR/IOF (jul/2026: 39.002,38 + 615,17), que não são despesa"
+      },
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "MULTA REGULAMENTO INTERNO",
+            "ORDINARIA"
+          ]
+        }
+      }
+    },
+    "res_villa_sardenha": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Villa Sardenha"
+    },
+    "vita_parque": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Vita Parque"
+    },
+    "dueto_morumbi": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Dueto Morumbi",
+      "regras": {
+        "receita_negativa": {
+          "ignorar_descricao": [
+            "BOLETO CEDIDO GARANTIDORA"
+          ]
+        }
+      }
+    },
+    "saint_simon": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Simon"
+    },
+    "gardens_living_club": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club"
+    },
+    "spazio_jardins_da_orla": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Spazio",
+      "regras": {
+        "rendimento": {
+          "ignorar_contas": [
+            "Garantidora"
+          ],
+          "contas_aplicadas": [
+            "Fundo Ordinário",
+            "Fundo de Reserva",
+            "Fundo de Obras",
+            "Salão de Festas",
+            "Consumo individual"
+          ],
+          "tolerancia": 0.25
+        },
+        "receita_negativa": {
+          "ignorar_tipos": [
+            "baixa_inadimplencia"
+          ]
+        }
+      }
+    }
+  }
+}

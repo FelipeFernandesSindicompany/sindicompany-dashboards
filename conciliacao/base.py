@@ -51,6 +51,12 @@ class RegistroComprovante:
     valores_detalhamento_fiscal: list = field(default_factory=list)
     texto_bruto: str = ""                 # texto integral da página, preservado para releitura
     bbox_crop: Optional[tuple] = None      # (x0, top, x1, bottom) em pontos pdfplumber, se aplicável
+    # Caminho (relativo ao version_dir da conciliação) de uma cópia LOCAL do
+    # comprovante, quando a evidência não é uma página do PDF original — ex.:
+    # baixada de um sistema externo (ver conciliacao/condominios/
+    # central_das_artes.py). Sem isso o relatório final não tem como mostrar
+    # o comprovante (não existe página nenhuma pra recortar).
+    arquivo_evidencia_externa: Optional[str] = None
 
 
 # Tipos fechados de achado — qualquer coisa fora disso é erro de programação, não achado válido.
@@ -65,6 +71,14 @@ TIPOS_ACHADO = {
     "atraso_pagamento",         # pagamento (data efetiva) posterior ao vencimento
     "subconta_atipica",         # categoria nunca vista no histórico recente desse condomínio (heurística)
     "conteudo_nao_verificavel",  # comprovante existe mas OCR/extração não confirmou valor/data com confiança
+    "nota_fiscal_ausente",      # despesa cita nº de NF na própria descrição, mas o comprovante anexado não traz NF nenhuma
+    "lancamento_removido_mes_anterior",  # despesa recorrente presente no mês anterior, ausente neste mês
+    # — regras gerais (conciliacao/regras_gerais), dados lidos do próprio arquivo do mês —
+    "receita_negativa",          # linha de receita com valor menor que zero
+    "rendimento_desproporcional",  # rendimento de uma conta fora da proporção do saldo das demais
+    "pagamento_sem_identificacao",  # lançamento sem fornecedor/histórico identificável
+    "parcelas_mesmo_mes",        # duas (ou mais) parcelas da mesma série pagas no mesmo mês
+    "lancamento_em_outra_subconta",  # fornecedor/despesa que mudou de subconta em relação ao mês anterior
 }
 
 SEVERIDADES = {"critico", "alto", "atencao", "informativo"}
@@ -82,6 +96,9 @@ class Achado:
     valor_esperado: Optional[float] = None
     valor_encontrado: Optional[float] = None
     confianca_deterministica: float = 1.0  # 1.0 = fato puro (soma bate/não bate); menor = julgamento aberto
+    # Fatos próprios das regras gerais (conta, descrição, páginas, valores...), que
+    # não cabem nos campos acima nem em um RegistroComprovante. Vazio nos achados antigos.
+    detalhes: dict = field(default_factory=dict)
 
     def __post_init__(self):
         if self.tipo not in TIPOS_ACHADO:

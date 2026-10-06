@@ -18,6 +18,7 @@ from conciliacao.alliz_pdf import ConciliadorAllizPDF
 from conciliacao.auxiliadora_xls import ConciliadorAuxiliadoraXLS
 from conciliacao.ucondo_pdf import ConciliadorUcondoPDF
 from conciliacao.balancete_mensal import ConciliadorBalanceteMensal
+from conciliacao.sk_condominios_pdf import ConciliadorSKCondominiosPDF
 
 CONCILIADORES = {
     "addomus_pdf": ConciliadorAddomusPDF,
@@ -51,6 +52,8 @@ CONCILIADORES = {
     "manager_adm_pdf": ConciliadorLirbaPDF,
     # "convivium_pdf" (ex.: Vera Cruz) também é ContasData.
     "convivium_pdf": ConciliadorLirbaPDF,
+    # "sk_condominios_pdf" (Reserva Verde): sem comprovantes pareáveis — só as regras gerais.
+    "sk_condominios_pdf": ConciliadorSKCondominiosPDF,
 }
 
 _CONDO_CACHE: dict | None = None
