@@ -9,7 +9,7 @@ jobs:
   deploy:
     name: Deploy para Vercel
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repositório completo
@@ -37,12 +37,12 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          RESP=$(curl -sfX PATCH \
+          curl -sfX PATCH \
             "https://api.vercel.com/v9/projects/prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv" \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"rootDirectory": null}' 2>&1)
-          echo "API response: $RESP"
+            -d '{"rootDirectory": null}'
+          echo "rootDirectory zerado"
 
       - name: vercel pull
         working-directory: admin
@@ -60,30 +60,29 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: debug output
-        working-directory: admin
-        run: |
-          echo "=== project.json ==="
-          cat .vercel/project.json
-          echo ""
-          echo "=== output/config.json ==="
-          cat .vercel/output/config.json 2>/dev/null || echo "NAO ENCONTRADO"
-          echo ""
-          echo "=== tamanho do output ==="
-          du -sh .vercel/output/ 2>/dev/null || echo "NAO ENCONTRADO"
-
-      - name: vercel deploy --prebuilt
+      - name: vercel deploy --prebuilt (sem --prod)
+        id: deploy
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/deploy.log 2>&1 || {
-            cat /tmp/deploy.log | while IFS= read -r line; do
-              echo "::error::$line"
-            done
+          DEPLOY_URL=$(vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN 2>&1 | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | head -1)
+          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deploy URL: $DEPLOY_URL"
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::error::Deploy não gerou URL"
             exit 1
-          }
-          echo "Deploy URL: $(cat /tmp/deploy.log)"
-          echo "Producao: https://sindicompany-dashboards.vercel.app"
+          fi
+
+      - name: vercel promote para produção
+        working-directory: admin
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
+          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
+        run: |
+          DEPLOY_URL="${{ steps.deploy.outputs.DEPLOY_URL }}"
+          vercel promote "$DEPLOY_URL" --yes --token=$VERCEL_TOKEN
+          echo "Promovido: https://sindicompany-dashboards.vercel.app"
