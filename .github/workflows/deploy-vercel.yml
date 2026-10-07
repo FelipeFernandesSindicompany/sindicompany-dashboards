@@ -33,16 +33,15 @@ jobs:
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
-      - name: Zerar rootDirectory no projeto Vercel
+      - name: Zerar rootDirectory no projeto Vercel (API)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          curl -sfX PATCH \
+          RESP=$(curl -sfX PATCH \
             "https://api.vercel.com/v9/projects/prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv" \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"rootDirectory": null}'
-          echo "rootDirectory zerado"
+            -d '{"rootDirectory": null}' 2>&1) && echo "OK: rootDirectory=null" || echo "WARN: $RESP"
 
       - name: vercel pull
         working-directory: admin
@@ -60,29 +59,24 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: vercel deploy --prebuilt (sem --prod)
-        id: deploy
+      - name: vercel deploy (output completo)
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          DEPLOY_URL=$(vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN 2>&1 | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | head -1)
-          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
-          echo "Deploy URL: $DEPLOY_URL"
-          if [ -z "$DEPLOY_URL" ]; then
-            echo "::error::Deploy não gerou URL"
-            exit 1
-          fi
-
-      - name: vercel promote para produção
-        working-directory: admin
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
-          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
-        run: |
-          DEPLOY_URL="${{ steps.deploy.outputs.DEPLOY_URL }}"
-          vercel promote "$DEPLOY_URL" --yes --token=$VERCEL_TOKEN
-          echo "Promovido: https://sindicompany-dashboards.vercel.app"
+          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1
+          EXIT=$?
+          echo "=== saida vercel deploy (exit=$EXIT) ==="
+          cat /tmp/out.txt
+          echo "==="
+          # Expor como annotations
+          while IFS= read -r line; do
+            if [ $EXIT -ne 0 ]; then
+              echo "::error::$line"
+            else
+              echo "$line"
+            fi
+          done < /tmp/out.txt
+          exit $EXIT
