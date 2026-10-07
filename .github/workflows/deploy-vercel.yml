@@ -55,19 +55,6 @@ jobs:
             console.log('rootDirectory zerado para build local');
           "
           vercel build --prod --token=$VERCEL_TOKEN
-          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN > deploy_url.txt
-          echo "Deploy URL: $(cat deploy_url.txt)"
-
-      - name: Promover alias de produção
-        working-directory: admin
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
-          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
-        run: |
-          DEPLOY_URL=$(cat deploy_url.txt)
-          # Extrai apenas o host do URL
-          DEPLOY_HOST=$(echo "$DEPLOY_URL" | sed 's|https://||')
-          echo "Promovendo $DEPLOY_HOST → sindicompany-dashboards.vercel.app"
-          vercel alias set "$DEPLOY_HOST" sindicompany-dashboards.vercel.app --token=$VERCEL_TOKEN
-          echo "✅ Deploy concluído: https://sindicompany-dashboards.vercel.app"
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN)
+          echo "✅ Deploy concluído: $DEPLOY_URL"
+          echo "🌐 Produção: https://sindicompany-dashboards.vercel.app"
