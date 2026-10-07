@@ -57,39 +57,49 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: vercel deploy --prebuilt --prod (captura output completo)
-        id: deploy
+      - name: vercel deploy (diagnóstico completo)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          # Captura output e exit code
+          # Desabilita exit-on-error para capturar output do vercel deploy
+          set +e
+
+          # Executa o deploy e captura output e exit code
           NO_COLOR=1 vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1
           DEPLOY_EXIT=$?
 
-          # Expõe TODAS as linhas como annotations para serem visíveis via API
-          while IFS= read -r line; do
-            echo "::notice::DEPLOY: $line"
-          done < /tmp/out.txt
+          # Reabilita exit-on-error
+          set -e
 
-          echo "Exit code: $DEPLOY_EXIT"
-
-          # Extrai URL mesmo com falha
-          DEPLOY_URL=$(cat /tmp/out.txt | grep -oiE 'https://[^ ]+vercel\.app[^ ]*' | grep -v '^https://sindicompany-dashboards\.vercel\.app$' | head -1)
-          PROD_URL=$(cat /tmp/out.txt | grep -oiE 'https://sindicompany-dashboards\.vercel\.app[^ ]*' | head -1)
-
-          echo "Preview URL: $DEPLOY_URL"
-          echo "Prod URL: $PROD_URL"
-
-          if [ -n "$DEPLOY_URL" ]; then
-            echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          # Expõe output como annotations (máx ~40 linhas)
+          LINE_COUNT=$(wc -l < /tmp/out.txt)
+          echo "::notice::=== DEPLOY EXIT=$DEPLOY_EXIT LINES=$LINE_COUNT ==="
+          head -40 /tmp/out.txt | while IFS= read -r line; do
+            echo "::notice::OUT: $line"
+          done
+          if [ "$LINE_COUNT" -gt 40 ]; then
+            echo "::notice::=== ... $(( LINE_COUNT - 40 )) linhas omitidas ... ==="
+            tail -10 /tmp/out.txt | while IFS= read -r line; do
+              echo "::notice::TAIL: $line"
+            done
           fi
 
-          # Falha apenas se não houver nenhuma URL (deployment não criado)
-          if [ -z "$DEPLOY_URL" ] && [ -z "$PROD_URL" ]; then
-            echo "::error::Nenhuma URL de deployment encontrada"
-            exit 1
-          fi
+          # Também testa API Vercel diretamente
+          echo "::notice::=== TESTE API VERCEL ==="
+          API_RESP=$(curl -s -w "\nHTTP:%{http_code}" \
+            "https://api.vercel.com/v13/deployments?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv&projectId=prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7&limit=3" \
+            -H "Authorization: Bearer $VERCEL_TOKEN")
+          HTTP_CODE=$(echo "$API_RESP" | grep -oE 'HTTP:[0-9]+' | cut -d: -f2)
+          echo "::notice::API HTTP=$HTTP_CODE"
+          echo "$API_RESP" | head -c 500 | while IFS= read -r line; do
+            echo "::notice::API: $line"
+          done
 
-          echo "Deploy concluído com exit=$DEPLOY_EXIT (alias pode ter falhado)"
+          # Falha se o deploy não criou nenhum URL
+          if [ $DEPLOY_EXIT -ne 0 ]; then
+            echo "::error::vercel deploy saiu com $DEPLOY_EXIT"
+            exit $DEPLOY_EXIT
+          fi
+          echo "Produção: https://sindicompany-dashboards.vercel.app"
