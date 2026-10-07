@@ -33,6 +33,17 @@ jobs:
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
+      - name: Zerar rootDirectory no projeto Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          curl -sfX PATCH \
+            "https://api.vercel.com/v9/projects/prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"rootDirectory": null}'
+          echo "rootDirectory zerado via API"
+
       - name: vercel pull
         working-directory: admin
         env:
@@ -40,17 +51,6 @@ jobs:
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-
-      - name: patch rootDirectory
-        working-directory: admin
-        run: |
-          node -e "
-            const f='.vercel/project.json';
-            const d=JSON.parse(require('fs').readFileSync(f,'utf8'));
-            d.settings.rootDirectory=null;
-            require('fs').writeFileSync(f,JSON.stringify(d,null,2));
-            console.log('rootDirectory zerado');
-          "
 
       - name: vercel build
         working-directory: admin
@@ -60,27 +60,13 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: check .vercel/output
-        working-directory: admin
-        run: |
-          echo "=== .vercel/ tree ==="
-          find .vercel -maxdepth 4 2>/dev/null | head -40 || echo "NADA em .vercel/"
-          echo "=== output config ==="
-          cat .vercel/output/config.json 2>/dev/null || echo "config.json não encontrado"
-
-      - name: vercel deploy --prebuilt (com erro exposto)
+      - name: vercel deploy --prebuilt
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > deploy_out.txt 2>&1 || {
-            echo "::error::vercel deploy falhou. Saída:"
-            while IFS= read -r line; do
-              echo "::error::$line"
-            done < deploy_out.txt
-            exit 1
-          }
-          echo "✅ Deploy URL: $(cat deploy_out.txt)"
-          echo "🌐 Produção: https://sindicompany-dashboards.vercel.app"
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN)
+          echo "Deploy URL: $DEPLOY_URL"
+          echo "Producao: https://sindicompany-dashboards.vercel.app"
