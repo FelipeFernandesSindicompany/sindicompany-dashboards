@@ -43,9 +43,6 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"rootDirectory": "admin"}' && echo "rootDirectory=admin"
 
-      # Todos os comandos vercel rodam da RAIZ do repositório.
-      # Com rootDirectory="admin", o CLI usa admin/ como diretório do projeto
-      # e cria .vercel/output/ na raiz (não em admin/admin/).
       - name: vercel pull
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -61,14 +58,31 @@ jobs:
         run: vercel build --prod --token=$VERCEL_TOKEN
 
       - name: vercel deploy --prebuilt
+        id: deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1 || {
-            while IFS= read -r line; do echo "::error::$line"; done < /tmp/out.txt
+          # Deploy pode sair com 1 se o alias automático falhar; capturamos a URL mesmo assim
+          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1 || true
+          cat /tmp/out.txt
+          DEPLOY_URL=$(grep -oE 'https://sindicompany-dashboards-[a-z0-9]+\.vercel\.app' /tmp/out.txt | head -1)
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::error::Deploy não gerou URL"
+            cat /tmp/out.txt | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
-          }
-          echo "Deploy URL: $(grep 'https://' /tmp/out.txt | tail -1)"
-          echo "Producao: https://sindicompany-dashboards.vercel.app"
+          fi
+          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deploy URL: $DEPLOY_URL"
+
+      - name: Setar alias de produção
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
+          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
+        run: |
+          DEPLOY_URL="${{ steps.deploy.outputs.DEPLOY_URL }}"
+          vercel alias set "$DEPLOY_URL" sindicompany-dashboards.vercel.app \
+            --token=$VERCEL_TOKEN --yes
+          echo "Produção: https://sindicompany-dashboards.vercel.app"
