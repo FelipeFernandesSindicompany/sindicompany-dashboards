@@ -64,8 +64,12 @@ jobs:
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN 2>&1 | tee /tmp/out.txt
-          DEPLOY_URL=$(grep -oE 'https://[a-z0-9-]+\.vercel\.app' /tmp/out.txt | grep -v 'sindicompany-dashboards\.vercel\.app' | head -1)
+          vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1 || true
+          echo "=== OUTPUT COMPLETO ==="
+          cat /tmp/out.txt
+          echo "=== URLS ENCONTRADAS ==="
+          grep -oiE 'https://[^ ]+vercel\.app[^ ]*' /tmp/out.txt || echo "(nenhuma)"
+          DEPLOY_URL=$(grep -oiE 'https://[^ ]+vercel\.app[^ ]*' /tmp/out.txt | grep -v '^https://sindicompany-dashboards\.vercel\.app$' | head -1)
           if [ -z "$DEPLOY_URL" ]; then
             echo "::error::Deploy não gerou URL de preview"
             exit 1
