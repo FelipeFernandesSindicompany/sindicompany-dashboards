@@ -35,21 +35,31 @@ jobs:
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
-      # Rodar vercel pull/build/deploy do ROOT do repo para que
-      # rootDirectory: "admin" (configurado no projeto Vercel) seja
-      # resolvido corretamente como {root}/admin e não como admin/admin.
       - name: Deploy para Vercel (produção)
+        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
           vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          # vercel pull baixa rootDirectory:"admin" (setting do projeto Vercel para
+          # integração Git). Rodando o CLI de dentro de admin/ isso seria resolvido
+          # como admin/admin/. Zeramos o rootDirectory local para que o build use
+          # o diretório atual (admin/) como raiz.
+          node -e "
+            const f='.vercel/project.json';
+            const d=JSON.parse(require('fs').readFileSync(f,'utf8'));
+            d.settings.rootDirectory=null;
+            require('fs').writeFileSync(f,JSON.stringify(d,null,2));
+            console.log('rootDirectory zerado para build local');
+          "
           vercel build --prod --token=$VERCEL_TOKEN
           vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN > deploy_url.txt
           echo "Deploy URL: $(cat deploy_url.txt)"
 
       - name: Promover alias de produção
+        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
