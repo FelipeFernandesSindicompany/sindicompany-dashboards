@@ -208,6 +208,12 @@ class Extrator:
     # -- API ------------------------------------------------------------------
     def extrair(self, caminho: Path, mes: str) -> DadosRegras:
         caminho = Path(caminho)
+        if caminho.suffix.lower() == ".pdf":
+            # Os condomínios Lello (Hub, Splendor, Villa Park) passaram a enviar também o "Demonstrativo de Contas"
+            # em PDF (estilo ContasData, exportação parcial pelo Stimulsoft): mesmo conteúdo, outro formato.
+            from conciliacao.regras_gerais.extratores.contasdata import Extrator as _ExtratorContasData
+
+            return _ExtratorContasData(self.condo).extrair(caminho, mes)
         nota = None
         html = _texto_html(caminho)
         rows = _linhas(html)

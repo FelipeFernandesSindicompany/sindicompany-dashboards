@@ -194,7 +194,7 @@ export default function ValidacaoCondominioPage() {
             {opcoesDeMes().map(o => <option key={o.valor} value={o.valor}>{o.label}</option>)}
           </select>
           <span className="text-[11px] text-text-muted">
-            A análise financeira compara automaticamente com o mês anterior já publicado no dashboard.
+            A validação compara automaticamente com o mês anterior encontrado na pasta do projeto do condomínio.
           </span>
         </div>
         <div className="flex items-center gap-3 flex-wrap">

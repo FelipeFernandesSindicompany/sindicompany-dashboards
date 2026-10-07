@@ -543,13 +543,13 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
         achados += regra_parcelas_mesmo_mes(dados, cont, anterior)
         status["sem_identificacao"] = {"aplicada": True, "motivo": None}
         status["parcelas"] = {"aplicada": True, "motivo": None}
-        meses = [h for h in (historico if historico else ([anterior] if anterior is not None else []))
+        meses = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else []))
                  if h is not None and h.cobertura.get("lancamentos") and h.lancamentos]
         if meses:
             achados += regra_subcontas(dados, meses, cont, cfg_condo.get("subcontas"))
             status["subcontas"] = {"aplicada": True, "motivo": None}
         else:
-            status["subcontas"] = {"aplicada": False, "motivo": "arquivo do mês anterior não localizado ou sem lançamentos legíveis"}
+            status["subcontas"] = {"aplicada": False, "motivo": "não há mês anterior no mesmo formato de arquivo (ou ele não foi localizado/lido) para comparar as subcontas"}
     else:
         for regra in ("sem_identificacao", "parcelas"):
             _nao(regra, "lancamentos", "o formato deste arquivo não lista os lançamentos individuais")

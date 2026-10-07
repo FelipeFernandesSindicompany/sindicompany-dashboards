@@ -167,6 +167,9 @@ def _dados_financeiros_para_bal(d, mes_titulo: str, periodo: str) -> dict:
     }
 
 
+_RE_CATEGORIA_TRANSFERENCIA = re.compile(r"APLICA[CÇ][AÃ]O|RESGATE|TRANSFER[EÊ]NCIA", re.IGNORECASE)
+
+
 def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_referencia: str,
                                   mes_titulo: str, periodo: str) -> dict | None:
     """Monta o mesmo dict `bal` a partir do EXTRATOR das regras gerais, para formatos em que o adapter
@@ -194,7 +197,14 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
             soma_cat[l.categoria] = soma_cat.get(l.categoria, 0.0) + l.valor
     elif d.categorias:
         soma_cat = dict(d.categorias)
+    # Movimentação entre contas (aplicação/resgate, transferências) está no débito das contas, mas NÃO é despesa:
+    # sai da tabela de categorias e, se explicar exatamente a diferença para os débitos, vira a nota de transferência.
+    transferencias = sum(v for k, v in soma_cat.items() if _RE_CATEGORIA_TRANSFERENCIA.search(k or ""))
+    soma_cat = {k: v for k, v in soma_cat.items() if not _RE_CATEGORIA_TRANSFERENCIA.search(k or "")}
     desp = [{"c": k, "v": round(v, 2)} for k, v in soma_cat.items() if abs(v) > 0.004]
+    debitos_contas = sum(c["d"] for c in contas)
+    explica = (transferencias > 1.0
+               and abs(debitos_contas - round(sum(x["v"] for x in desp), 2) - transferencias) <= 1.0)
     return {
         "tit": mes_titulo, "per": periodo,
         "tAnt": sum(c["a"] for c in contas), "tCred": sum(c["c"] for c in contas),
@@ -202,7 +212,7 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
         "contas": contas, "prev": 0.0, "real": 0.0,
         "tDesp": round(sum(x["v"] for x in desp), 2), "inad": None, "inadProc": None,
         "banco": {"cc": 0.0, "cdb": 0.0, "priv": 0.0}, "desp": desp,
-        "debitos_incluem_transferencias": False, "fonte": "extrator_regras_gerais",
+        "debitos_incluem_transferencias": bool(explica), "fonte": "extrator_regras_gerais",
     }
 
 

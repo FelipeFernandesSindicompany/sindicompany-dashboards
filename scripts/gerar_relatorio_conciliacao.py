@@ -349,6 +349,12 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     storage.write_origem(version_dir, na_pasta or arquivo)
 
     conciliador = get_conciliador(condo["empresa_gestora"], condo)
+    # Condomínios Lello (Hub, Splendor, Villa Park) mandam planilha (.xls) E, às vezes, o "Demonstrativo de
+    # Contas" em PDF (estilo ContasData, só demonstrativos): o PDF é lido pelo conciliador de listagem.
+    lello_em_pdf = condo["empresa_gestora"] == "lello_xls" and entrada.suffix.lower() == ".pdf"
+    if lello_em_pdf:
+        from conciliacao.lirba_pdf import ConciliadorLirbaPDF
+        conciliador = ConciliadorLirbaPDF(condo)
     registros: list[RegistroComprovante] = conciliador.extrair_comprovantes(entrada)
     storage.write_dataclass_list(version_dir / "registros_comprovantes.json", registros)
 
@@ -374,6 +380,14 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     # definidos em nível de módulo — etapa_render também precisa saber isso
     # pra montar a seção "Verificações realizadas neste relatório").
     funcao_matching = obter_funcao_matching(condo)
+    if lello_em_pdf:
+        # listagem sem comprovantes: duplicidade e soma x total (como DataDigitus), sem o alerta antigo de
+        # "categoria nunca vista" — a regra de subcontas das regras gerais já cobre isso, com mais critério.
+        _matching_listagem = funcao_matching
+
+        def funcao_matching(registros, dados_financeiros=None, **kw):
+            return [a for a in _matching_listagem(registros, dados_financeiros, **kw)
+                    if a.regra_aplicada != "categoria_nao_vista_no_historico_recente"]
     achados: list[Achado] = funcao_matching(
         registros, dados_financeiros, pasta_dados=condo["pasta_dados"], mes_atual=mes
     )
@@ -735,16 +749,33 @@ def main():
     parser.add_argument("--etapa", required=True, choices=["extrair", "interpretar", "render", "todos"])
     args = parser.parse_args()
 
-    condo = _carregar_condominio(args.condominio)
+    try:
+        condo = _carregar_condominio(args.condominio)
 
-    if args.etapa in ("extrair", "todos"):
-        if not args.arquivo:
-            parser.error("--arquivo é obrigatório em --etapa extrair")
-        etapa_extrair(condo, args.mes, Path(args.arquivo))
-    if args.etapa in ("interpretar", "todos"):
-        etapa_interpretar(condo, args.mes)
-    if args.etapa == "render":
-        etapa_render(condo, args.mes)
+        if args.etapa in ("extrair", "todos"):
+            if not args.arquivo:
+                parser.error("--arquivo é obrigatório em --etapa extrair")
+            etapa_extrair(condo, args.mes, Path(args.arquivo))
+        if args.etapa in ("interpretar", "todos"):
+            etapa_interpretar(condo, args.mes)
+        if args.etapa == "render":
+            etapa_render(condo, args.mes)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        # Erro inesperado: mostra a MENSAGEM (o Admin exibe a 1ª linha "[ERRO]") e guarda o detalhe técnico em
+        # data/validacao_erros.log — antes saía só "Processo encerrado com código 1", sem dizer o que falhou.
+        import traceback
+
+        detalhe = traceback.format_exc()
+        print(f"[ERRO] {type(exc).__name__}: {exc} (etapa {args.etapa}, {args.condominio}, {args.mes})")
+        print(detalhe, file=sys.stderr)
+        try:
+            with open(ROOT / "data" / "validacao_erros.log", "a", encoding="utf-8") as f:
+                f.write(f"\n===== {datetime.now():%d/%m/%Y %H:%M:%S} — {args.condominio} {args.mes} etapa {args.etapa}\n{detalhe}\n")
+        except OSError:
+            pass
+        sys.exit(1)
 
 
 if __name__ == "__main__":

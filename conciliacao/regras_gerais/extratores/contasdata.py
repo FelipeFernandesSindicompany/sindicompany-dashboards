@@ -218,7 +218,10 @@ class Extrator:
         Devolve False quando é ContasData mas não traz os demonstrativos (arquivo parcial, só gráficos/devedores)."""
         inicio = "\n".join(p.texto for p in paginas[:40])
         marcas = re.search(r"Voltar ao [íi]ndice|ContasData|N[ºo°] lancto", inicio, re.I)
-        indice = re.search(r"Presta[çc][ãa]o de Contas", inicio) and re.search(r"Condom[ií]nio:\s*\d+\s*-", inicio)
+        # "Prestação de Contas" (livro completo, com índice) OU "Demonstrativo de Contas" (exportação parcial só
+        # com os demonstrativos, ex.: Splendor Square ago/2026, gerada pelo Stimulsoft, sem índice nem comprovantes)
+        indice = (re.search(r"Presta[çc][ãa]o de Contas|Demonstrativo de Contas", inicio)
+                  and re.search(r"Condom[ií]nio:\s*\d+\s*-", inicio))
         if not (marcas and indice):
             raise ValueError("formato não reconhecido como ContasData")
         todo = "\n".join(p.texto for p in paginas if p.tipo != "outro")
