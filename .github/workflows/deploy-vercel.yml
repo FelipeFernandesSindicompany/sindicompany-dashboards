@@ -1,7 +1,5 @@
 name: Deploy Vercel (Produção)
 
-# Dispara em todo push para main — substitui a integração nativa do Vercel
-# que estava falhando com Build [0ms] sem executar o build de fato.
 on:
   push:
     branches:
@@ -35,7 +33,7 @@ jobs:
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
-      - name: "[diag] vercel pull"
+      - name: vercel pull
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -43,7 +41,7 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
 
-      - name: "[diag] patch rootDirectory"
+      - name: patch rootDirectory
         working-directory: admin
         run: |
           node -e "
@@ -52,10 +50,9 @@ jobs:
             d.settings.rootDirectory=null;
             require('fs').writeFileSync(f,JSON.stringify(d,null,2));
             console.log('rootDirectory zerado');
-            console.log(JSON.stringify(d.settings,null,2));
           "
 
-      - name: "[diag] vercel build"
+      - name: vercel build
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -63,13 +60,27 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: "[diag] vercel deploy --prebuilt"
+      - name: check .vercel/output
+        working-directory: admin
+        run: |
+          echo "=== .vercel/ tree ==="
+          find .vercel -maxdepth 4 2>/dev/null | head -40 || echo "NADA em .vercel/"
+          echo "=== output config ==="
+          cat .vercel/output/config.json 2>/dev/null || echo "config.json não encontrado"
+
+      - name: vercel deploy --prebuilt (com erro exposto)
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          DEPLOY_URL=$(vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN)
-          echo "✅ Deploy URL: $DEPLOY_URL"
+          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > deploy_out.txt 2>&1 || {
+            echo "::error::vercel deploy falhou. Saída:"
+            while IFS= read -r line; do
+              echo "::error::$line"
+            done < deploy_out.txt
+            exit 1
+          }
+          echo "✅ Deploy URL: $(cat deploy_out.txt)"
           echo "🌐 Produção: https://sindicompany-dashboards.vercel.app"
