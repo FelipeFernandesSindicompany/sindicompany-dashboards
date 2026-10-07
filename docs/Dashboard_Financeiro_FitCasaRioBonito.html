@@ -1519,7 +1519,7 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>M\u00eas</th><th>Caixa Ordin\u00e1rio</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>M\u00eas</th><th>Ordin\u00e1ria</th><th>Fundo de Reserva</th><th>Demais Contas</th><th>Total</th></tr>';
 
   MESES.forEach(function(k){
 
@@ -1817,11 +1817,11 @@ function buildCharts(){
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Caixa Ordinário',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('ORDIN')>=0&&x.n.indexOf('EXTRA')<0;});return c?c.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Ordinária',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('ORDIN')>=0&&x.n.indexOf('EXTRA')<0;});return c?c.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
     {label:'Fundo de Reserva',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('RESERVA')>=0;});return c?c.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].contas.reduce(function(sum,x){return ((x.n.indexOf('ORDIN')>=0&&x.n.indexOf('EXTRA')<0)||x.n.indexOf('RESERVA')>=0)?sum:sum+(x.s||0);},0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Demais Contas',data:MESES.map(function(k){return BAL[k].contas.reduce(function(sum,x){return ((x.n.indexOf('ORDIN')>=0&&x.n.indexOf('EXTRA')<0)||x.n.indexOf('RESERVA')>=0)?sum:sum+(x.s||0);},0);}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;var s=(v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
