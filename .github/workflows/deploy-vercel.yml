@@ -64,6 +64,10 @@ jobs:
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
+          echo "=== .vercel/output presente? ==="
+          ls -la .vercel/ 2>&1 || echo "(pasta .vercel ausente)"
+          ls -la .vercel/output/ 2>&1 | head -20 || echo "(output ausente)"
+          echo "=== DEPLOY ==="
           vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1 || true
           echo "=== OUTPUT COMPLETO ==="
           cat /tmp/out.txt
