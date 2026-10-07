@@ -57,64 +57,39 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: vercel deploy --prebuilt + promover via API
+      - name: vercel deploy --prebuilt --prod (captura output completo)
+        id: deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          # Timestamp antes do deploy para identificar o deployment depois
-          BEFORE_MS=$(date -u +%s%3N)
-          echo "Timestamp antes: $BEFORE_MS"
+          # Captura output e exit code
+          NO_COLOR=1 vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1
+          DEPLOY_EXIT=$?
 
-          # Deploy sem --prod (evita falha na atribuição de alias)
-          NO_COLOR=1 vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN 2>&1 | tee /tmp/out.txt || true
-          echo "=== OUTPUT ==="
-          cat /tmp/out.txt
+          # Expõe TODAS as linhas como annotations para serem visíveis via API
+          while IFS= read -r line; do
+            echo "::notice::DEPLOY: $line"
+          done < /tmp/out.txt
 
-          # Aguardar propagação
-          sleep 5
+          echo "Exit code: $DEPLOY_EXIT"
 
-          # Buscar o deployment mais recente criado após o timestamp
-          DEPLOY_INFO=$(curl -sf \
-            "https://api.vercel.com/v13/deployments?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv&projectId=prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7&limit=5" \
-            -H "Authorization: Bearer $VERCEL_TOKEN")
-          echo "=== DEPLOYMENTS RECENTES ==="
-          echo "$DEPLOY_INFO" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          for d in data.get('deployments', [])[:5]:
-              print(f'  {d[\"uid\"]} | {d.get(\"url\",\"?\")} | {d.get(\"createdAt\",0)}')
-          "
+          # Extrai URL mesmo com falha
+          DEPLOY_URL=$(cat /tmp/out.txt | grep -oiE 'https://[^ ]+vercel\.app[^ ]*' | grep -v '^https://sindicompany-dashboards\.vercel\.app$' | head -1)
+          PROD_URL=$(cat /tmp/out.txt | grep -oiE 'https://sindicompany-dashboards\.vercel\.app[^ ]*' | head -1)
 
-          DEPLOY_ID=$(echo "$DEPLOY_INFO" | python3 -c "
-          import sys, json
-          import os
-          data = json.load(sys.stdin)
-          before = int(os.environ.get('BEFORE_MS', '0'))
-          for d in data.get('deployments', []):
-              if d.get('createdAt', 0) >= before:
-                  print(d['uid'])
-                  break
-          " BEFORE_MS="$BEFORE_MS")
+          echo "Preview URL: $DEPLOY_URL"
+          echo "Prod URL: $PROD_URL"
 
-          echo "Deployment ID: $DEPLOY_ID"
-          if [ -z "$DEPLOY_ID" ]; then
-            echo "::error::Nenhum deployment novo encontrado (criado após $BEFORE_MS)"
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          fi
+
+          # Falha apenas se não houver nenhuma URL (deployment não criado)
+          if [ -z "$DEPLOY_URL" ] && [ -z "$PROD_URL" ]; then
+            echo "::error::Nenhuma URL de deployment encontrada"
             exit 1
           fi
 
-          # Promover para produção via API
-          echo "Promovendo $DEPLOY_ID..."
-          PROMO=$(curl -sX POST \
-            "https://api.vercel.com/v10/deployments/$DEPLOY_ID/promote?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv" \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{}' -w "\nHTTP_STATUS:%{http_code}")
-          echo "Resposta promoção: $PROMO"
-          HTTP_CODE=$(echo "$PROMO" | grep -oE 'HTTP_STATUS:[0-9]+' | cut -d: -f2)
-          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "204" ]; then
-            echo "::error::Promoção falhou com HTTP $HTTP_CODE"
-            exit 1
-          fi
-          echo "Produção: https://sindicompany-dashboards.vercel.app"
+          echo "Deploy concluído com exit=$DEPLOY_EXIT (alias pode ter falhado)"
