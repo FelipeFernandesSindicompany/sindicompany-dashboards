@@ -73,18 +73,12 @@ jobs:
           # Reabilita exit-on-error
           set -e
 
-          # Expõe output como annotations (máx ~40 linhas)
+          # Expõe APENAS as últimas linhas (onde está o erro real)
           LINE_COUNT=$(wc -l < /tmp/out.txt)
           echo "::notice::=== DEPLOY EXIT=$DEPLOY_EXIT LINES=$LINE_COUNT ==="
-          head -40 /tmp/out.txt | while IFS= read -r line; do
-            echo "::notice::OUT: $line"
+          tail -8 /tmp/out.txt | while IFS= read -r line; do
+            echo "::notice::TAIL: $line"
           done
-          if [ "$LINE_COUNT" -gt 40 ]; then
-            echo "::notice::=== ... $(( LINE_COUNT - 40 )) linhas omitidas ... ==="
-            tail -10 /tmp/out.txt | while IFS= read -r line; do
-              echo "::notice::TAIL: $line"
-            done
-          fi
 
           # Também testa API Vercel diretamente
           echo "::notice::=== TESTE API VERCEL ==="
