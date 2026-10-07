@@ -29,22 +29,24 @@ jobs:
         working-directory: admin
         run: npm ci
 
-      - name: Gerar snapshots (lê docs/ e cria snapshots.json)
+      - name: Gerar snapshots
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
-      - name: Zerar rootDirectory no projeto Vercel (API)
+      - name: Restaurar rootDirectory="admin" no projeto Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          RESP=$(curl -sfX PATCH \
+          curl -sfX PATCH \
             "https://api.vercel.com/v9/projects/prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv" \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"rootDirectory": null}' 2>&1) && echo "OK: rootDirectory=null" || echo "WARN: $RESP"
+            -d '{"rootDirectory": "admin"}' && echo "rootDirectory=admin"
 
+      # Todos os comandos vercel rodam da RAIZ do repositório.
+      # Com rootDirectory="admin", o CLI usa admin/ como diretório do projeto
+      # e cria .vercel/output/ na raiz (não em admin/admin/).
       - name: vercel pull
-        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
@@ -52,31 +54,21 @@ jobs:
         run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
 
       - name: vercel build
-        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: vercel deploy (output completo)
-        working-directory: admin
+      - name: vercel deploy --prebuilt
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1
-          EXIT=$?
-          echo "=== saida vercel deploy (exit=$EXIT) ==="
-          cat /tmp/out.txt
-          echo "==="
-          # Expor como annotations
-          while IFS= read -r line; do
-            if [ $EXIT -ne 0 ]; then
-              echo "::error::$line"
-            else
-              echo "$line"
-            fi
-          done < /tmp/out.txt
-          exit $EXIT
+          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1 || {
+            while IFS= read -r line; do echo "::error::$line"; done < /tmp/out.txt
+            exit 1
+          }
+          echo "Deploy URL: $(grep 'https://' /tmp/out.txt | tail -1)"
+          echo "Producao: https://sindicompany-dashboards.vercel.app"
