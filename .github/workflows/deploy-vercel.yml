@@ -35,26 +35,41 @@ jobs:
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
-      - name: Deploy para Vercel (produção)
+      - name: "[diag] vercel pull"
+        working-directory: admin
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
+          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
+        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+
+      - name: "[diag] patch rootDirectory"
+        working-directory: admin
+        run: |
+          node -e "
+            const f='.vercel/project.json';
+            const d=JSON.parse(require('fs').readFileSync(f,'utf8'));
+            d.settings.rootDirectory=null;
+            require('fs').writeFileSync(f,JSON.stringify(d,null,2));
+            console.log('rootDirectory zerado');
+            console.log(JSON.stringify(d.settings,null,2));
+          "
+
+      - name: "[diag] vercel build"
+        working-directory: admin
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
+          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
+        run: vercel build --prod --token=$VERCEL_TOKEN
+
+      - name: "[diag] vercel deploy --prebuilt"
         working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          # vercel pull baixa rootDirectory:"admin" (setting do projeto Vercel para
-          # integração Git). Rodando o CLI de dentro de admin/ isso seria resolvido
-          # como admin/admin/. Zeramos o rootDirectory local para que o build use
-          # o diretório atual (admin/) como raiz.
-          node -e "
-            const f='.vercel/project.json';
-            const d=JSON.parse(require('fs').readFileSync(f,'utf8'));
-            d.settings.rootDirectory=null;
-            require('fs').writeFileSync(f,JSON.stringify(d,null,2));
-            console.log('rootDirectory zerado para build local');
-          "
-          vercel build --prod --token=$VERCEL_TOKEN
           DEPLOY_URL=$(vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN)
-          echo "✅ Deploy concluído: $DEPLOY_URL"
+          echo "✅ Deploy URL: $DEPLOY_URL"
           echo "🌐 Produção: https://sindicompany-dashboards.vercel.app"
