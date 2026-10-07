@@ -4,12 +4,12 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
 
-  // Inclui arquivos externos no trace do bundle (Next.js 14.2+)
-  // admin/ está 1 nível abaixo do root do projeto
-  // Nota: no Vercel, config/ e docs/ são lidos via snapshots.json (gerado no build)
+  // Inclui config/ no trace do bundle para PM2 local e dev (condominios.json).
+  // docs/ NÃO é incluído: no Vercel os HTMLs são servidos do GitHub Pages;
+  // no PM2 local são lidos diretamente do filesystem (SINDICOMPANY_PM2).
   experimental: {
     outputFileTracingIncludes: {
-      '/**': ['../config/**', '../docs/**'],
+      '/**': ['../config/**'],
     },
   },
 
