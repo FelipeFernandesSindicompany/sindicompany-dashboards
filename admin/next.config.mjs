@@ -1,8 +1,15 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Pula verificação de tipos no build (Vercel)
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+
+  experimental: {
+    // Impede que arquivos de uploads e docs (lidos só localmente) sejam
+    // rastreados como dependências das serverless functions no Vercel.
+    outputFileTracingExcludes: {
+      '*': ['../data/**', '../docs/**', '../output/**'],
+    },
+  },
 
   async headers() {
     return [
