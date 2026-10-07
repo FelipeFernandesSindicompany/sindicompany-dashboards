@@ -76,13 +76,33 @@ jobs:
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deploy URL: $DEPLOY_URL"
 
-      - name: Setar alias de produção
+      - name: Promover deployment para produção via API
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
-          VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
           DEPLOY_URL="${{ steps.deploy.outputs.DEPLOY_URL }}"
-          vercel alias set "$DEPLOY_URL" sindicompany-dashboards.vercel.app \
-            --token=$VERCEL_TOKEN --yes
+          # Obter o ID do deployment pela URL
+          DEPLOY_ID=$(curl -sf \
+            "https://api.vercel.com/v13/deployments?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv&projectId=prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7&limit=3" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          for d in data.get('deployments', []):
+              url = d.get('url', '')
+              if 'sindicompany-dashboards-' in url:
+                  print(d['uid'])
+                  break
+          ")
+          echo "Deployment ID: $DEPLOY_ID"
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "::error::Não encontrou deployment ID"
+            exit 1
+          fi
+          # Promover para produção
+          RESULT=$(curl -sf -X POST \
+            "https://api.vercel.com/v10/deployments/$DEPLOY_ID/promote?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "Promoção: $RESULT"
           echo "Produção: https://sindicompany-dashboards.vercel.app"
