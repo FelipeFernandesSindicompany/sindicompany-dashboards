@@ -1169,6 +1169,33 @@
       "parser_config": {
         "cat_map": {}
       }
+    },
+    {
+      "id": "fit_casa_rio_bonito",
+      "nome": "Fit Casa Rio Bonito",
+      "empresa_gestora": "habitacional_xlsx",
+      "pasta_dados": "data/fit_casa_rio_bonito",
+      "html_file": "Dashboard_Financeiro_FitCasaRioBonito.html",
+      "ativo": true,
+      "cor": "#0ea5e9",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {
+          "PESSOAL PROPRIO": "PESSOAL",
+          "PESSOAL CONTRATADO": "SERV. TERCEIRIZADOS",
+          "CONSERVACAO/MANUTENCAO": "MANUT/CONSERV. ESPORAD.",
+          "CONSERV/MANUT/CONTRATOS": "MANUT/CONSERV. CONTRAT.",
+          "CONSUMOS": "CONSUMOS",
+          "IMPOSTOS/TAXAS": "ADMINISTRATIVO",
+          "BANCARIAS": "ADMINISTRATIVO",
+          "FUNDO DE CAIXA": "ADMINISTRATIVO",
+          "HONORARIOS / ADMINISTRATIVO": "ADMINISTRATIVO",
+          "HONORARIOS/ADMINISTRATIVO": "ADMINISTRATIVO",
+          "SEGUROS": "SEGUROS",
+          "DESPESAS DIVERSAS": "ADMINISTRATIVO",
+          "MATERIAL DE EXPEDIENTE": "CONSUMOS"
+        }
+      }
     }
   ],
   "empresas": {

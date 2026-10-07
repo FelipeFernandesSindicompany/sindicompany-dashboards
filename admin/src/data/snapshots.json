@@ -1299,5 +1299,34 @@
       "inad": 66106.55,
       "tAnt": 479384.18
     }
+  },
+  "Dashboard_Financeiro_FitCasaRioBonito.html": {
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
+    "allKeys": [
+      "mai25",
+      "jun25",
+      "jul25",
+      "ago25",
+      "set25",
+      "out25",
+      "nov25",
+      "dez25",
+      "jan26",
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26",
+      "jul26"
+    ],
+    "data": {
+      "tit": "Julho / 2026",
+      "tAtual": 647977.58,
+      "tCred": 510099.22,
+      "tDeb": 772342.93,
+      "inad": 176671.73,
+      "tAnt": 910221.29
+    }
   }
 }
