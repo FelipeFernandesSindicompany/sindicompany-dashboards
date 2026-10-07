@@ -57,43 +57,11 @@ jobs:
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: vercel build --prod --token=$VERCEL_TOKEN
 
-      - name: vercel deploy (diagnóstico completo)
+      - name: vercel deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
           VERCEL_PROJECT_ID: prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7
         run: |
-          # Desabilita exit-on-error para capturar output do vercel deploy
-          set +e
-
-          # Executa o deploy e captura output e exit code
-          NO_COLOR=1 vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN > /tmp/out.txt 2>&1
-          DEPLOY_EXIT=$?
-
-          # Reabilita exit-on-error
-          set -e
-
-          # Expõe APENAS as últimas linhas (onde está o erro real)
-          LINE_COUNT=$(wc -l < /tmp/out.txt)
-          echo "::notice::=== DEPLOY EXIT=$DEPLOY_EXIT LINES=$LINE_COUNT ==="
-          tail -8 /tmp/out.txt | while IFS= read -r line; do
-            echo "::notice::TAIL: $line"
-          done
-
-          # Também testa API Vercel diretamente
-          echo "::notice::=== TESTE API VERCEL ==="
-          API_RESP=$(curl -s -w "\nHTTP:%{http_code}" \
-            "https://api.vercel.com/v13/deployments?teamId=team_ZcZYzyZxy59xsCSB41wUYrpv&projectId=prj_W66oRPPeGYSpkGWdwIA3IQrMlJo7&limit=3" \
-            -H "Authorization: Bearer $VERCEL_TOKEN")
-          HTTP_CODE=$(echo "$API_RESP" | grep -oE 'HTTP:[0-9]+' | cut -d: -f2)
-          echo "::notice::API HTTP=$HTTP_CODE"
-          echo "$API_RESP" | head -c 500 | while IFS= read -r line; do
-            echo "::notice::API: $line"
-          done
-
-          # Falha se o deploy não criou nenhum URL
-          if [ $DEPLOY_EXIT -ne 0 ]; then
-            echo "::error::vercel deploy saiu com $DEPLOY_EXIT"
-            exit $DEPLOY_EXIT
-          fi
+          vercel deploy --prebuilt --prod --yes --token=$VERCEL_TOKEN
           echo "Produção: https://sindicompany-dashboards.vercel.app"

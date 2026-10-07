@@ -7,7 +7,7 @@ import { rodarEtapaConciliacao, condominioSuportado } from '@/lib/validacaoProce
 import { lerStatus } from '@/lib/validacaoStorage';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 900;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   let tmpPath: string | null = null;
