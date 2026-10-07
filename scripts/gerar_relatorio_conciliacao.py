@@ -725,6 +725,14 @@ def etapa_render(condo: dict, mes: str) -> Path:
     destino_amigavel = version_dir / _nome_arquivo_relatorio(condo, mes)
     shutil.copy2(destino, destino_amigavel)
 
+    # Cópia automática na pasta do projeto do condomínio (subpasta "Validação de Balancetes"), ao lado dos
+    # arquivos de prestação de contas — o mesmo lugar onde o mês anterior é procurado.
+    salvo_em = pasta_prestacao.salvar_relatorio(condo, destino_amigavel, version_dir.name)
+    if salvo_em:
+        print(f"[OK] Relatório salvo também na pasta do projeto: {salvo_em}")
+    else:
+        print("[AVISO] condomínio sem pasta do projeto configurada — relatório disponível só para baixar no Admin.")
+
     # Quais verificações (conteúdo/atraso/subconta) rodaram de fato pra esse
     # condomínio/mês NÃO entra no PDF entregue ao síndico/condomínio —
     # detalhe de implementação interno, sem sentido pra quem recebe o

@@ -78,3 +78,37 @@ def localizar_do_mes(condo: dict, mes: str, arquivo: Path) -> Path | None:
         print(f"[AVISO] {existente.name}, na pasta do OneDrive, tem tamanho diferente do arquivo enviado "
               f"— confira se é a mesma versão.")
     return existente
+
+
+NOME_PASTA_VALIDACOES = "Validação de Balancetes"
+
+
+def salvar_relatorio(condo: dict, relatorio: Path, versao: str) -> Path | None:
+    """Guarda uma cópia do relatório final em `<pasta do projeto do condomínio>/Validação de Balancetes/`,
+    o mesmo lugar onde a Validação procura o mês anterior (a pasta é criada se não existir).
+
+    Nome: o do próprio relatório ("Validação Balancete - <Condomínio> MM.AAAA.pdf"). Se já existir um arquivo
+    com esse nome (revalidação do mês, ou relatório entregue antes), NÃO é sobrescrito: a cópia nova leva
+    " (versão vN)" no nome, com o número da versão da Validação. Devolve o caminho salvo, ou None se o
+    condomínio não tem pasta do projeto ou a gravação falhou (nunca derruba a geração do relatório)."""
+    pasta = pasta_do_condominio(condo)
+    if pasta is None:
+        return None
+    try:
+        destino_dir = pasta / NOME_PASTA_VALIDACOES
+        destino_dir.mkdir(parents=True, exist_ok=True)
+        destino = destino_dir / relatorio.name
+        if destino.exists():
+            destino = destino_dir / f"{relatorio.stem} (versão {versao}){relatorio.suffix}"
+            n = 2
+            while destino.exists():
+                destino = destino_dir / f"{relatorio.stem} (versão {versao}-{n}){relatorio.suffix}"
+                n += 1
+        import shutil
+
+        shutil.copy2(relatorio, destino)
+        return destino
+    except OSError as exc:
+        print(f"[AVISO] não foi possível salvar o relatório na pasta do projeto ({exc}) — ele continua disponível "
+              f"para baixar no Admin.")
+        return None

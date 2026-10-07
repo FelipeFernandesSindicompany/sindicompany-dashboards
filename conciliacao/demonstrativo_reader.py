@@ -237,8 +237,12 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         else:
             dados = adapter.ler_pdf(caminho_arquivo, mes_referencia)
     except Exception as exc:
-        print(f"[AVISO] não foi possível ler dados financeiros de {caminho_arquivo.name} pelo adaptador: {exc}")
-        return _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
+        # O adaptador antigo não lê este formato: tenta o leitor das regras gerais. Só avisa se os DOIS falharem
+        # (antes saía "Adapter não suporta PDF" mesmo quando o arquivo era lido normalmente pelo outro).
+        alternativo = _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
+        if alternativo is None:
+            print(f"[AVISO] não foi possível ler dados financeiros de {caminho_arquivo.name} pelo adaptador: {exc}")
+        return alternativo
 
     # O adapter pode "ter sucesso" tecnicamente (sem lançar exceção) e ainda
     # assim não achar nada — confirmado em dados reais (Palm Beach): o
