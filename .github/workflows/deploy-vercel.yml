@@ -17,10 +17,10 @@ jobs:
       - name: Checkout repositório completo
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: admin/package-lock.json
 
@@ -35,8 +35,10 @@ jobs:
         working-directory: admin
         run: node scripts/generate-snapshots.mjs
 
+      # Rodar vercel pull/build/deploy do ROOT do repo para que
+      # rootDirectory: "admin" (configurado no projeto Vercel) seja
+      # resolvido corretamente como {root}/admin e não como admin/admin.
       - name: Deploy para Vercel (produção)
-        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
@@ -48,7 +50,6 @@ jobs:
           echo "Deploy URL: $(cat deploy_url.txt)"
 
       - name: Promover alias de produção
-        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ZcZYzyZxy59xsCSB41wUYrpv
