@@ -188,6 +188,30 @@ def montar_html(
     )
 
 
+def _abrir_navegador(p):
+    """Abre o Chromium do Playwright; se ele sumiu/está bloqueado (erro "Executable doesn't exist", visto
+    com antivírus/atualização), usa o Edge ou o Chrome instalados no Windows e, por último, reinstala o
+    Chromium do Playwright uma vez e tenta de novo. Só levanta erro se nenhuma das saídas funcionar."""
+    erro = None
+    try:
+        return p.chromium.launch()
+    except Exception as exc:
+        erro = exc
+    for canal in ("msedge", "chrome"):
+        try:
+            return p.chromium.launch(channel=canal)
+        except Exception:
+            continue
+    import subprocess
+    import sys
+    try:
+        subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"],
+                       check=True, capture_output=True, timeout=600)
+        return p.chromium.launch()
+    except Exception:
+        raise erro
+
+
 def renderizar_pdf(html: str, destino_pdf: Path) -> None:
     """HTML (string) -> PDF, via Chromium headless."""
     try:
@@ -202,7 +226,7 @@ def renderizar_pdf(html: str, destino_pdf: Path) -> None:
     html_temp.write_text(html, encoding="utf-8")
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch()
+            browser = _abrir_navegador(p)
             page = browser.new_page()
             page.goto(html_temp.as_uri())
             page.pdf(path=str(destino_pdf), format="A4", print_background=True,
