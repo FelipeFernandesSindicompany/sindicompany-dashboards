@@ -1301,8 +1301,8 @@
     }
   },
   "Dashboard_Financeiro_FitCasaRioBonito.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -1317,16 +1317,15 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26",
-      "jul26"
+      "jun26"
     ],
     "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 647977.58,
-      "tCred": 510099.22,
-      "tDeb": 772342.93,
-      "inad": 176671.73,
-      "tAnt": 910221.29
+      "tit": "Junho / 2026",
+      "tAtual": 901992.3,
+      "tCred": 360363.31,
+      "tDeb": 406361.87,
+      "inad": 204104.45,
+      "tAnt": 947990.86
     }
   }
 }
