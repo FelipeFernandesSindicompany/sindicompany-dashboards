@@ -246,7 +246,7 @@ def regra_previsto_realizado(dados: DadosRegras, historico: list, cont: _Contado
                   "variacao_pct": round(variacao, 1), "meses_comparados": len(hist),
                   "linhas_ausentes": ausentes, "difere_posicao": difere_posicao,
                   "linhas": [{"descricao": x["descricao"], "previsto": x["previsto"], "realizado": x["realizado"]} for x in e["linhas"]],
-                  "local": e.get("local")},
+                  "local": e.get("local"), "local_posicao": (pos or {}).get("local")},
     )]
 
 

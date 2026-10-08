@@ -62,6 +62,7 @@ from conciliacao import config_validacao
 from conciliacao.regras_gerais import pipeline as regras_gerais_pipeline
 from conciliacao.regras_gerais import evidencias as regras_gerais_evidencias
 from conciliacao import evidencias
+from conciliacao import evidencia_planilha
 from conciliacao import destaques
 
 CONDOMINIOS_JSON = ROOT / "config" / "condominios.json"
@@ -487,11 +488,33 @@ def etapa_render(condo: dict, mes: str) -> Path:
     except (OSError, ValueError):
         _specs_extras = {}
 
-    def _evidencias_extras(chave: str, specs_auto: list[dict] | None = None) -> list[dict]:
+    def _evidencias_planilha(achado, registro) -> list[dict]:
+        # Prestação em planilha: recorta as linhas do próprio XLSX (com nº da linha e letra da coluna).
+        out = []
+        for k, plano in enumerate(evidencia_planilha.planos(pdf_origem, achado, registro), start=1):
+            destino = version_dir / "evidencias_planilha" / f"{achado.id}_{k}.pdf"
+            rec = evidencia_planilha.recorte_pdf(pdf_origem, plano["linhas"], plano["destacar"], destino,
+                                                 cabecalho=plano.get("cabecalho"))
+            if not rec:
+                continue
+            ev = render.preparar_evidencia_extra(destino, {
+                "pagina": 1, "bbox": rec["bbox"], "destaques": rec["destaques"],
+                "legenda": f"{plano['legenda']} — {pdf_origem.name}, linhas {plano['linhas'][0]} a {plano['linhas'][-1]}"})
+            if ev:
+                out.append(ev)
+        return out
+
+    def _evidencias_extras(chave: str, specs_auto: list[dict] | None = None, achado=None, registro=None) -> list[dict]:
         # Prints curados à mão (evidencias_extra.json) têm prioridade; sem eles
         # valem os automáticos da família (conciliacao/evidencias.py).
         if not pdf_origem:
             return []
+        if pdf_origem.suffix.lower() in (".xlsx", ".xlsm") and achado is not None and chave not in _specs_extras:
+            try:
+                return _evidencias_planilha(achado, registro)
+            except Exception as exc:
+                print(f"[AVISO] print de evidência da planilha não gerado para {chave}: {exc}")
+                return []
         specs = _specs_extras.get(chave) or specs_auto or []
         evs = [render.preparar_evidencia_extra(pdf_origem, s) for s in specs]
         return [e for e in evs if e]
@@ -556,6 +579,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 evidencias.evidencias_agregadas(achado, registros_por_pagina, pdf_origem)
                 if achado.regra_aplicada in _REGRAS_AGREGADAS else (
                     regras_gerais_evidencias.specs_para(achado) if (achado.id or "").startswith("RG-") else None),
+                achado, registros_por_pagina.get(achado.registros_relacionados[0]) if achado.registros_relacionados else None,
             ),
             "evidencia_texto": regras_gerais_evidencias.texto_origem(achado),
         })
