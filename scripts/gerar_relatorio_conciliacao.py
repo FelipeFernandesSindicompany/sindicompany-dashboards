@@ -333,7 +333,15 @@ def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
     return f"Validação Balancete - {nome} {mes_num}.{ano}.pdf"
 
 
+_EMPRESAS_SO_PLANILHA = {"habitacional_xlsx", "lfc_xlsx"}
+
+
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
+    if condo.get("empresa_gestora") in _EMPRESAS_SO_PLANILHA and arquivo.suffix.lower() not in (".xlsx", ".xlsm"):
+        raise ValueError(
+            f"{condo['nome']} entrega a prestação de contas em planilha Excel (.xlsx), mas o arquivo enviado é "
+            f"\"{arquivo.name}\" ({arquivo.suffix or 'sem extensão'}). Envie a planilha do mês (ex.: prestacao_contas_"
+            f"{int(mes[5:7])}_{mes[:4]}.xlsx), não o PDF.")
     base_dir = storage.condo_mes_dir(condo["pasta_dados"], mes)
     version_dir = storage.new_version_dir(base_dir)
     storage.write_status(version_dir, "extrair")
