@@ -517,6 +517,62 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 out.append(ev)
         return out
 
+    def _evidencias_pagina_por_ocr(achado) -> list[dict]:
+        """Achado das regras gerais que SABE a página mas cujo texto não é pesquisável (PDF só de imagem/vetor, como o
+        Palm Beach): mostra a página do arquivo e localiza a linha do lançamento por OCR (valor), para o anexo
+        não faltar no relatório. Sem a linha achada, mostra a página inteira, sem marcação."""
+        d = achado.detalhes or {}
+        itens = [i for i in (d.get("lancamentos") or d.get("itens") or []) if i.get("pagina")]
+        if not itens and d.get("pagina"):
+            itens = [{"pagina": d["pagina"], "valor": achado.valor_encontrado, "descricao": d.get("descricao")}]
+        out, vistos = [], set()
+        total_paginas = render.total_paginas(pdf_origem)
+        for it in itens:
+            chave_it = (it["pagina"], round(abs(it.get("valor") or 0), 2))
+            if chave_it in vistos or len(out) >= 2:
+                continue
+            vistos.add(chave_it)
+            valor = abs(it.get("valor") or 0)
+            termo = f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if valor else None
+            # Em demonstrativos que atravessam páginas (Palm Beach) o extrator guarda a página onde a tabela COMEÇA; a linha
+            # do lançamento pode estar numa das seguintes — procura nelas, e para na primeira em que o valor aparece.
+            escolhido = None
+            for pg in range(it["pagina"], min(it["pagina"] + 4, total_paginas + 1)):
+                ev = render.preparar_evidencia_extra(pdf_origem, {"pagina": pg, "legenda": "", "destaques": []})
+                if not ev:
+                    continue
+                if escolhido is None:
+                    escolhido = (pg, ev)          # sem linha achada em nenhuma, mostra a página indicada pelo extrator
+                if not termo:
+                    break
+                _t0 = time.monotonic()
+                marcada = destaques.aplicar(ev, [termo], True, permitir_ocr=_ocr_gasto[0] < _LIMITE_OCR_SEGUNDOS)
+                if marcada.get("usou_ocr"):
+                    _ocr_gasto[0] += time.monotonic() - _t0
+                if marcada.get("destaque"):
+                    # aproxima: só a faixa da página em volta da linha achada (a página inteira fica ilegível no relatório)
+                    try:
+                        bx0, btop, bx1, bbot = marcada["bbox"]
+                        r0, rtop, r1, rbot = marcada["destaque"][0]
+                        faixa = render.preparar_evidencia_extra(pdf_origem, {
+                            "pagina": pg, "legenda": "", "destaques": [(r0, rtop, r1, rbot)],
+                            "bbox": [bx0, max(btop, rtop - 60), bx1, min(bbot, rbot + 60)]})
+                        marcada = faixa or marcada
+                    except Exception:
+                        pass
+                    escolhido = (pg, marcada)
+                    break
+                if _ocr_gasto[0] >= _LIMITE_OCR_SEGUNDOS:
+                    break
+            if escolhido is None:
+                continue
+            pg, ev = escolhido
+            ev["legenda"] = (f"Página {pg} do arquivo"
+                             + (f" — {str(it['descricao'])[:70]}" if it.get("descricao") else ""))
+            ev.setdefault("meia_largura", False)
+            out.append(ev)
+        return out
+
     def _evidencias_extras(chave: str, specs_auto: list[dict] | None = None, achado=None, registro=None) -> list[dict]:
         # Prints curados à mão (evidencias_extra.json) têm prioridade; sem eles
         # valem os automáticos da família (conciliacao/evidencias.py).
@@ -530,13 +586,16 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 return []
         specs = _specs_extras.get(chave) or specs_auto or []
         evs = [render.preparar_evidencia_extra(pdf_origem, s) for s in specs]
-        return [e for e in evs if e]
+        evs = [e for e in evs if e]
+        if not evs and achado is not None and (achado.id or "").startswith("RG-") and chave not in _specs_extras:
+            evs = _evidencias_pagina_por_ocr(achado)
+        return evs
 
     # O destaque de página escaneada usa OCR (~10 s por página): limita o TEMPO
     # total por relatório pra não alongar a geração quando há dezenas de
     # achados (os que passarem do limite saem com a evidência sem marcação,
     # como antes).
-    _LIMITE_OCR_SEGUNDOS = 90.0
+    _LIMITE_OCR_SEGUNDOS = 150.0
     _ocr_gasto = [0.0]
 
     achados_render = []
