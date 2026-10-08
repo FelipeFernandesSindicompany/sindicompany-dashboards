@@ -8,6 +8,4 @@ from conciliacao.regras_gerais.extratores.port_saint_tropez import ExtratorPlani
 
 
 class Extrator(ExtratorPlanilhaOuContasData):
-    # conferido em jun/2026: planilha e PDF trazem os mesmos 62 lançamentos, mesmas subcontas e mesmos totais,
-    # então o histórico pode misturar os dois formatos na comparação de subcontas.
-    compara_entre_formatos = True
+    pass

@@ -77,37 +77,32 @@ def logo_sindicompany_data_uri() -> str | None:
     return f"data:image/png;base64,{b64}"
 
 
-def localizar_logo_condominio_projeto(nome_condominio: str) -> Path | None:
+def localizar_logo_condominio_projeto(nome_condominio: str, pasta_projeto: Path | None = None) -> Path | None:
     """
-    Procura um arquivo de logo na pasta de projeto do condomínio em
-    Documentos/Claude/Projects/Dashboard de An[aá]lise de Balancete <nome>
-    (convenção observada em todos os condomínios já criados nessa pasta).
-    Retorna o primeiro arquivo de imagem com "logo" no nome, ou None se a
-    pasta do condomínio ou o arquivo não existirem. Só leitura — nunca move
-    nem altera nada nessa pasta.
+    Procura um arquivo de logo SÓ na pasta de projeto DESTE condomínio — nunca na de outro.
+    `pasta_projeto` (a `pasta_prestacao` do condomínio, resolvida por conciliacao/pasta_prestacao.py) é o caminho
+    preferido; sem ela, só vale a pasta cujo nome é exatamente "Dashboard de Análise de Balancete <nome>".
+    (Antes casava pela primeira palavra do nome em TODAS as pastas — "Plano", "Saint", "Praça", "Dom" ou "The"
+    pegavam o logo de outro condomínio.) Retorna o primeiro arquivo de imagem com "logo" no nome, ou None.
+    Só leitura.
     """
-    if not PASTA_PROJETOS_CONDOMINIO.exists():
+    pasta = pasta_projeto
+    if pasta is None:
+        if not PASTA_PROJETOS_CONDOMINIO.exists():
+            return None
+        alvo = _normalizar(f"Dashboard de Análise de Balancete {nome_condominio}")
+        pasta = next((p for p in PASTA_PROJETOS_CONDOMINIO.iterdir()
+                      if p.is_dir() and _normalizar(p.name) == alvo), None)
+    if pasta is None or not Path(pasta).is_dir():
         return None
-    alvo = _normalizar(nome_condominio)
-    primeira_palavra = alvo.split()[0] if alvo.split() else alvo
-    for pasta in PASTA_PROJETOS_CONDOMINIO.iterdir():
-        if not pasta.is_dir():
-            continue
-        nome_pasta = _normalizar(pasta.name)
-        if "balancete" not in nome_pasta:
-            continue
-        if primeira_palavra not in nome_pasta:
-            continue
-        candidatos = sorted(
-            p for p in pasta.iterdir()
-            if p.is_file() and p.suffix.lower() in _EXT_IMAGEM and "logo" in _normalizar(p.name)
-        )
-        if candidatos:
-            return candidatos[0]
-    return None
+    candidatos = sorted(
+        p for p in Path(pasta).iterdir()
+        if p.is_file() and p.suffix.lower() in _EXT_IMAGEM and "logo" in _normalizar(p.name)
+    )
+    return candidatos[0] if candidatos else None
 
 
-def resolver_logo(nome_condominio: str, html_dashboard_path: Path) -> str | None:
+def resolver_logo(nome_condominio: str, html_dashboard_path: Path, pasta_projeto: Path | None = None) -> str | None:
     """
     Resolve o logo a usar no relatório, nesta ordem:
       1. Logo específico na pasta de projeto do condomínio (mais confiável —
@@ -122,7 +117,7 @@ def resolver_logo(nome_condominio: str, html_dashboard_path: Path) -> str | None
         _hash_arquivo(LOGO_SINDICOMPANY_PATH) if LOGO_SINDICOMPANY_PATH.exists() else None
     )
 
-    caminho_projeto = localizar_logo_condominio_projeto(nome_condominio)
+    caminho_projeto = localizar_logo_condominio_projeto(nome_condominio, pasta_projeto)
     if caminho_projeto and (hash_sindicompany is None or _hash_arquivo(caminho_projeto) != hash_sindicompany):
         ext = caminho_projeto.suffix.lstrip(".").lower()
         mime = "svg+xml" if ext == "svg" else ext

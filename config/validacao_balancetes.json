@@ -252,7 +252,12 @@
     },
     "onze_22": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Onze 22",
-      "leitor_financeiro": "regras_gerais"
+      "leitor_financeiro": "regras_gerais",
+      "regras": {
+        "subcontas": {
+          "comparar_entre_formatos": true
+        }
+      }
     },
     "organy_residencial": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Organy - Residencial",
@@ -348,7 +353,10 @@
     "splendor_square": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Splendor",
       "parser_config": {
-        "fechamento_categorias_ignorar": "desp[] = Total ORDINARIA do Demonstrativo; o débito da conta no Resumo inclui TRANSFERÊNCIAS e APLICAÇÃO/RESGATE (jul/2026: 6.758,64 + 29.001,86), que não são despesa"
+        "fechamento_categorias_ignorar": "desp[] = Total ORDINARIA do Demonstrativo; o débito da conta no Resumo inclui TRANSFERÊNCIAS e APLICAÇÃO/RESGATE (jul/2026: 6.758,64 + 29.001,86), que não são despesa",
+        "regras_gerais": {
+          "nivel_categoria": "rubrica"
+        }
       },
       "regras": {
         "rendimento": {
@@ -363,9 +371,11 @@
           "equivalentes": {
             "ENERGIA": "DESPESA TARIFAS CONCESSIONÁRIA",
             "TARIFAS CONCESSIONÁRIAS": "DESPESA TARIFAS CONCESSIONÁRIA"
-          }
+          },
+          "comparar_entre_formatos": true
         }
-      }
+      },
+      "emissao_pdf": "lello_resumo_geral"
     },
     "sublime": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Sublime"

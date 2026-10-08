@@ -259,7 +259,7 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
     explica = (transferencias > 1.0
                and abs(debitos_contas - round(sum(x["v"] for x in desp), 2) - transferencias) <= 1.0)
     prev, real, inad, inad_proc = 0.0, 0.0, None, None
-    if caminho_arquivo.suffix.lower() == ".pdf":
+    if caminho_arquivo.suffix.lower() == ".pdf" and condo.get("emissao_pdf") == "lello_resumo_geral":
         extra = _emissao_e_devedores_lello_pdf(caminho_arquivo)
         if extra:
             prev, real, inad = extra["prev"], extra["real"], extra["inad"]

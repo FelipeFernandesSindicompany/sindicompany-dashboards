@@ -598,7 +598,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         })
 
     logo_html = ROOT / "docs" / condo["html_file"]
-    logo_data_uri = render.resolver_logo(condo["nome"], logo_html)
+    logo_data_uri = render.resolver_logo(condo["nome"], logo_html, pasta_prestacao.pasta_do_condominio(condo))
 
     # Seção de Análise Financeira — lê DIRETO da pasta de projeto (arquivo do
     # mês atual + mês anterior localizado automaticamente na mesma pasta),
