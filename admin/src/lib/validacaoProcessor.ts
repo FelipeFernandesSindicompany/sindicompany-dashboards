@@ -55,12 +55,12 @@ export async function rodarEtapaConciliacao(args: {
     child.stdout.on('data', processChunk);
     child.stderr.on('data', processChunk);
 
-    // Extração de pastas de 300+ páginas pode demorar — 15 min de teto.
+    // Extração de pastas de 300+ páginas pode demorar — 45 min de teto (a Pasta Digital do Onze 22, 542 páginas, leva ~11 min na primeira leitura).
     const timeoutId = setTimeout(() => {
       child.kill('SIGTERM');
       setTimeout(() => { try { child.kill('SIGKILL'); } catch { /* ignore */ } }, 2000);
-      settle({ success: false, log: allLines, error: 'Timeout de 15 minutos excedido' });
-    }, 900_000);
+      settle({ success: false, log: allLines, error: 'Timeout de 45 minutos excedido' });
+    }, 2_700_000);
 
     child.on('close', (code) => {
       const success = code === 0 && !allLines.some(l => l.includes('[ERRO]'));
