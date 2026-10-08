@@ -189,6 +189,40 @@ def _dados_financeiros_para_bal(d, mes_titulo: str, periodo: str) -> dict:
 _RE_CATEGORIA_TRANSFERENCIA = re.compile(r"APLICA[CÇ][AÃ]O|RESGATE|TRANSFER[EÊ]NCIA", re.IGNORECASE)
 
 
+_RE_DOIS_VALORES = re.compile(r"^\s*(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s*$")
+_RE_COTAS_EM_ABERTO = re.compile(r"^COTAS EM ABERTO EM (\d{2}/\d{2}/\d{4})\s+(-?[\d.]+,\d{2})\s*$")
+
+
+def _brl_para_float(t: str) -> float:
+    return float(t.replace(".", "").replace(",", "."))
+
+
+def _emissao_e_devedores_lello_pdf(caminho: Path) -> dict | None:
+    """PDF "Demonstrativo de Contas" da Lello (Splendor, Hub, Villa Park): o "Resumo de Emissões Geral" termina numa linha
+    só com o total Previsto e o total Realizado, seguida de "COTAS EM ABERTO EM <último dia do mês> <valor>" (inadimplência
+    total no fim do mês). Devolve {"prev", "real", "inad"} ou None se o arquivo não tem esse bloco."""
+    try:
+        with pdf_plumber_aberto(caminho) as pdf:
+            texto = "\n".join((p.extract_text() or "") for p in pdf.pages[:40])
+    except Exception:
+        return None
+    linhas = texto.splitlines()
+    for ini, linha in enumerate(linhas):
+        if not re.match(r"\s*Resumo de Emiss", linha):
+            continue            # (a "Pasta Digital" tem o índice antes: só vale a ocorrência seguida dos totais)
+        for i in range(ini + 1, min(ini + 60, len(linhas))):
+            m = _RE_DOIS_VALORES.match(linhas[i])
+            if not m:
+                continue
+            out = {"prev": _brl_para_float(m.group(1)), "real": _brl_para_float(m.group(2)), "inad": None}
+            if i + 1 < len(linhas):
+                m2 = _RE_COTAS_EM_ABERTO.match(linhas[i + 1].strip())
+                if m2:
+                    out["inad"] = _brl_para_float(m2.group(2))
+            return out
+    return None
+
+
 def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_referencia: str,
                                   mes_titulo: str, periodo: str) -> dict | None:
     """Monta o mesmo dict `bal` a partir do EXTRATOR das regras gerais, para formatos em que o adapter
@@ -224,12 +258,19 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
     debitos_contas = sum(c["d"] for c in contas)
     explica = (transferencias > 1.0
                and abs(debitos_contas - round(sum(x["v"] for x in desp), 2) - transferencias) <= 1.0)
+    prev, real, inad, inad_proc = 0.0, 0.0, None, None
+    if caminho_arquivo.suffix.lower() == ".pdf":
+        extra = _emissao_e_devedores_lello_pdf(caminho_arquivo)
+        if extra:
+            prev, real, inad = extra["prev"], extra["real"], extra["inad"]
+            if inad is not None:
+                inad_proc = 0.0
     return {
         "tit": mes_titulo, "per": periodo,
         "tAnt": sum(c["a"] for c in contas), "tCred": sum(c["c"] for c in contas),
         "tDeb": sum(c["d"] for c in contas), "tAtual": sum(c["s"] for c in contas),
-        "contas": contas, "prev": 0.0, "real": 0.0,
-        "tDesp": round(sum(x["v"] for x in desp), 2), "inad": None, "inadProc": None,
+        "contas": contas, "prev": prev, "real": real,
+        "tDesp": round(sum(x["v"] for x in desp), 2), "inad": inad, "inadProc": inad_proc,
         "banco": {"cc": 0.0, "cdb": 0.0, "priv": 0.0}, "desp": desp,
         "debitos_incluem_transferencias": bool(explica), "fonte": "extrator_regras_gerais",
     }

@@ -334,10 +334,13 @@ def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
 
 
 _EMPRESAS_SO_PLANILHA = {"habitacional_xlsx", "lfc_xlsx"}
+_CONDOS_PLANILHA_E_PDF = {"onze_22"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
 
 
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
-    if condo.get("empresa_gestora") in _EMPRESAS_SO_PLANILHA and arquivo.suffix.lower() not in (".xlsx", ".xlsm"):
+    from conciliacao import _condo_conciliadores
+    if (condo.get("empresa_gestora") in _EMPRESAS_SO_PLANILHA and condo["id"] not in _condo_conciliadores()
+            and arquivo.suffix.lower() not in (".xlsx", ".xlsm")):
         raise ValueError(
             f"{condo['nome']} entrega a prestação de contas em planilha Excel (.xlsx), mas o arquivo enviado é "
             f"\"{arquivo.name}\" ({arquivo.suffix or 'sem extensão'}). Envie a planilha do mês (ex.: prestacao_contas_"
@@ -389,6 +392,8 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     # definidos em nível de módulo — etapa_render também precisa saber isso
     # pra montar a seção "Verificações realizadas neste relatório").
     funcao_matching = obter_funcao_matching(condo)
+    if condo["id"] in _CONDOS_PLANILHA_E_PDF and entrada.suffix.lower() == ".pdf":
+        funcao_matching = gerar_achados_planilha_com_links      # PDF ContasData: mesmo matching de Baturité/Port Saint Tropez
     if lello_em_pdf:
         # listagem sem comprovantes: duplicidade e soma x total (como DataDigitus), sem o alerta antigo de
         # "categoria nunca vista" — a regra de subcontas das regras gerais já cobre isso, com mais critério.

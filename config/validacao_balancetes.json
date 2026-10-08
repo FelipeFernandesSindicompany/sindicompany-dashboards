@@ -251,7 +251,8 @@
       }
     },
     "onze_22": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Onze 22"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Onze 22",
+      "leitor_financeiro": "regras_gerais"
     },
     "organy_residencial": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Organy - Residencial",
