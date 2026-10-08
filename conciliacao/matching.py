@@ -1019,6 +1019,20 @@ def gerar_achados_lirba(
                     achado_atraso.linha_demonstrativo = d.categoria_demonstrativo
                     achado_atraso.registros_relacionados.append(chave_registro(d))
                     achados.append(achado_atraso)
+            elif "[PAGINA EM BRANCO]" in (comp.texto_bruto or ""):
+                # A página "Comprovante de Despesa <código>" existe, mas só tem o cabeçalho do sistema: nada foi anexado.
+                achados.append(Achado(
+                    id=_proximo_id(contador),
+                    tipo="sem_comprovante",
+                    severidade_sugerida="alto",
+                    regra_aplicada="despesa_listada_sem_pagina_comprovante_anexado",
+                    registros_relacionados=[chave_registro(comp), chave_registro(d)],
+                    linha_demonstrativo=d.categoria_demonstrativo,
+                    valor_esperado=d.valor,
+                    valor_encontrado=None,
+                    confianca_deterministica=1.0,
+                    detalhes={"pagina_em_branco": True, "pagina": comp.pagina},
+                ))
             else:
                 achados.append(Achado(
                     id=_proximo_id(contador),

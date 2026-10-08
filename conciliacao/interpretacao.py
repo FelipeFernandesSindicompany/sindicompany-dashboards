@@ -52,10 +52,16 @@ def _texto_sem_comprovante(achado: Achado, registro: RegistroComprovante | None)
     valor = _fmt_moeda(achado.valor_esperado)
     fornecedor = f" ({registro.fornecedor})" if registro and registro.fornecedor else ""
     titulo = f"Comprovante sem anexo — {categoria} ({valor})"
-    paragrafo = (
-        f"O lançamento de {categoria}{fornecedor}, no valor de {valor}, não tem comprovante de "
-        f"pagamento pareado/anexado na pasta de prestação de contas."
-    )
+    if (achado.detalhes or {}).get("pagina_em_branco"):
+        paragrafo = (
+            f"O lançamento de {categoria}{fornecedor}, no valor de {valor}, tem a página de comprovante no arquivo "
+            f"(página {achado.detalhes.get('pagina')}), mas ela está em branco: nenhum documento foi anexado."
+        )
+    else:
+        paragrafo = (
+            f"O lançamento de {categoria}{fornecedor}, no valor de {valor}, não tem comprovante de "
+            f"pagamento pareado/anexado na pasta de prestação de contas."
+        )
     o_que_verificar = "Solicitar o comprovante à administradora antes de aprovar a prestação de contas."
     return titulo, paragrafo, o_que_verificar
 
@@ -65,7 +71,22 @@ def _texto_divergencia_valor(achado: Achado, registro: RegistroComprovante | Non
     esperado = _fmt_moeda(achado.valor_esperado)
     encontrado = _fmt_moeda(achado.valor_encontrado)
     regra = achado.regra_aplicada
-    if "ocr" in regra:
+    lido = f"{achado.valor_encontrado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if achado.valor_encontrado else None
+    repetido = bool(lido and registro and (registro.texto_bruto or "").count(lido) >= 2)
+    if "ocr" in regra and repetido:
+        # O mesmo valor aparece em mais de um campo do comprovante (ex.: "Valor do lançamento" e "Valor pago"): a
+        # leitura não é um dígito trocado, a divergência é real.
+        titulo = f"Valor do comprovante diverge da listagem — {categoria} (listagem {esperado}, comprovante {encontrado})"
+        paragrafo = (
+            f"O comprovante anexado mostra {encontrado} (valor repetido em mais de um campo do próprio comprovante, "
+            f"portanto a leitura é confiável), mas a listagem registra {esperado}. Pode ser um pagamento consolidado "
+            f"(um único comprovante cobrindo vários lançamentos) ou um lançamento com valor incorreto."
+        )
+        o_que_verificar = (
+            "Pedir à administradora a composição do pagamento de " + encontrado + " e em quais lançamentos da listagem ele foi "
+            "dividido; conferir se a soma dos lançamentos cobertos fecha com o valor do comprovante."
+        )
+    elif "ocr" in regra:
         titulo = f"Valor do comprovante não confirma com a listagem — possível erro de leitura do OCR ({categoria})"
         paragrafo = (
             f"O valor esperado na listagem ({esperado}) não confere com o valor lido automaticamente no comprovante "

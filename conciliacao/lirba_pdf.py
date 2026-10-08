@@ -752,6 +752,34 @@ def _texto_em_linhas(pagina_fitz, tolerancia: float = 3.0) -> str:
     return "\n".join(" ".join(x[4] for x in sorted(l[1], key=lambda x: x[0])) for l in linhas)
 
 
+MARCADOR_PAGINA_EM_BRANCO = "[PAGINA EM BRANCO]"
+_LIMITE_NAO_BRANCO = 0.010      # fração de pixels não brancos abaixo da qual a página é só cabeçalho (medido: vazia 0,34%, comprovante 7%)
+
+
+def paginas_em_branco(caminho: Path, paginas_1based: list) -> set:
+    """Páginas "Comprovante de Despesa" que têm só o cabeçalho do sistema: nenhum documento anexado (a imagem é só o
+    ícone "voltar ao índice"). Sem isso o OCR "não achava valor" e o relatório dizia "formato não reconhecido", quando
+    na verdade o comprovante simplesmente não foi anexado. Nunca lança: na dúvida, a página NÃO é dada como branca."""
+    brancas: set = set()
+    try:
+        import fitz
+        doc = fitz.open(str(caminho))
+        try:
+            for p in paginas_1based:
+                pg = doc[p - 1]
+                if len(pg.get_text().strip()) > 200:
+                    continue
+                pm = pg.get_pixmap(dpi=60, colorspace=fitz.csGRAY)
+                amostra = pm.samples
+                if sum(1 for b in amostra if b < 235) / max(len(amostra), 1) < _LIMITE_NAO_BRANCO:
+                    brancas.add(p)
+        finally:
+            doc.close()
+    except Exception:
+        return set()
+    return brancas
+
+
 class ConciliadorLirbaPDF(ConciliadorBase):
     """Extrai despesas listadas (Demonstrativo de Despesas) e páginas de
     evidência (Comprovante de Despesa) da pasta Lirba/ContasData."""
@@ -771,7 +799,8 @@ class ConciliadorLirbaPDF(ConciliadorBase):
             esperados.setdefault(d.codigo, []).append(d.valor)
 
         todas = sorted({p for ps in paginas_por_codigo.values() for p in ps})
-        textos = ocr.ocr_paginas(caminho, [p - 1 for p in todas])  # {índice 0-based: texto}, 150 dpi
+        brancas = paginas_em_branco(caminho, todas)
+        textos = ocr.ocr_paginas(caminho, [p - 1 for p in todas if p not in brancas])  # {índice 0-based: texto}, 150 dpi
         # variantes de leitura por página (índice 0-based -> textos), da mais nítida para a mais crua
         extras: dict[int, list[str]] = {}
 
@@ -781,6 +810,9 @@ class ConciliadorLirbaPDF(ConciliadorBase):
                 pagina=ps[0], tipo_documento="comprovante_anexado", codigo=codigo,
                 texto_bruto=f"Comprovante de Despesa {codigo}",
             )
+            if all(p in brancas for p in ps):
+                registro.texto_bruto = f"{MARCADOR_PAGINA_EM_BRANCO} Comprovante de Despesa {codigo}"
+                return registro, "em_branco"
             variantes = [(p, extras.get(p - 1, []) + [textos.get(p - 1, "")]) for p in ps]
             return registro, resolver_comprovante(registro, variantes, esperados.get(codigo, []), definitivo=definitivo)
 
@@ -799,13 +831,14 @@ class ConciliadorLirbaPDF(ConciliadorBase):
             novos[codigo], status_por_codigo[codigo] = _resolver(codigo)
 
         def _nao_confirmados() -> list[str]:
-            return [c for c, st in status_por_codigo.items() if st != "confirmado" and esperados.get(c)]
+            return [c for c, st in status_por_codigo.items() if st not in ("confirmado", "em_branco") and esperados.get(c)]
 
         def _nf_em_duvida() -> list[str]:
             # a listagem cita NF, mas nenhuma página lida traz marcador de Nota Fiscal (a NF pode estar
             # numa imagem de letra miúda, como o DANFE, que o OCR a 150 dpi não lê)
             return [c for c in paginas_por_codigo
-                    if any(RE_NF_NA_DESCRICAO.search(d.descricao or "") for d in registros if d.codigo == c)
+                    if status_por_codigo.get(c) != "em_branco"
+                    and any(RE_NF_NA_DESCRICAO.search(d.descricao or "") for d in registros if d.codigo == c)
                     and not tem_marcador_nf(novos[c].texto_bruto)]
 
         if ocr.tesseract_disponivel():
