@@ -237,7 +237,8 @@ class AdapterHabitacionalXLSX(AdapterBase):
                             continue
                     if v2 <= 0:
                         continue
-                    if "C/CORRENTE" in d2 or ("CORRENTE" in d2 and "CDB" not in d2):
+                    if ("C/CORRENTE" in d2 or ("CORRENTE" in d2 and "CDB" not in d2)
+                            or re.search(r"\bC/C\b", d2)):
                         _cc += v2
                     elif "CDB" in d2 or "POUPAN" in d2:
                         _cdb += v2
