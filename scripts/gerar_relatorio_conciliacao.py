@@ -398,6 +398,7 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     achados_regras, status_regras, avisos_regras = regras_gerais_pipeline.executar(
         condo, mes, entrada, pasta_busca_regras)
     achados.extend(achados_regras)
+    achados.sort(key=lambda a: 0 if a.tipo == "previsto_realizado_inconsistente" else 1)   # divergência do Previsto x Realizado abre a lista
     for aviso in avisos_regras:
         print(f"[AVISO] {aviso}")
     for chave_regra, st in status_regras.items():
@@ -590,7 +591,15 @@ def etapa_render(condo: dict, mes: str) -> Path:
             pasta_busca_anterior=pasta_busca_anterior,
         )
         if bal_atual:
-            analise = analise_financeira.montar_analise(bal_atual, bal_anterior, _mes_titulo(mes))
+            aviso_previsto = None
+            try:
+                _bruto = storage.read_dataclass_list(version_dir / "achados_brutos.json", Achado)
+                if any(a.tipo == "previsto_realizado_inconsistente" for a in _bruto):
+                    aviso_previsto = ("o Resumo de Emissão deste arquivo está incompleto ou diferente do padrão dos meses "
+                                      "anteriores (veja a divergência \"Previsto x Realizado\" abaixo); confirmar com a administradora.")
+            except Exception:
+                pass
+            analise = analise_financeira.montar_analise(bal_atual, bal_anterior, _mes_titulo(mes), aviso_previsto)
             aviso_fechamento = checagens_leitura.verificar_fechamento_categorias(condo, bal_atual)
             if aviso_fechamento:
                 print(f"[AVISO] {aviso_fechamento}")

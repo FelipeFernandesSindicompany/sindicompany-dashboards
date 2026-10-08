@@ -246,6 +246,7 @@
     Realizado: <strong>{{ analise.realizado_fmt }}</strong>
     {% if analise.realizado_pct_fmt %}({{ analise.realizado_pct_fmt }} do previsto){% endif %}.
     {% endif %}
+    {% if analise.aviso_previsto %}<br><strong style="color:#b45309">Atenção:</strong> {{ analise.aviso_previsto }}{% endif %}
     {% if analise.inad_disponivel %}
     Inadimplência total: <strong>{{ analise.inad_atual_fmt }}</strong>
     {% if analise.inad_anterior_fmt %}(mês anterior: {{ analise.inad_anterior_fmt }}){% endif %}{% if analise.inad_proc_fmt %}, dos quais {{ analise.inad_proc_fmt }} recuperados no próprio mês{% endif %}.

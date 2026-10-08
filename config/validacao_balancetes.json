@@ -444,6 +444,9 @@
           ]
         }
       }
+    },
+    "fit_casa_rio_bonito": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Fit Rio Bonito"
     }
   }
 }

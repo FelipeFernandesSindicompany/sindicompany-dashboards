@@ -75,3 +75,7 @@ class DadosRegras:
     cobertura: dict = field(default_factory=lambda: {"receitas": False, "rendimentos": False, "lancamentos": False})
     motivos_nao_cobertos: dict = field(default_factory=dict)  # {"receitas": "formato só traz totais", ...}
     avisos: list = field(default_factory=list)        # limitações da leitura, em texto
+    # Resumo de Emissão (Previsto x Realizado) da conta ordinária, quando o formato traz (planilha Habitacional):
+    # {"conta", "linhas": [{"descricao", "previsto", "realizado", "local"}], "previsto", "realizado" (totais impressos
+    # ou somados), "posicao_emissao": crédito da linha EMISSÃO DO PERÍODO na Posição Financeira (ou None), "local"}
+    emissao: Optional[dict] = None

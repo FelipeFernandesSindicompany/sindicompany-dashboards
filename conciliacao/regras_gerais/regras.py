@@ -191,6 +191,65 @@ def regra_compensacao(dados: DadosRegras, cont: _Contador, compensacoes: Optiona
     return achados
 
 
+# ── Previsto x Realizado (Resumo de Emissão) ─────────────────────────────────
+
+def _e_emissao(descricao: str) -> bool:
+    return _norm(descricao).startswith("EMISSAO DO PERIODO")
+
+
+def regra_previsto_realizado(dados: DadosRegras, historico: list, cont: _Contador) -> list[Achado]:
+    """Compara o Resumo de Emissão (Previsto x Realizado) do mês com o dos meses anteriores do mesmo formato.
+    Acusa quando (1) uma linha que existia em todos os meses anteriores (ex.: "EMISSÃO DO PERÍODO") some da tabela;
+    (2) o crédito "EMISSÃO DO PERÍODO" da Posição Financeira não é o mesmo "Realizado" da tabela; ou
+    (3) o Previsto total varia mais de 30% em relação à mediana dos meses anteriores."""
+    e = dados.emissao
+    hist = [h.emissao for h in historico if h is not None and getattr(h, "emissao", None)]
+    if not e or not hist:
+        return []
+    prev_med = statistics.median(h["previsto"] for h in hist)
+    pcts = [h["realizado"] / h["previsto"] * 100 for h in hist if h["previsto"] > _CENTAVO]
+    pct_med = statistics.median(pcts) if pcts else None
+    pct = e["realizado"] / e["previsto"] * 100 if e["previsto"] > _CENTAVO else None
+
+    atuais = {_norm(x["descricao"]) for x in e["linhas"] if not _norm(x["descricao"]).startswith("COTAS REC")}
+    ausentes = []
+    if len(hist) >= 2:
+        todos = [{_norm(x["descricao"]) for x in h["linhas"]} for h in hist]
+        comuns = set.intersection(*todos)
+        for nome in sorted(comuns):
+            if nome.startswith("COTAS REC") or nome in atuais:
+                continue
+            exemplo = next(x for x in hist[0]["linhas"] if _norm(x["descricao"]) == nome)
+            valores = [next(x for x in h["linhas"] if _norm(x["descricao"]) == nome)["previsto"] for h in hist]
+            ausentes.append({"descricao": exemplo["descricao"], "mediana_previsto": round(statistics.median(valores), 2)})
+
+    linha_emissao = next((x for x in e["linhas"] if _e_emissao(x["descricao"])), None)
+    pos = e.get("posicao_emissao")
+    difere_posicao = None
+    if pos and abs(pos["valor"]) > _CENTAVO:
+        realizado_tab = linha_emissao["realizado"] if linha_emissao else 0.0
+        if abs(pos["valor"] - realizado_tab) > 1.0:
+            difere_posicao = {"posicao": pos["valor"], "tabela": realizado_tab, "local": pos.get("local")}
+
+    variacao = (e["previsto"] - prev_med) / prev_med * 100 if prev_med > _CENTAVO else 0.0
+    if not (ausentes or difere_posicao or abs(variacao) > 30.0):
+        return []
+    grave = bool(ausentes or difere_posicao)
+    return [Achado(
+        id=cont.proximo(), tipo="previsto_realizado_inconsistente", severidade_sugerida="alto" if grave else "atencao",
+        regra_aplicada="resumo_de_emissao_diferente_dos_meses_anteriores",
+        linha_demonstrativo=f"Previsto x Realizado ({e.get('conta') or 'conta ordinária'})",
+        valor_esperado=round(prev_med, 2), valor_encontrado=e["previsto"],
+        detalhes={"conta": e.get("conta"), "previsto": e["previsto"], "realizado": e["realizado"],
+                  "pct": round(pct, 2) if pct is not None else None,
+                  "mediana_previsto": round(prev_med, 2), "mediana_pct": round(pct_med, 2) if pct_med is not None else None,
+                  "variacao_pct": round(variacao, 1), "meses_comparados": len(hist),
+                  "linhas_ausentes": ausentes, "difere_posicao": difere_posicao,
+                  "linhas": [{"descricao": x["descricao"], "previsto": x["previsto"], "realizado": x["realizado"]} for x in e["linhas"]],
+                  "local": e.get("local")},
+    )]
+
+
 # ── Regra 3: rendimento proporcional ao saldo ────────────────────────────────
 
 def _base(c: ContaMes, modo: str = "media") -> float:
@@ -531,6 +590,13 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
         status["receita_negativa"] = {"aplicada": True, "motivo": None}
     else:
         _nao("receita_negativa", "receitas", "o formato deste arquivo não traz as linhas de receita")
+
+    if dados.emissao:
+        meses_emissao = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else []))
+                         if h is not None and getattr(h, "emissao", None)]
+        if meses_emissao:
+            achados += regra_previsto_realizado(dados, meses_emissao, cont)
+            status["previsto_realizado"] = {"aplicada": True, "motivo": None}
 
     if cob.get("rendimentos"):
         achados += regra_rendimento(dados, anterior, cont, cfg_condo.get("rendimento"))

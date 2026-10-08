@@ -36,7 +36,7 @@ def _fmt_pct_arrecadacao(v: float) -> str:
     return f"{v:,.2f}%".replace(".", ",")
 
 
-def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) -> dict:
+def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str, aviso_previsto: str | None = None) -> dict:
     saldo_atual = bal_atual["tAtual"]
     saldo_anterior_mes = bal_anterior["tAtual"] if bal_anterior else None
     variacao_saldo = (saldo_atual - saldo_anterior_mes) if saldo_anterior_mes is not None else None
@@ -131,7 +131,14 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
             f"despesa do mês ({maior_despesa['valor_fmt']}) — acompanhar contratos e eventuais "
             f"reajustes/renegociações."
         )
-    if realizado_pct is not None and realizado_pct < LIMIAR_ARRECADACAO_BAIXA_PCT:
+    if aviso_previsto and realizado_pct is not None:
+        # O Resumo de Emissão do arquivo está fora do padrão dos meses anteriores: o percentual calculado
+        # sobre ele não é um indicador de arrecadação confiável.
+        pontos_atencao.append(
+            f"Previsto x Realizado do mês ({_fmt_r(realizado)} de {_fmt_r(previsto)}, {_fmt_pct_arrecadacao(realizado_pct)}) "
+            f"não é confiável — {aviso_previsto}"
+        )
+    elif realizado_pct is not None and realizado_pct < LIMIAR_ARRECADACAO_BAIXA_PCT:
         pontos_atencao.append(
             f"Arrecadação do mês ficou em {_fmt_pct_arrecadacao(realizado_pct)} do previsto "
             f"({_fmt_r(realizado)} de {_fmt_r(previsto)} orçados) — investigar causa da diferença."
@@ -157,7 +164,9 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
         frases.append(f"A(s) conta(s) {nomes} encerrou(aram) o mês com saldo devedor, exigindo atenção.")
     else:
         frases.append("Nenhuma conta encerrou o mês com saldo devedor.")
-    if realizado_pct is not None:
+    if realizado_pct is not None and aviso_previsto:
+        frases.append(f"O Previsto x Realizado deste mês ({_fmt_pct_arrecadacao(realizado_pct)}) não é confiável: {aviso_previsto}")
+    elif realizado_pct is not None:
         if realizado_pct >= 100.0:
             frases.append(
                 f"A arrecadação do mês superou o previsto ({_fmt_pct_arrecadacao(realizado_pct)} do orçado)."
@@ -219,6 +228,7 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str) 
         "realizado_fmt": _fmt_r(realizado) if previsto_confiavel else None,
         "realizado_pct_fmt": _fmt_pct_arrecadacao(realizado_pct) if realizado_pct is not None else None,
         "realizado_pct_ok": (realizado_pct is not None and realizado_pct >= 100.0),
+        "aviso_previsto": aviso_previsto,
         "inad_disponivel": inad_disponivel,
         "inad_atual_fmt": _fmt_r(inad_atual) if inad_disponivel else None,
         "inad_proc_fmt": _fmt_r(inad_proc) if (inad_disponivel and inad_proc > 0) else None,

@@ -153,7 +153,30 @@ def texto_compensacao(a: Achado) -> tuple[str, str, str]:
     return titulo, paragrafo, verificar
 
 
+def texto_previsto_realizado(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    prev, real, pct = d.get("previsto"), d.get("realizado"), d.get("pct")
+    titulo = (f"Previsto x Realizado fora do padrão dos meses anteriores — previsto {_moeda(prev)}"
+              + (f", realizado {_moeda(real)} ({_pct(pct / 100)})" if pct is not None else ""))
+    partes = [f"No Resumo de Emissão deste mês o previsto é {_moeda(prev)} e o realizado {_moeda(real)}"
+              + (f" ({str(pct).replace('.', ',')}% do previsto)" if pct is not None else "")
+              + f"; a mediana do previsto nos {d.get('meses_comparados')} meses anteriores é {_moeda(d.get('mediana_previsto'))}"
+              + (f" (arrecadação típica de {str(d.get('mediana_pct')).replace('.', ',')}%)." if d.get("mediana_pct") is not None else ".")]
+    for x in d.get("linhas_ausentes") or []:
+        partes.append(f"A linha \"{x['descricao']}\", que aparece em todos os meses anteriores (previsto típico "
+                      f"{_moeda(x['mediana_previsto'])}), não consta na tabela deste mês.")
+    dp = d.get("difere_posicao")
+    if dp:
+        partes.append(f"A Posição Financeira da conta registra crédito de {_moeda(dp['posicao'])} em \"EMISSÃO DO PERÍODO\", "
+                      f"mas a tabela Previsto x Realizado traz {_moeda(dp['tabela'])} nessa linha — as duas partes do mesmo "
+                      f"balancete não conferem.")
+    verificar = ("Pedir à administradora o Resumo de Emissão completo deste mês (emissão do período, reembolsos e diversos) e "
+                 "a explicação da diferença; enquanto isso, o percentual de arrecadação apresentado no balancete não é confiável.")
+    return titulo, " ".join(partes), verificar
+
+
 TEXTOS = {
+    "previsto_realizado_inconsistente": texto_previsto_realizado,
     "receita_negativa": texto_receita_negativa,
     "rendimento_desproporcional": texto_rendimento,
     "pagamento_sem_identificacao": texto_sem_identificacao,

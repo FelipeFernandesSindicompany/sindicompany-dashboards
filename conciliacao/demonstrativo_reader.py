@@ -112,7 +112,26 @@ def localizar_arquivo_mes(pasta: Path, mes: int, ano: int, preferir_sufixo: str 
         candidatos = iguais or candidatos
     # Mais de um candidato (raro) — prefere o modificado mais recentemente
     # (mais provável de ser a versão final, não um rascunho antigo).
-    return max(candidatos, key=lambda p: p.stat().st_mtime)
+    escolhido = max(candidatos, key=lambda p: p.stat().st_mtime)
+    return _legivel(escolhido)
+
+
+def _legivel(caminho: Path) -> Path:
+    """Arquivo aberto no Excel (ou ainda baixando do OneDrive) não pode ser lido com `open()`, mas o
+    Windows deixa copiar. Nesse caso devolve uma cópia temporária com o mesmo nome (o nome carrega o mês)."""
+    try:
+        with open(caminho, "rb") as f:
+            f.read(1)
+        return caminho
+    except PermissionError:
+        import shutil, tempfile
+        destino = Path(tempfile.mkdtemp(prefix="validacao_copia_")) / caminho.name
+        try:
+            shutil.copy2(caminho, destino)
+        except OSError:
+            return caminho
+        print(f"[AVISO] {caminho.name} estava aberto em outro programa (Excel?); a validação leu uma cópia dele.")
+        return destino
 
 
 def _mes_anterior_num(mes: int, ano: int) -> tuple[int, int]:

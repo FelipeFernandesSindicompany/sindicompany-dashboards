@@ -508,6 +508,62 @@ def _ler_recibos_a(linhas, ini, fim) -> list[LinhaReceita]:
     return out
 
 
+# ── Resumo de Emissão (Previsto x Realizado) da conta ordinária ───────────────
+
+def _ler_emissao(linhas) -> dict | None:
+    """Primeira tabela "Resumo de Emissão" da planilha (conta ordinária) + o crédito "EMISSÃO DO PERÍODO" da
+    Posição Financeira da mesma conta. Colunas fixas do relatório: Previsto = I, Realizado = K."""
+    for i, r in enumerate(linhas):
+        if not r or not _norm(_txt(r[0])).startswith("RESUMO DE EMISSAO"):
+            continue
+        conta = ""
+        for k in range(i - 1, max(i - 4, -1), -1):
+            t = _so_titulo(linhas[k]) if linhas[k] else ""
+            if t:
+                conta = t
+                break
+        itens, total, fim = [], None, len(linhas)
+        for j in range(i + 1, len(linhas)):
+            rr = linhas[j]
+            if not rr:
+                continue
+            a = _txt(rr[0])
+            an = _norm(a)
+            if an.startswith("POSICAO FINANCEIRA"):
+                fim = j
+                break
+            prev = _num(rr[8]) if len(rr) > 8 else None
+            real = _num(rr[10]) if len(rr) > 10 else None
+            if prev is None and real is None:
+                continue
+            if not a:
+                total = (prev or 0.0, real or 0.0)      # linha sem rótulo = total impresso da tabela
+            elif an.startswith("TOTAL DE DEVEDORES") or "COBRANCA EM" in an and prev == 0 and itens and total is not None:
+                continue                                # linhas abaixo do total (cotas em aberto no fim do mês)
+            elif total is None:
+                itens.append({"descricao": a, "previsto": prev or 0.0, "realizado": real or 0.0, "local": f"linha {j + 1}"})
+        posicao = None
+        for j in range(fim, min(fim + 40, len(linhas))):
+            rr = linhas[j]
+            if not rr:
+                continue
+            an = _norm(_txt(rr[0]))
+            if an.startswith("SALDO ATUAL"):
+                break
+            if an.startswith("EMISSAO DO PERIODO"):
+                cre = _num(rr[10]) if len(rr) > 10 else None
+                deb = _num(rr[8]) if len(rr) > 8 else None
+                posicao = {"valor": round((cre or 0.0) - (deb or 0.0), 2), "local": f"linha {j + 1}"}
+                break
+        if not itens:
+            return None
+        prev_t = total[0] if total else round(sum(x["previsto"] for x in itens), 2)
+        real_t = total[1] if total else round(sum(x["realizado"] for x in itens), 2)
+        return {"conta": conta, "linhas": itens, "previsto": round(prev_t, 2), "realizado": round(real_t, 2),
+                "posicao_emissao": posicao, "local": f"linha {i + 1}"}
+    return None
+
+
 # ── extração ─────────────────────────────────────────────────────────────────
 
 def extrair_de_linhas(linhas: list[list], mes: str, arquivo: str = "") -> DadosRegras:
@@ -664,6 +720,7 @@ def extrair_de_linhas(linhas: list[list], mes: str, arquivo: str = "") -> DadosR
         # ("RECEBIMENTOS DO PERIODO") não aparece; um estorno/desconto lançado como linha própria aparece.
         avisos.append("o arquivo não traz o Demonstrativo de Receitas (recibo a recibo): receitas negativas só são detectadas "
                       "quando lançadas como linha própria na Posição Financeira de cada conta")
+    dados.emissao = _ler_emissao(linhas)
     dados._fonte_receitas = fonte_receitas  # diagnóstico (não é campo do modelo)
     return dados
 

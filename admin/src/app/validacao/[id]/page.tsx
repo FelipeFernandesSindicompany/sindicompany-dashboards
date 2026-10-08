@@ -200,8 +200,8 @@ export default function ValidacaoCondominioPage() {
         <div className="flex items-center gap-3 flex-wrap">
           <label className="btn-ghost text-[12px] cursor-pointer flex items-center gap-1.5">
             <Upload size={13} />
-            {arquivo ? arquivo.name : 'Selecionar pasta de prestação de contas (PDF)'}
-            <input type="file" accept=".pdf" className="hidden"
+            {arquivo ? arquivo.name : 'Selecionar prestação de contas (PDF ou Excel)'}
+            <input type="file" accept=".pdf,.xlsx,.xls" className="hidden"
               onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
           </label>
           <button className="btn-primary text-[12px] flex items-center gap-1.5" disabled={!!busy}
