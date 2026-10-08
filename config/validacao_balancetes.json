@@ -357,6 +357,12 @@
           "contas_aplicadas": [
             "FUNDO DE RESERVA"
           ]
+        },
+        "subcontas": {
+          "equivalentes": {
+            "ENERGIA": "DESPESA TARIFAS CONCESSIONÁRIA",
+            "TARIFAS CONCESSIONÁRIAS": "DESPESA TARIFAS CONCESSIONÁRIA"
+          }
         }
       }
     },

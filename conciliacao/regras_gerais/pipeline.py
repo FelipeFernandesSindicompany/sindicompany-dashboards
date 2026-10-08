@@ -71,7 +71,7 @@ def executar(condo: dict, mes: str, arquivo: Path, pasta_busca_anterior: Optiona
                 continue
             if k == 0:
                 anterior = dados_k      # rendimento: nomes de conta são os mesmos em qualquer formato
-            if arq_k.suffix.lower() != arquivo.suffix.lower():
+            if arq_k.suffix.lower() != arquivo.suffix.lower() and not getattr(extrator, "compara_entre_formatos", False):
                 # Subcontas só se comparam entre meses do MESMO formato (a planilha Lello e o PDF do mesmo
                 # condomínio nomeiam as subcontas em níveis diferentes: comparar geraria alertas falsos).
                 outro_formato.append(f"{mes_k:02d}/{ano_k}")

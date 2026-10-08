@@ -201,6 +201,9 @@ def _linhas(html: str) -> list[tuple[int, int, list[str]]]:
 # ── extrator ─────────────────────────────────────────────────────────────────
 
 class Extrator:
+    #: planilha (.xls) e PDF do mesmo condomínio usam o mesmo nível de subconta: o histórico mistura os dois
+    compara_entre_formatos = True
+
     def __init__(self, condo: dict):
         self.condo = condo
         self.cfg = condo.get("parser_config") or {}
@@ -212,8 +215,15 @@ class Extrator:
             # Os condomínios Lello (Hub, Splendor, Villa Park) passaram a enviar também o "Demonstrativo de Contas"
             # em PDF (estilo ContasData, exportação parcial pelo Stimulsoft): mesmo conteúdo, outro formato.
             from conciliacao.regras_gerais.extratores.contasdata import Extrator as _ExtratorContasData
+            import copy
 
-            return _ExtratorContasData(self.condo).extrair(caminho, mes)
+            # No PDF a hierarquia é conta > GRUPO > SUBCONTA > lançamentos; a planilha .xls traz só a SUBCONTA
+            # (ex.: "salários/adiantamentos"). Usar o nível da subconta (a "rubrica" do leitor ContasData) faz
+            # os dois formatos nomearem as subcontas igual, e o mês anterior em .xls pode ser comparado.
+            condo = copy.deepcopy(self.condo)
+            rg = condo.setdefault("parser_config", {}).setdefault("regras_gerais", {})
+            rg.setdefault("nivel_categoria", "rubrica")
+            return _ExtratorContasData(condo).extrair(caminho, mes)
         nota = None
         html = _texto_html(caminho)
         rows = _linhas(html)

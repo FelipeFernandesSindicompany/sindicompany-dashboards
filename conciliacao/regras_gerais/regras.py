@@ -450,7 +450,8 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
         return equivalentes.get(_norm(nome), nome)
 
     def _transferencia(nome: str) -> bool:
-        return _norm(nome).startswith("TRANSFERENCIA")
+        n = _norm(nome)
+        return n.startswith("TRANSFERENCIA") or n.startswith("APLICACAO RESGATE")
 
     cat_anterior: dict[str, dict] = {}     # chave da despesa -> {categoria normalizada: nome}
     categorias_anteriores: dict[str, str] = {}
