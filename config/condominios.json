@@ -356,7 +356,29 @@
       "cor": "#9333ea",
       "unidades": 0,
       "parser_config": {
-        "cat_map": {}
+        "cat_map": {
+          "PESSOAL PROPRIO": "Pessoal Próprio",
+          "PESSOAL CONTRATADO": "Pessoal Contrat.",
+          "DESPESAS COM PESSOAL": "Pessoal Próprio",
+          "ENCARGOS SOCIAIS": "Pessoal Próprio",
+          "SERVICOS CONTRATADOS": "Pessoal Contrat.",
+          "CONSERVAÇÃO/MANUTENÇÃO": "Conserv./Manut.",
+          "CONSERV/MANUT/CONTRATOS": "Manut. Contratos",
+          "MANUTENCAO E CONSERVACAO": "Conserv./Manut.",
+          "MANUT. E CONSERVACAO EVENTUAIS": "Manut. Contratos",
+          "COMPRA MATERIAIS E EQUIPAMENTO": "Manut. Contratos",
+          "CONSUMOS": "Consumos",
+          "TV POR ASSINATURA/INTERNET": "Consumos",
+          "IMPOSTOS/TAXAS": "Impostos/Taxas",
+          "IMPOSTOS E TAXAS": "Impostos/Taxas",
+          "MATERIAL DE EXPEDIENTE": "Material de Expediente",
+          "BANCÁRIAS": "Desp. Bancárias",
+          "DESPESAS DIVERSAS": "Despesas Diversas",
+          "DESPESAS GERAIS": "Despesas Diversas",
+          "HONORARIOS / ADMINISTRATIVO": "Honorários/Adm.",
+          "TAXA DE ADMINISTRACAO": "Honorários/Adm.",
+          "ISENCOES/REMUNERACOES": "Honorários/Adm."
+        }
       }
     },
     {
