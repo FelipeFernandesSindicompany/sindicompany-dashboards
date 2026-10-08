@@ -403,5 +403,25 @@ class AdapterHabitacionalXLSX(AdapterBase):
             if _inadp > 0:
                 dados.inadimplencia_recebida = _inadp
 
+        # Formato 3 (Fit Casa / Habitacional multicontas):
+        # Ativado apenas quando parser_config.inadproc_cobran_prev_month=true.
+        # Soma todas as linhas "COBRAN" do mês anterior (col K) como recebidos em atraso.
+        if (dados.inadimplencia_recebida == 0
+                and self.config.get("parser_config", {}).get("inadproc_cobran_prev_month")
+                and "-" in mes_referencia):
+            ano_i, mes_i = int(mes_referencia.split("-")[0]), int(mes_referencia.split("-")[1])
+            prev_ano = ano_i - 1 if mes_i == 1 else ano_i
+            prev_mes = 12 if mes_i == 1 else mes_i - 1
+            prev_pattern = f"/{prev_mes:02d}/{prev_ano}"
+            _inadp = 0.0
+            for row in linhas:
+                desc = str(col(row, 0) or "").upper().strip()
+                if "COBRAN" in desc and prev_pattern in desc:
+                    v = _f(col(row, 10))
+                    if v > 0:
+                        _inadp += v
+            if _inadp > 0:
+                dados.inadimplencia_recebida = _inadp
+
         wb.close()
         return dados

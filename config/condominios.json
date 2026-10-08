@@ -1194,7 +1194,8 @@
           "SEGUROS": "SEGUROS",
           "DESPESAS DIVERSAS": "ADMINISTRATIVO",
           "MATERIAL DE EXPEDIENTE": "CONSUMOS"
-        }
+        },
+        "inadproc_cobran_prev_month": true
       }
     }
   ],
