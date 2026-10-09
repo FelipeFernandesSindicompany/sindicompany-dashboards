@@ -71,6 +71,16 @@ def _juntar(tokens: list[tuple]) -> str:
     return " ".join(t[3] for t in tokens).strip()
 
 
+def _icones_de_anexo(pagina) -> list:
+    """Altura (centro) de cada ícone de clipe da coluna "Anexo" (imagens de ~19x18 pt em x≈212): a linha do lançamento que
+    TEM comprovante anexado no portal tem o ícone; sem ícone = sem anexo."""
+    try:
+        return sorted((i["bbox"][1] + i["bbox"][3]) / 2 for i in pagina.get_image_info()
+                      if 195 <= i["bbox"][0] <= 240 and 14 <= (i["bbox"][2] - i["bbox"][0]) <= 26)
+    except Exception:
+        return []
+
+
 def _eh_ancora(l) -> bool:
     """Linha de um lançamento do Demonstrativo de Despesas: código de lançamento em x≈58 + algum valor (a data é opcional:
     tarifas bancárias vêm sem data)."""
@@ -95,15 +105,19 @@ def _linha_vazia(n: int = 14) -> list:
     return [None] * n
 
 
-def _ler_documento(caminho: Path) -> list[list]:
+def _ler_documento(caminho: Path, paginas: list | None = None) -> list[list]:
     import fitz
 
     doc = fitz.open(str(caminho))
+    total_paginas_doc = len(doc)
     saida: list[list] = []
     secao = None            # "resumo" | "contas" | "despesas" | "receitas" | "outro"
     try:
-        for pg in doc:
+        for numero_pagina, pg in enumerate(doc, start=1):
+            if paginas is not None:
+                paginas.extend([numero_pagina - 1] * (len(saida) - len(paginas)))   # linhas da página anterior
             linhas = _linhas_visuais(pg)
+            icones_y = _icones_de_anexo(pg)
             # --- despesas: histórico em até 3 linhas ao redor da linha da data; âncora = linha com a data em x≈136
             ancoras_y = [l[0][2] for l in linhas if _eh_ancora(l)]
             hist_por_ancora: dict[float, list[tuple]] = {}
@@ -193,7 +207,7 @@ def _ler_documento(caminho: Path) -> list[list]:
                             and not re.match(r"^TOTAL", texto)):
                         saida[-1][4] = saida[-1][4] + " " + texto
                         continue
-                    if _linha_despesa(l, linhas, idx, ancoras_y, hist_por_ancora, consumidas, saida):
+                    if _linha_despesa(l, linhas, idx, ancoras_y, hist_por_ancora, consumidas, saida, icones_y):
                         continue
                 elif secao == "receitas":
                     if idx in consumidas:
@@ -205,6 +219,8 @@ def _ler_documento(caminho: Path) -> list[list]:
                     saida.append(r)
     finally:
         doc.close()
+    if paginas is not None:
+        paginas.extend([total_paginas_doc] * (len(saida) - len(paginas)))
     return saida
 
 
@@ -241,7 +257,7 @@ def _linha_contas(l) -> list:
     return _linha_numerica(l, _ANC_CONTAS, _COLS_TEXTO_CONTAS)
 
 
-def _linha_despesa(l, linhas, idx, ancoras_y, hist_por_ancora, consumidas, saida) -> bool:
+def _linha_despesa(l, linhas, idx, ancoras_y, hist_por_ancora, consumidas, saida, icones_y=()) -> bool:
     """Acrescenta a(s) linha(s) da planilha para esta linha visual do Demonstrativo de Despesas. True se tratou."""
     y = l[0][2]
     texto = _juntar(l)
@@ -254,7 +270,7 @@ def _linha_despesa(l, linhas, idx, ancoras_y, hist_por_ancora, consumidas, saida
         r = _linha_vazia()
         r[0] = next(t[3] for t in l if t[0] < 70 and t[3].isdigit())
         r[1] = next((t[3] for t in l if 130 <= t[0] <= 146 and _RE_DATA.match(t[3])), None)
-        r[2] = "Link"
+        r[2] = "Link" if any(abs(cy - y) <= 14 for cy in icones_y) else None
         proprio = [t for t in l if t[0] >= 270 and not _RE_DINHEIRO.match(t[3]) and not _RE_PCT.match(t[3])]
         meus = list(hist_por_ancora.get(y, []))
         if proprio:
