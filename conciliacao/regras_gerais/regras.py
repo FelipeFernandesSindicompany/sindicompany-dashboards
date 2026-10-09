@@ -75,11 +75,20 @@ def base_da_descricao(descricao: str) -> str:
     return _norm(_RE_LIXO_BASE.sub(" ", _sem_acento(descricao or "")))
 
 
-def chave_despesa(l: LancamentoDespesa) -> str:
+def chave_despesa(l: LancamentoDespesa, por_rubrica: bool = False) -> str:
     """Identidade 'fornecedor/despesa' de um lançamento: o fornecedor, se o arquivo
-    traz o campo; senão a descrição sem parcela/NF/mês."""
+    traz o campo; senão a descrição sem parcela/NF/mês.
+    `por_rubrica` (só por configuração do condomínio, `regras.subcontas.chave_rubrica_fornecedor`): para descrições no
+    padrão "Rubrica - FORNECEDOR - NF. nnn texto livre", usa só rubrica + fornecedor (o texto livre depois da NF muda de mês
+    para mês e não identifica a despesa)."""
     if l.fornecedor and _norm(l.fornecedor):
         return _norm(l.fornecedor)
+    if por_rubrica:
+        partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
+        if len(partes) >= 3:
+            chave = base_da_descricao(f"{partes[0]} {partes[1]}")
+            if chave:
+                return chave
     return base_da_descricao(l.descricao)
 
 
@@ -291,6 +300,9 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
     modo = cfg.get("base", "media")
     ignorar = [n for n in cfg.get("ignorar_contas", [])]
     obrigatorias = [n for n in cfg.get("contas_aplicadas", [])]
+    # Contas que rendem MESMO com saldo médio negativo/zero (ex.: Cores, conta Ordinária no vermelho que recebe rendimento
+    # todo mês): a falta de rendimento nelas também é apontada, sem exigir saldo positivo.
+    sem_base = [n for n in cfg.get("contas_sem_base", [])]
 
     def _ignorada(nome):
         return any(_mesma_conta(nome, n) for n in ignorar)
@@ -325,7 +337,8 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
                               "taxa_conta": taxas[_chave_conta(c.nome)], "desvio": desvio, "pagina": c.pagina},
                 ))
     for c in contas:
-        if any(_mesma_conta(c.nome, n) for n in obrigatorias) and c.rendimento <= _CENTAVO and base(c) > _CENTAVO:
+        if (any(_mesma_conta(c.nome, n) for n in obrigatorias) and c.rendimento <= _CENTAVO
+                and (base(c) > _CENTAVO or any(_mesma_conta(c.nome, n) for n in sem_base))):
             esperado = round(base(c) * mediana, 2) if mediana else None
             achados.append(Achado(
                 id=cont.proximo(), tipo="rendimento_desproporcional", severidade_sugerida="atencao",
@@ -460,11 +473,17 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
     # Despesas cujo "nome" não identifica o que foi pago (ex.: só "RECEITA FEDERAL": juros num mês, retenção de
     # funcionários noutro) — configuração do condomínio `regras.subcontas.ignorar_despesas` (regex sobre a chave da
     # despesa). Não entram na checagem "mesma despesa em outra subconta"; subconta nova continua valendo.
-    ignorar_despesas = [re.compile(x, re.IGNORECASE) for x in cfg.get("ignorar_despesas", [])] + [_RE_PAGADOR_GENERICO]
+    ignorar_despesas = [re.compile(x, re.IGNORECASE) for x in cfg.get("ignorar_despesas", [])]
+    if cfg.get("ignorar_pagador_generico"):
+        ignorar_despesas.append(_RE_PAGADOR_GENERICO)      # só quando o condomínio pede (ex.: Palm Beach)
+    por_rubrica = bool(cfg.get("chave_rubrica_fornecedor"))
+
+    def K(l):
+        return chave_despesa(l, por_rubrica)
 
     def _transferencia(nome: str) -> bool:
         n = _norm(nome)
-        return n.startswith("TRANSFERENCIA") or n.startswith("APLICACAO RESGATE")
+        return n.startswith("TRANSFERENCIA") or (bool(cfg.get("ignorar_aplicacao_resgate")) and n.startswith("APLICACAO RESGATE"))
 
     cat_anterior: dict[str, dict] = {}     # chave da despesa -> {categoria normalizada: nome}
     categorias_anteriores: dict[str, str] = {}
@@ -473,9 +492,9 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
         vistas_no_mes: set = set()
         for l in h.lancamentos:
             cat = _canon(l.categoria)
-            cat_anterior.setdefault(chave_despesa(l), {})[_norm(cat)] = cat
+            cat_anterior.setdefault(K(l), {})[_norm(cat)] = cat
             categorias_anteriores[_norm(cat)] = cat
-            vistas_no_mes.add(chave_despesa(l))
+            vistas_no_mes.add(K(l))
         for k in vistas_no_mes:
             meses_da_chave[k] = meses_da_chave.get(k, 0) + 1
 
@@ -489,20 +508,20 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
         cat_l = _canon(l.categoria)
         if _transferencia(cat_l):
             continue               # transferência entre contas não é subconta de despesa
-        antes = cat_anterior.get(chave_despesa(l))
-        if antes and any(rx.search(chave_despesa(l)) for rx in ignorar_despesas):
+        antes = cat_anterior.get(K(l))
+        if antes and any(rx.search(K(l)) for rx in ignorar_despesas):
             antes = None
         # "Mesma despesa em outra subconta" só vale para despesa RECORRENTE e CONSISTENTE: apareceu em pelo menos 2 meses
         # anteriores e sempre na MESMA subconta. Fornecedor que presta serviços diferentes (cartão de crédito, tarifas,
         # peças/manutenção, portaria/controle de acesso...) aparece em subcontas diferentes legitimamente — e um único mês
         # de histórico não prova que aquela era "a" subconta da despesa. (Evita falso alerta, ex.: Palm Beach/Receita Federal.)
-        if antes and (len(antes) != 1 or meses_da_chave.get(chave_despesa(l), 0) < 2):
-            antes = None
+        if cfg.get("exigir_recorrencia") and antes and (len(antes) != 1 or meses_da_chave.get(K(l), 0) < 2):
+            antes = None            # só quando o condomínio pede: troca de subconta vale para despesa recorrente e consistente
         if antes and not _existia(cat_l, antes):
             if _RE_RETENCAO.search(_sem_acento(l.descricao or "")):
                 continue
             # a mesma despesa/fornecedor estava em OUTRA subconta (vale mesmo se a atual também for nova)
-            por_troca.setdefault((chave_despesa(l), cat_l), []).append(l)
+            por_troca.setdefault((K(l), cat_l), []).append(l)
         elif not _existia(cat_l, categorias_anteriores):
             por_nova.setdefault(cat_l, []).append(l)
 
@@ -618,7 +637,7 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
     else:
         _nao("receita_negativa", "receitas", "o formato deste arquivo não traz as linhas de receita")
 
-    if dados.emissao:
+    if dados.emissao and (cfg_condo.get("previsto_realizado") or {}).get("ativar"):
         meses_emissao = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else []))
                          if h is not None and getattr(h, "emissao", None)]
         if meses_emissao:

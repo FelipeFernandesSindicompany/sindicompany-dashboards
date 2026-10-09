@@ -137,7 +137,19 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Condomínio Cores",
       "regras": {
         "subcontas": {
-          "comparar_entre_formatos": true
+          "comparar_entre_formatos": true,
+          "chave_rubrica_fornecedor": true
+        },
+        "rendimento": {
+          "contas_sem_base": [
+            "ORDINARIA"
+          ],
+          "contas_aplicadas": [
+            "ORDINARIA"
+          ]
+        },
+        "previsto_realizado": {
+          "ativar": true
         }
       },
       "leitor_financeiro": "regras_gerais"
@@ -262,7 +274,11 @@
       "regras": {
         "subcontas": {
           "comparar_entre_formatos": true
-        }
+        },
+        "texto_valor_repetido": true
+      },
+      "parser_config": {
+        "pagina_em_branco_sem_anexo": true
       }
     },
     "organy_residencial": {
@@ -312,7 +328,9 @@
         "subcontas": {
           "ignorar_despesas": [
             "^RECEITA FEDERAL$"
-          ]
+          ],
+          "ignorar_pagador_generico": true,
+          "exigir_recorrencia": true
         }
       }
     },
@@ -383,7 +401,8 @@
             "ENERGIA": "DESPESA TARIFAS CONCESSIONÁRIA",
             "TARIFAS CONCESSIONÁRIAS": "DESPESA TARIFAS CONCESSIONÁRIA"
           },
-          "comparar_entre_formatos": true
+          "comparar_entre_formatos": true,
+          "ignorar_aplicacao_resgate": true
         }
       },
       "emissao_pdf": "lello_resumo_geral"
@@ -474,7 +493,12 @@
       }
     },
     "fit_casa_rio_bonito": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Fit Rio Bonito"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Fit Rio Bonito",
+      "regras": {
+        "previsto_realizado": {
+          "ativar": true
+        }
+      }
     }
   }
 }

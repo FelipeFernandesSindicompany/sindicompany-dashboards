@@ -412,6 +412,15 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     achados_regras, status_regras, avisos_regras = regras_gerais_pipeline.executar(
         condo, mes, entrada, pasta_busca_regras)
     achados.extend(achados_regras)
+    if (condo.get("regras") or {}).get("texto_valor_repetido"):
+        # Condomínios que pedem: divergência cujo valor aparece em 2+ campos do próprio comprovante é divergência real, não erro de OCR.
+        _por_chave = {chave_registro(r): r for r in registros}
+        for a in achados:
+            if a.tipo == "divergencia_valor" and "ocr" in a.regra_aplicada and a.valor_encontrado and a.registros_relacionados:
+                comp = _por_chave.get(a.registros_relacionados[0])
+                lido = f"{a.valor_encontrado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                if comp is not None and (comp.texto_bruto or "").count(lido) >= 2:
+                    a.detalhes["valor_repetido_no_comprovante"] = True
     if registros and not any(r.tipo_documento == "comprovante_anexado" for r in registros):
         # Upload parcial (só o Demonstrativo): sem comprovantes não há conferência de comprovantes — não é "nenhuma divergência".
         print("[AVISO] o arquivo enviado não traz os comprovantes de pagamento (só o Demonstrativo): a conferência de "

@@ -71,8 +71,7 @@ def _texto_divergencia_valor(achado: Achado, registro: RegistroComprovante | Non
     esperado = _fmt_moeda(achado.valor_esperado)
     encontrado = _fmt_moeda(achado.valor_encontrado)
     regra = achado.regra_aplicada
-    lido = f"{achado.valor_encontrado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if achado.valor_encontrado else None
-    repetido = bool(lido and registro and (registro.texto_bruto or "").count(lido) >= 2)
+    repetido = bool((achado.detalhes or {}).get("valor_repetido_no_comprovante"))   # marca posta só nos condomínios que pedem
     if "ocr" in regra and repetido:
         # O mesmo valor aparece em mais de um campo do comprovante (ex.: "Valor do lançamento" e "Valor pago"): a
         # leitura não é um dígito trocado, a divergência é real.

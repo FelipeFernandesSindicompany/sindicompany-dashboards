@@ -3,13 +3,78 @@ Extrator das regras gerais — Cores.
 
 O Cores entrega a prestação de contas em TRÊS formatos, todos mantidos:
   .xlsx  → planilha Habitacional (até jul/2026)                      → extratores/habitacional_xlsx.py
-  .pdf   → "Demonstrativo de Contas" (ago/2026: "Emitido em...")     → extratores/contasdata.py
+  .pdf   → "Demonstrativo de Contas" (ago/2026: "Emitido em...")     → extratores/contasdata.py (+ Resumo de Emissões, abaixo)
   .pdf   → portal CondoPro impresso em PDF (set/2026: logo CondoPro) → extratores/condopro_pdf.py
 O PDF é reconhecido pelo conteúdo (o do CondoPro não tem "Emitido em" e traz o seletor de mês "Consultar").
 """
+import re
 from pathlib import Path
 
 from conciliacao.regras_gerais.modelo import DadosRegras
+
+_RE_VALOR = re.compile(r"^-?\d{1,3}(?:\.\d{3})*,\d{2}$|^-?\d+,\d{2}$")
+
+
+def _num(t: str) -> float:
+    return float(t.replace(".", "").replace(",", "."))
+
+
+def _emissao_do_demonstrativo(caminho: Path) -> dict | None:
+    """"Resumo de Emissões Colunado" da conta ORDINARIA no PDF "Demonstrativo de Contas": para cada linha, o texto e
+    depois Realizado e Previsto (nessa ordem; linha só com um número = só Previsto, ex.: ANTECIPAÇÕES); a linha sem texto
+    com dois números é o total. Também lê o crédito "EMISSÃO DO PERÍODO" da Posição Financeira da mesma conta."""
+    import fitz
+
+    doc = fitz.open(str(caminho))
+    try:
+        linhas = [l.strip() for pg in doc for l in pg.get_text().split("\n")]
+    finally:
+        doc.close()
+    ini = next((i for i, l in enumerate(linhas) if l.upper() == "ORDINARIA" and i + 1 < len(linhas)
+                and linhas[i + 1].startswith("Resumo de Emiss")), None)
+    if ini is None:
+        return None
+    i = ini + 2
+    while i < len(linhas) and linhas[i] in ("Realizado", "Previsto"):
+        i += 1
+    itens, total, pos = [], None, None
+    atual, nums = None, []
+
+    def _fechar():
+        nonlocal atual, nums, total
+        if atual is not None and len(nums) >= 3 and total is None:
+            # a última linha da tabela vem seguida, sem rótulo, dos dois totais (Realizado, Previsto)
+            total = (nums[-2], nums[-1])
+            nums = nums[:-2]
+        if atual is not None and nums:
+            real, prev = (nums[0], nums[1]) if len(nums) >= 2 else (0.0, nums[0])
+            itens.append({"descricao": atual, "previsto": prev, "realizado": real, "local": "página 1"})
+        elif atual is None and len(nums) >= 2 and total is None:
+            total = (nums[0], nums[1])          # (realizado, previsto)
+        atual, nums = None, []
+
+    while i < len(linhas):
+        l = linhas[i]
+        if l.startswith("Posi") and "Financeira" in l:
+            _fechar()
+            break
+        if _RE_VALOR.match(l):
+            nums.append(_num(l))
+        else:
+            _fechar()
+            if total is not None:
+                break          # depois do total vem "COTAS REC. DE COBRANÇA EM <fim do mês>" (devedores)
+            atual = l
+        i += 1
+    # crédito "EMISSÃO DO PERÍODO" da Posição Financeira da ORDINARIA
+    for j in range(i, min(i + 80, len(linhas))):
+        if linhas[j].upper().startswith("EMISS") and j + 1 < len(linhas) and _RE_VALOR.match(linhas[j + 1]):
+            pos = {"valor": _num(linhas[j + 1]), "local": "página 1"}
+            break
+    if not itens or total is None:
+        return None
+    return {"conta": "ORDINARIA", "linhas": itens, "previsto": round(total[1], 2), "realizado": round(total[0], 2),
+            "posicao_emissao": pos, "local": "página 1", "local_posicao": "página 1"}
 
 
 class Extrator:
@@ -28,5 +93,10 @@ class Extrator:
             if condopro.reconhece(caminho):
                 return condopro.extrair(caminho, mes)
             from conciliacao.regras_gerais.extratores.contasdata import Extrator as ExtratorContasData
-            return ExtratorContasData(self.condo).extrair(caminho, mes)
+            dados = ExtratorContasData(self.condo).extrair(caminho, mes)
+            try:
+                dados.emissao = _emissao_do_demonstrativo(caminho)
+            except Exception:
+                dados.emissao = None
+            return dados
         raise ValueError(f"formato de arquivo não suportado para o Cores: {caminho.suffix or 'sem extensão'}")

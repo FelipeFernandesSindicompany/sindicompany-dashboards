@@ -799,7 +799,8 @@ class ConciliadorLirbaPDF(ConciliadorBase):
             esperados.setdefault(d.codigo, []).append(d.valor)
 
         todas = sorted({p for ps in paginas_por_codigo.values() for p in ps})
-        brancas = paginas_em_branco(caminho, todas)
+        # Página de comprovante em branco = "sem anexo" só nos condomínios que pedem (parser_config.pagina_em_branco_sem_anexo).
+        brancas = paginas_em_branco(caminho, todas) if (self.config.get("parser_config") or {}).get("pagina_em_branco_sem_anexo") else set()
         textos = ocr.ocr_paginas(caminho, [p - 1 for p in todas if p not in brancas])  # {índice 0-based: texto}, 150 dpi
         # variantes de leitura por página (índice 0-based -> textos), da mais nítida para a mais crua
         extras: dict[int, list[str]] = {}
