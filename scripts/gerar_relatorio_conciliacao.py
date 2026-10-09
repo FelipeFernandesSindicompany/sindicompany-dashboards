@@ -427,6 +427,15 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
             print(f"[AVISO] regra não verificada neste arquivo — {regras_gerais_pipeline.REGRAS_NOMES[chave_regra]}: {st['motivo']}")
     with open(version_dir / "regras_gerais.json", "w", encoding="utf-8") as f:
         json.dump({"status": status_regras, "avisos": avisos_regras}, f, ensure_ascii=False, indent=2)
+    # Nada foi lido E nenhuma regra pôde ser aplicada: o arquivo não foi reconhecido. Dizer "nenhum achado" aqui seria
+    # afirmar que o balancete está correto sem ter verificado nada — falha ruidosa (a tela do Admin mostra o erro).
+    if (not registros and funcao_matching is not gerar_achados_balancete_mensal
+            and not any(st["aplicada"] for st in status_regras.values())):
+        motivos = sorted({st["motivo"] for st in status_regras.values() if st.get("motivo")})
+        raise ValueError(
+            f"O arquivo enviado ({arquivo.name}) NÃO foi reconhecido e nenhuma verificação foi feita — isto não significa "
+            f"que o balancete está correto. Motivo: {'; '.join(motivos) or 'formato não suportado'}. "
+            f"Envie o arquivo no formato usual deste condomínio ou avise o suporte para incluir este layout.")
 
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
 

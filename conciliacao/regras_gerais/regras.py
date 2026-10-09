@@ -468,11 +468,16 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
 
     cat_anterior: dict[str, dict] = {}     # chave da despesa -> {categoria normalizada: nome}
     categorias_anteriores: dict[str, str] = {}
+    meses_da_chave: dict[str, int] = {}    # chave da despesa -> em quantos meses do histórico ela apareceu
     for h in historico:
+        vistas_no_mes: set = set()
         for l in h.lancamentos:
             cat = _canon(l.categoria)
             cat_anterior.setdefault(chave_despesa(l), {})[_norm(cat)] = cat
             categorias_anteriores[_norm(cat)] = cat
+            vistas_no_mes.add(chave_despesa(l))
+        for k in vistas_no_mes:
+            meses_da_chave[k] = meses_da_chave.get(k, 0) + 1
 
     def _existia(cat_nome: str, conjunto: dict) -> bool:
         return any(_mesma_categoria(cat_nome, n) for n in conjunto.values())
@@ -486,6 +491,12 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
             continue               # transferência entre contas não é subconta de despesa
         antes = cat_anterior.get(chave_despesa(l))
         if antes and any(rx.search(chave_despesa(l)) for rx in ignorar_despesas):
+            antes = None
+        # "Mesma despesa em outra subconta" só vale para despesa RECORRENTE e CONSISTENTE: apareceu em pelo menos 2 meses
+        # anteriores e sempre na MESMA subconta. Fornecedor que presta serviços diferentes (cartão de crédito, tarifas,
+        # peças/manutenção, portaria/controle de acesso...) aparece em subcontas diferentes legitimamente — e um único mês
+        # de histórico não prova que aquela era "a" subconta da despesa. (Evita falso alerta, ex.: Palm Beach/Receita Federal.)
+        if antes and (len(antes) != 1 or meses_da_chave.get(chave_despesa(l), 0) < 2):
             antes = None
         if antes and not _existia(cat_l, antes):
             if _RE_RETENCAO.search(_sem_acento(l.descricao or "")):
