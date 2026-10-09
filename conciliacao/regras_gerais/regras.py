@@ -259,6 +259,46 @@ def regra_previsto_realizado(dados: DadosRegras, historico: list, cont: _Contado
     )]
 
 
+# ── Variação grande do total de uma categoria (só para o condomínio que pede) ─────────────────
+
+def regra_variacao_categoria(dados: DadosRegras, anterior: Optional[DadosRegras], cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """Categoria cujo total de despesas variou mais de `limite_pct` % (padrão 100) e mais de `valor_minimo` R$ (padrão 1.000)
+    em relação ao mês anterior. Configuração do condomínio: `regras.variacao_categoria`. Não é erro: é ponto de atenção
+    para o revisor, com os maiores lançamentos da categoria no mês."""
+    cfg = cfg or {}
+    if anterior is None or not dados.lancamentos or not anterior.lancamentos:
+        return []
+    limite = float(cfg.get("limite_pct", 100.0)) / 100.0
+    minimo = float(cfg.get("valor_minimo", 1000.0))
+
+    def totais(d: DadosRegras) -> dict:
+        t: dict = {}
+        for l in d.lancamentos:
+            if _norm(l.categoria).startswith("TRANSFERENCIA") or _norm(l.categoria).startswith("APLICACAO RESGATE"):
+                continue
+            t[_norm(l.categoria)] = (l.categoria, t.get(_norm(l.categoria), ("", 0.0))[1] + l.valor)
+        return t
+
+    atual, antes = totais(dados), totais(anterior)
+    achados = []
+    for k, (nome, v) in sorted(atual.items(), key=lambda kv: -kv[1][1]):
+        if k not in antes:
+            continue                       # categoria nova já é tratada pela regra de subcontas
+        v0 = antes[k][1]
+        if v0 <= _CENTAVO or abs(v - v0) < minimo or abs(v - v0) / v0 <= limite:
+            continue
+        itens = sorted([l for l in dados.lancamentos if _norm(l.categoria) == k], key=lambda l: -abs(l.valor))[:6]
+        achados.append(Achado(
+            id=cont.proximo(), tipo="variacao_categoria", severidade_sugerida="atencao",
+            regra_aplicada="total_da_categoria_variou_muito_em_relacao_ao_mes_anterior", linha_demonstrativo=nome,
+            valor_esperado=round(v0, 2), valor_encontrado=round(v, 2),
+            detalhes={"categoria": nome, "mes_anterior": round(v0, 2), "mes_atual": round(v, 2), "variacao_pct": round((v - v0) / v0 * 100, 1),
+                      "lancamentos": [{"descricao": l.descricao, "valor": l.valor, "data": l.data, "codigo": l.codigo,
+                                       "pagina": l.pagina, "local": l.local, "bbox": l.bbox} for l in itens]},
+        ))
+    return achados
+
+
 # ── Regra 3: rendimento proporcional ao saldo ────────────────────────────────
 
 def _base(c: ContaMes, modo: str = "media") -> float:
@@ -657,6 +697,8 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
         status["parcelas"] = {"aplicada": True, "motivo": None}
         meses = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else []))
                  if h is not None and h.cobertura.get("lancamentos") and h.lancamentos]
+        if cfg_condo.get("variacao_categoria") is not None:
+            achados += regra_variacao_categoria(dados, anterior, cont, cfg_condo.get("variacao_categoria"))
         if meses:
             achados += regra_subcontas(dados, meses, cont, cfg_condo.get("subcontas"))
             status["subcontas"] = {"aplicada": True, "motivo": None}

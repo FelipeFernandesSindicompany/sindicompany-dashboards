@@ -80,6 +80,7 @@ TIPOS_ACHADO = {
     "parcelas_mesmo_mes",        # duas (ou mais) parcelas da mesma série pagas no mesmo mês
     "lancamento_em_outra_subconta",  # fornecedor/despesa que mudou de subconta em relação ao mês anterior
     "previsto_realizado_inconsistente",  # Resumo de Emissão (Previsto x Realizado) fora do padrão dos meses anteriores
+    "variacao_categoria",        # categoria de despesa variou muito em relação ao mês anterior (só condomínios que pedem)
     "compensacao_nao_fecha",     # entrada e saída de um mesmo grupo (ex.: estacionamento) não se anulam no mês
 }
 

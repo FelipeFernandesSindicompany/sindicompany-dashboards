@@ -150,6 +150,10 @@
         },
         "previsto_realizado": {
           "ativar": true
+        },
+        "variacao_categoria": {
+          "limite_pct": 100,
+          "valor_minimo": 1000
         }
       },
       "leitor_financeiro": "regras_gerais"

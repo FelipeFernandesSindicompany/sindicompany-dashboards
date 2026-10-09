@@ -175,7 +175,23 @@ def texto_previsto_realizado(a: Achado) -> tuple[str, str, str]:
     return titulo, " ".join(partes), verificar
 
 
+def texto_variacao_categoria(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    cat = d.get("categoria") or a.linha_demonstrativo or "categoria"
+    pct = str(abs(d.get("variacao_pct") or 0)).replace(".", ",")
+    sentido = "subiu" if (d.get("variacao_pct") or 0) > 0 else "caiu"
+    itens = d.get("lancamentos") or []
+    lista = "; ".join(f"{i.get('descricao') or 'lançamento'} ({_moeda(i.get('valor'))})" for i in itens[:4])
+    titulo = f"Despesa da categoria {cat} {sentido} {pct}% em relação ao mês anterior ({_moeda(d.get('mes_anterior'))} → {_moeda(d.get('mes_atual'))})"
+    paragrafo = (f"O total de \"{cat}\" foi {_moeda(d.get('mes_atual'))} neste mês contra {_moeda(d.get('mes_anterior'))} no mês anterior "
+                 f"({sentido} {pct}%). Maiores lançamentos do mês na categoria: {lista}.")
+    verificar = ("Conferir se os lançamentos são despesas do mês (manutenção) ou investimento/aquisição que deveria ter outra classificação, "
+                 "se há aprovação para os valores mais altos e se há notas fiscais e comprovantes de todos.")
+    return titulo, paragrafo, verificar
+
+
 TEXTOS = {
+    "variacao_categoria": texto_variacao_categoria,
     "previsto_realizado_inconsistente": texto_previsto_realizado,
     "receita_negativa": texto_receita_negativa,
     "rendimento_desproporcional": texto_rendimento,
