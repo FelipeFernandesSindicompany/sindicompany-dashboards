@@ -948,21 +948,55 @@ function buildOrc(){
 
   h+='<tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Diferença (R−P)</th><th>% Realiz.</th><th>Status</th></tr>';
 
-  var cP=0,cR=0;
+  var cP=0,cR=0,ndMesesOrc=[];
 
   ks.forEach(function(k){
 
     var m=BAL[k],p=orc.meses[k],r=m.real,g=r-p;
 
-    var pct2=p>0?(r/p*100).toFixed(1):'0.0';cP+=p;cR+=r;
+    var semPrev=p===0&&r>0;
 
-    var cs=g>=0?'color:var(--g)':'color:var(--r)';
+    if(semPrev){ndMesesOrc.push(ab(m.tit));}
 
-    var badge=g>=0?'<span class="badge bok">✓ Ok</span>':(g>-10000?'<span class="badge bwarn">⚠ Atenção</span>':'<span class="badge bbad">✖ Déficit</span>');
+    cP+=p;cR+=r;
 
-    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr">'+R(p)+'</td><td class="nr">'+R(r)+'</td><td class="nr" style="'+cs+'">'+R(g)+'</td><td class="nr" style="'+cs+'">'+pct2+'%</td><td>'+badge+'</td></tr>';
+    var pCell,dCell,pctCell,badge;
+
+    if(semPrev){
+
+      pCell='<em style="color:var(--muted)">Não divulgado</em>';
+
+      dCell='<em style="color:var(--muted)">—</em>';
+
+      pctCell='<em style="color:var(--muted)">—</em>';
+
+      badge='<span class="badge" style="background:#e8e8e8;color:#888;border:1px solid #ccc">—</span>';
+
+    }else{
+
+      var pct2=p>0?(r/p*100).toFixed(1):'0.0';
+
+      var cs=g>=0?'color:var(--g)':'color:var(--r)';
+
+      pCell=R(p);
+
+      dCell='<span style="'+cs+'">'+R(g)+'</span>';
+
+      pctCell='<span style="'+cs+'">'+pct2+'%</span>';
+
+      badge=g>=0?'<span class="badge bok">✓ Ok</span>':(g>-10000?'<span class="badge bwarn">⚠ Atenção</span>':'<span class="badge bbad">✖ Déficit</span>');
+
+    }
+
+    h+='<tr><td class="bd">'+ab(m.tit)+'</td><td class="nr">'+pCell+'</td><td class="nr">'+R(r)+'</td><td class="nr">'+dCell+'</td><td class="nr">'+pctCell+'</td><td>'+badge+'</td></tr>';
 
   });
+
+  if(ndMesesOrc.length>0){
+
+    h+='<tr><td colspan="6" style="font-size:11.5px;color:var(--muted);padding:8px 12px;font-style:italic">* Valor previsto não divulgado pela administradora nos meses: '+ndMesesOrc.join(', ')+'.</td></tr>';
+
+  }
 
   var gA=cR-cP,csA=gA>=0?'color:var(--g)':'color:var(--r)';
 
