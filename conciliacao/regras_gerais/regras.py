@@ -376,11 +376,12 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
                     detalhes={**resumo, "conta": c.nome, "motivo": "taxa_fora_da_mediana",
                               "taxa_conta": taxas[_chave_conta(c.nome)], "desvio": desvio, "pagina": c.pagina},
                 ))
+    sem_rend = []
     for c in contas:
         if (any(_mesma_conta(c.nome, n) for n in obrigatorias) and c.rendimento <= _CENTAVO
                 and (base(c) > _CENTAVO or any(_mesma_conta(c.nome, n) for n in sem_base))):
             esperado = round(base(c) * mediana, 2) if mediana else None
-            achados.append(Achado(
+            novo = (Achado(
                 id=cont.proximo(), tipo="rendimento_desproporcional", severidade_sugerida="atencao",
                 regra_aplicada="conta_com_saldo_sem_rendimento_no_mes", linha_demonstrativo=c.nome,
                 valor_esperado=esperado, valor_encontrado=0.0,
@@ -389,6 +390,26 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
                           "contas_com_rendimento": [x.nome for x in contas if x.rendimento > _CENTAVO],
                           "rendimento_total_mes": round(sum(x.rendimento for x in contas), 2)},
             ))
+            if cfg.get("consolidar_sem_rendimento"):
+                sem_rend.append((c, novo))
+            else:
+                achados.append(novo)
+    if sem_rend:
+        # (só por configuração do condomínio) um único achado: o rendimento do mês caiu só nas contas que o recebem
+        # e as contas com saldo positivo ficaram sem rendimento.
+        com = [x for x in contas if x.rendimento > _CENTAVO]
+        ref = com[0] if com else None
+        def _sm(x):
+            return round((x.saldo_anterior + x.saldo_atual) / 2.0, 2)
+        achados.append(Achado(
+            id=cont.proximo(), tipo="rendimento_desproporcional", severidade_sugerida="atencao",
+            regra_aplicada="rendimento_concentrado_em_uma_conta_e_contas_com_saldo_sem_rendimento",
+            linha_demonstrativo=ref.nome if ref else sem_rend[0][0].nome, valor_esperado=None,
+            valor_encontrado=round(sum(x.rendimento for x in contas), 2),
+            detalhes={**resumo, "conta": ref.nome if ref else sem_rend[0][0].nome, "motivo": "sem_rendimento_consolidado",
+                      "pagina": ref.pagina if ref else None, "rendimento_total_mes": round(sum(x.rendimento for x in contas), 2),
+                      "contas_com_rendimento": [{"nome": x.nome, "saldo_medio": _sm(x), "rendimento": round(x.rendimento, 2)} for x in com],
+                      "contas_sem_rendimento": [{"nome": c.nome, "saldo_medio": _sm(c)} for c, _ in sem_rend]}))
     return achados
 
 

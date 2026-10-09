@@ -145,8 +145,12 @@
             "ORDINARIA"
           ],
           "contas_aplicadas": [
-            "ORDINARIA"
-          ]
+            "ORDINARIA",
+            "FUNDO DE RESERVA",
+            "ESPACO DE FESTAS",
+            "LOCACOES"
+          ],
+          "consolidar_sem_rendimento": true
         },
         "previsto_realizado": {
           "ativar": true
