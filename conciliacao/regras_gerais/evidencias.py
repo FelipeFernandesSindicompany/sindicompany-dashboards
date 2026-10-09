@@ -47,7 +47,7 @@ def specs_para(a: Achado) -> list[dict]:
     elif a.tipo == "compensacao_nao_fecha" and d.get("pagina"):
         specs.append(_spec(d["pagina"], r"ESTAC", "Lançamentos do grupo " + (d.get("grupo") or "")))
     elif a.tipo == "rendimento_desproporcional" and d.get("pagina"):
-        specs.append(_spec(d["pagina"], r"REND", "Rendimento creditado na conta " + (d.get("conta") or "")))
+        specs.append({**_spec(d["pagina"], r"REND", "Rendimento creditado na conta " + (d.get("conta") or "")), "linha_inteira": True})
     return [s for s in specs if s["buscar"]]
 
 

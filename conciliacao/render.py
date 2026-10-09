@@ -632,7 +632,8 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                 bbox = (esquerda, topo, direita, base)
                 da_linha = [w for w in palavras if w["top"] >= m["top"] - 2 and w["bottom"] <= m["bottom"] + 2]
                 x_ini = min([w["x0"] for w in da_linha] + [m["x0"]])
-                destaques = [(x_ini - 2, m["top"] - 1.5, m["x1"] + 2, m["bottom"] + 1.5)]
+                x_fim = max([w["x1"] for w in da_linha] + [m["x1"]]) if spec.get("linha_inteira") else m["x1"]
+                destaques = [(x_ini - 2, m["top"] - 1.5, x_fim + 2, m["bottom"] + 1.5)]
         else:
             destaques = [tuple(d) for d in spec.get("destaques", [])]
     except Exception:
