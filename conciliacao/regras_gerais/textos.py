@@ -49,14 +49,21 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
         onde = ", ".join(f"{x['nome']} (saldo médio {_moeda(x['saldo_medio'])})" for x in com)
         sem_txt = "; ".join(f"{x['nome']} (saldo médio {_moeda(x['saldo_medio'])})" for x in sem)
         negativa = any((x.get("saldo_medio") or 0) < 0 for x in com)
-        titulo = f"Rendimento concentrado em {com[0]['nome'] if com else conta}; contas com saldo positivo sem rendimento ({_moeda(d.get('rendimento_total_mes'))} no mês)"
-        paragrafo = (f"O rendimento do mês ({_moeda(d.get('rendimento_total_mes'))}) foi creditado somente em: {onde}. "
-                     + ("Essa conta está com saldo NEGATIVO — ou seja, suas despesas estão sendo pagas com o caixa das demais contas. " if negativa else "")
+        total = d.get("rendimento_total_mes") or 0.0
+        pos = [x for x in sem if (x.get("saldo_medio") or 0) > 0]
+        soma_pos = sum(x["saldo_medio"] for x in pos)
+        rateio = "; ".join(f"{x['nome']} {_moeda(round(total * x['saldo_medio'] / soma_pos, 2))}" for x in pos) if soma_pos > 0 else ""
+        titulo = f"Rendimento creditado na conta {com[0]['nome'] if com else conta}, que está com saldo negativo; contas com saldo positivo sem rendimento ({_moeda(total)} no mês)"
+        paragrafo = (f"O rendimento do mês ({_moeda(total)}) foi creditado somente em: {onde}. "
+                     + ("Essa conta está com saldo NEGATIVO — não tem dinheiro próprio aplicado: suas despesas estão sendo pagas com o caixa das demais contas. " if negativa else "")
                      + f"Contas com saldo positivo e sem nenhum rendimento: {sem_txt}. O rendimento das aplicações deve ser distribuído entre as "
-                     f"contas na proporção do saldo de cada uma.")
-        verificar = ("Perguntar à administradora por que todo o rendimento é creditado na conta "
-                     f"{com[0]['nome'] if com else conta}, que está no vermelho, como o rendimento deveria ser rateado com as contas de reserva e "
-                     "de fundos e se o saldo negativo representa empréstimo do Fundo de Reserva (e se foi aprovado em assembleia).")
+                     f"contas na proporção do saldo de cada uma."
+                     + (f" Referência: pela proporção do saldo médio das contas com saldo positivo, o rateio de {_moeda(total)} seria de aproximadamente {rateio} "
+                        f"(estimativa; depende de em qual conta bancária o dinheiro estava aplicado)." if rateio else ""))
+        verificar = ("Perguntar à administradora se o rendimento deve ser creditado na conta "
+                     f"{com[0]['nome'] if com else conta} (negativa) ou lançado nas contas com saldo positivo (Fundo de Reserva e demais), solicitar o extrato "
+                     "da aplicação para confirmar em qual conta bancária o rendimento foi gerado e se o saldo negativo representa empréstimo do Fundo de Reserva "
+                     "(e se foi aprovado em assembleia).")
         return titulo, paragrafo, verificar
     if d.get("motivo") == "sem_rendimento":
         titulo = f"Rendimento não creditado — {conta}"
