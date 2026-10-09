@@ -563,7 +563,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
     <div class="ni" onclick="nav('inadimp',this)"><span class="ic">&#9888;</span> <span>Inadimpl&ecirc;ncia</span></div>
 
-    <div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Banc&aacute;rio</span></div>
+    <div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Total</span></div>
 
   </div>
 
@@ -690,11 +690,11 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <div id="pg-banco" class="pg">
 
-  <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Posi&ccedil;&atilde;o nas contas e aplica&ccedil;&otilde;es financeiras</p></div>
+  <div class="ph"><h1>Saldo Total</h1><p>Posi&ccedil;&atilde;o nas contas cont&aacute;beis (Ordin&aacute;ria, Fundo de Reserva e Demais Contas)</p></div>
 
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><select onchange="window._filterBanco(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cBanco"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127981; Evolu&ccedil;&atilde;o por Conta</h3><select onchange="window._filterBanco(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cBanco"></canvas></div></div>
 
-  <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
+  <div class="cc"><h3>&#128203; Saldo Total por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
 
 </div>
 
@@ -1166,7 +1166,7 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>M\u00eas</th><th>C/C IT\u00c1U</th><th>CDB DI</th><th>ITAUVEST</th><th>Total</th></tr>';
+  var h='<tr><th>M\u00eas</th><th>Ordin\u00e1ria</th><th>Fundo de Reserva</th><th>Demais Contas</th><th>Total</th></tr>';
 
   MESES.forEach(function(k){
 
@@ -1457,11 +1457,11 @@ function buildCharts(){
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'C/C ITAÚ',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Ordinária',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'CDB DI',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Fundo de Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'ITAUVEST',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    {label:'Demais Contas',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;var s=(v<0?'-':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
