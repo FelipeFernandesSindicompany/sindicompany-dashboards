@@ -346,6 +346,30 @@ def _linha_receita(l, hist_extra=None) -> list:
     return r
 
 
+def _indicadores_das_linhas(linhas: list, mes: str, emissao: dict | None) -> dict | None:
+    """Mesma definição da planilha do Cores: previsto/realizado do Resumo de Emissão da ORDINARIA; inadimplência = soma, em todas as
+    contas, de "COTAS REC. DE COBRANÇA EM <último dia do mês>" (coluna K); recebidos em atraso = soma da mesma linha do mês anterior."""
+    if not emissao:
+        return None
+    ano, m = int(mes[:4]), int(mes[5:7])
+    ant = (12, ano - 1) if m == 1 else (m - 1, ano)
+    inad = proc = 0.0
+    achou = False
+    for r in linhas:
+        col0 = r[0] if isinstance(r[0], str) else ""
+        mt = re.match(r"^COTAS REC\. DE COBRAN.A\s+EM\s+(\d{2})/(\d{2})/(\d{4})", col0.upper())
+        if not mt:
+            continue
+        mes_l, ano_l = int(mt.group(2)), int(mt.group(3))
+        v = r[10] if isinstance(r[10], (int, float)) else 0.0
+        if (mes_l, ano_l) == (m, ano):
+            inad += v
+            achou = True
+        elif (mes_l, ano_l) == ant:
+            proc += v
+    return {"prev": emissao["previsto"], "real": emissao["realizado"], "inad": round(inad, 2) if achou else None, "inadProc": round(proc, 2)}
+
+
 class Extrator:
     def __init__(self, condo: dict):
         self.condo = condo
@@ -367,6 +391,7 @@ class Extrator:
         caminho = Path(caminho)
         linhas = _ler_documento(caminho)
         dados = extrair_de_linhas(linhas, mes, caminho.name)
+        dados.indicadores = _indicadores_das_linhas(linhas, mes, dados.emissao)
         dados.avisos.insert(0, "arquivo em PDF do portal CondoPro (página impressa): linhas reconstruídas pela posição do texto")
         # Recibos de grupos de cobrança (juros, honorários...) cujo título de conta o leitor da planilha toma por uma "conta" nova:
         # o crédito de cada conta já vem completo das linhas da Posição Financeira (ver aviso da conta), então esses recibos

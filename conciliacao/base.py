@@ -80,6 +80,9 @@ TIPOS_ACHADO = {
     "parcelas_mesmo_mes",        # duas (ou mais) parcelas da mesma série pagas no mesmo mês
     "lancamento_em_outra_subconta",  # fornecedor/despesa que mudou de subconta em relação ao mês anterior
     "previsto_realizado_inconsistente",  # Resumo de Emissão (Previsto x Realizado) fora do padrão dos meses anteriores
+    "nf_repetida_entre_meses",   # mesma Nota Fiscal do mesmo fornecedor paga em meses diferentes (só condomínios que pedem)
+    "inadimplencia_arrecadacao",  # arrecadação do mês abaixo do mínimo / inadimplência alta frente à emissão (só condomínios que pedem)
+    "saldo_negativo_persistente",  # conta com saldo negativo há vários meses seguidos (só condomínios que pedem)
     "variacao_categoria",        # categoria de despesa variou muito em relação ao mês anterior (só condomínios que pedem)
     "compensacao_nao_fecha",     # entrada e saída de um mesmo grupo (ex.: estacionamento) não se anulam no mês
 }

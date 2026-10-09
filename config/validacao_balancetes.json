@@ -158,6 +158,14 @@
         "variacao_categoria": {
           "limite_pct": 100,
           "valor_minimo": 1000
+        },
+        "nf_repetida": {},
+        "cobranca": {
+          "arrecadacao_min_pct": 90,
+          "inad_vs_emissao_pct": 100
+        },
+        "saldo_negativo": {
+          "meses": 3
         }
       },
       "leitor_financeiro": "regras_gerais"

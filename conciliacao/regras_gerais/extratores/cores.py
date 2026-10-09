@@ -77,6 +77,48 @@ def _emissao_do_demonstrativo(caminho: Path) -> dict | None:
             "posicao_emissao": pos, "local": "página 1", "local_posicao": "página 1"}
 
 
+def _indicadores_demonstrativo(caminho: Path, mes: str, emissao: dict | None) -> dict | None:
+    """Mesma definição da planilha do Cores (adapters/habitacional_xlsx.py): previsto/realizado = totais do Resumo de Emissão da
+    ORDINARIA; inadimplência = SOMA, em todas as contas, da linha "COTAS REC. DE COBRANÇA EM <último dia do mês>" (coluna Realizado);
+    recebidos em atraso = SOMA da mesma linha com a data do mês anterior. Lido pela posição das palavras (Previsto termina em x≈485 e
+    Realizado em x≈563)."""
+    import fitz
+
+    ano, m = int(mes[:4]), int(mes[5:7])
+    ant = (12, ano - 1) if m == 1 else (m - 1, ano)
+    inad = proc = 0.0
+    achou = False
+    doc = fitz.open(str(caminho))
+    try:
+        for pg in doc:
+            palavras = sorted(pg.get_text("words"), key=lambda t: (round(t[1]), t[0]))
+            linhas, ref = [], None
+            for t in palavras:
+                if ref is None or abs(t[1] - ref) > 3:
+                    linhas.append([t])
+                    ref = t[1]
+                else:
+                    linhas[-1].append(t)
+            for l in linhas:
+                texto = " ".join(t[4] for t in sorted(l, key=lambda t: t[0]))
+                mt = re.match(r"^COTAS REC\. DE COBRAN.A\s+EM\s+(\d{2})/(\d{2})/(\d{4})\b", texto)
+                if not mt:
+                    continue
+                mes_l, ano_l = int(mt.group(2)), int(mt.group(3))
+                realizado = [_num(t[4]) for t in l if _RE_VALOR.match(t[4]) and t[2] >= 520]
+                valor = realizado[0] if realizado else 0.0
+                if (mes_l, ano_l) == (m, ano):
+                    inad += valor
+                    achou = True
+                elif (mes_l, ano_l) == ant:
+                    proc += valor
+    finally:
+        doc.close()
+    if not emissao:
+        return None
+    return {"prev": emissao["previsto"], "real": emissao["realizado"], "inad": round(inad, 2) if achou else None, "inadProc": round(proc, 2)}
+
+
 class Extrator:
     def __init__(self, condo: dict):
         self.condo = condo
@@ -96,6 +138,7 @@ class Extrator:
             dados = ExtratorContasData(self.condo).extrair(caminho, mes)
             try:
                 dados.emissao = _emissao_do_demonstrativo(caminho)
+                dados.indicadores = _indicadores_demonstrativo(caminho, mes, dados.emissao)
             except Exception:
                 dados.emissao = None
             return dados

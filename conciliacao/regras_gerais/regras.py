@@ -299,6 +299,107 @@ def regra_variacao_categoria(dados: DadosRegras, anterior: Optional[DadosRegras]
     return achados
 
 
+# ── Regras de cobrança / duplicidade de NF / saldo negativo (só para o condomínio que pede) ─────────────
+
+def _fornecedor_da_descricao(l: LancamentoDespesa) -> str:
+    """Fornecedor do lançamento: o campo, se o arquivo traz; senão o 2º trecho de "Rubrica - FORNECEDOR - NF. nnn ...";
+    senão a descrição sem NF/mês."""
+    if l.fornecedor and _norm(l.fornecedor):
+        return _norm(l.fornecedor)
+    partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
+    if len(partes) >= 3:
+        return base_da_descricao(partes[1])
+    return base_da_descricao(l.descricao)
+
+
+_RE_PARC_NF = re.compile(r"\b(?:PARC(?:ELA)?S?\.?|PC)\s*\d{1,2}\s*/\s*\d{1,2}\b", re.IGNORECASE)
+
+
+def regra_nf_repetida(dados: DadosRegras, historico: list, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """Mesma Nota Fiscal do mesmo fornecedor (rubrica + fornecedor) já paga em um mês anterior do histórico: possível pagamento em
+    duplicidade. Ignora retenções/impostos (que citam a NF da nota principal) e parcelas."""
+    cfg = cfg or {}
+    vistos: dict = {}
+    for h in historico:
+        for l in h.lancamentos:
+            nf = nf_da_descricao(l.descricao)
+            if not nf or _RE_RETENCAO.search(_sem_acento(l.descricao or "")) or _RE_PARC_NF.search(l.descricao or ""):
+                continue
+            vistos.setdefault((_fornecedor_da_descricao(l), nf), []).append((h.mes, l.valor))
+    achados = []
+    for l in dados.lancamentos:
+        nf = nf_da_descricao(l.descricao)
+        if not nf or _RE_RETENCAO.search(_sem_acento(l.descricao or "")) or _RE_PARC_NF.search(l.descricao or ""):
+            continue
+        antes = vistos.get((_fornecedor_da_descricao(l), nf))
+        if not antes:
+            continue
+        achados.append(Achado(
+            id=cont.proximo(), tipo="nf_repetida_entre_meses", severidade_sugerida="alto",
+            regra_aplicada="mesma_nf_do_mesmo_fornecedor_paga_em_mes_anterior", linha_demonstrativo=l.categoria,
+            valor_esperado=None, valor_encontrado=l.valor,
+            detalhes={"nf": nf, "descricao": l.descricao, "valor": l.valor, "data": l.data,
+                      "anteriores": [{"mes": m, "valor": v} for m, v in antes],
+                      "lancamentos": [{"descricao": l.descricao, "valor": l.valor, "data": l.data, "codigo": l.codigo,
+                                       "pagina": l.pagina, "local": l.local, "bbox": l.bbox}]}))
+    return achados
+
+
+def regra_cobranca(dados: DadosRegras, anterior: Optional[DadosRegras], cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """Arrecadação da emissão do mês e inadimplência total frente à emissão mensal. Configuração do condomínio
+    (`regras.cobranca`): `arrecadacao_min_pct` (padrão 90) e `inad_vs_emissao_pct` (padrão 100)."""
+    cfg = cfg or {}
+    e, ind = dados.emissao, dados.indicadores
+    if not e or not ind or ind.get("inad") is None:
+        return []
+    emis = next((x for x in e["linhas"] if _norm(x["descricao"]).startswith("EMISSAO")), None)
+    if not emis or emis["previsto"] <= _CENTAVO:
+        return []
+    arrec = emis["realizado"] / emis["previsto"] * 100.0
+    inad_pct = ind["inad"] / emis["previsto"] * 100.0
+    minimo = float(cfg.get("arrecadacao_min_pct", 90.0))
+    teto = float(cfg.get("inad_vs_emissao_pct", 100.0))
+    if arrec >= minimo and inad_pct <= teto:
+        return []
+    ant = None
+    if anterior is not None and anterior.emissao:
+        ea = next((x for x in anterior.emissao["linhas"] if _norm(x["descricao"]).startswith("EMISSAO")), None)
+        if ea and ea["previsto"] > _CENTAVO:
+            ant = round(ea["realizado"] / ea["previsto"] * 100.0, 1)
+    return [Achado(
+        id=cont.proximo(), tipo="inadimplencia_arrecadacao", severidade_sugerida="atencao",
+        regra_aplicada="arrecadacao_abaixo_do_minimo_ou_inadimplencia_alta", linha_demonstrativo="Arrecadação e inadimplência",
+        valor_esperado=emis["previsto"], valor_encontrado=emis["realizado"],
+        detalhes={"emissao_prevista": emis["previsto"], "emissao_realizada": emis["realizado"], "arrecadacao_pct": round(arrec, 1),
+                  "arrecadacao_pct_mes_anterior": ant, "inadimplencia_total": ind["inad"], "inadimplencia_pct_da_emissao": round(inad_pct, 1),
+                  "recebidos_em_atraso": ind.get("inadProc"), "previsto_total": e["previsto"], "realizado_total": e["realizado"],
+                  "arrecadacao_min_pct": minimo, "inad_vs_emissao_pct": teto, "local": e.get("local")})]
+
+
+def regra_saldo_negativo(dados: DadosRegras, historico: list, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """Conta com saldo final negativo há `meses` meses seguidos (padrão 3), contando o mês atual."""
+    cfg = cfg or {}
+    minimo = int(cfg.get("meses", 3))
+    achados = []
+    for c in dados.contas:
+        if c.saldo_atual >= -_CENTAVO or c.nome.upper().startswith("CONSOLIDADO"):
+            continue
+        n = 1
+        for h in historico:
+            x = next((y for y in h.contas if _mesma_conta(y.nome, c.nome)), None)
+            if x is None or x.saldo_atual >= -_CENTAVO:
+                break
+            n += 1
+        if n >= minimo:
+            achados.append(Achado(
+                id=cont.proximo(), tipo="saldo_negativo_persistente", severidade_sugerida="atencao",
+                regra_aplicada="conta_com_saldo_negativo_ha_varios_meses", linha_demonstrativo=c.nome,
+                valor_encontrado=round(c.saldo_atual, 2),
+                detalhes={"conta": c.nome, "meses_seguidos": n, "saldo_atual": round(c.saldo_atual, 2), "saldo_anterior": round(c.saldo_anterior, 2),
+                          "pagina": c.pagina, "meses_lidos": len(historico) + 1}))
+    return achados
+
+
 # ── Regra 3: rendimento proporcional ao saldo ────────────────────────────────
 
 def _base(c: ContaMes, modo: str = "media") -> float:
@@ -704,6 +805,14 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
         if meses_emissao:
             achados += regra_previsto_realizado(dados, meses_emissao, cont)
             status["previsto_realizado"] = {"aplicada": True, "motivo": None}
+
+    if cfg_condo.get("cobranca") is not None:
+        achados += regra_cobranca(dados, anterior, cont, cfg_condo.get("cobranca"))
+    hist_regras = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else [])) if h is not None]
+    if cfg_condo.get("saldo_negativo") is not None:
+        achados += regra_saldo_negativo(dados, hist_regras, cont, cfg_condo.get("saldo_negativo"))
+    if cfg_condo.get("nf_repetida") is not None and dados.lancamentos:
+        achados += regra_nf_repetida(dados, [h for h in hist_regras if h.lancamentos], cont, cfg_condo.get("nf_repetida"))
 
     if cob.get("rendimentos"):
         achados += regra_rendimento(dados, anterior, cont, cfg_condo.get("rendimento"))

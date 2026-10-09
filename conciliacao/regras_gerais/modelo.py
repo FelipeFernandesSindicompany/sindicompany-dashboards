@@ -79,3 +79,5 @@ class DadosRegras:
     # {"conta", "linhas": [{"descricao", "previsto", "realizado", "local"}], "previsto", "realizado" (totais impressos
     # ou somados), "posicao_emissao": crédito da linha EMISSÃO DO PERÍODO na Posição Financeira (ou None), "local"}
     emissao: Optional[dict] = None
+    # Indicadores do Análise Financeira lidos do arquivo quando o leitor antigo não lê o formato: {"prev", "real", "inad", "inadProc"}
+    indicadores: Optional[dict] = None

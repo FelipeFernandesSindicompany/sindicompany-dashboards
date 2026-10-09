@@ -212,7 +212,51 @@ def texto_variacao_categoria(a: Achado) -> tuple[str, str, str]:
     return titulo, paragrafo, verificar
 
 
+def texto_nf_repetida(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    ant = "; ".join(f"{x['mes']} ({_moeda(x['valor'])})" for x in d.get("anteriores", []))
+    titulo = f"Mesma Nota Fiscal paga em meses diferentes — NF {d.get('nf')} ({_moeda(d.get('valor'))})"
+    paragrafo = (f"O lançamento \"{d.get('descricao')}\" ({_moeda(d.get('valor'))}, {d.get('data') or 'sem data'}) cita a NF {d.get('nf')}, "
+                 f"que já aparece paga do mesmo fornecedor em: {ant}. Pode ser pagamento em duplicidade, parcela não identificada ou reaproveitamento "
+                 f"do número da nota.")
+    verificar = ("Pedir à administradora as notas fiscais e comprovantes dos dois pagamentos e confirmar se são parcelas distintas; se for duplicidade, "
+                 "solicitar a devolução/estorno.")
+    return titulo, paragrafo, verificar
+
+
+def texto_cobranca(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    arrec = str(d.get("arrecadacao_pct")).replace(".", ",")
+    inad = str(d.get("inadimplencia_pct_da_emissao")).replace(".", ",")
+    ant = d.get("arrecadacao_pct_mes_anterior")
+    titulo = (f"Arrecadação de {arrec}% da emissão do mês e inadimplência de {_moeda(d.get('inadimplencia_total'))} ({inad}% da emissão mensal)")
+    paragrafo = (f"Da emissão do período ({_moeda(d.get('emissao_prevista'))}) foram arrecadados {_moeda(d.get('emissao_realizada'))} ({arrec}%"
+                 + (f"; no mês anterior, {str(ant).replace('.', ',')}%" if ant is not None else "")
+                 + f"). A inadimplência total em aberto no fim do mês é de {_moeda(d.get('inadimplencia_total'))}, equivalente a {inad}% da emissão mensal; "
+                 f"no mês foram recebidos {_moeda(d.get('recebidos_em_atraso'))} de cotas em atraso. Parâmetros do alerta: arrecadação abaixo de "
+                 f"{str(d.get('arrecadacao_min_pct')).replace('.', ',')}% ou inadimplência acima de {str(d.get('inad_vs_emissao_pct')).replace('.', ',')}% da emissão.")
+    verificar = ("Acompanhar a cobrança com a administradora: relação das unidades inadimplentes, ações de cobrança em andamento e efeito no caixa "
+                 "(a Ordinária está sendo coberta por outras contas).")
+    return titulo, paragrafo, verificar
+
+
+def texto_saldo_negativo(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    conta = d.get("conta") or a.linha_demonstrativo or "conta"
+    n = d.get("meses_seguidos")
+    mais = "pelo menos " if n >= (d.get("meses_lidos") or 0) else ""
+    titulo = f"Conta {conta} com saldo negativo há {mais}{n} meses seguidos ({_moeda(d.get('saldo_atual'))})"
+    paragrafo = (f"A conta {conta} fechou o mês com saldo de {_moeda(d.get('saldo_atual'))} (anterior: {_moeda(d.get('saldo_anterior'))}) e está negativa "
+                 f"{mais}{n} meses seguidos nos balancetes lidos. Saldo negativo significa despesas pagas com o caixa de outras contas.")
+    verificar = ("Perguntar à administradora de onde vem o dinheiro que cobre o saldo negativo, se houve aprovação em assembleia para esse uso dos fundos "
+                 "e qual o plano de recomposição.")
+    return titulo, paragrafo, verificar
+
+
 TEXTOS = {
+    "nf_repetida_entre_meses": texto_nf_repetida,
+    "inadimplencia_arrecadacao": texto_cobranca,
+    "saldo_negativo_persistente": texto_saldo_negativo,
     "variacao_categoria": texto_variacao_categoria,
     "previsto_realizado_inconsistente": texto_previsto_realizado,
     "receita_negativa": texto_receita_negativa,
