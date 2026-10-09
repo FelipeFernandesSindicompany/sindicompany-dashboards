@@ -449,6 +449,11 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
     def _canon(nome: str) -> str:
         return equivalentes.get(_norm(nome), nome)
 
+    # Despesas cujo "nome" não identifica o que foi pago (ex.: só "RECEITA FEDERAL": juros num mês, retenção de
+    # funcionários noutro) — configuração do condomínio `regras.subcontas.ignorar_despesas` (regex sobre a chave da
+    # despesa). Não entram na checagem "mesma despesa em outra subconta"; subconta nova continua valendo.
+    ignorar_despesas = [re.compile(x, re.IGNORECASE) for x in cfg.get("ignorar_despesas", [])]
+
     def _transferencia(nome: str) -> bool:
         n = _norm(nome)
         return n.startswith("TRANSFERENCIA") or n.startswith("APLICACAO RESGATE")
@@ -472,6 +477,8 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
         if _transferencia(cat_l):
             continue               # transferência entre contas não é subconta de despesa
         antes = cat_anterior.get(chave_despesa(l))
+        if antes and any(rx.search(chave_despesa(l)) for rx in ignorar_despesas):
+            antes = None
         if antes and not _existia(cat_l, antes):
             if _RE_RETENCAO.search(_sem_acento(l.descricao or "")):
                 continue

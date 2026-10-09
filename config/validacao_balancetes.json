@@ -302,6 +302,11 @@
             "SALAO DE FESTAS"
           ],
           "tolerancia": 0.25
+        },
+        "subcontas": {
+          "ignorar_despesas": [
+            "^RECEITA FEDERAL$"
+          ]
         }
       }
     },
