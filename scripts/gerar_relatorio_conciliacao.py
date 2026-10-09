@@ -334,7 +334,7 @@ def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
 
 
 _EMPRESAS_SO_PLANILHA = {"habitacional_xlsx", "lfc_xlsx"}
-_CONDOS_PLANILHA_E_PDF = {"onze_22"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
+_CONDOS_PLANILHA_E_PDF = {"onze_22", "cores"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
 
 
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
@@ -412,6 +412,13 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     achados_regras, status_regras, avisos_regras = regras_gerais_pipeline.executar(
         condo, mes, entrada, pasta_busca_regras)
     achados.extend(achados_regras)
+    if registros and not any(r.tipo_documento == "comprovante_anexado" for r in registros):
+        # Upload parcial (só o Demonstrativo): sem comprovantes não há conferência de comprovantes — não é "nenhuma divergência".
+        print("[AVISO] o arquivo enviado não traz os comprovantes de pagamento (só o Demonstrativo): a conferência de "
+              "comprovantes NÃO foi feita neste relatório. Envie o arquivo completo (com os comprovantes) para conferi-los.")
+    elif not registros:
+        print("[AVISO] nenhum lançamento/comprovante foi reconhecido neste arquivo para a conferência de comprovantes — "
+              "só as regras gerais (receita negativa, rendimento, subcontas...) foram aplicadas.")
     achados.sort(key=lambda a: 0 if a.tipo == "previsto_realizado_inconsistente" else 1)   # divergência do Previsto x Realizado abre a lista
     for aviso in avisos_regras:
         print(f"[AVISO] {aviso}")

@@ -134,7 +134,13 @@
       }
     },
     "cores": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Condomínio Cores"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Condomínio Cores",
+      "regras": {
+        "subcontas": {
+          "comparar_entre_formatos": true
+        }
+      },
+      "leitor_financeiro": "regras_gerais"
     },
     "elo_elo_duo": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Elo & Elo",

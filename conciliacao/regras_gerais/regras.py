@@ -429,6 +429,14 @@ def _mesma_categoria(a: str, b: str) -> bool:
     return len(curto) >= _PREFIXO_MINIMO_CATEGORIA and longo.startswith(curto)
 
 
+# Descrição que é SÓ o nome de quem recebe (órgão fiscal/previdenciário), sem dizer o que foi pago: o mesmo nome
+# aparece em subcontas diferentes legitimamente (juros, retenção de funcionários, manutenção...), então não identifica
+# "a mesma despesa" de um mês para o outro. Vale para qualquer condomínio (usa só o texto do próprio lançamento).
+_RE_PAGADOR_GENERICO = re.compile(
+    r"^(RECEITA FEDERAL|SECRETARIA DA RECEITA( FEDERAL)?|PREVIDENCIA SOCIAL|INSS|FGTS|IRRF|DARF|GPS|"
+    r"MUNICIPIO DE SAO PAULO|PREFEITURA( MUNICIPAL)?( DE SAO PAULO)?|CAIXA ECONOMICA FEDERAL|ISS|ISSQN)$", re.IGNORECASE)
+
+
 def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
     """Regra 8 — lançamento em subconta diferente da que a mesma despesa/fornecedor usou nos meses
     anteriores, e subconta que não existia antes.
@@ -452,7 +460,7 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
     # Despesas cujo "nome" não identifica o que foi pago (ex.: só "RECEITA FEDERAL": juros num mês, retenção de
     # funcionários noutro) — configuração do condomínio `regras.subcontas.ignorar_despesas` (regex sobre a chave da
     # despesa). Não entram na checagem "mesma despesa em outra subconta"; subconta nova continua valendo.
-    ignorar_despesas = [re.compile(x, re.IGNORECASE) for x in cfg.get("ignorar_despesas", [])]
+    ignorar_despesas = [re.compile(x, re.IGNORECASE) for x in cfg.get("ignorar_despesas", [])] + [_RE_PAGADOR_GENERICO]
 
     def _transferencia(nome: str) -> bool:
         n = _norm(nome)
