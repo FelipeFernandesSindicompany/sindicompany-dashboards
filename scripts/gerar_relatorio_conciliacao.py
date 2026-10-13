@@ -412,6 +412,9 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     achados_regras, status_regras, avisos_regras = regras_gerais_pipeline.executar(
         condo, mes, entrada, pasta_busca_regras)
     achados.extend(achados_regras)
+    if (condo.get("regras") or {}).get("guia_consolidada") is not None:
+        from conciliacao.matching import reclassificar_guias_consolidadas
+        achados = reclassificar_guias_consolidadas(achados, registros)
     if (condo.get("regras") or {}).get("texto_valor_repetido"):
         # Condomínios que pedem: divergência cujo valor aparece em 2+ campos do próprio comprovante é divergência real, não erro de OCR.
         _por_chave = {chave_registro(r): r for r in registros}

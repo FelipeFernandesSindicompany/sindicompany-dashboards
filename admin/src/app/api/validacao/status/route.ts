@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCondominio } from '@/lib/condominios';
 import { lerStatus } from '@/lib/validacaoStorage';
+import { jobDe } from '@/lib/validacaoProcessor';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,5 +15,6 @@ export async function GET(request: NextRequest) {
   if (!condo) return NextResponse.json({ error: 'Condomínio não encontrado' }, { status: 404 });
 
   const status = lerStatus(condo.pasta_dados, mes);
-  return NextResponse.json(status);
+  const job = jobDe(condominioId, mes);
+  return NextResponse.json({ ...status, job: job ? { ...job, log: job.log.slice(-40) } : null });
 }

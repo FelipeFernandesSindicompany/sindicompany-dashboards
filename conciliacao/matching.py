@@ -1519,3 +1519,29 @@ def gerar_achados_palm_beach(
             ))
 
     return achados
+
+
+def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
+    """Só para o condomínio que pede (`regras.guia_consolidada`): vários lançamentos (retenções de INSS/PIS/COFINS/CSLL/ISS) cujo
+    comprovante é UMA guia consolidada (DARF/GPS) viram "divergência de valor" porque cada um é comparado ao total da guia inteira.
+    Se a SOMA dos lançamentos que apontam para a mesma guia (mesmo documento) é igual ao total da guia (±2 centavos), a guia confere:
+    cada um deixa de ser divergência e vira "verificado". Se a soma não fecha, nada muda (as divergências ficam como estão)."""
+    por_chave = {chave_registro(r): r for r in registros}
+    grupos: dict = {}
+    for a in achados:
+        if a.tipo != "divergencia_valor" or "ocr" not in (a.regra_aplicada or "") or len(a.registros_relacionados) < 2:
+            continue
+        comp = por_chave.get(a.registros_relacionados[0])
+        if comp is None or not comp.valor or comp.valor <= 0 or not comp.texto_bruto:
+            continue
+        doc = re.sub(r"\s+", " ", comp.texto_bruto)[:400]
+        grupos.setdefault((doc, round(comp.valor, 2)), []).append(a)
+    for (_doc, total), membros in grupos.items():
+        if len(membros) >= 2 and abs(sum(m.valor_esperado or 0.0 for m in membros) - total) <= 0.02:
+            for m in membros:
+                m.tipo = "ok_verificado"
+                m.severidade_sugerida = "informativo"
+                m.regra_aplicada = "guia_consolidada_confere_com_a_soma_dos_lancamentos"
+                m.valor_encontrado = m.valor_esperado
+                m.confianca_deterministica = 1.0
+    return achados

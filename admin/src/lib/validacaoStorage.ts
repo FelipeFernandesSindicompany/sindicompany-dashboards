@@ -48,12 +48,14 @@ export interface StatusConciliacao {
   achadosRevisados: any[] | null;
   relatorioExiste: boolean;
   pendentes: number;
+  extracaoConcluida: boolean;   // achados_brutos.json existe E o status.json registra conclusão (versão interrompida = false)
+  iniciadoEm?: string | null;
 }
 
 export function lerStatus(pastaDados: string, mes: string): StatusConciliacao {
   const versionDir = getLatestVersionDir(pastaDados, mes);
   if (!versionDir) {
-    return { existe: false, versao: null, achadosBrutos: null, achadosRevisados: null, relatorioExiste: false, pendentes: 0 };
+    return { existe: false, versao: null, achadosBrutos: null, achadosRevisados: null, relatorioExiste: false, pendentes: 0, extracaoConcluida: false };
   }
   const achadosBrutos = readJsonIfExists<any[]>(path.join(versionDir, 'achados_brutos.json'));
   const achadosRevisados = readJsonIfExists<any[]>(path.join(versionDir, 'achados_revisados.json'));
@@ -69,8 +71,12 @@ export function lerStatus(pastaDados: string, mes: string): StatusConciliacao {
     })),
     avisos: (rg?.avisos ?? []) as string[],
   } : null;
+  const stJson = readJsonIfExists<any>(path.join(versionDir, 'status.json'));
+  const extracaoConcluida = achadosBrutos !== null && (!stJson || !!stJson.concluido_em);
   return {
     existe: true,
+    extracaoConcluida,
+    iniciadoEm: stJson?.iniciado_em ?? null,
     escopo,
     versao: path.basename(versionDir),
     achadosBrutos,

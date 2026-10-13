@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { unlinkSync } from 'fs';
 import { PROJECT_ROOT } from './paths';
 import path from 'path';
 import type { Condominio } from './types';
@@ -110,4 +111,54 @@ export function condominioSuportado(condo: Pick<Condominio, 'id' | 'empresa_gest
 
 export function condoDirConciliacao(pastaDados: string, mes: string): string {
   return path.join(PROJECT_ROOT, pastaDados, 'conciliacao', mes);
+}
+
+
+/**
+ * Tarefa de validação em segundo plano: extrair + interpretar numa só execução no SERVIDOR.
+ * Antes, a página encadeava as duas etapas depois de uma requisição de vários minutos; se a conexão caía
+ * (túnel, página atualizada) a 2ª etapa se perdia e a tela mostrava dezenas de achados "pendentes" sem texto,
+ * ou "nenhuma divergência" com a extração ainda em andamento. Agora a página só acompanha o estado por polling.
+ * O estado fica em globalThis (as rotas da API podem ser empacotadas em módulos separados).
+ */
+export interface JobValidacao {
+  estado: 'rodando' | 'concluido' | 'erro';
+  etapa: 'extrair' | 'interpretar';
+  iniciadoEm: string;
+  terminadoEm?: string;
+  log: string[];
+  erro?: string;
+}
+
+const jobs: Map<string, JobValidacao> = ((globalThis as any).__jobsValidacao ??= new Map<string, JobValidacao>());
+
+export function jobDe(condominioId: string, mes: string): JobValidacao | null {
+  return jobs.get(`${condominioId}|${mes}`) ?? null;
+}
+
+export function iniciarJobValidacao(args: { condominioId: string; mes: string; arquivoTmp: string }): { ok: boolean; erro?: string } {
+  const chave = `${args.condominioId}|${args.mes}`;
+  if (jobs.get(chave)?.estado === 'rodando') {
+    return { ok: false, erro: 'Já existe uma extração em andamento para este condomínio e mês. Aguarde terminar.' };
+  }
+  const job: JobValidacao = { estado: 'rodando', etapa: 'extrair', iniciadoEm: new Date().toISOString(), log: [] };
+  jobs.set(chave, job);
+  (async () => {
+    try {
+      const r1 = await rodarEtapaConciliacao({ condominioId: args.condominioId, mes: args.mes, etapa: 'extrair', arquivo: args.arquivoTmp });
+      job.log.push(...r1.log);
+      if (!r1.success) { job.estado = 'erro'; job.erro = r1.error ?? 'Falha na extração'; return; }
+      job.etapa = 'interpretar';
+      const r2 = await rodarEtapaConciliacao({ condominioId: args.condominioId, mes: args.mes, etapa: 'interpretar' });
+      job.log.push(...r2.log);
+      if (!r2.success) { job.estado = 'erro'; job.erro = r2.error ?? 'Falha ao gerar o esqueleto de revisão'; return; }
+      job.estado = 'concluido';
+    } catch (e: any) {
+      job.estado = 'erro'; job.erro = e?.message ?? 'Erro interno';
+    } finally {
+      job.terminadoEm = new Date().toISOString();
+      try { unlinkSync(args.arquivoTmp); } catch { /* ignore */ }
+    }
+  })();
+  return { ok: true };
 }

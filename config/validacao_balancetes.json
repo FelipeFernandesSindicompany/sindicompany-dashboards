@@ -99,7 +99,8 @@
         "rendimento": {
           "tolerancia": 0.35
         },
-        "gestor": {}
+        "gestor": {},
+        "guia_consolidada": {}
       }
     },
     "club_park_butanta": {

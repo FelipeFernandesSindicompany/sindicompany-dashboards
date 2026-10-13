@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Upload, FileCheck2, Loader2, Download, Eye, Save, PlayCircle } from 'lucide-react';
 
@@ -41,6 +41,8 @@ interface StatusResp {
   achadosRevisados: AchadoRevisado[] | null;
   relatorioExiste: boolean;
   pendentes: number;
+  extracaoConcluida?: boolean;
+  job?: { estado: 'rodando' | 'concluido' | 'erro'; etapa: 'extrair' | 'interpretar'; iniciadoEm: string; terminadoEm?: string; log: string[]; erro?: string } | null;
 }
 
 function mesAtualPadrao(): string {
@@ -105,19 +107,45 @@ export default function ValidacaoCondominioPage() {
 
   useEffect(() => { carregarStatus(); }, [carregarStatus]);
 
+  const emAndamento = status?.job?.estado === 'rodando';
+  // Enquanto a extração roda no servidor, atualiza o andamento sozinho (a tela pode ser fechada e reaberta sem perder nada).
+  useEffect(() => {
+    if (!emAndamento) return;
+    const t = setInterval(() => { carregarStatus(); }, 4000);
+    return () => clearInterval(t);
+  }, [emAndamento, carregarStatus]);
+
+  // Rede de segurança: extração concluída mas sem a revisão preparada (ex.: versão antiga) — prepara sozinha, uma vez por versão.
+  const interpretadaRef = useRef<string>('');
+  useEffect(() => {
+    if (!status?.versao || emAndamento || busy) return;
+    if (status.extracaoConcluida && (status.achadosBrutos?.length ?? 0) > 0 && !status.achadosRevisados) {
+      const chave = `${condominioId}|${mes}|${status.versao}`;
+      if (interpretadaRef.current === chave) return;
+      interpretadaRef.current = chave;
+      rodarInterpretar();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, emAndamento, busy]);
+
   async function rodarExtrair() {
     if (!arquivo) { setErro('Selecione o PDF da pasta de prestação de contas.'); return; }
     setBusy('extrair'); setErro(null); setLog([]);
-    const fd = new FormData();
-    fd.append('condominioId', condominioId);
-    fd.append('mes', mes);
-    fd.append('arquivo', arquivo);
-    const r = await fetch('/api/validacao/extrair', { method: 'POST', body: fd });
-    const d = await r.json();
-    setLog(d.log ?? []);
-    if (!r.ok) { setErro(d.error ?? 'Falha na extração'); setBusy(null); return; }
-    // Encadeia automaticamente a geração do esqueleto de revisão.
-    await rodarInterpretar();
+    try {
+      const fd = new FormData();
+      fd.append('condominioId', condominioId);
+      fd.append('mes', mes);
+      fd.append('arquivo', arquivo);
+      const r = await fetch('/api/validacao/extrair', { method: 'POST', body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setErro(d.error ?? 'Falha ao iniciar a extração'); return; }
+      // A extração e a preparação da revisão rodam juntas no servidor; a tela só acompanha o andamento.
+      await carregarStatus();
+    } catch {
+      setErro('Não foi possível enviar o arquivo (conexão interrompida). Tente novamente.');
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function rodarInterpretar() {
@@ -165,6 +193,8 @@ export default function ValidacaoCondominioPage() {
     setBusy(null);
   }
 
+  const interrompida = !!status?.versao && !status.extracaoConcluida && !emAndamento;
+  const pronta = !!status?.versao && !!status.extracaoConcluida && !emAndamento;
   const pendentes = status?.achadosBrutos?.filter(a => !revisados[a.id] || revisados[a.id].revisado_por === 'pendente') ?? [];
 
   if (carregandoCondo) {
@@ -212,9 +242,9 @@ export default function ValidacaoCondominioPage() {
             <input type="file" accept=".pdf,.xlsx,.xls" className="hidden"
               onChange={e => setArquivo(e.target.files?.[0] ?? null)} />
           </label>
-          <button className="btn-primary text-[12px] flex items-center gap-1.5" disabled={!!busy}
+          <button className="btn-primary text-[12px] flex items-center gap-1.5" disabled={!!busy || emAndamento}
             onClick={rodarExtrair}>
-            {busy === 'extrair' || busy === 'interpretar'
+            {busy === 'extrair' || busy === 'interpretar' || emAndamento
               ? <Loader2 size={13} className="animate-spin" /> : <PlayCircle size={13} />}
             Extrair e preparar revisão
           </button>
@@ -227,8 +257,43 @@ export default function ValidacaoCondominioPage() {
         )}
       </div>
 
+      {emAndamento && status?.job && (
+        <div className="card p-4 mb-4">
+          <p className="text-[13px] font-semibold text-text-primary flex items-center gap-2">
+            <Loader2 size={14} className="animate-spin" /> Extração em andamento
+          </p>
+          <p className="text-[12px] text-text-secondary mt-1">
+            Etapa: {status.job.etapa === 'extrair' ? 'lendo o arquivo e conferindo os comprovantes' : 'preparando a revisão'} — iniciada às{' '}
+            {new Date(status.job.iniciadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
+            Arquivos grandes levam vários minutos; esta tela atualiza sozinha e você pode sair e voltar. Nenhum resultado é mostrado até a extração terminar.
+          </p>
+        </div>
+      )}
+
+      {status?.job?.estado === 'erro' && !emAndamento && (
+        <div className="card p-4 mb-4 border border-danger/40">
+          <p className="text-[13px] font-semibold text-danger">A extração falhou</p>
+          <p className="text-[12px] text-text-secondary mt-1">{status.job.erro}</p>
+          {status.job.log.length > 0 && (
+            <div className="font-mono text-[11px] space-y-0.5 max-h-32 overflow-y-auto bg-bg-base rounded-lg p-2 mt-2">
+              {status.job.log.map((l, i) => <p key={i} className="text-text-secondary break-all">{l}</p>)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {interrompida && status?.job?.estado !== 'erro' && (
+        <div className="card p-4 mb-4 border border-warning/40">
+          <p className="text-[13px] font-semibold text-warning">A última extração não foi concluída</p>
+          <p className="text-[12px] text-text-secondary mt-1">
+            Ela foi interrompida (por exemplo, por reinício do sistema) e nenhum resultado foi gerado — isto NÃO significa que não há divergências.
+            Selecione o arquivo e clique em &quot;Extrair e preparar revisão&quot; novamente.
+          </p>
+        </div>
+      )}
+
       {/* O que foi — e o que NÃO foi — verificado nesta extração. "Nenhum achado" nunca deve ser lido como "tudo certo". */}
-      {status?.versao && (
+      {pronta && status && (
         <div className="card p-4 mb-4">
           <p className="text-[13px] font-semibold text-text-primary">
             {status.achadosBrutos && status.achadosBrutos.length === 0
@@ -278,7 +343,7 @@ export default function ValidacaoCondominioPage() {
       )}
 
       {/* Revisão dos achados */}
-      {status?.achadosBrutos && status.achadosBrutos.length > 0 && (
+      {pronta && status?.achadosBrutos && status.achadosBrutos.length > 0 && (
         <div className="card p-4 mb-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-[14px] font-semibold text-text-primary">
@@ -327,7 +392,7 @@ export default function ValidacaoCondominioPage() {
       {/* Geração do relatório final — aparece sempre que a extração já rodou
           (status.versao existe), mesmo com 0 achados: um mês sem nenhuma
           divergência ainda precisa de um relatório pra baixar/entregar. */}
-      {status?.versao && (
+      {pronta && (
         <div className="card p-4 flex items-center justify-between flex-wrap gap-3">
           <div>
             <p className="text-[13px] font-semibold text-text-primary">Relatório final</p>
