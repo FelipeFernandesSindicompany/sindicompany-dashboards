@@ -560,11 +560,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
     <div class="ni" onclick="nav('despesas',this)"><span class="ic">&#128184;</span> <span>Despesas</span></div>
 
-    <div class="ni" onclick="nav('pvr',this)"><span class="ic">&#9878;</span> <span>Previsto &times; Realizado</span></div>
-
-    <div class="ni" onclick="nav('orcamento',this)"><span class="ic">&#127919;</span> <span>Or&ccedil;amento</span></div>
-
-    <div class="ni" onclick="nav('inadimp',this)"><span class="ic">&#9888;</span> <span>Inadimpl&ecirc;ncia</span></div>
+<div class="ni" onclick="nav('inadimp',this)"><span class="ic">&#9888;</span> <span>Inadimpl&ecirc;ncia</span></div>
 
     <div class="ni" onclick="nav('banco',this)"><span class="ic">&#127981;</span> <span>Saldo Total</span></div>
 
@@ -642,36 +638,6 @@ tr:nth-child(even) td{background:#FAFAFA;}
   </div>
 
   <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#128203; Detalhamento por Categoria e M&ecirc;s</h3><select onchange="window._filterDespTable(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="tw"><table id="tblDesp"></table></div></div>
-
-</div>
-
-
-
-<div id="pg-pvr" class="pg">
-
-  <div class="ph"><h1>Previsto &times; Realizado</h1><p>Emiss&atilde;o Prevista vs. Emiss&atilde;o Realizada da Conta Ordin&aacute;ria</p></div>
-
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127919; Previsto &times; Realizado por M&ecirc;s</h3><select onchange="window._filterPvr(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cPvr"></canvas></div></div>
-
-  <div class="g2">
-
-    <div class="cc"><h3>&#128203; Tabela Comparativa</h3><div class="tw"><table id="tblPvr"></table></div></div>
-
-    <div class="cc"><h3>&#128202; Gap Mensal (R&#8722;P)</h3><div class="cws"><canvas id="cGap"></canvas></div></div>
-
-  </div>
-
-  <div class="al inf"><span class="ai">&#8505;</span><div><strong>Regra de receita:</strong> Real &gt; Previsto = &#127881; VERDE (arrecadou acima do or&ccedil;amento). Real &lt; Previsto = &#128308; VERMELHO (indica inadimpl&ecirc;ncia).</div></div>
-
-</div>
-
-
-
-<div id="pg-orcamento" class="pg">
-
-  <div class="ph"><h1>Or&ccedil;amento</h1><p>Execu&ccedil;&atilde;o or&ccedil;ament&aacute;ria: realizado &times; previsto</p></div>
-
-  <div id="orc-content"></div>
 
 </div>
 
@@ -852,7 +818,7 @@ window.onload=function(){
 
   var anosMeses={};MESES.forEach(function(k){var ano='20'+k.slice(-2);if(!anosMeses[ano])anosMeses[ano]=[];anosMeses[ano].push(k);});var anosDisp=Object.keys(anosMeses).sort();var anoAtivoBal=anosDisp[anosDisp.length-1];var selAno=document.getElementById('bal-sel-ano');var selMesEl=document.getElementById('bal-sel-mes');function popularMeses(ano){selMesEl.innerHTML='';var lista=anosMeses[ano]||[];lista.forEach(function(k){var opt=document.createElement('option');opt.value=k;opt.textContent=BAL[k].tit.split(' / ')[0];selMesEl.appendChild(opt);});if(lista.length)selMesEl.value=lista[lista.length-1];return lista;}anosDisp.forEach(function(a){var opt=document.createElement('option');opt.value=a;opt.textContent=a;selAno.appendChild(opt);});selAno.value=anoAtivoBal;selAno.addEventListener('change',function(){anoAtivoBal=selAno.value;var lista=popularMeses(anoAtivoBal);if(lista.length)selectMes(lista[lista.length-1]);});selMesEl.addEventListener('change',function(){selectMes(selMesEl.value);});var listaMeses=popularMeses(anoAtivoBal);selectMes(listaMeses[listaMeses.length-1]);
 
-  buildOrc();buildDespTbl();buildPvr();buildInad();buildBanco();buildCharts();
+  buildDespTbl();buildInad();buildBanco();buildCharts();
 
 };
 
