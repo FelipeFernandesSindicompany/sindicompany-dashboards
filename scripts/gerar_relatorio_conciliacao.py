@@ -433,7 +433,7 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         print(f"[AVISO] {aviso}")
     for chave_regra, st in status_regras.items():
         if not st["aplicada"]:
-            print(f"[AVISO] regra não verificada neste arquivo — {regras_gerais_pipeline.REGRAS_NOMES[chave_regra]}: {st['motivo']}")
+            print(f"[AVISO] regra não verificada neste arquivo — {regras_gerais_pipeline.REGRAS_NOMES.get(chave_regra, chave_regra)}: {st['motivo']}")
     with open(version_dir / "regras_gerais.json", "w", encoding="utf-8") as f:
         json.dump({"status": status_regras, "avisos": avisos_regras}, f, ensure_ascii=False, indent=2)
     # Nada foi lido E nenhuma regra pôde ser aplicada: o arquivo não foi reconhecido. Dizer "nenhum achado" aqui seria

@@ -1,0 +1,197 @@
+"""
+Checklist de GESTOR CONDOMINIAL — pontos que um gestor olharia no balancete mesmo sem existir uma regra própria.
+
+Só roda para o condomínio que pede (`regras.gestor` em config/validacao_balancetes.json) e lê SOMENTE os arquivos
+desse condomínio (mês atual + histórico dele). Cada observação é um fato conferível (lançamento/linha citados, com
+página para o print) e sai como `observacao_gestor`, severidade "atencao" (informativo = "verificado" e sai do relatório): é pergunta para o revisor, nunca
+afirmação de erro e nunca "tudo certo".
+
+Verificações (todas desligáveis em `gestor.desativar`):
+  compra_marketplace        despesa paga em marketplace/intermediador de pagamento (sem fornecedor identificável)
+  valor_redondo             despesa de valor "redondo" e alto, que não repete valor de meses anteriores
+  fornecedor_novo           fornecedor sem nenhum lançamento nos meses anteriores, com valor alto
+  recorrente_ausente        despesa que aparece em todos os últimos meses e sumiu neste
+  valor_atipico             valor muito acima do histórico do mesmo fornecedor
+  duplicidade_no_mes        mesmo histórico e mesmo valor lançados mais de uma vez no mês
+  uso_fundo                 despesa paga direto de fundo (reserva etc.)
+  deficit_conta             conta que pagou bem mais do que recebeu no mês
+  inadimplencia_crescente   inadimplência total subiu forte em relação ao mês anterior
+"""
+import re
+import statistics
+from typing import Optional
+
+from conciliacao.base import Achado
+from conciliacao.regras_gerais.modelo import DadosRegras
+from conciliacao.regras_gerais.regras import _CENTAVO, _RE_RETENCAO, _norm, _sem_acento, nf_da_descricao, parcela_da_descricao
+
+_RE_MARKETPLACE = re.compile(
+    r"MERCADO\s*PAGO|MERCADO\s*LIVRE|MERCADOLIVRE|AMAZON|MAGAZINE\s*LUIZA|MAGALU|SHOPEE|ALIEXPRESS|KABUM|AMERICANAS|SHEIN|"
+    r"CASAS\s*BAHIA|PONTO\s*FRIO|SUBMARINO|PAGSEGURO|PAGSEG\b|PAYPAL|\bPICPAY\b", re.IGNORECASE)
+
+_PADROES = {
+    "valor_redondo_min": 2000.0,
+    "fornecedor_novo_min": 3000.0,
+    "meses_minimos_historico": 2,
+    "recorrente_meses": 3,
+    "recorrente_valor_min": 500.0,
+    "atipico_fator": 2.5,
+    "atipico_diferenca_min": 1000.0,
+    "duplicidade_valor_min": 100.0,
+    "uso_fundo_min": 1000.0,
+    "fundos": ["RESERVA"],
+    "deficit_contas": ["ORDINARIA"],
+    "deficit_min": 1000.0,
+    "inad_crescimento_pct": 20.0,
+    "inad_crescimento_min": 1000.0,
+}
+
+MAX_ITENS = 12
+
+
+def _item(l) -> dict:
+    return {"descricao": l.descricao, "valor": l.valor, "data": l.data, "codigo": l.codigo, "categoria": l.categoria, "conta": l.conta,
+            "pagina": l.pagina, "local": l.local, "bbox": l.bbox}
+
+
+def _chave_fornecedor(l) -> str:
+    """Identidade do FORNECEDOR (não da rubrica nem da unidade): os 2 primeiros termos do nome. Rubrica, nº de NF, RGI e mês
+    mudam entre meses/formatos e geravam falso 'fornecedor novo'/'sumiu'."""
+    if l.fornecedor and _norm(l.fornecedor):
+        nome = l.fornecedor
+    else:
+        partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
+        nome = partes[1] if len(partes) >= 3 else (partes[-1] if len(partes) == 2 else (l.descricao or ""))
+    termos = [t for t in re.sub(r"\d+", " ", _norm(nome)).split() if len(t) > 1]
+    return " ".join(termos[:2]) or _norm(l.descricao)
+
+
+def _estrutural(l) -> bool:
+    c = _norm(l.categoria)
+    return c.startswith(("TRANSFERENCIA", "APLICACAO RESGATE")) or bool(_RE_RETENCAO.search(_sem_acento(l.descricao or "")))
+
+
+def _lancamentos_validos(d: DadosRegras) -> list:
+    return [l for l in d.lancamentos if l.valor > _CENTAVO and not _estrutural(l)]
+
+
+def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico: list, cont, cfg: Optional[dict] = None,
+                 por_rubrica: bool = False) -> list[Achado]:
+    cfg = {**_PADROES, **(cfg or {})}
+    desativar = set(cfg.get("desativar") or [])
+    hist = [h for h in historico if h is not None and h.lancamentos]
+    atuais = _lancamentos_validos(dados)
+    achados: list[Achado] = []
+
+    chave = _chave_fornecedor
+
+    def novo(verificacao, itens, linha, valor, **extra):
+        achados.append(Achado(
+            id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao",
+            regra_aplicada=f"gestor_{verificacao}", linha_demonstrativo=linha, valor_encontrado=round(valor, 2) if valor is not None else None,
+            detalhes={"verificacao": verificacao, "total_itens": len(itens), "lancamentos": [_item(l) for l in itens[:MAX_ITENS]], **extra}))
+
+    por_mes = {h.mes: {chave(l) for l in _lancamentos_validos(h)} for h in hist}
+    historico_chaves = set().union(*por_mes.values()) if por_mes else set()
+
+    if "compra_marketplace" not in desativar:
+        itens = [l for l in atuais if _RE_MARKETPLACE.search(_sem_acento(l.descricao or "")) or _RE_MARKETPLACE.search(_sem_acento(l.fornecedor or ""))]
+        if itens:
+            novo("compra_marketplace", itens, "Compras em marketplace / intermediador", sum(l.valor for l in itens))
+
+    if "valor_redondo" not in desativar and hist:
+        valores_antes = {(chave(l), round(l.valor, 2)) for h in hist for l in _lancamentos_validos(h)}
+        itens = [l for l in atuais if l.valor >= cfg["valor_redondo_min"] and round(l.valor * 100) % 10000 == 0
+                 and (chave(l), round(l.valor, 2)) not in valores_antes and not parcela_da_descricao(l.descricao)]
+        if itens:
+            novo("valor_redondo", itens, "Despesas de valor redondo", sum(l.valor for l in itens), minimo=cfg["valor_redondo_min"])
+
+    if "fornecedor_novo" not in desativar and len(por_mes) >= cfg["meses_minimos_historico"]:
+        itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves]
+        if itens:
+            novo("fornecedor_novo", itens, "Fornecedores sem lançamento nos meses anteriores", sum(l.valor for l in itens),
+                 minimo=cfg["fornecedor_novo_min"], meses_lidos=len(por_mes))
+
+    if "recorrente_ausente" not in desativar and len(hist) >= cfg["recorrente_meses"]:
+        ultimos = hist[:cfg["recorrente_meses"]]
+        em_todos = set.intersection(*[por_mes[h.mes] for h in ultimos])
+        atuais_chaves = {chave(l) for l in _lancamentos_validos(dados)}
+        faltando = []
+        for k in sorted(em_todos - atuais_chaves):
+            vals = [l.valor for h in ultimos for l in _lancamentos_validos(h) if chave(l) == k]
+            amostra = [l for l in _lancamentos_validos(ultimos[0]) if chave(l) == k]
+            if not vals or statistics.median(vals) < cfg["recorrente_valor_min"] or not amostra:
+                continue
+            if any((p := parcela_da_descricao(l.descricao)) and p[0] >= p[1] for l in amostra):
+                continue                                   # série de parcelas que terminou
+            faltando.append((k, amostra[0], statistics.median(vals)))
+        if faltando:
+            achados.append(Achado(
+                id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_recorrente_ausente",
+                linha_demonstrativo="Despesas recorrentes ausentes neste mês", valor_encontrado=round(sum(v for _, _, v in faltando), 2),
+                detalhes={"verificacao": "recorrente_ausente", "total_itens": len(faltando), "meses_comparados": [h.mes for h in ultimos],
+                          "ausentes": [{"descricao": l.descricao, "mediana": round(v, 2), "categoria": l.categoria} for _, l, v in faltando[:MAX_ITENS]],
+                          "lancamentos": []}))
+
+    if "valor_atipico" not in desativar and hist:
+        totais_hist: dict = {}
+        for h in hist:
+            soma: dict = {}
+            for l in _lancamentos_validos(h):
+                soma[chave(l)] = soma.get(chave(l), 0.0) + l.valor
+            for k, v in soma.items():
+                totais_hist.setdefault(k, []).append(v)
+        total_atual: dict = {}
+        for l in atuais:
+            if not parcela_da_descricao(l.descricao):
+                total_atual[chave(l)] = total_atual.get(chave(l), 0.0) + l.valor
+        itens, medianas = [], []
+        for k, v in total_atual.items():
+            vs = totais_hist.get(k, [])
+            if len(vs) < 2:
+                continue
+            m = statistics.median(vs)
+            if m > _CENTAVO and v >= cfg["atipico_fator"] * m and v - m >= cfg["atipico_diferenca_min"]:
+                ls = [l for l in atuais if chave(l) == k and not parcela_da_descricao(l.descricao)]
+                itens += ls
+                medianas.append({"descricao": k, "valor": round(v, 2), "mediana": round(m, 2)})
+        if itens:
+            novo("valor_atipico", itens, "Valores acima do histórico do fornecedor", sum(l.valor for l in itens), fator=cfg["atipico_fator"],
+                 medianas=medianas[:MAX_ITENS])
+
+    if "duplicidade_no_mes" not in desativar:
+        grupos: dict = {}
+        for l in atuais:
+            if l.valor < cfg["duplicidade_valor_min"] or parcela_da_descricao(l.descricao):
+                continue
+            grupos.setdefault((_norm(l.descricao), round(l.valor, 2)), []).append(l)
+        for (_, v), ls in grupos.items():
+            if len(ls) >= 2 and (len({x.data for x in ls}) == 1 or nf_da_descricao(ls[0].descricao)):
+                novo("duplicidade_no_mes", ls, ls[0].categoria, v * len(ls), valor_unitario=v, vezes=len(ls))
+
+    if "uso_fundo" not in desativar:
+        itens = [l for l in atuais if l.valor >= cfg["uso_fundo_min"] and any(f in _norm(l.conta) for f in map(_norm, cfg["fundos"]))]
+        if itens:
+            novo("uso_fundo", itens, "Despesas pagas direto de fundo", sum(l.valor for l in itens), minimo=cfg["uso_fundo_min"],
+                 contas=sorted({l.conta for l in itens}))
+
+    if "deficit_conta" not in desativar:
+        alvos = list(map(_norm, cfg["deficit_contas"]))
+        for c in dados.contas:
+            if _norm(c.nome) in alvos and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
+                achados.append(Achado(
+                    id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_deficit_conta",
+                    linha_demonstrativo=c.nome, valor_encontrado=round(c.debitos - c.creditos, 2),
+                    detalhes={"verificacao": "deficit_conta", "conta": c.nome, "creditos": round(c.creditos, 2), "debitos": round(c.debitos, 2),
+                              "saldo_anterior": round(c.saldo_anterior, 2), "saldo_atual": round(c.saldo_atual, 2), "pagina": c.pagina, "lancamentos": []}))
+
+    if "inadimplencia_crescente" not in desativar and dados.indicadores and anterior is not None and anterior.indicadores:
+        a, b = dados.indicadores.get("inad"), anterior.indicadores.get("inad")
+        if a is not None and b is not None and b > _CENTAVO and a - b >= cfg["inad_crescimento_min"] and (a - b) / b * 100 >= cfg["inad_crescimento_pct"]:
+            serie = [(h.mes, h.indicadores["inad"]) for h in hist if h.indicadores and h.indicadores.get("inad") is not None][:4]
+            achados.append(Achado(
+                id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_inadimplencia_crescente",
+                linha_demonstrativo="Inadimplência total", valor_encontrado=round(a, 2),
+                detalhes={"verificacao": "inadimplencia_crescente", "atual": round(a, 2), "anterior": round(b, 2), "variacao_pct": round((a - b) / b * 100, 1),
+                          "serie": [{"mes": m, "inad": round(v, 2)} for m, v in serie], "lancamentos": []}))
+    return achados

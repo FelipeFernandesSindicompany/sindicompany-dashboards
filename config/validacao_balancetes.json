@@ -166,7 +166,8 @@
         },
         "saldo_negativo": {
           "meses": 3
-        }
+        },
+        "gestor": {}
       },
       "leitor_financeiro": "regras_gerais"
     },

@@ -84,6 +84,7 @@ TIPOS_ACHADO = {
     "inadimplencia_arrecadacao",  # arrecadação do mês abaixo do mínimo / inadimplência alta frente à emissão (só condomínios que pedem)
     "saldo_negativo_persistente",  # conta com saldo negativo há vários meses seguidos (só condomínios que pedem)
     "variacao_categoria",        # categoria de despesa variou muito em relação ao mês anterior (só condomínios que pedem)
+    "observacao_gestor",         # ponto que um gestor condominial questionaria, sem regra própria (só condomínios que pedem; sempre atenção, nunca "verificado")
     "compensacao_nao_fecha",     # entrada e saída de um mesmo grupo (ex.: estacionamento) não se anulam no mês
 }
 

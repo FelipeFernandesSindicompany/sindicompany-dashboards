@@ -829,6 +829,11 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
                  if h is not None and h.cobertura.get("lancamentos") and h.lancamentos]
         if cfg_condo.get("variacao_categoria") is not None:
             achados += regra_variacao_categoria(dados, anterior, cont, cfg_condo.get("variacao_categoria"))
+        if cfg_condo.get("gestor") is not None:
+            from conciliacao.regras_gerais.gestor import regra_gestor
+            achados += regra_gestor(dados, anterior, hist_regras, cont, cfg_condo.get("gestor"),
+                                    por_rubrica=bool((cfg_condo.get("subcontas") or {}).get("chave_rubrica_fornecedor")))
+            status["gestor"] = {"aplicada": True, "motivo": None}
         if meses:
             achados += regra_subcontas(dados, meses, cont, cfg_condo.get("subcontas"))
             status["subcontas"] = {"aplicada": True, "motivo": None}

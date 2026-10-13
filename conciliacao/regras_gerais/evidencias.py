@@ -44,6 +44,10 @@ def specs_para(a: Achado) -> list[dict]:
             if i.get("pagina"):
                 specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])),
                                    "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or "")))
+    elif a.tipo == "observacao_gestor":
+        for i in d.get("lancamentos", [])[:4]:
+            if i.get("pagina"):
+                specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])), "Lançamento citado nesta observação"))
     elif a.tipo == "compensacao_nao_fecha" and d.get("pagina"):
         specs.append(_spec(d["pagina"], r"ESTAC", "Lançamentos do grupo " + (d.get("grupo") or "")))
     elif a.tipo == "rendimento_desproporcional" and d.get("pagina"):
@@ -68,8 +72,10 @@ def texto_origem(a: Achado) -> Optional[str]:
 
     if a.tipo == "parcelas_mesmo_mes":
         locais = [f"parcela {p['n']}: {w}" for p in d.get("parcelas", []) if (w := _onde(p))]
-    elif a.tipo in ("lancamento_em_outra_subconta", "subconta_atipica"):
+    elif a.tipo in ("lancamento_em_outra_subconta", "subconta_atipica", "observacao_gestor"):
         locais = [w for i in d.get("lancamentos", [])[:3] if (w := _onde(i))]
+        if not locais and (w := _onde(d)):
+            locais = [w]
     else:
         w = _onde(d)
         locais = [w] if w else []

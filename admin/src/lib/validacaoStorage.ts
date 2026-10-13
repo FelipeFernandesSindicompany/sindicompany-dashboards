@@ -37,6 +37,7 @@ const NOMES_REGRAS: Record<string, string> = {
   parcelas: 'Duas parcelas pagas no mesmo mês',
   subcontas: 'Lançamentos nas subcontas corretas',
   previsto_realizado: 'Previsto x Realizado (Resumo de Emissão)',
+  gestor: 'Checklist de gestor condominial (pontos de atenção sem regra própria)',
 };
 
 export interface StatusConciliacao {

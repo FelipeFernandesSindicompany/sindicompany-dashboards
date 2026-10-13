@@ -253,7 +253,77 @@ def texto_saldo_negativo(a: Achado) -> tuple[str, str, str]:
     return titulo, paragrafo, verificar
 
 
+def _lista_itens(d: dict, n: int = 6) -> str:
+    itens = d.get("lancamentos") or []
+    txt = "; ".join(f"{i.get('descricao') or 'lançamento'} ({_moeda(i.get('valor'))}{', ' + i['data'] if i.get('data') else ''})" for i in itens[:n])
+    resto = (d.get("total_itens") or len(itens)) - min(len(itens), n)
+    return txt + (f" e mais {resto}" if resto > 0 else "")
+
+
+def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
+    """Pontos de um gestor condominial sem regra própria. Redação cautelosa: é pergunta ao revisor, não afirmação de erro."""
+    d = a.detalhes
+    v = d.get("verificacao")
+    n = d.get("total_itens") or len(d.get("lancamentos") or [])
+    total = _moeda(a.valor_encontrado)
+    pre = "Ponto de atenção de gestor — "
+    if v == "compra_marketplace":
+        titulo = pre + f"{n} compra(s) em marketplace/intermediador de pagamento ({total})"
+        par = (f"Há despesas pagas em marketplace ou intermediador de pagamento, o que normalmente não traz a nota fiscal de um fornecedor "
+               f"cadastrado: {_lista_itens(d)}.")
+        ver = ("Pedir a nota fiscal em nome do condomínio, a cotação/aprovação da compra e confirmar se o bem é despesa do mês ou patrimônio "
+               "que deveria constar no inventário.")
+    elif v == "valor_redondo":
+        titulo = pre + f"{n} despesa(s) de valor redondo e alto ({total})"
+        par = (f"Despesas a partir de {_moeda(d.get('minimo'))} com valor exato em centenas de reais e sem repetição de valor em meses anteriores: "
+               f"{_lista_itens(d)}. Valores redondos podem ser contrato/orçamento fechado, mas também estimativa ou adiantamento.")
+        ver = "Conferir a nota fiscal/contrato e se o valor pago é o valor real do serviço (e não estimativa ou adiantamento)."
+    elif v == "fornecedor_novo":
+        titulo = pre + f"{n} fornecedor(es) sem lançamento nos {d.get('meses_lidos')} meses anteriores ({total})"
+        par = (f"Lançamentos de valor alto (a partir de {_moeda(d.get('minimo'))}) de fornecedores/despesas que não aparecem em nenhum dos "
+               f"{d.get('meses_lidos')} meses anteriores lidos: {_lista_itens(d)}.")
+        ver = "Confirmar a contratação (cotações, aprovação do síndico/conselho) e a nota fiscal do fornecedor novo."
+    elif v == "recorrente_ausente":
+        itens = d.get("ausentes") or []
+        lista = "; ".join(f"{i['descricao']} (mediana {_moeda(i['mediana'])})" for i in itens[:6])
+        titulo = pre + f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} por mês)"
+        par = (f"Despesas presentes em todos os últimos {len(d.get('meses_comparados') or [])} meses lidos e ausentes neste: {lista}. "
+               f"Pode ser fim de contrato, mas também lançamento que ficou para o mês seguinte ou conta não paga.")
+        ver = "Perguntar à administradora se o contrato terminou ou se o lançamento foi postergado (e se há pagamento em atraso)."
+    elif v == "valor_atipico":
+        itens = d.get("medianas") or []
+        lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])})" for i in itens[:6])
+        titulo = pre + f"{n} despesa(s) muito acima do histórico do próprio fornecedor ({total})"
+        par = f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}."
+        ver = "Pedir a nota fiscal e a justificativa do aumento (reajuste, serviço extra, acúmulo de meses)."
+    elif v == "duplicidade_no_mes":
+        titulo = pre + f"mesmo lançamento repetido {d.get('vezes')}x no mês ({_moeda(d.get('valor_unitario'))} cada)"
+        par = (f"{_lista_itens(d)} aparecem com a mesma descrição e o mesmo valor mais de uma vez no mês. "
+               f"Pode ser pagamento em duplicidade ou duas cobranças legítimas com o mesmo histórico.")
+        ver = "Conferir as notas fiscais e os comprovantes de cada lançamento; se for duplicidade, pedir estorno."
+    elif v == "uso_fundo":
+        titulo = pre + f"{n} despesa(s) paga(s) direto do {', '.join(d.get('contas') or ['fundo'])} ({total})"
+        par = f"Despesas de valor relevante pagas com recursos de fundo: {_lista_itens(d)}."
+        ver = "Confirmar a finalidade, a aprovação em assembleia/previsão orçamentária e se há plano de reposição do fundo."
+    elif v == "deficit_conta":
+        titulo = pre + f"conta {d.get('conta')} pagou {_moeda(a.valor_encontrado)} a mais do que recebeu no mês"
+        par = (f"Na conta {d.get('conta')}, os créditos do mês foram {_moeda(d.get('creditos'))} e os débitos {_moeda(d.get('debitos'))} "
+               f"(saldo anterior {_moeda(d.get('saldo_anterior'))}, saldo final {_moeda(d.get('saldo_atual'))}).")
+        ver = "Perguntar de onde veio o caixa que cobriu a diferença (outra conta, reserva) e se há plano de recomposição."
+    elif v == "inadimplencia_crescente":
+        serie = " → ".join(f"{x['mes']}: {_moeda(x['inad'])}" for x in reversed(d.get("serie") or []))
+        titulo = pre + f"inadimplência subiu {str(d.get('variacao_pct')).replace('.', ',')}% em relação ao mês anterior ({_moeda(d.get('anterior'))} → {_moeda(d.get('atual'))})"
+        par = "A inadimplência total em aberto cresceu de um mês para o outro" + (f" (série recente: {serie})." if serie else ".")
+        ver = "Acompanhar com a administradora as ações de cobrança e a relação das unidades inadimplentes."
+    else:
+        titulo = pre + (a.linha_demonstrativo or "ponto a verificar")
+        par = f"Regra aplicada: {a.regra_aplicada}."
+        ver = "Revisar manualmente."
+    return titulo, par + " Observação baseada apenas nos arquivos do próprio condomínio; não é, por si só, prova de irregularidade.", ver
+
+
 TEXTOS = {
+    "observacao_gestor": texto_observacao_gestor,
     "nf_repetida_entre_meses": texto_nf_repetida,
     "inadimplencia_arrecadacao": texto_cobranca,
     "saldo_negativo_persistente": texto_saldo_negativo,
