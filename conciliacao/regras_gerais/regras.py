@@ -831,15 +831,18 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
             achados += regra_variacao_categoria(dados, anterior, cont, cfg_condo.get("variacao_categoria"))
         if cfg_condo.get("gestor") is not None:
             from conciliacao.regras_gerais.gestor import regra_gestor
-            achados += regra_gestor(dados, anterior, hist_regras, cont, cfg_condo.get("gestor"),
-                                    por_rubrica=bool((cfg_condo.get("subcontas") or {}).get("chave_rubrica_fornecedor")))
-            status["gestor"] = {"aplicada": True, "motivo": None}
+            ach_g, notas_g = regra_gestor(dados, anterior, hist_regras, cont, cfg_condo.get("gestor"),
+                                          por_rubrica=bool((cfg_condo.get("subcontas") or {}).get("chave_rubrica_fornecedor")))
+            achados += ach_g
+            status["gestor"] = {"aplicada": True, "motivo": "; ".join(notas_g) or None}
         if meses:
             achados += regra_subcontas(dados, meses, cont, cfg_condo.get("subcontas"))
             status["subcontas"] = {"aplicada": True, "motivo": None}
         else:
             status["subcontas"] = {"aplicada": False, "motivo": "não há mês anterior no mesmo formato de arquivo (ou ele não foi localizado/lido) para comparar as subcontas"}
     else:
+        if cfg_condo.get("gestor") is not None:
+            status["gestor"] = {"aplicada": False, "motivo": "o formato deste arquivo não lista os lançamentos individuais — o checklist de gestor (que analisa lançamentos, fornecedores e valores) não se aplica"}
         for regra in ("sem_identificacao", "parcelas"):
             _nao(regra, "lancamentos", "o formato deste arquivo não lista os lançamentos individuais")
         if dados.categorias and anterior is not None and anterior.categorias:

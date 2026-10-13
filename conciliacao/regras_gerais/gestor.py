@@ -40,10 +40,11 @@ _PADROES = {
     "duplicidade_valor_min": 100.0,
     "uso_fundo_min": 1000.0,
     "fundos": ["RESERVA"],
-    "deficit_contas": ["ORDINARIA"],
+    "deficit_contas": ["ORDINARIA", "CONDOMINIO"],   # trechos do nome da conta que paga as despesas correntes
     "deficit_min": 1000.0,
     "inad_crescimento_pct": 20.0,
     "inad_crescimento_min": 1000.0,
+    "estabilidade_minima": 0.5,
 }
 
 MAX_ITENS = 12
@@ -54,16 +55,46 @@ def _item(l) -> dict:
             "pagina": l.pagina, "local": l.local, "bbox": l.bbox}
 
 
+_RUIDO = {"DEB", "CC", "C", "REF", "NF", "NFE", "NFS", "NFSE", "INST", "COD", "FORNECIMENTO", "PARC", "PARCELA", "PC", "DE", "DA", "DO", "DAS",
+          "DOS", "E", "A", "O", "PGTO", "PAGTO", "PAGAMENTO", "REFERENTE", "PROPORCIONAL", "SERV", "SERVICO", "SERVICOS",
+          "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ", "JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO",
+          "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO", "LTDA", "ME", "EPP", "SA", "S", "FORN", "FORNEC", "AUT", "NFTS", "REF"}
+
+
 def _chave_fornecedor(l) -> str:
-    """Identidade do FORNECEDOR (não da rubrica nem da unidade): os 2 primeiros termos do nome. Rubrica, nº de NF, RGI e mês
-    mudam entre meses/formatos e geravam falso 'fornecedor novo'/'sumiu'."""
-    if l.fornecedor and _norm(l.fornecedor):
-        nome = l.fornecedor
-    else:
-        partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
-        nome = partes[1] if len(partes) >= 3 else (partes[-1] if len(partes) == 2 else (l.descricao or ""))
-    termos = [t for t in re.sub(r"\d+", " ", _norm(nome)).split() if len(t) > 1]
-    return " ".join(termos[:2]) or _norm(l.descricao)
+    """Identidade do FORNECEDOR (não da rubrica, da unidade ou do mês): os 2 primeiros termos significativos do nome, sem nº de NF/RGI/
+    instalação, mês, 'DEB C/C', 'REF' etc. — que mudam entre meses e formatos e geravam falso 'fornecedor novo'/'sumiu'."""
+    def termos(txt: str) -> list:
+        return [t for t in re.sub(r"\d+", " ", _norm(txt)).split() if t not in _RUIDO and len(t) > 1]
+
+    if l.fornecedor and termos(l.fornecedor):
+        return " ".join(termos(l.fornecedor)[:2])
+    partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
+    ordem = ([partes[1], partes[0]] + partes[2:]) if len(partes) >= 3 else partes
+    for trecho in ordem:                      # 1º trecho com nome utilizável (os de só nº/mês/ruído são pulados)
+        t = termos(trecho)
+        if t:
+            return " ".join(t[:2])
+    return termos(l.descricao or "")[0] if termos(l.descricao or "") else _norm(l.descricao)
+
+
+def estabilidade_fornecedores(hist: list) -> Optional[float]:
+    """Parcela das chaves de fornecedor do mês mais recente do histórico que também aparecem no mês anterior a ele (None se não há 2 meses).
+    Mede se, NESTE formato, o nome do fornecedor é um identificador confiável entre meses."""
+    h = [x for x in hist if x is not None and x.lancamentos]
+    if len(h) < 2:
+        return None
+    a = {_chave_fornecedor(l) for l in _lancamentos_validos(h[0])}
+    b = {_chave_fornecedor(l) for l in _lancamentos_validos(h[1])}
+    return len(a & b) / len(a) if a else None
+
+
+_RE_EVENTUAL = re.compile(r"F[EÉ]RIAS|13\s*[ºO°]?\s*(?:SAL|PROP)|DECIMO|RESCIS|I\.?\s?P\.?\s?T\.?\s?U|ADIANTAMENTO", re.IGNORECASE)
+
+
+def _eventual(l) -> bool:
+    """Férias, 13º, rescisão, IPTU: pagamentos que não se repetem todo mês por natureza — não são 'fornecedor novo' nem 'valor atípico'."""
+    return bool(_RE_EVENTUAL.search(_sem_acento(l.descricao or "")))
 
 
 def _estrutural(l) -> bool:
@@ -76,12 +107,25 @@ def _lancamentos_validos(d: DadosRegras) -> list:
 
 
 def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico: list, cont, cfg: Optional[dict] = None,
-                 por_rubrica: bool = False) -> list[Achado]:
+                 por_rubrica: bool = False) -> tuple[list[Achado], list[str]]:
+    """(achados, notas) — notas = o que NÃO pôde ser verificado e por quê (vai para 'Verificações realizadas')."""
     cfg = {**_PADROES, **(cfg or {})}
     desativar = set(cfg.get("desativar") or [])
+    notas: list[str] = []
     hist = [h for h in historico if h is not None and h.lancamentos]
     atuais = _lancamentos_validos(dados)
     achados: list[Achado] = []
+    est = estabilidade_fornecedores(hist)
+    if est is None:
+        motivo = "menos de 2 meses anteriores lidos no mesmo formato"
+    elif est < cfg["estabilidade_minima"]:
+        motivo = (f"neste formato de arquivo o nome do fornecedor não se repete de forma identificável de um mês para o outro "
+                  f"(só {est * 100:.0f}% dos fornecedores do último mês aparecem no mês anterior)")
+    else:
+        motivo = None
+    if motivo:
+        desativar |= {"fornecedor_novo", "recorrente_ausente", "valor_atipico"}
+        notas.append(f"fornecedor novo, despesa recorrente ausente e valor acima do histórico do fornecedor não verificados: {motivo}")
 
     chave = _chave_fornecedor
 
@@ -100,14 +144,14 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
             novo("compra_marketplace", itens, "Compras em marketplace / intermediador", sum(l.valor for l in itens))
 
     if "valor_redondo" not in desativar and hist:
-        valores_antes = {(chave(l), round(l.valor, 2)) for h in hist for l in _lancamentos_validos(h)}
+        valores_antes = {round(l.valor, 2) for h in hist for l in _lancamentos_validos(h)}   # valor idêntico em mês anterior = valor fixo recorrente
         itens = [l for l in atuais if l.valor >= cfg["valor_redondo_min"] and round(l.valor * 100) % 10000 == 0
-                 and (chave(l), round(l.valor, 2)) not in valores_antes and not parcela_da_descricao(l.descricao)]
+                 and round(l.valor, 2) not in valores_antes and not parcela_da_descricao(l.descricao)]
         if itens:
             novo("valor_redondo", itens, "Despesas de valor redondo", sum(l.valor for l in itens), minimo=cfg["valor_redondo_min"])
 
     if "fornecedor_novo" not in desativar and len(por_mes) >= cfg["meses_minimos_historico"]:
-        itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves]
+        itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves and not _eventual(l)]
         if itens:
             novo("fornecedor_novo", itens, "Fornecedores sem lançamento nos meses anteriores", sum(l.valor for l in itens),
                  minimo=cfg["fornecedor_novo_min"], meses_lidos=len(por_mes))
@@ -143,7 +187,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 totais_hist.setdefault(k, []).append(v)
         total_atual: dict = {}
         for l in atuais:
-            if not parcela_da_descricao(l.descricao):
+            if not parcela_da_descricao(l.descricao) and not _eventual(l):
                 total_atual[chave(l)] = total_atual.get(chave(l), 0.0) + l.valor
         itens, medianas = [], []
         for k, v in total_atual.items():
@@ -178,7 +222,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
     if "deficit_conta" not in desativar:
         alvos = list(map(_norm, cfg["deficit_contas"]))
         for c in dados.contas:
-            if _norm(c.nome) in alvos and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
+            if any(t in _norm(c.nome) for t in alvos) and not _norm(c.nome).startswith("CONSOLIDADO") and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
                 achados.append(Achado(
                     id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_deficit_conta",
                     linha_demonstrativo=c.nome, valor_encontrado=round(c.debitos - c.creditos, 2),
@@ -194,4 +238,4 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 linha_demonstrativo="Inadimplência total", valor_encontrado=round(a, 2),
                 detalhes={"verificacao": "inadimplencia_crescente", "atual": round(a, 2), "anterior": round(b, 2), "variacao_pct": round((a - b) / b * 100, 1),
                           "serie": [{"mes": m, "inad": round(v, 2)} for m, v in serie], "lancamentos": []}))
-    return achados
+    return achados, notas

@@ -7,7 +7,8 @@
         "rendimento": {
           "base": "atual",
           "tolerancia": 0.1
-        }
+        },
+        "gestor": {}
       }
     },
     "baturite": {
@@ -20,7 +21,8 @@
             "APLICACOES FINANCEIRAS"
           ],
           "tolerancia": 0.45
-        }
+        },
+        "gestor": {}
       }
     },
     "plano_cambuci": {
@@ -55,11 +57,15 @@
           "contas_aplicadas": [
             "ORDINÁRIA APLICAÇÃO"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "cap_d_antibes": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Cap D Antibes"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Cap D Antibes",
+      "regras": {
+        "gestor": {}
+      }
     },
     "central_das_artes": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Central das Artes",
@@ -71,7 +77,8 @@
           "contas_aplicadas": [
             "APLICACAO FINANCEIRA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "cinque_terre_residenza": {
@@ -82,7 +89,8 @@
             "ORDINARIA",
             "FUNDO FACHADA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "ciudad_real": {
@@ -90,7 +98,8 @@
       "regras": {
         "rendimento": {
           "tolerancia": 0.35
-        }
+        },
+        "gestor": {}
       }
     },
     "club_park_butanta": {
@@ -114,7 +123,8 @@
           "contas_aplicadas": [
             "Fundo de Reserva"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "fatto_morumbi": {
@@ -130,7 +140,8 @@
           "ignorar_descricao": [
             "PROVIS[AÃ]O IR S/ REND"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "cores": {
@@ -178,11 +189,15 @@
           "ignorar_contas": [
             "CAIXA ORDINARIO"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "giardino_d_italia": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Giardino D'Itália"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Giardino D'Itália",
+      "regras": {
+        "gestor": {}
+      }
     },
     "go_barra_funda": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Go Barra Funda",
@@ -192,7 +207,8 @@
             "ORDINARIA",
             "PROVISAO INADIMPLENCIA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "go_liberdade": {
@@ -203,14 +219,21 @@
             "ORDINARIA",
             "CAIXA ORDINARIO"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "guaratambe": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Guaratambé"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Guaratambé",
+      "regras": {
+        "gestor": {}
+      }
     },
     "highlights_dr_nelson_moretti": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Highlights Dr. Nelson Moretti"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Highlights Dr. Nelson Moretti",
+      "regras": {
+        "gestor": {}
+      }
     },
     "hub_home_club_tatuape": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Hub Home Club Tatuapé",
@@ -224,11 +247,15 @@
             "SALÃO DE FESTAS/CHURRASQUEIRA",
             "MINI MERCADO"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "jau_1894": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Jaú 1894"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Jaú 1894",
+      "regras": {
+        "gestor": {}
+      }
     },
     "i_gloo_alphaville": {
       "pasta_prestacao": "Dashboard de Análise de Balancete I-Gloo",
@@ -241,7 +268,8 @@
             "Fundo Reserva"
           ],
           "tolerancia": 0.5
-        }
+        },
+        "gestor": {}
       }
     },
     "living_for_consolacao": {
@@ -251,7 +279,8 @@
           "ignorar_contas": [
             "ORDINÁRIA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "maison_du_rhone": {
@@ -262,11 +291,15 @@
             "CONTA ORDINARIA"
           ],
           "tolerancia": 0.25
-        }
+        },
+        "gestor": {}
       }
     },
     "monte_tabor": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Monte Tabor"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Monte Tabor",
+      "regras": {
+        "gestor": {}
+      }
     },
     "nyc": {
       "pasta_prestacao": "Dashboard de Análise de Balancete NYC Berrini",
@@ -282,7 +315,8 @@
             "regex": "ESTAC",
             "tolerancia": 1.0
           }
-        ]
+        ],
+        "gestor": {}
       }
     },
     "onze_22": {
@@ -292,7 +326,8 @@
         "subcontas": {
           "comparar_entre_formatos": true
         },
-        "texto_valor_repetido": true
+        "texto_valor_repetido": true,
+        "gestor": {}
       },
       "parser_config": {
         "pagina_em_branco_sem_anexo": true
@@ -308,11 +343,15 @@
           "contas_aplicadas": [
             "FUNDO DE RESERVA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "organy_studio": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Organy - Studio"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Organy - Studio",
+      "regras": {
+        "gestor": {}
+      }
     },
     "730_padre_carvalho": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Padre Carvalho",
@@ -324,7 +363,8 @@
           "contas_aplicadas": [
             "FUNDO DE RESERVA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "palm_beach": {
@@ -348,7 +388,8 @@
           ],
           "ignorar_pagador_generico": true,
           "exigir_recorrencia": true
-        }
+        },
+        "gestor": {}
       }
     },
     "patricia": {
@@ -359,11 +400,15 @@
             "FUNDO DE OBRAS",
             "SALÃO DE FESTAS/ CHURRASQUEIRA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "plano_estacao_campo_limpo": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Plano Estação Campo Limpo"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Plano Estação Campo Limpo",
+      "regras": {
+        "gestor": {}
+      }
     },
     "plano_mooca_praca_lion_iii": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Plano & Mooca"
@@ -381,17 +426,24 @@
           "ignorar_contas": [
             "ORDINÁRIA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "reserva_verde": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Reserva Verde"
     },
     "residencial_napoleao": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Residencial Napoleão"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Residencial Napoleão",
+      "regras": {
+        "gestor": {}
+      }
     },
     "parque_saint_afonso": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Afonso"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Afonso",
+      "regras": {
+        "gestor": {}
+      }
     },
     "serra_da_mantiqueira": {
       "pasta_prestacao": "Dashboard de Analise de Balancete Serra da Mantiqueira"
@@ -420,24 +472,40 @@
           },
           "comparar_entre_formatos": true,
           "ignorar_aplicacao_resgate": true
-        }
+        },
+        "gestor": {}
       },
       "emissao_pdf": "lello_resumo_geral"
     },
     "sublime": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Sublime"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Sublime",
+      "regras": {
+        "gestor": {}
+      }
     },
     "top_nine": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Top Nine"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Top Nine",
+      "regras": {
+        "gestor": {}
+      }
     },
     "upper_itaim": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Upper Itaim"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Upper Itaim",
+      "regras": {
+        "gestor": {}
+      }
     },
     "vibra_butanta": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Vibra Butantã"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Vibra Butantã",
+      "regras": {
+        "gestor": {}
+      }
     },
     "vera_cruz": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Vera Cruz"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Vera Cruz",
+      "regras": {
+        "gestor": {}
+      }
     },
     "victoria": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Victoria",
@@ -446,7 +514,8 @@
           "ignorar_contas": [
             "ORDINÁRIA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "residencial_villa_park_osasco": {
@@ -460,14 +529,18 @@
             "MULTA REGULAMENTO INTERNO",
             "ORDINARIA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "res_villa_sardenha": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Villa Sardenha"
     },
     "vita_parque": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Vita Parque"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Vita Parque",
+      "regras": {
+        "gestor": {}
+      }
     },
     "dueto_morumbi": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Dueto Morumbi",
@@ -476,15 +549,22 @@
           "ignorar_descricao": [
             "BOLETO CEDIDO GARANTIDORA"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "saint_simon": {
-      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Simon"
+      "pasta_prestacao": "Dashboard de Análise de Balancete Saint Simon",
+      "regras": {
+        "gestor": {}
+      }
     },
     "gardens_living_club": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club",
-      "leitor_financeiro": "regras_gerais"
+      "leitor_financeiro": "regras_gerais",
+      "regras": {
+        "gestor": {}
+      }
     },
     "spazio_jardins_da_orla": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Spazio",
@@ -506,7 +586,8 @@
           "ignorar_tipos": [
             "baixa_inadimplencia"
           ]
-        }
+        },
+        "gestor": {}
       }
     },
     "fit_casa_rio_bonito": {
@@ -514,7 +595,8 @@
       "regras": {
         "previsto_realizado": {
           "ativar": true
-        }
+        },
+        "gestor": {}
       }
     }
   }
