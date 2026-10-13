@@ -203,6 +203,29 @@ def ocr_primeira_pagina(dados_bin: bytes) -> str:
         return ""
 
 
+def textos_das_demais_paginas(dados_bin: bytes, max_paginas: int = 8) -> str:
+    """Texto das páginas 2..N de um PDF baixado (a 1ª é lida por texto_de_pdf_baixado/ocr_primeira_pagina). Um anexo costuma ter o
+    comprovante/boleto na 1ª página e a Nota Fiscal nas seguintes; sem ler essas páginas, "a NF não está anexada" é afirmado sem
+    ter olhado a NF. Página sem texto nativo (digitalizada) passa por OCR. Nunca lança."""
+    from conciliacao import ocr
+    partes: list[str] = []
+    try:
+        import fitz
+        with fitz.open(stream=dados_bin, filetype="pdf") as doc:
+            for i in range(1, min(len(doc), max_paginas)):
+                texto = (doc[i].get_text() or "").strip()
+                if len(texto) < 30:
+                    try:
+                        texto = ocr.ocr_imagem_bytes(doc[i].get_pixmap(dpi=200).tobytes("png")) or ""
+                    except Exception:
+                        texto = ""
+                if texto:
+                    partes.append(texto)
+    except Exception:
+        return ""
+    return "\n".join(partes)
+
+
 def salvar_evidencia_externa(caminho_pdf: Path, codigo: str, dados_bin: bytes, tipo_arquivo: str) -> str | None:
     """Salva uma cópia local do comprovante baixado — sem isso o relatório
     final não tem página nenhuma do PDF original pra recortar (ver

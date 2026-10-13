@@ -1521,6 +1521,9 @@ def gerar_achados_palm_beach(
     return achados
 
 
+_RE_NUMERO_DOC_GUIA = re.compile(r"\d{2}\.\d{2}\.\d{5}\.\d{7}-\d")
+
+
 def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
     """Só para o condomínio que pede (`regras.guia_consolidada`): vários lançamentos (retenções de INSS/PIS/COFINS/CSLL/ISS) cujo
     comprovante é UMA guia consolidada (DARF/GPS) viram "divergência de valor" porque cada um é comparado ao total da guia inteira.
@@ -1553,6 +1556,21 @@ def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
                          and _RE_DESCRICAO_TRIBUTO.search(r.descricao or "")
                          and (comp_por_codigo.get(r.codigo) is None or (comp_por_codigo[r.codigo].valor or 0) <= 0)]
             fecha = bool(ilegiveis) and abs(soma + sum(r.valor for r in ilegiveis) - total) <= 0.02
+            if fecha:
+                # Retenção cujo anexo traz o MESMO nº de documento da guia (a própria guia ou o comprovante de pagamento dela):
+                # pertence à guia, que acabou de fechar na soma — deixa de ser "conteúdo não verificável".
+                m_doc = _RE_NUMERO_DOC_GUIA.search(_doc)
+                if m_doc:
+                    for r in ilegiveis:
+                        c = comp_por_codigo.get(r.codigo)
+                        if c is not None and m_doc.group(0) in (c.texto_bruto or ""):
+                            for a in achados:
+                                if a.tipo == "conteudo_nao_verificavel" and any(f"cod{r.codigo}" in k for k in a.registros_relacionados):
+                                    a.tipo = "ok_verificado"
+                                    a.severidade_sugerida = "informativo"
+                                    a.regra_aplicada = "guia_consolidada_confere_com_a_soma_dos_lancamentos"
+                                    a.valor_encontrado = a.valor_esperado = r.valor
+                                    a.confianca_deterministica = 1.0
         if fecha:
             for m, _ in membros:
                 m.tipo = "ok_verificado"

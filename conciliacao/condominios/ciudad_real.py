@@ -289,7 +289,8 @@ class Conciliador(ConciliadorLirbaPDF):
                 if texto_ocr and texto_ocr != texto_doc:
                     texto_doc = texto_ocr
                     candidato = _valor_do_texto(texto_ocr)
-            textos_docs.append(texto_doc)
+            # Valor: só a 1ª página (como sempre). Texto guardado para a checagem de Nota Fiscal: TODAS as páginas do anexo.
+            textos_docs.append(texto_doc + ("\n" + gocontroledocumentos.textos_das_demais_paginas(dados_bin) if tipo_arquivo == "pdf" else ""))
             candidatos.append(candidato)
 
         # Escolhe o MELHOR candidato, não o primeiro que confirmou ALGUM
