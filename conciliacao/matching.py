@@ -1525,20 +1525,36 @@ def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
     """Só para o condomínio que pede (`regras.guia_consolidada`): vários lançamentos (retenções de INSS/PIS/COFINS/CSLL/ISS) cujo
     comprovante é UMA guia consolidada (DARF/GPS) viram "divergência de valor" porque cada um é comparado ao total da guia inteira.
     Se a SOMA dos lançamentos que apontam para a mesma guia (mesmo documento) é igual ao total da guia (±2 centavos), a guia confere:
-    cada um deixa de ser divergência e vira "verificado". Se a soma não fecha, nada muda (as divergências ficam como estão)."""
+    cada um deixa de ser divergência e vira "verificado". Retenções do mesmo tributo e mesmo vencimento cujo comprovante o OCR não
+    conseguiu ler entram na soma só para fechar a conta da guia (elas continuam como "conteúdo não verificável": a leitura delas segue
+    pendente). Se a soma não fecha, nada muda (as divergências ficam como estão)."""
     por_chave = {chave_registro(r): r for r in registros}
+    comp_por_codigo = {r.codigo: r for r in registros if r.tipo_documento == "comprovante_anexado"}
     grupos: dict = {}
     for a in achados:
         if a.tipo != "divergencia_valor" or "ocr" not in (a.regra_aplicada or "") or len(a.registros_relacionados) < 2:
             continue
         comp = por_chave.get(a.registros_relacionados[0])
-        if comp is None or not comp.valor or comp.valor <= 0 or not comp.texto_bruto:
+        desp = por_chave.get(a.registros_relacionados[1])
+        if comp is None or desp is None or not comp.valor or comp.valor <= 0 or not comp.texto_bruto:
             continue
         doc = re.sub(r"\s+", " ", comp.texto_bruto)[:400]
-        grupos.setdefault((doc, round(comp.valor, 2)), []).append(a)
+        grupos.setdefault((doc, round(comp.valor, 2)), []).append((a, desp))
     for (_doc, total), membros in grupos.items():
-        if len(membros) >= 2 and abs(sum(m.valor_esperado or 0.0 for m in membros) - total) <= 0.02:
-            for m in membros:
+        if len(membros) < 2:
+            continue
+        soma = sum(m.valor_esperado or 0.0 for m, _ in membros)
+        fecha = abs(soma - total) <= 0.02
+        if not fecha:
+            venc = {d.vencimento for _, d in membros}
+            codigos = {d.codigo for _, d in membros}
+            ilegiveis = [r for r in registros
+                         if r.tipo_documento == "despesa_listada" and r.codigo not in codigos and r.vencimento in venc
+                         and _RE_DESCRICAO_TRIBUTO.search(r.descricao or "")
+                         and (comp_por_codigo.get(r.codigo) is None or (comp_por_codigo[r.codigo].valor or 0) <= 0)]
+            fecha = bool(ilegiveis) and abs(soma + sum(r.valor for r in ilegiveis) - total) <= 0.02
+        if fecha:
+            for m, _ in membros:
                 m.tipo = "ok_verificado"
                 m.severidade_sugerida = "informativo"
                 m.regra_aplicada = "guia_consolidada_confere_com_a_soma_dos_lancamentos"

@@ -84,6 +84,7 @@ export default function ValidacaoCondominioPage() {
   const [revisados, setRevisados] = useState<Record<string, AchadoRevisado>>({});
   const [condoInfo, setCondoInfo] = useState<CondominioInfo | null>(null);
   const [carregandoCondo, setCarregandoCondo] = useState(true);
+  const [mostrarVerificados, setMostrarVerificados] = useState(false);
 
   useEffect(() => {
     fetch('/api/validacao/condominios')
@@ -193,6 +194,9 @@ export default function ValidacaoCondominioPage() {
     setBusy(null);
   }
 
+  const severidadeDe = (a: AchadoBruto) => revisados[a.id]?.severidade_final ?? a.severidade_sugerida;
+  const verificados = status?.achadosBrutos?.filter(a => severidadeDe(a) === 'informativo') ?? [];
+  const aConferir = status?.achadosBrutos?.filter(a => severidadeDe(a) !== 'informativo') ?? [];
   const interrompida = !!status?.versao && !status.extracaoConcluida && !emAndamento;
   const pronta = !!status?.versao && !!status.extracaoConcluida && !emAndamento;
   const pendentes = status?.achadosBrutos?.filter(a => !revisados[a.id] || revisados[a.id].revisado_por === 'pendente') ?? [];
@@ -346,16 +350,24 @@ export default function ValidacaoCondominioPage() {
       {pronta && status?.achadosBrutos && status.achadosBrutos.length > 0 && (
         <div className="card p-4 mb-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[14px] font-semibold text-text-primary">
-              Revisão dos achados ({status.achadosBrutos.length} no total, {pendentes.length} pendentes)
-            </h2>
+            <div>
+              <h2 className="text-[14px] font-semibold text-text-primary">
+                {aConferir.length} item(ns) a conferir{pendentes.length > 0 ? ` — ${pendentes.length} pendente(s) de revisão` : ''}
+              </h2>
+              <p className="text-[11px] text-text-muted mt-0.5">
+                {verificados.length} lançamento(s) foram verificados sem problema e não entram no relatório.{' '}
+                <button type="button" className="underline" onClick={() => setMostrarVerificados(v => !v)}>
+                  {mostrarVerificados ? 'Ocultar os verificados' : 'Ver os verificados'}
+                </button>
+              </p>
+            </div>
             <button className="btn-ghost text-[12px] flex items-center gap-1.5" disabled={!!busy} onClick={salvarRevisao}>
               {busy === 'revisar' ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
               Salvar revisão
             </button>
           </div>
           <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-            {status.achadosBrutos.map(a => {
+            {(mostrarVerificados ? status.achadosBrutos : aConferir).map(a => {
               const rev = revisados[a.id] ?? {
                 achado_id: a.id, titulo: '', paragrafo: '', severidade_final: a.severidade_sugerida,
                 o_que_verificar: '', confianca_ia: 0, revisado_por: 'pendente', revisado_em: '', motivo_divergencia_da_sugestao: null,
