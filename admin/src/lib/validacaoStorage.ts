@@ -23,8 +23,25 @@ export function readJsonIfExists<T = any>(filePath: string): T | null {
   }
 }
 
+export interface EscopoVerificacao {
+  registros: number | null;      // lançamentos/comprovantes lidos do arquivo pelo conciliador
+  comprovantes: number | null;   // comprovantes anexados localizados
+  regras: { chave: string; nome: string; aplicada: boolean; motivo: string | null }[];
+  avisos: string[];
+}
+
+const NOMES_REGRAS: Record<string, string> = {
+  receita_negativa: 'Receitas com valor negativo',
+  rendimento: 'Rendimentos distribuídos entre as contas',
+  sem_identificacao: 'Pagamentos sem identificação',
+  parcelas: 'Duas parcelas pagas no mesmo mês',
+  subcontas: 'Lançamentos nas subcontas corretas',
+  previsto_realizado: 'Previsto x Realizado (Resumo de Emissão)',
+};
+
 export interface StatusConciliacao {
   existe: boolean;
+  escopo?: EscopoVerificacao | null;
   versao: string | null;
   achadosBrutos: any[] | null;
   achadosRevisados: any[] | null;
@@ -40,8 +57,20 @@ export function lerStatus(pastaDados: string, mes: string): StatusConciliacao {
   const achadosBrutos = readJsonIfExists<any[]>(path.join(versionDir, 'achados_brutos.json'));
   const achadosRevisados = readJsonIfExists<any[]>(path.join(versionDir, 'achados_revisados.json'));
   const pendentes = (achadosRevisados ?? []).filter(r => r.revisado_por === 'pendente').length;
+  // O que foi (e o que NÃO foi) verificado nesta extração — evita ler "nenhum achado" como "tudo certo".
+  const registros = readJsonIfExists<any[]>(path.join(versionDir, 'registros_comprovantes.json'));
+  const rg = readJsonIfExists<any>(path.join(versionDir, 'regras_gerais.json'));
+  const escopo: EscopoVerificacao | null = (registros || rg) ? {
+    registros: registros ? registros.length : null,
+    comprovantes: registros ? registros.filter(r => r.tipo_documento === 'comprovante_anexado').length : null,
+    regras: Object.entries((rg?.status ?? {}) as Record<string, any>).map(([chave, v]) => ({
+      chave, nome: NOMES_REGRAS[chave] ?? chave, aplicada: !!v.aplicada, motivo: v.motivo ?? null,
+    })),
+    avisos: (rg?.avisos ?? []) as string[],
+  } : null;
   return {
     existe: true,
+    escopo,
     versao: path.basename(versionDir),
     achadosBrutos,
     achadosRevisados,

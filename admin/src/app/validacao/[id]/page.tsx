@@ -26,8 +26,16 @@ interface AchadoRevisado {
   motivo_divergencia_da_sugestao: string | null;
 }
 
+interface EscopoResp {
+  registros: number | null;
+  comprovantes: number | null;
+  regras: { chave: string; nome: string; aplicada: boolean; motivo: string | null }[];
+  avisos: string[];
+}
+
 interface StatusResp {
   existe: boolean;
+  escopo?: EscopoResp | null;
   versao: string | null;
   achadosBrutos: AchadoBruto[] | null;
   achadosRevisados: AchadoRevisado[] | null;
@@ -219,18 +227,53 @@ export default function ValidacaoCondominioPage() {
         )}
       </div>
 
-      {/* Extração rodou mas não achou nenhum registro/achado — avisa
-          explicitamente em vez de deixar a tela vazia sem explicação (a
-          narrativa automática já roda mesmo com 0 achados, então isso não
-          significa erro necessariamente, mas o usuário precisa saber). */}
-      {status?.versao && status.achadosBrutos && status.achadosBrutos.length === 0 && (
+      {/* O que foi — e o que NÃO foi — verificado nesta extração. "Nenhum achado" nunca deve ser lido como "tudo certo". */}
+      {status?.versao && (
         <div className="card p-4 mb-4">
-          <p className="text-[13px] font-semibold text-text-primary">Nenhum achado nesta extração</p>
-          <p className="text-[12px] text-text-muted mt-1">
-            Ou não há nenhuma divergência a reportar, ou o arquivo enviado não pôde ser lido pelo
-            formato esperado deste condomínio — confira o log da extração acima. Mesmo assim, o
-            relatório final pode ser gerado e baixado abaixo.
+          <p className="text-[13px] font-semibold text-text-primary">
+            {status.achadosBrutos && status.achadosBrutos.length === 0
+              ? 'Nenhuma divergência nas verificações realizadas'
+              : 'Verificações desta extração'}
           </p>
+          {status.escopo && (() => {
+            const e = status.escopo!;
+            const semComprovantes = (e.registros ?? 0) === 0 || (e.comprovantes ?? 0) === 0;
+            const naoAplicadas = e.regras.filter(r => !r.aplicada);
+            return (
+              <div className="mt-2 space-y-2 text-[12px]">
+                {semComprovantes && (
+                  <p className="text-warning">
+                    ⚠ Comprovantes NÃO foram conferidos: {(e.registros ?? 0) === 0
+                      ? 'nenhum lançamento/comprovante foi lido deste arquivo (ele só traz o Demonstrativo ou o layout não foi reconhecido pelo conferidor de comprovantes).'
+                      : 'o arquivo não traz comprovantes anexados.'}
+                  </p>
+                )}
+                {!semComprovantes && (
+                  <p className="text-text-secondary">
+                    ✓ Comprovantes: {e.registros} lançamentos lidos e {e.comprovantes} comprovantes localizados.
+                  </p>
+                )}
+                <ul className="space-y-0.5">
+                  {e.regras.map(r => (
+                    <li key={r.chave} className={r.aplicada ? 'text-text-secondary' : 'text-warning'}>
+                      {r.aplicada ? '✓' : '✗'} {r.nome}{r.aplicada ? '' : ` — NÃO verificada: ${r.motivo ?? 'sem motivo informado'}`}
+                    </li>
+                  ))}
+                </ul>
+                {naoAplicadas.length > 0 && (
+                  <p className="text-text-muted">
+                    Regras marcadas com ✗ não foram conferidas neste arquivo: a ausência de divergência nelas não significa que está correto.
+                  </p>
+                )}
+              </div>
+            );
+          })()}
+          {status.achadosBrutos && status.achadosBrutos.length === 0 && (
+            <p className="text-[12px] text-text-muted mt-2">
+              Isto NÃO significa que o balancete está 100% correto: só vale para o que está marcado com ✓ acima. O relatório final
+              pode ser gerado e baixado abaixo.
+            </p>
+          )}
         </div>
       )}
 
