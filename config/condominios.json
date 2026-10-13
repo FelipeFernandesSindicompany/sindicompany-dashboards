@@ -1219,6 +1219,20 @@
         },
         "inadproc_cobran_prev_month": true
       }
+    },
+    {
+      "id": "the_gardens",
+      "nome": "The Gardens",
+      "empresa_gestora": "iello_pdf",
+      "pasta_dados": "data/the_gardens",
+      "html_file": "Dashboard_Financeiro_TheGardens.html",
+      "ativo": true,
+      "cor": "#1A6FAF",
+      "unidades": 0,
+      "parser_config": {
+        "orcamento_mensal": 0,
+        "cat_map": {}
+      }
     }
   ],
   "empresas": {
