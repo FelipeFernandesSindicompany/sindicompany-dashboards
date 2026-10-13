@@ -12,7 +12,7 @@ Verificações (todas desligáveis em `gestor.desativar`):
   fornecedor_novo           fornecedor sem nenhum lançamento nos meses anteriores, com valor alto
   recorrente_ausente        despesa que aparece em todos os últimos meses e sumiu neste
   valor_atipico             valor muito acima do histórico do mesmo fornecedor
-  duplicidade_no_mes        mesmo histórico e mesmo valor lançados mais de uma vez no mês
+  duplicidade_no_mes        mesmo histórico, mesma NF e mesmo valor lançados mais de uma vez no mês
   uso_fundo                 despesa paga direto de fundo (reserva etc.)
   deficit_conta             conta que pagou bem mais do que recebeu no mês
   inadimplencia_crescente   inadimplência total subiu forte em relação ao mês anterior
@@ -210,7 +210,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 continue
             grupos.setdefault((_norm(l.descricao), round(l.valor, 2)), []).append(l)
         for (_, v), ls in grupos.items():
-            if len(ls) >= 2 and (len({x.data for x in ls}) == 1 or nf_da_descricao(ls[0].descricao)):
+            if len(ls) >= 2 and nf_da_descricao(ls[0].descricao):      # sem nº de NF, lançamentos idênticos costumam ser unidades/funcionários distintos
                 novo("duplicidade_no_mes", ls, ls[0].categoria, v * len(ls), valor_unitario=v, vezes=len(ls))
 
     if "uso_fundo" not in desativar:

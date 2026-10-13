@@ -96,8 +96,13 @@ def texto_sem_identificacao(a: Achado) -> tuple[str, str, str]:
     cod = f" (lançamento {d['codigo']})" if d.get("codigo") else ""
     quando = f" em {d['data']}" if d.get("data") else ""
     titulo = f"Pagamento sem identificação — {_moeda(a.valor_encontrado)}"
-    paragrafo = (f"O lançamento{cod}{quando}, categoria \"{d.get('categoria') or 'não informada'}\", no valor de "
-                 f"{_moeda(a.valor_encontrado)}, não identifica a quem foi pago: histórico \"{desc}\".")
+    if a.regra_aplicada == "historico_marcado_como_nao_identificado":
+        paragrafo = (f"O lançamento{cod}{quando}, no valor de {_moeda(a.valor_encontrado)}, foi classificado pela própria administradora na categoria "
+                     f"\"{d.get('categoria') or 'não informada'}\" (histórico \"{desc}\"): o histórico pode citar um nome, mas a despesa a que o pagamento "
+                     f"se refere não está identificada.")
+    else:
+        paragrafo = (f"O lançamento{cod}{quando}, categoria \"{d.get('categoria') or 'não informada'}\", no valor de "
+                     f"{_moeda(a.valor_encontrado)}, não identifica a quem foi pago: histórico \"{desc}\".")
     verificar = "Solicitar à administradora o favorecido, o motivo do pagamento e o comprovante deste lançamento."
     return titulo, paragrafo, verificar
 
