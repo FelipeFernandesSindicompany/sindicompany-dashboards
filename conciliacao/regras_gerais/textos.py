@@ -265,6 +265,18 @@ def _lista_itens(d: dict, n: int = 6) -> str:
     return txt + (f" e mais {resto}" if resto > 0 else "")
 
 
+def _ver_ordinaria(d: dict) -> str:
+    """Pergunta de gestor quando uma despesa de valor alto foi paga pela conta Ordinária."""
+    itens = d.get("pergunta_ordinaria") or []
+    if not itens:
+        return ""
+    quais = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])})" for i in itens[:3])
+    saldo = d.get("saldo_ordinaria")
+    return (f" Perguntar à administradora se esse valor ({quais}) tem que sair mesmo da conta Ordinária — ou se deveria ser pago por outra conta "
+            f"(Fundo de Reserva, Obras ou Extraordinária), já que é despesa de valor alto e fora do custeio mensal"
+            + (f"; a Ordinária fechou o mês com saldo de {_moeda(saldo)}." if saldo is not None else "."))
+
+
 def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
     """Pontos de um gestor condominial sem regra própria. Redação cautelosa: é pergunta ao revisor, não afirmação de erro."""
     d = a.detalhes
@@ -282,12 +294,14 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         titulo = pre + f"{n} despesa(s) de valor redondo e alto ({total})"
         par = (f"Despesas a partir de {_moeda(d.get('minimo'))} com valor exato em centenas de reais e sem repetição de valor em meses anteriores: "
                f"{_lista_itens(d)}. Valores redondos podem ser contrato/orçamento fechado, mas também estimativa ou adiantamento.")
-        ver = "Conferir a nota fiscal/contrato e se o valor pago é o valor real do serviço (e não estimativa ou adiantamento)."
+        ver = "Conferir a nota fiscal/contrato e se o valor pago é o valor real do serviço (e não estimativa ou adiantamento)." + _ver_ordinaria(d)
     elif v == "fornecedor_novo":
         titulo = pre + f"{n} fornecedor(es) sem lançamento nos {d.get('meses_lidos')} meses anteriores ({total})"
         par = (f"Lançamentos de valor alto (a partir de {_moeda(d.get('minimo'))}) de fornecedores/despesas que não aparecem em nenhum dos "
                f"{d.get('meses_lidos')} meses anteriores lidos: {_lista_itens(d)}.")
-        ver = "Confirmar a contratação (cotações, aprovação do síndico/conselho) e a nota fiscal do fornecedor novo."
+        if d.get("redondos"):
+            par += f" O valor {', '.join(_moeda(x) for x in d['redondos'])} é redondo (centenas exatas) e não se repetia em meses anteriores — pode ser orçamento/sinal fechado ou estimativa."
+        ver = "Confirmar a contratação (cotações, aprovação do síndico/conselho) e a nota fiscal do fornecedor novo." + _ver_ordinaria(d)
     elif v == "recorrente_ausente":
         itens = d.get("ausentes") or []
         lista = "; ".join(f"{i['descricao']} (mediana {_moeda(i['mediana'])})" for i in itens[:6])
@@ -297,10 +311,33 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         ver = "Perguntar à administradora se o contrato terminou ou se o lançamento foi postergado (e se há pagamento em atraso)."
     elif v == "valor_atipico":
         itens = d.get("medianas") or []
-        lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])})" for i in itens[:6])
-        titulo = pre + f"{n} despesa(s) muito acima do histórico do próprio fornecedor ({total})"
-        par = f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}."
-        ver = "Pedir a nota fiscal e a justificativa do aumento (reajuste, serviço extra, acúmulo de meses)."
+        acumulos = [i for i in itens if i.get("acumulo")]
+        outros = [i for i in itens if not i.get("acumulo")]
+        partes_par, partes_ver = [], []
+        for i in acumulos:
+            comps = ", ".join(i.get("competencias") or [])
+            datas = "; ".join(f"{q} em {dt}" for dt, q in (i.get("datas") or {}).items())
+            partes_par.append(
+                f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, cada um de {_moeda(i['valor_unitario'])} (o valor mensal de sempre; mediana dos "
+                f"meses anteriores {_moeda(i['mediana'])}), totalizando {_moeda(i['valor'])}" + (f", referentes às competências {comps}" if comps else "")
+                + (f" e pagos nas datas: {datas}" if datas else "")
+                + ". Não é aumento de valor: são pagamentos de meses anteriores feitos juntos neste mês.")
+        if outros:
+            lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])})" for i in outros[:6])
+            partes_par.append(f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}.")
+        if acumulos:
+            nomes = ", ".join(i["descricao"] for i in acumulos)
+            partes_ver.append(f"Perguntar à administradora o motivo de {nomes} estar com várias competências pagas juntas neste mês (pagamentos de meses anteriores "
+                              f"na mesma data): se houve atraso no pagamento, se há multa ou juros e se as notas dos meses anteriores já estavam em aberto.")
+        if outros:
+            partes_ver.append("Pedir a nota fiscal e a justificativa do aumento (reajuste, serviço extra, acúmulo de meses).")
+        if acumulos and not outros:
+            titulo = pre + (f"{acumulos[0]['descricao']}: {acumulos[0]['n']} meses pagos juntos em um só mês ({total}) — pagamentos de meses anteriores, não aumento"
+                            if len(acumulos) == 1 else f"{len(acumulos)} fornecedores com meses anteriores pagos juntos neste mês ({total}) — não é aumento")
+        else:
+            titulo = pre + f"{n} despesa(s) muito acima do histórico do próprio fornecedor ({total})"
+        par = " ".join(partes_par)
+        ver = " ".join(partes_ver)
     elif v == "duplicidade_no_mes":
         titulo = pre + f"mesmo lançamento repetido {d.get('vezes')}x no mês ({_moeda(d.get('valor_unitario'))} cada)"
         par = (f"{_lista_itens(d)} aparecem com a mesma descrição e o mesmo valor mais de uma vez no mês. "

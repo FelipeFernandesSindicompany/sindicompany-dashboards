@@ -45,6 +45,7 @@ _PADROES = {
     "inad_crescimento_pct": 20.0,
     "inad_crescimento_min": 1000.0,
     "estabilidade_minima": 0.5,
+    "ordinaria_pergunta_min": 20000.0,
 }
 
 MAX_ITENS = 12
@@ -97,6 +98,27 @@ def _eventual(l) -> bool:
     return bool(_RE_EVENTUAL.search(_sem_acento(l.descricao or "")))
 
 
+_MES_NUM = {"JAN": 1, "FEV": 2, "MAR": 3, "ABR": 4, "MAI": 5, "JUN": 6, "JUL": 7, "AGO": 8, "SET": 9, "OUT": 10, "NOV": 11, "DEZ": 12}
+_RE_COMPETENCIA = re.compile(
+    r"\b(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)[A-Z]*\.?\s*[/.\-]\s*(\d{4}|\d{2})\b|\b(0?[1-9]|1[0-2])\s*/\s*(20\d{2})\b", re.IGNORECASE)
+
+
+def _competencias(lancamentos: list) -> list:
+    """Competências ('mês/ano') citadas nas descrições, em ordem cronológica e sem repetir (ex.: ['jul/2026', 'ago/2026', 'set/2026'])."""
+    achadas: dict = {}
+    for l in lancamentos:
+        m = _RE_COMPETENCIA.search(_sem_acento(l.descricao or ""))
+        if not m:
+            continue
+        if m.group(1):
+            mes, ano = _MES_NUM[m.group(1).upper()], int(m.group(2))
+        else:
+            mes, ano = int(m.group(3)), int(m.group(4))
+        ano = ano + 2000 if ano < 100 else ano
+        achadas[(ano, mes)] = f"{[k for k, v in _MES_NUM.items() if v == mes][0].lower()}/{ano}"
+    return [achadas[k] for k in sorted(achadas)]
+
+
 def _estrutural(l) -> bool:
     c = _norm(l.categoria)
     return c.startswith(("TRANSFERENCIA", "APLICACAO RESGATE")) or bool(_RE_RETENCAO.search(_sem_acento(l.descricao or "")))
@@ -143,18 +165,39 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
         if itens:
             novo("compra_marketplace", itens, "Compras em marketplace / intermediador", sum(l.valor for l in itens))
 
-    if "valor_redondo" not in desativar and hist:
-        valores_antes = {round(l.valor, 2) for h in hist for l in _lancamentos_validos(h)}   # valor idêntico em mês anterior = valor fixo recorrente
-        itens = [l for l in atuais if l.valor >= cfg["valor_redondo_min"] and round(l.valor * 100) % 10000 == 0
-                 and round(l.valor, 2) not in valores_antes and not parcela_da_descricao(l.descricao)]
-        if itens:
-            novo("valor_redondo", itens, "Despesas de valor redondo", sum(l.valor for l in itens), minimo=cfg["valor_redondo_min"])
+    alvos_ord = list(map(_norm, cfg["deficit_contas"]))
 
+    def _pergunta_ordinaria(itens) -> dict:
+        """Despesa de valor alto paga pela conta Ordinária: o gestor pergunta se o valor deve mesmo sair dela (ou de fundo/obras)."""
+        altos = [l for l in itens if l.valor >= cfg["ordinaria_pergunta_min"] and any(t in _norm(l.conta) for t in alvos_ord)]
+        if not altos:
+            return {}
+        saldo = next((c.saldo_atual for c in dados.contas if any(t in _norm(c.nome) for t in alvos_ord)
+                      and not _norm(c.nome).startswith("CONSOLIDADO")), None)
+        return {"pergunta_ordinaria": [{"descricao": l.descricao, "valor": l.valor, "conta": l.conta} for l in altos],
+                "saldo_ordinaria": None if saldo is None else round(saldo, 2)}
+
+    valores_antes = {round(l.valor, 2) for h in hist for l in _lancamentos_validos(h)}   # valor idêntico em mês anterior = valor fixo recorrente
+
+    def _redondo(l) -> bool:
+        return (l.valor >= cfg["valor_redondo_min"] and round(l.valor * 100) % 10000 == 0
+                and round(l.valor, 2) not in valores_antes and not parcela_da_descricao(l.descricao))
+
+    ids_novo: set = set()
     if "fornecedor_novo" not in desativar and len(por_mes) >= cfg["meses_minimos_historico"]:
         itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves and not _eventual(l)]
         if itens:
+            ids_novo = {id(l) for l in itens}
             novo("fornecedor_novo", itens, "Fornecedores sem lançamento nos meses anteriores", sum(l.valor for l in itens),
-                 minimo=cfg["fornecedor_novo_min"], meses_lidos=len(por_mes))
+                 minimo=cfg["fornecedor_novo_min"], meses_lidos=len(por_mes),
+                 redondos=[l.valor for l in itens if _redondo(l)], **_pergunta_ordinaria(itens))
+
+    if "valor_redondo" not in desativar and hist:
+        # o lançamento que já saiu como "fornecedor novo" (e é redondo) não gera um 2º alerta: a informação vai no mesmo
+        itens = [l for l in atuais if _redondo(l) and id(l) not in ids_novo]
+        if itens:
+            novo("valor_redondo", itens, "Despesas de valor redondo", sum(l.valor for l in itens), minimo=cfg["valor_redondo_min"],
+                 **_pergunta_ordinaria(itens))
 
     if "recorrente_ausente" not in desativar and len(hist) >= cfg["recorrente_meses"]:
         ultimos = hist[:cfg["recorrente_meses"]]
@@ -198,7 +241,16 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
             if m > _CENTAVO and v >= cfg["atipico_fator"] * m and v - m >= cfg["atipico_diferenca_min"]:
                 ls = [l for l in atuais if chave(l) == k and not parcela_da_descricao(l.descricao)]
                 itens += ls
-                medianas.append({"descricao": k, "valor": round(v, 2), "mediana": round(m, 2)})
+                item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2)}
+                # Total alto porque vários meses foram pagos de uma vez (cada lançamento no valor mensal de sempre): não é aumento de valor,
+                # é pagamento acumulado de competências anteriores — a pergunta certa é o motivo de pagarem juntos.
+                if len(ls) >= 2 and max(l.valor for l in ls) <= 1.25 * m:
+                    datas: dict = {}
+                    for l in ls:
+                        datas[l.data or "sem data"] = datas.get(l.data or "sem data", 0) + 1
+                    item.update(acumulo=True, n=len(ls), valor_unitario=round(sum(l.valor for l in ls) / len(ls), 2),
+                                competencias=_competencias(ls), datas=datas)
+                medianas.append(item)
         if itens:
             novo("valor_atipico", itens, "Valores acima do histórico do fornecedor", sum(l.valor for l in itens), fator=cfg["atipico_fator"],
                  medianas=medianas[:MAX_ITENS])
