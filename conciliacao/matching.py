@@ -161,6 +161,15 @@ _RE_NF_NO_COMPROVANTE = _lp.RE_MARCADOR_NF
 _TAMANHO_MINIMO_TEXTO_CONFIAVEL = 300
 
 
+_RE_BENEFICIO_FUNCIONARIO = re.compile(
+    r"\bVALE\s*[- ]?\s*(?:TRANSPORTE|REFEIC|ALIMENT|COMBUSTIVEL|CULTURA)|\bVT\s*/\s*VR\b|\bCESTA\s*BASICA\b|\bVALE\s+REFEICAO\b", re.IGNORECASE)
+
+
+def _sem_acento_nf(s: str) -> str:
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
+
+
 def achado_nota_fiscal_ausente(
     descricao: str | None, texto_comprovante: str | None, valor_esperado: float | None,
     valor_encontrado: float | None, categoria: str | None,
@@ -196,6 +205,11 @@ def achado_nota_fiscal_ausente(
     """
     m_nf = _RE_NF_NA_DESCRICAO.search(descricao or "")
     if not m_nf:
+        return None
+    # Benefícios pagos a funcionários (vale transporte, vale refeição/alimentação, cesta básica, vale combustível): as empresas emissoras
+    # NÃO emitem nota fiscal para esses benefícios — o nº que a listagem cita é o do documento/fatura de cobrança, e cobrar "Nota Fiscal
+    # anexada" aqui é alerta falso.
+    if _RE_BENEFICIO_FUNCIONARIO.search(_sem_acento_nf(f"{categoria or ''} {descricao or ''}")):
         return None
     texto_comp = texto_comprovante or ""
     if len(texto_comp) < _TAMANHO_MINIMO_TEXTO_CONFIAVEL:
