@@ -132,9 +132,17 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Fatto Morumbi",
       "regras": {
         "rendimento": {
-          "ignorar_contas": [
+          "contas_sem_base": [
             "ORDINARIA"
           ],
+          "contas_aplicadas": [
+            "ORDINARIA",
+            "FUNDO DE RESERVA",
+            "LOCACAO",
+            "FUNDO DE OBRAS/FACHADA"
+          ],
+          "consolidar_sem_rendimento": true,
+          "perguntar_aplicacoes": true,
           "tolerancia": 0.4
         },
         "receita_negativa": {

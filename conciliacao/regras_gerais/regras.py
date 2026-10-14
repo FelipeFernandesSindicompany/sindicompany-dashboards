@@ -507,7 +507,7 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
             regra_aplicada="rendimento_concentrado_em_uma_conta_e_contas_com_saldo_sem_rendimento",
             linha_demonstrativo=ref.nome if ref else sem_rend[0][0].nome, valor_esperado=None,
             valor_encontrado=round(sum(x.rendimento for x in contas), 2),
-            detalhes={**resumo, "conta": ref.nome if ref else sem_rend[0][0].nome, "motivo": "sem_rendimento_consolidado",
+            detalhes={**resumo, "conta": ref.nome if ref else sem_rend[0][0].nome, "motivo": "sem_rendimento_consolidado", "perguntar_aplicacoes": bool(cfg.get("perguntar_aplicacoes")),
                       "pagina": ref.pagina if ref else None, "rendimento_total_mes": round(sum(x.rendimento for x in contas), 2),
                       "contas_com_rendimento": [{"nome": x.nome, "saldo_medio": _sm(x), "rendimento": round(x.rendimento, 2)} for x in com],
                       "contas_sem_rendimento": [{"nome": c.nome, "saldo_medio": _sm(c)} for c, _ in sem_rend]}))

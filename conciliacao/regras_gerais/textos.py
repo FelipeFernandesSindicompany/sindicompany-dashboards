@@ -46,6 +46,20 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
     if d.get("motivo") == "sem_rendimento_consolidado":
         com = d.get("contas_com_rendimento") or []
         sem = d.get("contas_sem_rendimento") or []
+        if not com:
+            sem_txt = "; ".join(f"{x['nome']} (saldo médio {_moeda(x['saldo_medio'])})" for x in sem)
+            if d.get("perguntar_aplicacoes"):
+                return ("Nenhuma conta recebeu rendimento no mês; há aplicações financeiras?",
+                        f"Nenhuma conta recebeu rendimento neste mês, embora a conta Ordinária tenha recebido em meses anteriores e as contas de fundo tenham saldo positivo: {sem_txt}. "
+                        "A conta Ordinária está com saldo negativo e não deveria receber rendimento; o rendimento das aplicações deve ser creditado nas contas "
+                        "com saldo e distribuído na proporção do saldo de cada uma.",
+                        "O condomínio possui aplicações financeiras (fundos de reserva, locação e obras)? Por que não houve rendimento em nenhuma conta neste mês? "
+                        "O rendimento está sendo creditado nas contas corretas? Podem enviar o extrato das aplicações do mês?")
+            return ("Nenhuma conta recebeu rendimento no mês",
+                    f"Nenhuma conta recebeu rendimento neste mês, embora tenham recebido em meses anteriores ou tenham saldo: {sem_txt}. "
+                    "O rendimento das aplicações deve ser distribuído entre as contas na proporção do saldo de cada uma.",
+                    "As contas permaneceram aplicadas no mês? Por que não houve rendimento creditado em nenhuma delas? "
+                    "Podem enviar o extrato da aplicação do mês?")
         onde = ", ".join(f"{x['nome']} (saldo médio {_moeda(x['saldo_medio'])})" for x in com)
         sem_txt = "; ".join(f"{x['nome']} (saldo médio {_moeda(x['saldo_medio'])})" for x in sem)
         negativa = any((x.get("saldo_medio") or 0) < 0 for x in com)
@@ -60,6 +74,11 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
                      f"contas na proporção do saldo de cada uma."
                      + (f" Referência: pela proporção do saldo médio das contas com saldo positivo, o rateio de {_moeda(total)} seria de aproximadamente {rateio} "
                         f"(estimativa; depende de em qual conta bancária o dinheiro estava aplicado)." if rateio else ""))
+        if d.get("perguntar_aplicacoes"):
+            verificar = ("O condomínio possui aplicações financeiras (fundos de reserva, locação e obras)? O rendimento está sendo creditado nas contas corretas? "
+                         f"A conta {com[0]['nome']} está com saldo negativo e não deveria receber rendimento. Em qual conta bancária o rendimento foi gerado "
+                         "e por que não foi creditado nas contas com saldo positivo (podem enviar o extrato das aplicações do mês)?")
+            return titulo, paragrafo, verificar
         verificar = ("O rendimento do mês deve ser creditado na conta "
                      f"{com[0]['nome'] if com else conta} (negativa) ou lançado nas contas com saldo positivo (Fundo de Reserva e demais)? Em qual conta bancária "
                      "o rendimento foi gerado (podem enviar o extrato da aplicação)? O saldo negativo representa empréstimo do Fundo de Reserva e foi aprovado "
