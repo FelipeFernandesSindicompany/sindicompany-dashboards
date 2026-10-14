@@ -59,7 +59,8 @@ def _item(l) -> dict:
 _RUIDO = {"DEB", "CC", "C", "REF", "NF", "NFE", "NFS", "NFSE", "INST", "COD", "FORNECIMENTO", "PARC", "PARCELA", "PC", "DE", "DA", "DO", "DAS",
           "DOS", "E", "A", "O", "PGTO", "PAGTO", "PAGAMENTO", "REFERENTE", "PROPORCIONAL", "SERV", "SERVICO", "SERVICOS",
           "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ", "JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO",
-          "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO", "LTDA", "ME", "EPP", "SA", "S", "FORN", "FORNEC", "AUT", "NFTS", "REF"}
+          "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO", "LTDA", "ME", "EPP", "SA", "S", "FORN", "FORNEC", "AUT", "NFTS", "REF",
+          "MES", "ANO", "KWH", "M3", "FNC", "RECIBO"}
 
 
 def _chave_fornecedor(l) -> str:
@@ -71,7 +72,7 @@ def _chave_fornecedor(l) -> str:
     if l.fornecedor and termos(l.fornecedor):
         return " ".join(termos(l.fornecedor)[:2])
     partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
-    ordem = ([partes[1], partes[0]] + partes[2:]) if len(partes) >= 3 else partes
+    ordem = ([partes[1], partes[-1], partes[0]] + partes[2:-1]) if len(partes) >= 3 else partes   # 'Rubrica - FORNECEDOR - ...' ou '... - NF - FORNECEDOR'
     for trecho in ordem:                      # 1º trecho com nome utilizável (os de só nº/mês/ruído são pulados)
         t = termos(trecho)
         if t:
@@ -90,7 +91,7 @@ def estabilidade_fornecedores(hist: list) -> Optional[float]:
     return len(a & b) / len(a) if a else None
 
 
-_RE_EVENTUAL = re.compile(r"F[EÉ]RIAS|13\s*[ºO°]?\s*(?:SAL|PROP)|DECIMO|RESCIS|I\.?\s?P\.?\s?T\.?\s?U|ADIANTAMENTO", re.IGNORECASE)
+_RE_EVENTUAL = re.compile(r"F[EÉ]RIAS|13\s*[ºO°]?\s*(?:SAL|PROP)|DECIMO|RESCIS|I\.?\s?P\.?\s?T\.?\s?U|ADIANTAMENTO|ISEN[CÇ][AÃ]O|\bCUSTAS\b|\bAPROP\b", re.IGNORECASE)
 
 
 def _eventual(l) -> bool:
@@ -117,6 +118,30 @@ def _competencias(lancamentos: list) -> list:
         ano = ano + 2000 if ano < 100 else ano
         achadas[(ano, mes)] = f"{[k for k, v in _MES_NUM.items() if v == mes][0].lower()}/{ano}"
     return [achadas[k] for k in sorted(achadas)]
+
+
+def _competencias_num(lancamentos: list) -> list:
+    """[((ano, mes), 'mês/ano'), ...] ordenado, das competências citadas nas descrições."""
+    achadas: dict = {}
+    for l in lancamentos:
+        m = _RE_COMPETENCIA.search(_sem_acento(l.descricao or ""))
+        if not m:
+            continue
+        if m.group(1):
+            mes, ano = _MES_NUM[m.group(1).upper()], int(m.group(2))
+        else:
+            mes, ano = int(m.group(3)), int(m.group(4))
+        ano = ano + 2000 if ano < 100 else ano
+        achadas[(ano, mes)] = f"{[k for k, v in _MES_NUM.items() if v == mes][0].lower()}/{ano}"
+    return [(k, achadas[k]) for k in sorted(achadas)]
+
+
+def _parecido(a: str, b: str) -> bool:
+    """Nomes de fornecedor quase iguais (diferença de 1-2 letras: 'JJS SOLUCOES' x 'JS SOLUCOES') — mesmo fornecedor digitado diferente."""
+    if not a or not b or abs(len(a) - len(b)) > 2:
+        return False
+    import difflib
+    return difflib.SequenceMatcher(None, a, b).ratio() >= 0.88
 
 
 def _estrutural(l) -> bool:
@@ -185,7 +210,8 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
 
     ids_novo: set = set()
     if "fornecedor_novo" not in desativar and len(por_mes) >= cfg["meses_minimos_historico"]:
-        itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves and not _eventual(l)]
+        itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves and not _eventual(l)
+                 and not any(_parecido(chave(l), h) for h in historico_chaves)]
         if itens:
             ids_novo = {id(l) for l in itens}
             novo("fornecedor_novo", itens, "Fornecedores sem lançamento nos meses anteriores", sum(l.valor for l in itens),
@@ -205,6 +231,8 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
         atuais_chaves = {chave(l) for l in _lancamentos_validos(dados)}
         faltando = []
         for k in sorted(em_todos - atuais_chaves):
+            if any(_parecido(k, a) for a in atuais_chaves):
+                continue                                   # o mesmo fornecedor com o nome digitado diferente neste mês
             vals = [l.valor for h in ultimos for l in _lancamentos_validos(h) if chave(l) == k]
             amostra = [l for l in _lancamentos_validos(ultimos[0]) if chave(l) == k]
             if not vals or statistics.median(vals) < cfg["recorrente_valor_min"] or not amostra:
@@ -244,16 +272,53 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2)}
                 # Total alto porque vários meses foram pagos de uma vez (cada lançamento no valor mensal de sempre): não é aumento de valor,
                 # é pagamento acumulado de competências anteriores — a pergunta certa é o motivo de pagarem juntos.
-                if len(ls) >= 2 and max(l.valor for l in ls) <= 1.25 * m:
-                    datas: dict = {}
-                    for l in ls:
-                        datas[l.data or "sem data"] = datas.get(l.data or "sem data", 0) + 1
-                    item.update(acumulo=True, n=len(ls), valor_unitario=round(sum(l.valor for l in ls) / len(ls), 2),
-                                competencias=_competencias(ls), datas=datas)
+                # Só é "acúmulo" quando os lançamentos têm praticamente o mesmo valor (a mensalidade de sempre) e citam competências diferentes;
+                # fornecedor com serviços de valores variados (honorários + acordos) não é acúmulo de mensalidades.
+                comps = _competencias_num(ls)
+                valores = [l.valor for l in ls]
+                datas: dict = {}
+                for l in ls:
+                    datas[l.data or "sem data"] = datas.get(l.data or "sem data", 0) + 1
+                mes_atual_num = (int(dados.mes[:4]), int(dados.mes[5:7]))
+                anteriores = [rotulo for (ym, rotulo) in comps if ym < mes_atual_num]
+                if len(ls) >= 2 and len(comps) >= 2 and (max(valores) - min(valores)) <= 0.15 * (sum(valores) / len(valores)):
+                    item.update(acumulo=True, n=len(ls), valor_unitario=round(sum(valores) / len(valores), 2),
+                                competencias=[r for _, r in comps], datas=datas)
+                elif len(anteriores) >= 2:
+                    item.update(competencias_anteriores=anteriores, n=len(ls), datas=datas)
                 medianas.append(item)
         if itens:
             novo("valor_atipico", itens, "Valores acima do histórico do fornecedor", sum(l.valor for l in itens), fator=cfg["atipico_fator"],
                  medianas=medianas[:MAX_ITENS])
+
+    if "apropriacao_despesa" not in desativar:
+        aprop = [l for l in dados.lancamentos if re.search(r"\bAPROP\b", _sem_acento(l.descricao or ""), re.IGNORECASE)]
+        # Estorno + relançamento do mesmo valor e mesma NF (ex.: -40.000 numa subconta e +40.000 em outra): reclassificação sem efeito líquido.
+        por_nf: dict = {}
+        for l in dados.lancamentos:
+            nf = nf_da_descricao(l.descricao or "")
+            if nf:
+                por_nf.setdefault((chave(l), nf), []).append(l)
+        pares, reclass = [], []
+        for ls in por_nf.values():
+            negs = [l for l in ls if l.valor < 0 and abs(l.valor) >= 500]
+            for n_ in negs:
+                par = next((p for p in ls if p.valor > 0 and abs(p.valor + n_.valor) <= 0.01 and id(p) not in {id(x) for x in pares}), None)
+                if par is not None:
+                    pares += [n_, par]
+                    if _norm(n_.categoria) != _norm(par.categoria):
+                        reclass.append({"de": n_.categoria, "para": par.categoria, "valor": par.valor})
+        ids_aprop = {id(l) for l in aprop}
+        aprop = aprop + [l for l in pares if id(l) not in ids_aprop]
+        if aprop:
+            series: dict = {}
+            for l in aprop:
+                p = parcela_da_descricao(re.sub(r"(?<!\d)(\d{1,2})\s*/\s*(\d{1,2})(?!\d)", r"PARC \1/\2", l.descricao or ""))
+                if p:
+                    series.setdefault((nf_da_descricao(l.descricao) or "", p[1]), set()).add(p[0])
+            novo("apropriacao_despesa", aprop, "Apropriações de despesa", sum(l.valor for l in aprop),
+                 estornos=[l.valor for l in aprop if l.valor < 0], tem_aprop=bool(ids_aprop), reclassificacoes=reclass,
+                 parcelas_juntas=[{"nf": k[0], "total": k[1], "parcelas": sorted(v)} for k, v in series.items() if len(v) >= 2])
 
     if "duplicidade_no_mes" not in desativar:
         grupos: dict = {}

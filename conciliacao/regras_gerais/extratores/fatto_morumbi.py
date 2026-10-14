@@ -60,4 +60,13 @@ class ExtratorManagerAdm(_ContasData):
 
 
 class Extrator(ExtratorManagerAdm):
-    pass
+    """Fatto Morumbi entregava o PDF "Prestação de Contas" (Manager ADM, até jul/2026); em ago/2026 a administradora passou a
+    entregar a planilha Habitacional ("Demonstrações Por Conta", `prestacao_contas_8_2026.xlsx`). O formato é escolhido pela EXTENSÃO
+    do arquivo: .xlsx/.xlsm → extratores/habitacional_xlsx.py; PDF → leitor Manager ADM (acima). Só este condomínio: o Dueto Morumbi
+    herda de `ExtratorManagerAdm`, não desta classe."""
+
+    def extrair(self, caminho: Path, mes: str) -> DadosRegras:
+        if Path(caminho).suffix.lower() in (".xlsx", ".xlsm"):
+            from conciliacao.regras_gerais.extratores.habitacional_xlsx import Extrator as _Planilha
+            return _Planilha(self.condo).extrair(caminho, mes)
+        return super().extrair(caminho, mes)

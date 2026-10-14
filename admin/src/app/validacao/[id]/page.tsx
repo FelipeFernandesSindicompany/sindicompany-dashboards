@@ -392,7 +392,7 @@ export default function ValidacaoCondominioPage() {
                     </select>
                     <span className="text-[11px] text-text-muted">sugerida: {a.severidade_sugerida}</span>
                   </div>
-                  <textarea className="input text-[12px] min-h-[40px]" placeholder="O que verificar"
+                  <textarea className="input text-[12px] min-h-[40px]" placeholder="Pergunta à administradora"
                     value={rev.o_que_verificar} onChange={e => atualizarCampo(a.id, 'o_que_verificar', e.target.value)} />
                 </div>
               );

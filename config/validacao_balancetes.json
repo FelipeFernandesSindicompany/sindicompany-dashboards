@@ -142,7 +142,11 @@
             "PROVIS[AÃ]O IR S/ REND"
           ]
         },
-        "gestor": {}
+        "gestor": {},
+        "apropriacao": {},
+        "guia_consolidada": {
+          "por_numero": true
+        }
       }
     },
     "cores": {

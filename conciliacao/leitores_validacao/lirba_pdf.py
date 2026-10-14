@@ -487,12 +487,16 @@ class AdapterLirbaPDF(AdapterBase):
 
         # ── 3a. TOTAL DA CONTA → contas de nível alto (CONSUMO, IPTU, etc.) ───────
         todos_totais = {}  # conta_upper -> valor
+        _ultimo = None     # (conta, valor, fim do match): o PDF às vezes imprime o MESMO total duas vezes em sequência
         for m in re.finditer(
             r"TOTAL DA CONTA\s+([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ /\-\.0-9]+?)\s+([\d.,]+)(?:\s|$)",
             texto_completo, re.IGNORECASE
         ):
             conta = m.group(1).strip().upper()
             val   = _num(m.group(2))
+            if _ultimo and _ultimo[0] == conta and abs(_ultimo[1] - val) < 0.005 and m.start() - _ultimo[2] <= 3:
+                continue       # repetição imediata do mesmo total (Blue Sky: "FUNDO PARA EVENTUAIS 300,00" duas vezes) — conta uma vez só
+            _ultimo = (conta, val, m.end())
             if val > 0:
                 todos_totais[conta] = todos_totais.get(conta, 0) + val
 

@@ -58,6 +58,12 @@ def _find_br(line: str) -> list[float]:
     return [_num(m) for m in re.findall(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", line)]
 
 
+def _find_br_sinal(line: str) -> list[float]:
+    """Como _find_br, mas PRESERVANDO o sinal ("-254.465,01" = saldo devedor). `_num` descarta o "-" (serve aos totais de categoria), o que
+    transformava a conta Ordinária negativa em positiva no Resumo Financeiro Contábil — e o relatório dizia "nenhuma conta com saldo devedor"."""
+    return [(-1.0 if m.startswith("-") else 1.0) * _num(m) for m in re.findall(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", line)]
+
+
 def _two_concat(line: str) -> tuple[float, float] | None:
     """Divide 'NN.NNN,NNKK.KKK,KK' em (primeiro, segundo)."""
     nums = re.findall(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", line)
@@ -105,7 +111,7 @@ class AdapterManagerAdmPDF(AdapterBase):
                 continue
             if not in_rfc:
                 continue
-            nums = _find_br(l)
+            nums = _find_br_sinal(l)
             if len(nums) == 4:
                 name_raw = re.sub(r"\s*-?\d{1,3}(?:\.\d{3})*,\d{2}.*$", "", l).strip()
                 if name_raw.upper().startswith("TOTAL"):

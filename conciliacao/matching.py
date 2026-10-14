@@ -1579,3 +1579,80 @@ def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
                 m.valor_encontrado = m.valor_esperado
                 m.confianca_deterministica = 1.0
     return achados
+
+
+def reclassificar_apropriacoes(achados: list, registros: list) -> list:
+    """Só para o condomínio que pede (`regras.apropriacao`): "APROP DESP ..." é apropriação de despesa — lançamento contábil interno que, por
+    natureza, não tem comprovante de pagamento próprio. "Sem comprovante" para essas linhas é alerta falso; o conjunto (estornos, parcelas no
+    mesmo mês) é tratado como pergunta de gestor nas regras gerais. Aqui o achado vira 'verificado: dispensa comprovante'."""
+    por_chave = {chave_registro(r): r for r in registros}
+    # Estorno + relançamento da mesma NF (valores opostos, |valor| >= 500): efeito líquido zero, não há pagamento a comprovar nas duas pontas.
+    por_nf: dict = {}
+    for r in registros:
+        if r.tipo_documento == "despesa_listada" and r.valor:
+            m = _RE_NF_NA_DESCRICAO.search(r.descricao or "")
+            if m:
+                por_nf.setdefault(m.group(1), []).append(r)
+    codigos_par: set = set()
+    for ls in por_nf.values():
+        for n_ in (x for x in ls if x.valor < 0 and abs(x.valor) >= 500):
+            par = next((p for p in ls if p.valor > 0 and abs(p.valor + n_.valor) <= 0.01 and p.codigo not in codigos_par), None)
+            if par is not None:
+                codigos_par.update({n_.codigo, par.codigo})
+    for a in achados:
+        if a.tipo != "sem_comprovante":
+            continue
+        d = next((por_chave[k] for k in a.registros_relacionados if k in por_chave and por_chave[k].tipo_documento == "despesa_listada"), None)
+        if d is None:
+            continue
+        if re.search(r"\bAPROP\b", d.descricao or "", re.IGNORECASE):
+            motivo = "apropriacao_de_despesa_dispensa_comprovante_proprio"
+        elif d.codigo in codigos_par:
+            motivo = "estorno_e_relancamento_sem_efeito_liquido"
+        else:
+            continue
+        a.tipo = "ok_verificado"
+        a.severidade_sugerida = "informativo"
+        a.regra_aplicada = motivo
+        a.valor_encontrado = a.valor_esperado
+        a.confianca_deterministica = 1.0
+    return achados
+
+
+def reclassificar_guias_por_numero(achados: list, registros: list) -> list:
+    """Só para o condomínio que pede (`regras.guia_consolidada.por_numero`): guia de tributo (DARF) paga de uma vez para várias retenções.
+    Agrupa os lançamentos pelo NÚMERO DO DOCUMENTO da guia impresso no comprovante; se a soma dos lançamentos do grupo — mais as retenções
+    do mesmo tributo e data cujo anexo não traz a guia — fecha ao centavo com o total pago da guia, cada lançamento do grupo que estava como
+    "valor diverge"/"conteúdo não confirmado" vira "verificado". Se não fecha, nada muda. (O lançamento sem anexo que ajuda a fechar a soma
+    continua sendo apontado como sem comprovante: a aritmética mostra que pertence à guia, mas o anexo dele não foi fornecido.)"""
+    comp_por_codigo = {r.codigo: r for r in registros if r.tipo_documento == "comprovante_anexado"}
+    desp_por_codigo = {r.codigo: r for r in registros if r.tipo_documento == "despesa_listada"}
+    por_guia: dict = {}
+    for cod, c in comp_por_codigo.items():
+        m = _RE_NUMERO_DOC_GUIA.search(c.texto_bruto or "")
+        if m and cod in desp_por_codigo:
+            por_guia.setdefault(m.group(0), []).append(cod)
+    for _numero, cods in por_guia.items():
+        if len(cods) < 2:
+            continue
+        valores = [round(comp_por_codigo[c].valor, 2) for c in cods if comp_por_codigo[c].valor and comp_por_codigo[c].valor > 0]
+        if not valores:
+            continue
+        total = max(set(valores), key=valores.count)            # total pago da guia: o valor lido na maioria dos anexos do grupo
+        soma = round(sum(abs(desp_por_codigo[c].valor or 0.0) for c in cods), 2)
+        venc = {desp_por_codigo[c].vencimento for c in cods}
+        extras = [r for r in registros if r.tipo_documento == "despesa_listada" and r.codigo not in cods and r.vencimento in venc
+                  and _RE_DESCRICAO_TRIBUTO.search(r.descricao or "")
+                  and (comp_por_codigo.get(r.codigo) is None or not comp_por_codigo[r.codigo].valor)]
+        fecha = abs(soma - total) <= 0.02 or (bool(extras) and abs(soma + sum(abs(e.valor or 0.0) for e in extras) - total) <= 0.02)
+        if not fecha:
+            continue
+        for a in achados:
+            if a.tipo in ("divergencia_valor", "conteudo_nao_verificavel") and any(
+                    f"cod{c}" in k for c in cods for k in a.registros_relacionados):
+                a.tipo = "ok_verificado"
+                a.severidade_sugerida = "informativo"
+                a.regra_aplicada = "guia_consolidada_confere_com_a_soma_dos_lancamentos"
+                a.valor_encontrado = a.valor_esperado
+                a.confianca_deterministica = 1.0
+    return achados

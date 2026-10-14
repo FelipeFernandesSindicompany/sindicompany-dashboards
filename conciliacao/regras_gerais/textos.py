@@ -34,8 +34,8 @@ def texto_receita_negativa(a: Achado) -> tuple[str, str, str]:
         paragrafo = (f"A receita \"{desc}\"{quando}, na conta {conta}, aparece com valor negativo "
                      f"({_moeda(a.valor_encontrado)}). Receita negativa reduz a arrecadação do mês e normalmente "
                      f"indica estorno, devolução ou ajuste.")
-    verificar = ("Perguntar à administradora o que originou este lançamento negativo e se existe documento "
-                 "(estorno de boleto, devolução, correção) que o sustente.")
+    verificar = ("O que originou este lançamento negativo? Existe documento (estorno de boleto, devolução, correção) que o sustente? "
+                 "Podem explicar e enviar o documento?")
     return titulo, paragrafo, verificar
 
 
@@ -60,10 +60,10 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
                      f"contas na proporção do saldo de cada uma."
                      + (f" Referência: pela proporção do saldo médio das contas com saldo positivo, o rateio de {_moeda(total)} seria de aproximadamente {rateio} "
                         f"(estimativa; depende de em qual conta bancária o dinheiro estava aplicado)." if rateio else ""))
-        verificar = ("Perguntar à administradora se o rendimento deve ser creditado na conta "
-                     f"{com[0]['nome'] if com else conta} (negativa) ou lançado nas contas com saldo positivo (Fundo de Reserva e demais), solicitar o extrato "
-                     "da aplicação para confirmar em qual conta bancária o rendimento foi gerado e se o saldo negativo representa empréstimo do Fundo de Reserva "
-                     "(e se foi aprovado em assembleia).")
+        verificar = ("O rendimento do mês deve ser creditado na conta "
+                     f"{com[0]['nome'] if com else conta} (negativa) ou lançado nas contas com saldo positivo (Fundo de Reserva e demais)? Em qual conta bancária "
+                     "o rendimento foi gerado (podem enviar o extrato da aplicação)? O saldo negativo representa empréstimo do Fundo de Reserva e foi aprovado "
+                     "em assembleia?")
         return titulo, paragrafo, verificar
     if d.get("motivo") == "sem_rendimento":
         titulo = f"Rendimento não creditado — {conta}"
@@ -76,8 +76,7 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
         else:
             paragrafo = (f"A conta {conta} tem saldo no mês, e tinha rendimento no mês anterior, mas não recebeu "
                          f"nenhum rendimento neste mês{esp}.")
-        verificar = ("Perguntar à administradora se o saldo desta conta permaneceu aplicado e por que o "
-                     "rendimento do mês não foi creditado nela.")
+        verificar = ("O saldo desta conta permaneceu aplicado no mês? Por que o rendimento do mês não foi creditado nela?")
         return titulo, paragrafo, verificar
     taxa = d.get("taxa_conta")
     titulo = f"Rendimento fora da proporção do saldo — {conta} ({_moeda(a.valor_encontrado)})"
@@ -85,8 +84,8 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
                  + (f", equivalente a {_pct(taxa)} do saldo médio da conta" if taxa else "")
                  + (f", enquanto as demais contas renderam em torno de {_pct(mediana)}" if mediana else "")
                  + (f". Pela proporção do saldo, o esperado seria cerca de {_moeda(a.valor_esperado)}." if a.valor_esperado else "."))
-    verificar = ("Perguntar à administradora como o rendimento da aplicação foi rateado entre as contas e se "
-                 "o valor creditado nesta conta está correto.")
+    verificar = ("Como o rendimento da aplicação foi rateado entre as contas? O valor creditado nesta conta está correto? "
+                 "Podem explicar o critério do rateio?")
     return titulo, paragrafo, verificar
 
 
@@ -103,7 +102,7 @@ def texto_sem_identificacao(a: Achado) -> tuple[str, str, str]:
     else:
         paragrafo = (f"O lançamento{cod}{quando}, categoria \"{d.get('categoria') or 'não informada'}\", no valor de "
                      f"{_moeda(a.valor_encontrado)}, não identifica a quem foi pago: histórico \"{desc}\".")
-    verificar = "Solicitar à administradora o favorecido, o motivo do pagamento e o comprovante deste lançamento."
+    verificar = "Quem é o favorecido deste pagamento e qual o motivo dele? Podem enviar o comprovante deste lançamento?"
     return titulo, paragrafo, verificar
 
 
@@ -121,7 +120,7 @@ def texto_parcelas(a: Achado) -> tuple[str, str, str]:
     if len(nfs) > 1:
         paragrafo += (f" As parcelas citam notas fiscais diferentes (NF {', '.join(nfs)}), o que pode indicar "
                       f"contratos ou serviços distintos com o mesmo fornecedor.")
-    verificar = "Perguntar à administradora por que mais de uma parcela da mesma série foi paga no mesmo mês."
+    verificar = "Por que mais de uma parcela da mesma série foi paga no mesmo mês? Houve antecipação ou atraso de parcelas anteriores?"
     return titulo, paragrafo, verificar
 
 
@@ -135,7 +134,7 @@ def texto_outra_subconta(a: Achado) -> tuple[str, str, str]:
         paragrafo = (f"Neste mês {n} despesas/fornecedores que estavam em uma subconta nos meses anteriores aparecem em outra, "
                      f"somando {_moeda(a.valor_encontrado)}. Maiores casos: {exemplos}. Tantas mudanças de uma vez costumam indicar "
                      f"reclassificação em massa feita pela administradora.")
-        return titulo, paragrafo, "Perguntar à administradora o motivo da reclassificação e se as despesas foram remapeadas de forma consistente entre as subcontas."
+        return titulo, paragrafo, "Qual o motivo da reclassificação em massa das despesas entre subcontas? As despesas foram remapeadas de forma consistente?"
 
     despesa = d.get("despesa") or "despesa"
     antes = ", ".join(f"\"{c}\"" for c in d.get("categorias_mes_anterior", [])) or "outra subconta"
@@ -146,7 +145,7 @@ def texto_outra_subconta(a: Achado) -> tuple[str, str, str]:
     paragrafo = (f"{'O lançamento' if n == 1 else f'Os {n} lançamentos'} de \"{despesa}\" ({_moeda(a.valor_encontrado)}) "
                  f"aparece{'m' if n > 1 else ''} neste mês na subconta \"{atual}\"{nova}; no mês anterior esta "
                  f"despesa estava em {antes}.")
-    verificar = "Perguntar à administradora o motivo da mudança de subconta e se a nova classificação está correta."
+    verificar = "Qual o motivo da mudança de subconta desta despesa? A nova classificação está correta?"
     return titulo, paragrafo, verificar
 
 
@@ -159,24 +158,24 @@ def texto_compensacao(a: Achado) -> tuple[str, str, str]:
         titulo = f"{grupo}: nenhum lançamento encontrado neste mês"
         paragrafo = (f"Todo mês o {g} deve ter uma entrada (receita) e uma saída (desconto/abatimento) que se anulam. "
                      f"Neste mês não foi encontrado nenhum lançamento de {g} nas receitas.")
-        verificar = f"Perguntar à administradora se o {g} deixou de ser lançado neste mês e por quê."
+        verificar = f"O {g} deixou de ser lançado neste mês? Por quê?"
     elif sit == "sem_saida":
         titulo = f"{grupo}: entrada sem a saída correspondente ({_moeda(d.get('entrada'))})"
         paragrafo = (f"O {g} teve entrada de {_moeda(d.get('entrada'))} neste mês, mas nenhuma saída (desconto/abatimento) "
                      f"para compensá-la; todo mês entrada e saída do {g} se anulam.")
-        verificar = f"Perguntar à administradora onde está a saída (desconto) correspondente à entrada do {g}."
+        verificar = f"Onde está a saída (desconto) correspondente à entrada do {g}? Por que ela não foi lançada?"
     elif sit == "sem_entrada":
         titulo = f"{grupo}: saída sem a entrada correspondente ({_moeda(d.get('saida'))})"
         paragrafo = (f"O {g} teve saída de {_moeda(d.get('saida'))} neste mês (desconto/abatimento lançado como receita "
                      f"negativa), mas nenhuma entrada de locação para compensá-la.")
-        verificar = f"Perguntar à administradora onde está a entrada (receita) correspondente à saída do {g}."
+        verificar = f"Onde está a entrada (receita) correspondente à saída do {g}? Por que ela não foi lançada?"
     else:
         titulo = f"{grupo}: entrada e saída não se anulam no mês (líquido {_moeda(d.get('liquido'))})"
         paragrafo = (f"No mês, as receitas de {g} somam entradas de {_moeda(d.get('entrada'))} e saídas "
                      f"(descontos/abatimentos lançados como receita negativa) de {_moeda(d.get('saida'))}, em "
                      f"{d.get('quantidade')} lançamentos; o líquido de {_moeda(d.get('liquido'))} deveria ser zero.")
-        verificar = (f"Perguntar à administradora a que se referem os abatimentos e as diferenças que fazem a entrada e a saída de "
-                     f"{g} não fecharem.")
+        verificar = (f"A que se referem os abatimentos e as diferenças que fazem a entrada e a saída de "
+                     f"{g} não fecharem? Podem explicar?")
     return titulo, paragrafo, verificar
 
 
@@ -197,8 +196,8 @@ def texto_previsto_realizado(a: Achado) -> tuple[str, str, str]:
         partes.append(f"A Posição Financeira da conta registra crédito de {_moeda(dp['posicao'])} em \"EMISSÃO DO PERÍODO\", "
                       f"mas a tabela Previsto x Realizado traz {_moeda(dp['tabela'])} nessa linha — as duas partes do mesmo "
                       f"balancete não conferem.")
-    verificar = ("Pedir à administradora o Resumo de Emissão completo deste mês (emissão do período, reembolsos e diversos) e "
-                 "a explicação da diferença; enquanto isso, o percentual de arrecadação apresentado no balancete não é confiável.")
+    verificar = ("Qual é o Resumo de Emissão completo deste mês (emissão do período, reembolsos e diversos) e como se explica a diferença "
+                 "apontada? Enquanto não houver explicação, o percentual de arrecadação apresentado no balancete não é confiável.")
     return titulo, " ".join(partes), verificar
 
 
@@ -212,8 +211,8 @@ def texto_variacao_categoria(a: Achado) -> tuple[str, str, str]:
     titulo = f"Despesa da categoria {cat} {sentido} {pct}% em relação ao mês anterior ({_moeda(d.get('mes_anterior'))} → {_moeda(d.get('mes_atual'))})"
     paragrafo = (f"O total de \"{cat}\" foi {_moeda(d.get('mes_atual'))} neste mês contra {_moeda(d.get('mes_anterior'))} no mês anterior "
                  f"({sentido} {pct}%). Maiores lançamentos do mês na categoria: {lista}.")
-    verificar = ("Conferir se os lançamentos são despesas do mês (manutenção) ou investimento/aquisição que deveria ter outra classificação, "
-                 "se há aprovação para os valores mais altos e se há notas fiscais e comprovantes de todos.")
+    verificar = ("Os lançamentos dessa categoria são despesas do mês (manutenção) ou investimento/aquisição que deveria ter outra classificação? "
+                 "Houve aprovação para os valores mais altos e existem notas fiscais e comprovantes de todos?")
     return titulo, paragrafo, verificar
 
 
@@ -224,8 +223,8 @@ def texto_nf_repetida(a: Achado) -> tuple[str, str, str]:
     paragrafo = (f"O lançamento \"{d.get('descricao')}\" ({_moeda(d.get('valor'))}, {d.get('data') or 'sem data'}) cita a NF {d.get('nf')}, "
                  f"que já aparece paga do mesmo fornecedor em: {ant}. Pode ser pagamento em duplicidade, parcela não identificada ou reaproveitamento "
                  f"do número da nota.")
-    verificar = ("Pedir à administradora as notas fiscais e comprovantes dos dois pagamentos e confirmar se são parcelas distintas; se for duplicidade, "
-                 "solicitar a devolução/estorno.")
+    verificar = ("Os dois pagamentos desta nota fiscal são parcelas distintas ou houve duplicidade? Podem enviar as notas fiscais e os comprovantes dos dois "
+                 "pagamentos e, se for duplicidade, providenciar a devolução/estorno?")
     return titulo, paragrafo, verificar
 
 
@@ -240,8 +239,8 @@ def texto_cobranca(a: Achado) -> tuple[str, str, str]:
                  + f"). A inadimplência total em aberto no fim do mês é de {_moeda(d.get('inadimplencia_total'))}, equivalente a {inad}% da emissão mensal; "
                  f"no mês foram recebidos {_moeda(d.get('recebidos_em_atraso'))} de cotas em atraso. Parâmetros do alerta: arrecadação abaixo de "
                  f"{str(d.get('arrecadacao_min_pct')).replace('.', ',')}% ou inadimplência acima de {str(d.get('inad_vs_emissao_pct')).replace('.', ',')}% da emissão.")
-    verificar = ("Acompanhar a cobrança com a administradora: relação das unidades inadimplentes, ações de cobrança em andamento e efeito no caixa "
-                 "(a Ordinária está sendo coberta por outras contas).")
+    verificar = ("Qual é a relação das unidades inadimplentes e quais ações de cobrança estão em andamento? Qual o efeito no caixa "
+                 "(a Ordinária está sendo coberta por outras contas)? Como se explica a arrecadação abaixo do esperado?")
     return titulo, paragrafo, verificar
 
 
@@ -253,8 +252,8 @@ def texto_saldo_negativo(a: Achado) -> tuple[str, str, str]:
     titulo = f"Conta {conta} com saldo negativo há {mais}{n} meses seguidos ({_moeda(d.get('saldo_atual'))})"
     paragrafo = (f"A conta {conta} fechou o mês com saldo de {_moeda(d.get('saldo_atual'))} (anterior: {_moeda(d.get('saldo_anterior'))}) e está negativa "
                  f"{mais}{n} meses seguidos nos balancetes lidos. Saldo negativo significa despesas pagas com o caixa de outras contas.")
-    verificar = ("Perguntar à administradora de onde vem o dinheiro que cobre o saldo negativo, se houve aprovação em assembleia para esse uso dos fundos "
-                 "e qual o plano de recomposição.")
+    verificar = ("De onde vem o dinheiro que cobre o saldo negativo desta conta? Houve aprovação em assembleia para esse uso dos fundos "
+                 "e qual é o plano de recomposição?")
     return titulo, paragrafo, verificar
 
 
@@ -272,9 +271,9 @@ def _ver_ordinaria(d: dict) -> str:
         return ""
     quais = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])})" for i in itens[:3])
     saldo = d.get("saldo_ordinaria")
-    return (f" Perguntar à administradora se esse valor ({quais}) tem que sair mesmo da conta Ordinária — ou se deveria ser pago por outra conta "
+    return (f" Esse valor ({quais}) tem que sair mesmo da conta Ordinária ou deveria ser pago por outra conta "
             f"(Fundo de Reserva, Obras ou Extraordinária), já que é despesa de valor alto e fora do custeio mensal"
-            + (f"; a Ordinária fechou o mês com saldo de {_moeda(saldo)}." if saldo is not None else "."))
+            + (f"? A Ordinária fechou o mês com saldo de {_moeda(saldo)}." if saldo is not None else "?"))
 
 
 def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
@@ -288,27 +287,27 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         titulo = pre + f"{n} compra(s) em marketplace/intermediador de pagamento ({total})"
         par = (f"Há despesas pagas em marketplace ou intermediador de pagamento, o que normalmente não traz a nota fiscal de um fornecedor "
                f"cadastrado: {_lista_itens(d)}.")
-        ver = ("Pedir a nota fiscal em nome do condomínio, a cotação/aprovação da compra e confirmar se o bem é despesa do mês ou patrimônio "
-               "que deveria constar no inventário.")
+        ver = ("Por que esta compra foi feita em marketplace/intermediador de pagamento? Onde estão a nota fiscal em nome do condomínio e a cotação/aprovação "
+               "da compra? O bem é despesa do mês ou patrimônio que deveria constar no inventário?")
     elif v == "valor_redondo":
         titulo = pre + f"{n} despesa(s) de valor redondo e alto ({total})"
         par = (f"Despesas a partir de {_moeda(d.get('minimo'))} com valor exato em centenas de reais e sem repetição de valor em meses anteriores: "
                f"{_lista_itens(d)}. Valores redondos podem ser contrato/orçamento fechado, mas também estimativa ou adiantamento.")
-        ver = "Conferir a nota fiscal/contrato e se o valor pago é o valor real do serviço (e não estimativa ou adiantamento)." + _ver_ordinaria(d)
+        ver = "O valor pago é o valor real do serviço (nota fiscal/contrato) ou é uma estimativa/adiantamento? Podem enviar a nota fiscal ou o contrato?" + _ver_ordinaria(d)
     elif v == "fornecedor_novo":
         titulo = pre + f"{n} fornecedor(es) sem lançamento nos {d.get('meses_lidos')} meses anteriores ({total})"
         par = (f"Lançamentos de valor alto (a partir de {_moeda(d.get('minimo'))}) de fornecedores/despesas que não aparecem em nenhum dos "
                f"{d.get('meses_lidos')} meses anteriores lidos: {_lista_itens(d)}.")
         if d.get("redondos"):
             par += f" O valor {', '.join(_moeda(x) for x in d['redondos'])} é redondo (centenas exatas) e não se repetia em meses anteriores — pode ser orçamento/sinal fechado ou estimativa."
-        ver = "Confirmar a contratação (cotações, aprovação do síndico/conselho) e a nota fiscal do fornecedor novo." + _ver_ordinaria(d)
+        ver = "Como foi a contratação desse fornecedor novo (cotações, aprovação do síndico/conselho) e onde está a nota fiscal?" + _ver_ordinaria(d)
     elif v == "recorrente_ausente":
         itens = d.get("ausentes") or []
         lista = "; ".join(f"{i['descricao']} (mediana {_moeda(i['mediana'])})" for i in itens[:6])
         titulo = pre + f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} por mês)"
         par = (f"Despesas presentes em todos os últimos {len(d.get('meses_comparados') or [])} meses lidos e ausentes neste: {lista}. "
                f"Pode ser fim de contrato, mas também lançamento que ficou para o mês seguinte ou conta não paga.")
-        ver = "Perguntar à administradora se o contrato terminou ou se o lançamento foi postergado (e se há pagamento em atraso)."
+        ver = "O contrato dessas despesas terminou ou o lançamento foi postergado? Existe pagamento em atraso?"
     elif v == "valor_atipico":
         itens = d.get("medianas") or []
         acumulos = [i for i in itens if i.get("acumulo")]
@@ -325,12 +324,19 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         if outros:
             lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])})" for i in outros[:6])
             partes_par.append(f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}.")
+            for i in outros:
+                if i.get("competencias_anteriores"):
+                    partes_par.append(
+                        f"Em {i['descricao']}, os {i['n']} lançamentos do mês incluem competências de meses anteriores pagas agora "
+                        f"({', '.join(i['competencias_anteriores'])}) — parte do total vem de pagamentos atrasados/acumulados, não necessariamente de aumento de valor.")
+                    partes_ver.append(f"Por que {i['descricao']} teve competências de meses anteriores ({', '.join(i['competencias_anteriores'])}) pagas neste mês "
+                                      f"(atraso, lançamento acumulado)? Houve multa ou juros?")
         if acumulos:
             nomes = ", ".join(i["descricao"] for i in acumulos)
-            partes_ver.append(f"Perguntar à administradora o motivo de {nomes} estar com várias competências pagas juntas neste mês (pagamentos de meses anteriores "
-                              f"na mesma data): se houve atraso no pagamento, se há multa ou juros e se as notas dos meses anteriores já estavam em aberto.")
+            partes_ver.append(f"Por que {nomes} está com várias competências pagas juntas neste mês (pagamentos de meses anteriores "
+                              f"na mesma data)? Houve atraso no pagamento, multa ou juros, e as notas dos meses anteriores já estavam em aberto?")
         if outros:
-            partes_ver.append("Pedir a nota fiscal e a justificativa do aumento (reajuste, serviço extra, acúmulo de meses).")
+            partes_ver.append("Qual a justificativa do aumento (reajuste, serviço extra, acúmulo de meses)? Podem enviar a nota fiscal?")
         if acumulos and not outros:
             titulo = pre + (f"{acumulos[0]['descricao']}: {acumulos[0]['n']} meses pagos juntos em um só mês ({total}) — pagamentos de meses anteriores, não aumento"
                             if len(acumulos) == 1 else f"{len(acumulos)} fornecedores com meses anteriores pagos juntos neste mês ({total}) — não é aumento")
@@ -338,29 +344,63 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
             titulo = pre + f"{n} despesa(s) muito acima do histórico do próprio fornecedor ({total})"
         par = " ".join(partes_par)
         ver = " ".join(partes_ver)
+    elif v == "apropriacao_despesa":
+        liquido = round(a.valor_encontrado or 0.0, 2)
+        correcao = bool(d.get("estornos")) and abs(liquido) < 0.01
+        aprop = d.get("tem_aprop", True)
+        reclass = d.get("reclassificacoes") or []
+        if correcao and aprop:
+            titulo = pre + f"{n} lançamentos de apropriação de despesa estornados e relançados no mês (efeito líquido {_moeda(0)})"
+        elif correcao:
+            titulo = pre + (f"despesa de {_moeda(abs(reclass[0]['valor']))} estornada e relançada em outra subconta (reclassificação, efeito líquido {_moeda(0)})"
+                            if reclass else f"{n} lançamentos estornados e relançados no mês (efeito líquido {_moeda(0)})")
+        else:
+            titulo = pre + f"{n} apropriação(ões) de despesa no mês ({total})"
+        descritor = ("Lançamentos de \"apropriação de despesa\" (lançamento contábil interno, sem comprovante de pagamento próprio)" if aprop
+                     else "Lançamentos estornados e relançados")
+        par = f"{descritor}: {_lista_itens(d)}."
+        if correcao:
+            par += (" Os mesmos valores foram estornados (negativos) e lançados novamente no mesmo mês, com efeito líquido zero no resultado: "
+                    "tem aparência de correção contábil, mas não há, neste arquivo, explicação do que foi corrigido.")
+            for r_ in reclass:
+                par += f" A subconta mudou de \"{r_['de']}\" para \"{r_['para']}\" ({_moeda(abs(r_['valor']))})."
+        else:
+            extras = []
+            if d.get("estornos"):
+                extras.append("há lançamento negativo (estorno) de " + ", ".join(_moeda(x) for x in d["estornos"]))
+            for s_ in d.get("parcelas_juntas") or []:
+                extras.append(f"as parcelas {', '.join(f'{x}/{s_['total']}' for x in s_['parcelas'])} da NF {s_['nf'] or '(sem nº)'} foram apropriadas no mesmo mês")
+            if extras:
+                par += " Chama a atenção: " + "; ".join(extras) + "."
+        if aprop:
+            ver = ("A que se referem essas apropriações? Qual erro foi corrigido pelo estorno e relançamento (se for o caso)? Qual o "
+                   "comprovante da compra original a que a apropriação se refere (NF e fornecedor)?")
+        else:
+            ver = ("Qual o motivo do estorno e do relançamento" + (" e da mudança de subconta (de que subconta o gasto saiu e por que foi para a outra)"
+                   if reclass else "") + "? A nota fiscal e o pagamento originais continuam corretos e documentados?")
     elif v == "duplicidade_no_mes":
         titulo = pre + f"mesmo lançamento repetido {d.get('vezes')}x no mês ({_moeda(d.get('valor_unitario'))} cada)"
         par = (f"{_lista_itens(d)} aparecem com a mesma descrição e o mesmo valor mais de uma vez no mês. "
                f"Pode ser pagamento em duplicidade ou duas cobranças legítimas com o mesmo histórico.")
-        ver = "Conferir as notas fiscais e os comprovantes de cada lançamento; se for duplicidade, pedir estorno."
+        ver = "Estes lançamentos repetidos são cobranças distintas ou houve duplicidade? Podem enviar as notas fiscais e os comprovantes de cada um e, se for duplicidade, estornar?"
     elif v == "uso_fundo":
         titulo = pre + f"{n} despesa(s) paga(s) direto do {', '.join(d.get('contas') or ['fundo'])} ({total})"
         par = f"Despesas de valor relevante pagas com recursos de fundo: {_lista_itens(d)}."
-        ver = "Confirmar a finalidade, a aprovação em assembleia/previsão orçamentária e se há plano de reposição do fundo."
+        ver = "Qual a finalidade dessas despesas pagas direto do fundo? Houve aprovação em assembleia/previsão orçamentária e existe plano de reposição do fundo?"
     elif v == "deficit_conta":
         titulo = pre + f"conta {d.get('conta')} pagou {_moeda(a.valor_encontrado)} a mais do que recebeu no mês"
         par = (f"Na conta {d.get('conta')}, os créditos do mês foram {_moeda(d.get('creditos'))} e os débitos {_moeda(d.get('debitos'))} "
                f"(saldo anterior {_moeda(d.get('saldo_anterior'))}, saldo final {_moeda(d.get('saldo_atual'))}).")
-        ver = "Perguntar de onde veio o caixa que cobriu a diferença (outra conta, reserva) e se há plano de recomposição."
+        ver = "De onde veio o caixa que cobriu a diferença (outra conta, reserva)? Existe plano de recomposição?"
     elif v == "inadimplencia_crescente":
         serie = " → ".join(f"{x['mes']}: {_moeda(x['inad'])}" for x in reversed(d.get("serie") or []))
         titulo = pre + f"inadimplência subiu {str(d.get('variacao_pct')).replace('.', ',')}% em relação ao mês anterior ({_moeda(d.get('anterior'))} → {_moeda(d.get('atual'))})"
         par = "A inadimplência total em aberto cresceu de um mês para o outro" + (f" (série recente: {serie})." if serie else ".")
-        ver = "Acompanhar com a administradora as ações de cobrança e a relação das unidades inadimplentes."
+        ver = "Por que a inadimplência cresceu neste mês? Quais ações de cobrança estão em andamento e qual a relação das unidades inadimplentes?"
     else:
         titulo = pre + (a.linha_demonstrativo or "ponto a verificar")
         par = f"Regra aplicada: {a.regra_aplicada}."
-        ver = "Revisar manualmente."
+        ver = "Podem explicar este apontamento?"
     return titulo, par + " Observação baseada apenas nos arquivos do próprio condomínio; não é, por si só, prova de irregularidade.", ver
 
 
@@ -390,22 +430,22 @@ def texto_subconta_nova(a: Achado) -> tuple[str, str, str]:
         paragrafo = (f"Neste mês apareceram {len(cats)} subcontas que não existiam nos meses anteriores, somando "
                      f"{_moeda(a.valor_encontrado)}: {lista}. Tantas subcontas novas de uma vez costumam indicar que a "
                      f"administradora reorganizou o plano de contas.")
-        return titulo, paragrafo, "Perguntar à administradora se o plano de contas foi alterado e como as subcontas antigas foram mapeadas para as novas."
+        return titulo, paragrafo, "O plano de contas foi alterado? Como as subcontas antigas foram mapeadas para as novas? Podem enviar o de-para?"
     if d.get("so_total") and d.get("sumiu"):
         titulo = f"Subconta sem lançamentos neste mês — {cat} ({_moeda(d.get('valor_mes_anterior'))} no mês anterior)"
         paragrafo = (f"A subconta \"{cat}\" teve {_moeda(d.get('valor_mes_anterior'))} no balancete do mês anterior e não "
                      f"aparece neste mês.")
-        return titulo, paragrafo, "Perguntar à administradora se a despesa foi encerrada ou se foi lançada em outra subconta."
+        return titulo, paragrafo, "Esta despesa foi encerrada ou foi lançada em outra subconta? Em qual?"
     if d.get("so_total"):
         titulo = f"Subconta nova neste mês — {cat} ({_moeda(a.valor_encontrado)})"
         paragrafo = (f"A subconta \"{cat}\" não existia no balancete do mês anterior e aparece neste mês com "
                      f"{_moeda(a.valor_encontrado)}. Este formato de balancete informa só o total por subconta, sem listar os lançamentos.")
-        return titulo, paragrafo, "Perguntar à administradora por que a subconta foi criada e o que foi lançado nela."
+        return titulo, paragrafo, "Por que esta subconta foi criada e o que foi lançado nela? Podem explicar a classificação?"
     itens = d.get("lancamentos", [])
     lista = "; ".join(f"{i.get('descricao') or 'lançamento'} ({_moeda(i.get('valor'))})" for i in itens[:5])
     mais = f" e mais {len(itens) - 5}" if len(itens) > 5 else ""
     titulo = f"Subconta nova neste mês — {cat} ({_moeda(a.valor_encontrado)})"
     paragrafo = (f"A subconta \"{cat}\" não existia no balancete do mês anterior e recebeu "
                  f"{len(itens)} lançamento(s) neste mês, somando {_moeda(a.valor_encontrado)}: {lista}{mais}.")
-    verificar = "Perguntar à administradora por que a subconta foi criada e se os lançamentos nela estão classificados corretamente."
+    verificar = "Por que esta subconta foi criada? Os lançamentos nela estão classificados corretamente? Podem explicar?"
     return titulo, paragrafo, verificar

@@ -374,8 +374,57 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         if alt is not None:
             for chave in ("contas", "tAnt", "tCred", "tDeb", "tAtual", "desp", "tDesp"):
                 bal[chave] = alt[chave]
+    else:
+        _reconciliar_sinais(condo, caminho_arquivo, mes_referencia, bal)
 
     return bal
+
+
+def _chave_conta(nome: str) -> str:
+    import unicodedata
+    s = "".join(c for c in unicodedata.normalize("NFD", nome or "") if unicodedata.category(c) != "Mn").upper()
+    return re.sub(r"[^A-Z0-9]", "", s)
+
+
+def _reconciliar_sinais(condo: dict, caminho_arquivo: Path, mes_referencia: str, bal: dict) -> None:
+    """TRAVA DE INTEGRIDADE DE SINAL: os leitores antigos (adaptadores por administradora) apagavam o sinal de saldos negativos
+    ("(19.196,03)", "-9.089,35", "SALDO ANTERIOR DEVEDOR") e o relatório mostrava saldo devedor como positivo — inclusive dizendo
+    "nenhuma conta com saldo devedor". O extrator das regras gerais lê o sinal pelo arquivo e fecha a conta (saldo anterior + créditos −
+    débitos = saldo atual). Para cada conta em comum: se o valor do relatório difere do extrator SÓ no sinal, vale o do extrator; os totais
+    são refeitos. Divergência de outro tipo (valor diferente) não é alterada, só avisada — nunca se "corrige" número por palpite."""
+    try:
+        from conciliacao.regras_gerais.extratores import get_extrator
+        extrator = get_extrator(condo)
+        if extrator is None or not bal.get("contas"):
+            return
+        d = extrator.extrair(caminho_arquivo, mes_referencia)
+    except Exception:
+        return
+    ref = {_chave_conta(c.nome): c for c in d.contas if not c.nome.upper().startswith("CONSOLIDADO")}
+    corrigidos: list = []
+    for k in bal["contas"]:
+        x = ref.get(_chave_conta(k["n"]))
+        if x is None:
+            continue
+        for campo, rotulo, valor in (("a", "saldo anterior", x.saldo_anterior), ("c", "créditos", x.creditos),
+                                     ("d", "débitos", x.debitos), ("s", "saldo atual", x.saldo_atual)):
+            atual = k[campo]
+            if abs(atual - valor) <= 0.02:
+                continue
+            if abs(abs(atual) - abs(valor)) <= 0.02:
+                corrigidos.append(f"{k['n']} ({rotulo}): {atual:,.2f} -> {valor:,.2f}")
+                k[campo] = valor
+            else:
+                print(f"[AVISO] conta {k['n']} ({rotulo}): o leitor do relatório trouxe {atual:,.2f} e o extrator das regras gerais "
+                      f"{valor:,.2f} (diferença de valor, não só de sinal) — confira no arquivo.")
+    if corrigidos:
+        bal["tAnt"] = sum(c["a"] for c in bal["contas"])
+        bal["tCred"] = sum(c["c"] for c in bal["contas"])
+        bal["tDeb"] = sum(c["d"] for c in bal["contas"])
+        bal["tAtual"] = sum(c["s"] for c in bal["contas"])
+        bal["sinais_corrigidos"] = corrigidos
+        print(f"[AVISO] {len(corrigidos)} valor(es) de conta com sinal corrigido pelo arquivo (saldo devedor estava como positivo): "
+              + "; ".join(corrigidos[:4]) + ("..." if len(corrigidos) > 4 else ""))
 
 
 def ler_par_mes_atual_anterior(condo: dict, caminho_mes_atual: Path, mes_referencia: str,

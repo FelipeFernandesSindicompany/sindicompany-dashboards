@@ -34,7 +34,7 @@ import json
 import shutil
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -412,9 +412,15 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     achados_regras, status_regras, avisos_regras = regras_gerais_pipeline.executar(
         condo, mes, entrada, pasta_busca_regras)
     achados.extend(achados_regras)
+    if (condo.get("regras") or {}).get("apropriacao") is not None:
+        from conciliacao.matching import reclassificar_apropriacoes
+        achados = reclassificar_apropriacoes(achados, registros)
     if (condo.get("regras") or {}).get("guia_consolidada") is not None:
         from conciliacao.matching import reclassificar_guias_consolidadas
         achados = reclassificar_guias_consolidadas(achados, registros)
+        if (condo.get("regras") or {}).get("guia_consolidada", {}).get("por_numero"):
+            from conciliacao.matching import reclassificar_guias_por_numero
+            achados = reclassificar_guias_por_numero(achados, registros)
     if (condo.get("regras") or {}).get("texto_valor_repetido"):
         # Condomínios que pedem: divergência cujo valor aparece em 2+ campos do próprio comprovante é divergência real, não erro de OCR.
         _por_chave = {chave_registro(r): r for r in registros}
@@ -457,6 +463,35 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     return version_dir
 
 
+def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
+    """Quando o sistema NÃO consegue confirmar um valor lendo o anexo (OCR falhou, página girada, tabela que o leitor não entende), a leitura é
+    feita OLHANDO a imagem do anexo e registrada em data/<condomínio>/conferencias_visuais/<AAAA-MM>.json:
+        [{"codigo": "0132", "valor_listagem": 270.90, "resumo": "...", "documento": "págs. 474 do PDF", "como": "o que a imagem mostra"}]
+    O registro só vale para o MESMO lançamento (código) com o MESMO valor listado — se a listagem mudar, a conferência deixa de se aplicar e o
+    apontamento volta. Vale só para achados "conteúdo não verificável"/"valor diverge"; o achado vira verificado e o texto diz que foi visual."""
+    arq = base_dir.parent.parent / "conferencias_visuais" / f"{mes}.json"
+    if not arq.exists():
+        return 0
+    confs = json.load(open(arq, encoding="utf-8"))
+    por_id = {a.id: a for a in achados}
+    agora = datetime.now(timezone.utc).isoformat()
+    n = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor") or a.valor_esperado is None:
+            continue
+        for c in confs:
+            if any(f"cod{c['codigo']}" in k for k in a.registros_relacionados) and abs(a.valor_esperado - c["valor_listagem"]) <= 0.005:
+                item.update(
+                    titulo=f"Conferido visualmente no anexo — {c['resumo']}",
+                    paragrafo=c["como"], o_que_verificar="Nenhuma ação necessária.", severidade_final="informativo",
+                    revisado_por="humano:conferencia_visual", revisado_em=agora, confianca_ia=1.0,
+                    motivo_divergencia_da_sugestao=f"Valor conferido visualmente na imagem do anexo ({c['documento']}).")
+                n += 1
+                break
+    return n
+
+
 def etapa_interpretar(condo: dict, mes: str) -> Path:
     base_dir = storage.condo_mes_dir(condo["pasta_dados"], mes)
     version_dir = storage.latest_version_dir(base_dir)
@@ -466,6 +501,10 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     achados = storage.read_dataclass_list(version_dir / "achados_brutos.json", Achado)
     registros = storage.read_dataclass_list(version_dir / "registros_comprovantes.json", RegistroComprovante)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
+    n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
+    if n_visuais:
+        print(f"[OK] {n_visuais} achado(s) tratados como VERIFICADOS por conferência visual do anexo "
+              f"(data/<condomínio>/conferencias_visuais/{mes}.json).")
     with open(version_dir / "achados_revisados.json", "w", encoding="utf-8") as f:
         json.dump(esqueleto, f, ensure_ascii=False, indent=2)
 
