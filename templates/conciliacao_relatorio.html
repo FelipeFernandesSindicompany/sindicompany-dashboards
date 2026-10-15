@@ -266,6 +266,11 @@
 </section>
 {% endif %}
 
+{% if aviso_escopo %}
+<div class="divisor-secao">Escopo da Validação</div>
+<section class="intro"><strong>Atenção:</strong> {{ aviso_escopo }}</section>
+{% endif %}
+
 {% if achados %}
 <div class="divisor-secao">Divergências e Pendências da Conciliação</div>
 <section class="intro">

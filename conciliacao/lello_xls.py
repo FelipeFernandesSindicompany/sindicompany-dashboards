@@ -34,17 +34,22 @@ _RE_DATA = re.compile(r'^\d{2}/\d{2}/\d{4}$')
 
 
 def _num(s: str) -> float:
+    """Valor BR de uma célula, COM sinal: '1.234,56', '- 17,09', '-17,09', '(17,09)', '3.848,00( 3,65%)'.
+    O sinal negativo (estorno/reembolso) nunca pode ser descartado: o '- 17,09' do Hub Tatuapé era lido como 0
+    e a soma dos lançamentos deixava de bater com o total declarado."""
     if not s:
         return 0.0
     # "3.848,00( 3,65%)" — pega só o primeiro número (valor), ignora o %.
-    m = re.match(r'^([\d.]+,\d{2})', s.strip())
+    m = re.match(r'^\s*(\(?\s*-?\s*)([\d.]+,\d{2})', s)
     if not m:
         return 0.0
-    v = m.group(1).replace(".", "").replace(",", ".")
+    v = m.group(2).replace(".", "").replace(",", ".")
     try:
-        return abs(float(v))
+        x = float(v)
     except Exception:
         return 0.0
+    negativo = "-" in m.group(1) or (m.group(1).strip().startswith("(") and "%" not in s[: m.end() + 1] and ")" in s[m.end():m.end() + 1])
+    return -x if negativo else x
 
 
 class ConciliadorLelloXLS(ConciliadorBase):

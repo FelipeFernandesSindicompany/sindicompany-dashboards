@@ -152,6 +152,7 @@ def montar_html(
     gerado_em: str,
     analise: dict | None = None,
     categorias_novas: list[dict] | None = None,
+    aviso_escopo: str | None = None,
 ) -> str:
     """
     achados: lista de dicts já mesclando Achado (fatos) + AchadoRevisado
@@ -180,6 +181,7 @@ def montar_html(
         gerado_em=gerado_em,
         analise=analise,
         categorias_novas=categorias_novas or [],
+        aviso_escopo=aviso_escopo,
     )
 
 

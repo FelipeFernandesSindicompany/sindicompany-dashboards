@@ -207,6 +207,7 @@
       }
     },
     "giardino_d_italia": {
+      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Giardino D'Itália",
       "regras": {
         "gestor": {}
@@ -265,6 +266,7 @@
       }
     },
     "jau_1894": {
+      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Jaú 1894",
       "regras": {
         "gestor": {}
@@ -406,6 +408,7 @@
       }
     },
     "patricia": {
+      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia",
       "regras": {
         "rendimento": {
@@ -550,6 +553,7 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Villa Sardenha"
     },
     "vita_parque": {
+      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Vita Parque",
       "regras": {
         "gestor": {}

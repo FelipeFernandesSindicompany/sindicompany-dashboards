@@ -884,6 +884,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         achados=achados_render,
         analise=analise,
         categorias_novas=categorias_novas_lista,
+        aviso_escopo=condo.get("aviso_escopo") or None,
         gerado_em=datetime.now().strftime("%d/%m/%Y"),
     )
 
