@@ -651,6 +651,8 @@ def etapa_render(condo: dict, mes: str) -> Path:
             except Exception as exc:
                 print(f"[AVISO] print de evidência da planilha não gerado para {chave}: {exc}")
                 return []
+        if pdf_origem.suffix.lower() != ".pdf":
+            return []  # .xls (HTML/Excel antigo) não tem páginas: não há print de página a montar
         specs = _specs_extras.get(chave) or specs_auto or []
         evs = [render.preparar_evidencia_extra(pdf_origem, s) for s in specs]
         evs = [e for e in evs if e]
@@ -716,7 +718,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
             "evidencias_extras": _evidencias_extras(
                 rev.achado_id,
                 evidencias.evidencias_agregadas(achado, registros_por_pagina, pdf_origem)
-                if achado.regra_aplicada in _REGRAS_AGREGADAS else (
+                if achado.regra_aplicada in _REGRAS_AGREGADAS and pdf_origem and pdf_origem.suffix.lower() == ".pdf" else (
                     regras_gerais_evidencias.specs_para(achado) if (achado.id or "").startswith("RG-") else None),
                 achado, registros_por_pagina.get(achado.registros_relacionados[0]) if achado.registros_relacionados else None,
             ),
