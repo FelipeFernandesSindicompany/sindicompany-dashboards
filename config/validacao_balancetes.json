@@ -66,6 +66,7 @@
     "cap_d_antibes": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Cap D Antibes",
       "regras": {
+        "movimento_entre_contas": {},
         "gestor": {}
       }
     },
@@ -92,6 +93,7 @@
             "FUNDO FACHADA"
           ]
         },
+        "movimento_entre_contas": {},
         "gestor": {}
       }
     },
@@ -252,6 +254,7 @@
       }
     },
     "hub_home_club_tatuape": {
+      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Hub Home Club Tatuapé",
       "parser_config": {
         "desp_fonte": "posicao_financeira"
@@ -262,8 +265,11 @@
             "FUNDO DE RESERVA",
             "SALÃO DE FESTAS/CHURRASQUEIRA",
             "MINI MERCADO"
-          ]
+          ],
+          "consolidar_sem_rendimento": true,
+          "perguntar_aplicacoes": true
         },
+        "movimento_entre_contas": {},
         "gestor": {}
       }
     },
@@ -548,6 +554,7 @@
             "ORDINARIA"
           ]
         },
+        "movimento_entre_contas": {},
         "gestor": {}
       }
     },

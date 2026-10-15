@@ -400,6 +400,32 @@ def regra_saldo_negativo(dados: DadosRegras, historico: list, cont: _Contador, c
     return achados
 
 
+# ── Movimento entre contas (só para quem pede: regras.movimento_entre_contas) ───────────────────────────────────
+
+def regra_movimento_entre_contas(dados: DadosRegras, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """Saldo anterior + créditos - débitos (despesas) != saldo final: a diferença é movimento que o arquivo não trata como despesa
+    nem como receita da conta (transferência entre contas, aplicação/resgate). Não é erro do arquivo (o próprio extrato mostra a
+    transferência); é o tipo de movimento que o síndico precisa conhecer: de/para qual conta e com qual aprovação."""
+    cfg = cfg or {}
+    minimo = float(cfg.get("minimo", 1000.0))
+    ignorar = list(cfg.get("ignorar_contas", []))
+    achados = []
+    for c in dados.contas:
+        if c.nome.upper().startswith("CONSOLIDADO") or any(_mesma_conta(c.nome, n) for n in ignorar):
+            continue
+        dif = round(c.saldo_anterior + c.creditos - c.debitos - c.saldo_atual, 2)
+        if abs(dif) < max(minimo, _CENTAVO):
+            continue
+        achados.append(Achado(
+            id=cont.proximo(), tipo="movimento_entre_contas", severidade_sugerida="atencao",
+            regra_aplicada="saldo_da_conta_varia_alem_de_creditos_e_debitos", linha_demonstrativo=c.nome,
+            valor_encontrado=abs(dif),
+            detalhes={"conta": c.nome, "saida": dif > 0, "movimento": abs(dif), "saldo_anterior": round(c.saldo_anterior, 2),
+                      "creditos": round(c.creditos, 2), "debitos": round(c.debitos, 2), "saldo_atual": round(c.saldo_atual, 2),
+                      "pagina": c.pagina}))
+    return achados
+
+
 # ── Regra 3: rendimento proporcional ao saldo ────────────────────────────────
 
 def _base(c: ContaMes, modo: str = "media") -> float:
@@ -811,6 +837,8 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
     hist_regras = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else [])) if h is not None]
     if cfg_condo.get("saldo_negativo") is not None:
         achados += regra_saldo_negativo(dados, hist_regras, cont, cfg_condo.get("saldo_negativo"))
+    if cfg_condo.get("movimento_entre_contas") is not None:
+        achados += regra_movimento_entre_contas(dados, cont, cfg_condo.get("movimento_entre_contas"))
     if cfg_condo.get("nf_repetida") is not None and dados.lancamentos:
         achados += regra_nf_repetida(dados, [h for h in hist_regras if h.lancamentos], cont, cfg_condo.get("nf_repetida"))
 

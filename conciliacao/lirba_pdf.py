@@ -730,7 +730,7 @@ _RE_TOTAL_LINHA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}(?:\s+[
 # independentes um do outro, e o "search" com âncora em "$" sempre casa a
 # partir do primeiro valor decimal válido (o individual), nunca o total.
 _RE_ITEM_LINHA = re.compile(
-    r"([\d.]+,\d{2})(?:\s+[\d.]+,\d{2})?(?:\s+[\d,]+%)?\s+(\d{4})\s*$"
+    r"(-?[\d.]+,\d{2})(?:\s+-?[\d.]+,\d{2})?(?:\s+-?[\d,]+%)?\s+(\d{4})\s*$"
 )
 # Algumas variantes do ContasData (ex.: Dueto Morumbi/manager_adm_pdf) têm uma
 # coluna extra "Nº lancto." (número de 8 dígitos) antes da data — o prefixo
@@ -913,7 +913,7 @@ class ConciliadorLirbaPDF(ConciliadorBase):
                 codigo=codigo.zfill(4),
                 descricao=linha.strip()[:200],
                 vencimento=m_data.group(1) if m_data else None,
-                valor=_num(valor_str),
+                valor=-_num(valor_str) if valor_str.strip().startswith("-") else _num(valor_str),   # estorno/desconto mantém o sinal
                 texto_bruto=linha,
             ))
 

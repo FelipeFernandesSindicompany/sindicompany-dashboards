@@ -38,7 +38,7 @@ _FAMILIAS = {
     "adapters.alliz_pdf": "alliz_pdf",
 }
 # adapters específicos de condomínio que foram corrigidos (arquivo neste pacote)
-_POR_CONDO = {"baturite": "baturite", "saint_simon": "saint_simon"}
+_POR_CONDO = {"baturite": "baturite", "saint_simon": "saint_simon", "jau_1894": "jau_1894"}
 # empresa_gestora -> (módulo corrigido, classe)
 _POR_EMPRESA = {
     "lirba_pdf": ("lirba_pdf", "AdapterLirbaPDF"),

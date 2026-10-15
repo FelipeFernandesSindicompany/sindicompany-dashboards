@@ -71,7 +71,11 @@ def pendentes_planilha():
 SCRIPT = ROOT / "scripts" / "gerar_relatorio_conciliacao.py"
 
 
-def fila(meses, so):
+CORTE = time.mktime((2026, 10, 15, 0, 0, 0, 0, 0, -1))   # relatórios gerados a partir daqui são deste lote (podem ser refeitos)
+SUFIXO_POR_EMPRESA = {"habitacional_xlsx": ".xlsx", "lfc_xlsx": ".xlsx"}
+
+
+def fila(meses, so, refazer=False):
     condos = json.load(open(ROOT / "config" / "condominios.json", encoding="utf-8"))["condominios"]
     val = json.load(open(ROOT / "config" / "validacao_balancetes.json", encoding="utf-8"))["condominios"]
     saida = []
@@ -85,23 +89,27 @@ def fila(meses, so):
         for mes in meses:
             if (c["id"], mes) not in pend:
                 continue
-            arq = localizar_arquivo_mes(pasta, int(mes[5:7]), int(mes[:4]))
+            arq = localizar_arquivo_mes(pasta, int(mes[5:7]), int(mes[:4]),
+                                        preferir_sufixo=SUFIXO_POR_EMPRESA.get(c.get("empresa_gestora")))
             if arq is None:
                 continue
             existe = [f for f in (pasta / "Validação de Balancetes").glob(f"*{mes[5:7]}.{mes[:4]}*.pdf")] \
                 if (pasta / "Validação de Balancetes").is_dir() else []
-            saida.append({"id": c["id"], "nome": c["nome"], "mes": mes, "arquivo": arq, "pasta": pasta,
-                          "ja_tem_relatorio": bool(existe)})
+            meus = [f for f in existe if f.stat().st_mtime >= CORTE]
+            antigos = [f for f in existe if f.stat().st_mtime < CORTE]
+            saida.append({"id": c["id"], "nome": c["nome"], "mes": mes, "arquivo": arq, "pasta": pasta, "meus": meus,
+                          "ja_tem_relatorio": bool(antigos) or (bool(meus) and not refazer)})
     return saida
 
 
-def rodar(item):
+def rodar(item, so_render=False):
     base = [sys.executable, str(SCRIPT), "--condominio", item["id"], "--mes", item["mes"]]
     env = {"PYTHONUTF8": "1"}
     import os
     env = {**os.environ, **env}
     log = []
-    for etapa, extra in (("extrair", ["--arquivo", str(item["arquivo"])]), ("interpretar", []), ("render", [])):
+    etapas = (("interpretar", []), ("render", [])) if so_render else (("extrair", ["--arquivo", str(item["arquivo"])]), ("interpretar", []), ("render", []))
+    for etapa, extra in etapas:
         r = subprocess.run(base + extra + ["--etapa", etapa], capture_output=True, text=True,
                            encoding="utf-8", errors="replace", env=env, cwd=str(ROOT))
         log.append(f"--- {etapa} (rc={r.returncode})\n{r.stdout[-3000:]}\n{r.stderr[-1500:]}")
@@ -115,8 +123,10 @@ def main():
     ap.add_argument("--plano", action="store_true")
     ap.add_argument("--so")
     ap.add_argument("--meses", default="2026-07,2026-08")
+    ap.add_argument("--so-render", action="store_true", help="com --refazer: só interpretar+render (não relê os arquivos)")
+    ap.add_argument("--refazer", action="store_true", help="apaga e refaz os relatórios gerados por este lote (nunca os mais antigos)")
     a = ap.parse_args()
-    itens = fila(a.meses.split(","), set(a.so.split(",")) if a.so else None)
+    itens = fila(a.meses.split(","), set(a.so.split(",")) if a.so else None, a.refazer)
     pend = [i for i in itens if not i["ja_tem_relatorio"]]
     print(f"{len(itens)} arquivo(s) encontrados; {len(itens) - len(pend)} já têm relatório (pulados); {len(pend)} a validar")
     for i in itens:
@@ -129,7 +139,9 @@ def main():
     for n, i in enumerate(pend, 1):
         t0 = time.time()
         print(f"\n[{n}/{len(pend)}] {i['id']} {i['mes']} ...", flush=True)
-        ok, log = rodar(i)
+        for f in i["meus"]:
+            f.unlink()
+        ok, log = rodar(i, a.so_render)
         (logdir / f"{i['id']}_{i['mes']}.log").write_text(log, encoding="utf-8")
         print(f"   {'OK' if ok else 'FALHOU'} em {time.time() - t0:.0f}s", flush=True)
         resumo.append({"id": i["id"], "mes": i["mes"], "ok": ok})

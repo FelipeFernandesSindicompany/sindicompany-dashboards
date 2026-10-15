@@ -167,8 +167,8 @@ def _texto_atraso_pagamento(achado: Achado, registro: RegistroComprovante | None
     if venc and pago:
         paragrafo = (
             f"O comprovante de pagamento a {fornecedor} ({valor}) mostra vencimento em {venc} e pagamento "
-            f"efetivado em {pago} — atraso além do dia útil seguinte ao vencimento (já descontado o rollover de "
-            f"fim de semana)."
+            f"efetivado em {pago} — pagamento posterior ao vencimento (vencimento em fim de semana ou feriado já foi "
+            f"considerado no próximo dia útil)."
         )
     else:
         paragrafo = f"O comprovante de pagamento a {fornecedor} ({valor}) foi pago após o vencimento."
@@ -242,7 +242,11 @@ def _texto_duplicidade(achado: Achado) -> tuple[str, str, str]:
     valor = _fmt_moeda(achado.valor_encontrado or achado.valor_esperado)
     n = len(achado.registros_relacionados)
     titulo = f"Possível duplicidade — {categoria} ({valor})"
-    paragrafo = f"Encontrados {n} lançamentos com o mesmo código/fornecedor e valor ({valor}) repetidos."
+    if achado.regra_aplicada == "mesma_data_valor_categoria_historico_repetidos":
+        paragrafo = (f"Encontrados {n} lançamentos com a mesma data, o mesmo histórico, a mesma categoria e o mesmo valor ({valor}), "
+                     f"sem número de documento que os diferencie.")
+    else:
+        paragrafo = f"Encontrados {n} lançamentos com o mesmo código/fornecedor e valor ({valor}) repetidos."
     o_que_verificar = "Estes lançamentos repetidos são pagamentos distintos legítimos (por exemplo, parcelas do mesmo valor) ou houve duplicidade por engano? Em caso de duplicidade, haverá estorno?"
     return titulo, paragrafo, o_que_verificar
 

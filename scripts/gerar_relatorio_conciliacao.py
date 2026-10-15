@@ -337,6 +337,19 @@ _EMPRESAS_SO_PLANILHA = {"habitacional_xlsx", "lfc_xlsx"}
 _CONDOS_PLANILHA_E_PDF = {"onze_22", "cores"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
 
 
+def _conferir_identidade_do_arquivo(condo: dict, arquivo: Path) -> None:
+    """Barra o arquivo que é de OUTRO condomínio (salvo na pasta errada): sem isso o relatório sairia com o título deste condomínio e os
+    números do outro (caso real: balancete do Club Park na pasta do Parque Saint Afonso)."""
+    from conciliacao import identidade_arquivo
+    try:
+        todos = json.load(open(ROOT / "config" / "condominios.json", encoding="utf-8"))["condominios"]
+    except Exception:
+        return
+    ok, msg = identidade_arquivo.conferir(arquivo, condo, todos)
+    if not ok:
+        raise ValueError(msg)
+
+
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     from conciliacao import _condo_conciliadores
     if (condo.get("empresa_gestora") in _EMPRESAS_SO_PLANILHA and condo["id"] not in _condo_conciliadores()
@@ -345,6 +358,7 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
             f"{condo['nome']} entrega a prestação de contas em planilha Excel (.xlsx), mas o arquivo enviado é "
             f"\"{arquivo.name}\" ({arquivo.suffix or 'sem extensão'}). Envie a planilha do mês (ex.: prestacao_contas_"
             f"{int(mes[5:7])}_{mes[:4]}.xlsx), não o PDF.")
+    _conferir_identidade_do_arquivo(condo, arquivo)
     base_dir = storage.condo_mes_dir(condo["pasta_dados"], mes)
     version_dir = storage.new_version_dir(base_dir)
     storage.write_status(version_dir, "extrair")
