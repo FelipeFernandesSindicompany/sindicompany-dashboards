@@ -381,8 +381,12 @@ class Extrator:
         lanc: list[LancamentoDespesa] = []
         rubrica, conta, total_decl = None, None, None
         somas: dict = {}
-        for r in range(ws.nrows):
-            row = _linha(ws, r, 4)
+        from conciliacao.xls_blocos import linhas_sem_copias
+        linhas, copias = linhas_sem_copias(ws, 4)   # aba com o mesmo bloco repetido N vezes: lê um só
+        if copias:
+            dados.avisos.append(f"Demonstrativo de Despesas: o mesmo bloco de lançamentos aparece {copias['copias']} vezes no arquivo "
+                                f"(total declarado {_fmt(copias['total_declarado'])} = {copias['copias']} × {_fmt(copias['total_de_um_bloco'])}); lido uma vez só")
+        for r, row in linhas:
             c0 = _txt(row[0])
             if not c0 and _txt(row[2]).lower().startswith("total da conta"):
                 total_decl = _num(row[3])

@@ -26,12 +26,13 @@ from conciliacao.base import ConciliadorBase, RegistroComprovante
 
 
 def _num(valor) -> float:
+    """Valor da célula COM sinal (estorno/lançamento negativo nunca vira positivo)."""
     if isinstance(valor, (int, float)):
-        return abs(float(valor))
+        return float(valor)
     s = re.sub(r"[^\d,.\-]", "", str(valor or "").strip())
     s = s.replace(".", "").replace(",", ".")
     try:
-        return abs(float(s))
+        return float(s)
     except Exception:
         return 0.0
 
@@ -50,8 +51,9 @@ class ConciliadorAuxiliadoraXLS(ConciliadorBase):
         conta_atual: str | None = None
         indice = 0
 
-        for r in range(ws.nrows):
-            row = [ws.cell_value(r, c) if c < ws.ncols else "" for c in range(4)]
+        from conciliacao.xls_blocos import linhas_sem_copias
+        linhas, copias = linhas_sem_copias(ws, 4)   # aba com o mesmo bloco repetido N vezes: lê um só (ver xls_blocos.py)
+        for r, row in linhas:
             col0 = str(row[0]).strip()
 
             if not col0:
@@ -67,7 +69,8 @@ class ConciliadorAuxiliadoraXLS(ConciliadorBase):
                     conta="TOTAL",
                     descricao="TOTAL",
                     valor=_num(row[1]),
-                    texto_bruto=" | ".join(str(v) for v in row),
+                    texto_bruto=" | ".join(str(v) for v in row) + (
+                        f" | COPIAS={copias['copias']} | TOTAL_UM_BLOCO={copias['total_de_um_bloco']}" if copias else ""),
                 ))
                 continue
             if str(row[2]).strip() == "Total da conta:":

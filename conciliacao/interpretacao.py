@@ -90,7 +90,35 @@ def _texto_divergencia_valor(achado: Achado, registro: RegistroComprovante | Non
     encontrado = _fmt_moeda(achado.valor_encontrado)
     regra = achado.regra_aplicada
     repetido = bool((achado.detalhes or {}).get("valor_repetido_no_comprovante"))   # marca posta só nos condomínios que pedem
-    if "ocr" in regra and repetido:
+    if regra == "demonstrativo_de_despesas_repetido_no_arquivo":
+        det = achado.detalhes or {}
+        n = det.get("copias")
+        um_bloco = _fmt_moeda(det.get("total_um_bloco"))
+        declarado = _fmt_moeda(det.get("total_declarado"))
+        titulo = f"Demonstrativo de Despesas repetido {n} vezes no arquivo (total declarado {declarado})"
+        paragrafo = (
+            f"Na aba \"Demonstrativo de Despesas\" o mesmo bloco de lançamentos aparece {n} vezes, idêntico. O \"TOTAL DE DESPESAS\" "
+            f"declarado no arquivo é {declarado}, que é {n} × {um_bloco}; {um_bloco} é o total de um bloco e confere com os débitos da conta "
+            f"Ordinária no Demonstrativo de Contas. Para esta validação foi lido um único bloco."
+        )
+        o_que_verificar = (f"Por que o arquivo enviado traz o Demonstrativo de Despesas repetido {n} vezes, com total declarado de {declarado}? "
+                           f"O correto é {um_bloco}? Podem reenviar o arquivo corrigido?")
+    elif regra == "extrato_bancario_nao_contem_o_valor_listado":
+        ex = (achado.detalhes or {}).get("extrato") or {}
+        dia = ex.get("dia") or "data do lançamento"
+        saidas = ex.get("saidas_do_dia") or []
+        lista = "; ".join(_fmt_moeda(v) for v in saidas)
+        titulo = f"Comprovante é um extrato bancário que não mostra o pagamento — {categoria} ({esperado})"
+        paragrafo = (
+            f"O comprovante anexado a este lançamento ({esperado}, {dia}) é um extrato bancário com várias transações, e nele não há "
+            f"um pagamento de {esperado} nem uma soma de pagamentos do dia {dia} que feche esse valor"
+            + (f" (saídas do dia no extrato: {lista}; total {_fmt_moeda(round(sum(saidas), 2))})" if saidas else
+               f" (o extrato anexado não traz movimentação em {dia}; dias que ele mostra: {', '.join(ex.get('dias_no_extrato') or []) or 'não identificados'})")
+            + ". Conferido pelas linhas do próprio extrato, não por um valor isolado lido por OCR."
+        )
+        o_que_verificar = (f"Onde está o comprovante do pagamento de {esperado} do dia {dia}? O extrato anexado cobre esse dia? "
+                           f"Podem enviar o extrato ou o comprovante correto?")
+    elif "ocr" in regra and repetido:
         # O mesmo valor aparece em mais de um campo do comprovante (ex.: "Valor do lançamento" e "Valor pago"): a
         # leitura não é um dígito trocado, a divergência é real.
         titulo = f"Valor do comprovante diverge da listagem — {categoria} (listagem {esperado}, comprovante {encontrado})"
@@ -366,10 +394,28 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             o_que_verificar = "Nenhuma ação necessária."
             base["confianca_ia"] = 1.0
             base["revisado_por"] = "sistema:regra_deterministica"
+        elif achado.tipo == "documento_original_nao_enviado":
+            itens = (achado.detalhes or {}).get("itens") or []
+            lista = "; ".join(f"cód. {i['codigo']} — {i['descricao'][:60].strip()}" + (f", {i['data']}" if i.get("data") else "") + f" ({_fmt_moeda(i['valor'])})" for i in itens)
+            titulo = f"Documento original não enviado — {len(itens)} lançamentos ({_fmt_moeda(achado.valor_encontrado)})"
+            paragrafo = (
+                f"Em {len(itens)} lançamentos (total {_fmt_moeda(achado.valor_encontrado)}) o comprovante disponível é só um "
+                f"\"Demonstrativo de Pagamento\" interno — o documento original (conta/fatura) ainda não foi enviado para a "
+                f"administradora, segundo o próprio sistema. Os valores conferem com a listagem. Lançamentos: {lista}."
+            )
+            o_que_verificar = (f"Por que os documentos originais (contas/faturas) desses {len(itens)} lançamentos não foram enviados? "
+                               f"Podem encaminhá-los?")
+            base["confianca_ia"] = 1.0
+            base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "sem_comprovante":
             titulo, paragrafo, o_que_verificar = _texto_sem_comprovante(achado, registro)
         elif achado.tipo == "divergencia_valor":
             titulo, paragrafo, o_que_verificar = _texto_divergencia_valor(achado, registro)
+            if achado.regra_aplicada in ("extrato_bancario_nao_contem_o_valor_listado", "demonstrativo_de_despesas_repetido_no_arquivo"):
+                base["severidade_final"] = "atencao"
+                base["motivo_divergencia_da_sugestao"] = (
+                    "Pergunta sobre o arquivo/anexo enviado pela administradora (conferido pelas linhas do próprio documento), "
+                    "não uma divergência financeira confirmada.")
         elif achado.tipo == "atraso_pagamento":
             titulo, paragrafo, o_que_verificar = _texto_atraso_pagamento(achado, registro)
         elif achado.tipo == "conteudo_nao_verificavel":

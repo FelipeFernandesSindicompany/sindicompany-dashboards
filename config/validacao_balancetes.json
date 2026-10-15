@@ -58,7 +58,9 @@
             "ORDINÁRIA APLICAÇÃO"
           ]
         },
-        "gestor": {}
+        "gestor": {},
+        "extrato_bancario": {},
+        "consolidar_documento_original": {}
       }
     },
     "cap_d_antibes": {

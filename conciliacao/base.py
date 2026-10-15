@@ -71,6 +71,7 @@ TIPOS_ACHADO = {
     "atraso_pagamento",         # pagamento (data efetiva) posterior ao vencimento
     "subconta_atipica",         # categoria nunca vista no histórico recente desse condomínio (heurística)
     "conteudo_nao_verificavel",  # comprovante existe mas OCR/extração não confirmou valor/data com confiança
+    "documento_original_nao_enviado",  # vários lançamentos com "Demonstrativo de Pagamento" no lugar do documento original (só quem pede)
     "nota_fiscal_ausente",      # despesa cita nº de NF na própria descrição, mas o comprovante anexado não traz NF nenhuma
     "lancamento_removido_mes_anterior",  # despesa recorrente presente no mês anterior, ausente neste mês
     # — regras gerais (conciliacao/regras_gerais), dados lidos do próprio arquivo do mês —

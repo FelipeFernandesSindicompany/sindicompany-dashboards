@@ -48,7 +48,7 @@ from conciliacao import get_conciliador
 from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
 from conciliacao.matching import (
-    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_gcont,
+    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_auxiliadora, gerar_achados_gcont,
     gerar_achados_balancete_mensal, gerar_achados_palm_beach, gerar_achados_planilha_com_links,
 )
 from conciliacao import interpretacao
@@ -132,7 +132,7 @@ GERAR_ACHADOS_POR_EMPRESA = {
     # Alliz também não tem pareamento por código nem "conta" confiável
     # nas páginas de comprovante — mesmas regras de consistência.
     "alliz_pdf": gerar_achados_datadigitus,
-    "auxiliadora_xls": gerar_achados_datadigitus,
+    "auxiliadora_xls": gerar_achados_auxiliadora,
     "ucondo_pdf": gerar_achados_datadigitus,
     "iello_pdf": gerar_achados_balancete_mensal,
     "lello_pdf": gerar_achados_balancete_mensal,
@@ -412,6 +412,12 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     achados_regras, status_regras, avisos_regras = regras_gerais_pipeline.executar(
         condo, mes, entrada, pasta_busca_regras)
     achados.extend(achados_regras)
+    if (condo.get("regras") or {}).get("extrato_bancario") is not None:
+        from conciliacao.matching import conferir_extrato_bancario
+        achados = conferir_extrato_bancario(achados, registros, arquivo)
+    if (condo.get("regras") or {}).get("consolidar_documento_original") is not None:
+        from conciliacao.matching import consolidar_documentos_originais
+        achados = consolidar_documentos_originais(achados, registros)
     if (condo.get("regras") or {}).get("apropriacao") is not None:
         from conciliacao.matching import reclassificar_apropriacoes
         achados = reclassificar_apropriacoes(achados, registros)

@@ -1670,3 +1670,156 @@ def reclassificar_guias_por_numero(achados: list, registros: list) -> list:
                 a.valor_encontrado = a.valor_esperado
                 a.confianca_deterministica = 1.0
     return achados
+
+
+# ── Extrato bancário anexado como comprovante (só para quem pede: regras.extrato_bancario) ──────────────────────────
+_MESES_PT = {"janeiro": 1, "fevereiro": 2, "marco": 3, "abril": 4, "maio": 5, "junho": 6, "julho": 7, "agosto": 8,
+             "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12}
+_RE_DIA_EXTRATO = re.compile(r"(\d{1,2})\s+de\s+([A-Za-zçÇãÃ]+)\s+de\s+(\d{4})\s+Saldo\s+do\s+dia", re.IGNORECASE)
+_RE_VALOR_EXTRATO = re.compile(r"(-?)\s?R\$\s?(\d{1,3}(?:\.\d{3})*,\d{2})")
+_cache_extrato: dict = {}
+
+
+def _pagamentos_do_extrato(arquivo, pagina: int):
+    """OCR (psm 4, 250 dpi) da página `pagina` (1-based) de um extrato de conta (ex.: Banco Inter) e leitura das
+    saídas ('-R$ x') de cada dia. Devolve {'dd/mm/aaaa': [valores]} ou None se o OCR não está disponível/falhou."""
+    chave = (str(arquivo), pagina)
+    if chave in _cache_extrato:
+        return _cache_extrato[chave]
+    saidas = None
+    try:
+        import io
+        import fitz
+        import pytesseract
+        from PIL import Image
+        from conciliacao import ocr
+        if ocr.tesseract_disponivel():
+            doc = fitz.open(str(arquivo))
+            img = Image.open(io.BytesIO(doc[pagina - 1].get_pixmap(dpi=250).tobytes("png")))
+            texto = pytesseract.image_to_string(img, lang="por", config="--psm 4")
+            saidas, dia = {}, None
+            for linha in texto.splitlines():
+                m = _RE_DIA_EXTRATO.search(linha)
+                if m:
+                    mes = _MESES_PT.get(unicodedata.normalize("NFKD", m.group(2)).encode("ascii", "ignore").decode().lower())
+                    dia = f"{int(m.group(1)):02d}/{mes:02d}/{m.group(3)}" if mes else None
+                    saidas.setdefault(dia, []) if dia else None
+                    continue
+                v = _RE_VALOR_EXTRATO.search(linha)
+                if dia and v and v.group(1) == "-":        # 1º valor da linha = o da transação; negativo = saída
+                    saidas[dia].append(round(float(v.group(2).replace(".", "").replace(",", ".")), 2))
+    except Exception:
+        saidas = None
+    _cache_extrato[chave] = saidas
+    return saidas
+
+
+def conferir_extrato_bancario(achados: list, registros: list, arquivo) -> list:
+    """Só para o condomínio que pede (`regras.extrato_bancario`): o comprovante anexado de alguns lançamentos é um EXTRATO
+    bancário (várias transações, 'Saldo do dia'), não um recibo. A leitura automática pegava um saldo do dia como se fosse o
+    valor pago e gerava 'divergência de valor' falsa. Aqui lê as saídas do extrato (OCR) e confere o lançamento: confirma
+    quando o valor é uma das saídas OU a soma das saídas do dia do lançamento; senão mantém o achado, mas dizendo o que
+    de fato ocorre (o extrato anexado não contém esse valor)."""
+    comp_por_chave = {chave_registro(r): r for r in registros if r.tipo_documento == "comprovante_anexado"}
+    desp_por_chave = {chave_registro(r): r for r in registros if r.tipo_documento == "despesa_listada"}
+    for a in achados:
+        if a.tipo != "divergencia_valor" or "ocr" not in a.regra_aplicada:
+            continue
+        comp = next((comp_por_chave[k] for k in a.registros_relacionados if k in comp_por_chave), None)
+        d = next((desp_por_chave[k] for k in a.registros_relacionados if k in desp_por_chave), None)
+        if comp is None or d is None or "saldo do dia" not in (comp.texto_bruto or "").lower():
+            continue
+        saidas = _pagamentos_do_extrato(arquivo, comp.pagina)
+        if not saidas:
+            continue
+        dia = d.vencimento if re.fullmatch(r"\d{2}/\d{2}/\d{4}", d.vencimento or "") else None
+        valor = round(abs(d.valor or 0.0), 2)
+        todas = [v for vs in saidas.values() for v in vs]
+        soma_dia = round(sum(saidas.get(dia, [])), 2) if dia else None
+        if any(abs(v - valor) <= 0.01 for v in todas):
+            motivo = "valor_e_uma_das_saidas_do_extrato"
+        elif soma_dia is not None and abs(soma_dia - valor) <= 0.01:
+            motivo = "valor_e_a_soma_das_saidas_do_dia_no_extrato"
+        else:
+            a.regra_aplicada = "extrato_bancario_nao_contem_o_valor_listado"
+            a.valor_encontrado = None
+            a.detalhes = {**(a.detalhes or {}), "extrato": {"dia": dia, "saidas_do_dia": saidas.get(dia, []) if dia else [],
+                                                            "dias_no_extrato": sorted(k for k in saidas if k)}}
+            continue
+        a.tipo = "ok_verificado"
+        a.severidade_sugerida = "informativo"
+        a.regra_aplicada = motivo
+        a.valor_encontrado = a.valor_esperado
+        a.confianca_deterministica = 1.0
+        a.detalhes = {**(a.detalhes or {}), "extrato": {"dia": dia, "saidas_do_dia": saidas.get(dia, []) if dia else []}}
+    return achados
+
+
+# ── Documento original não enviado (demonstrativo de pagamento): um só achado por mês (regras.consolidar_documento_original) ──
+def consolidar_documentos_originais(achados: list, registros: list) -> list:
+    """Só para o condomínio que pede: os lançamentos cujo comprovante é o 'Demonstrativo de Pagamento' do sistema (documento original
+    não enviado à administradora) viram UM achado com a lista de lançamentos, em vez de um item por lançamento."""
+    comp_por_chave = {chave_registro(r): r for r in registros if r.tipo_documento == "comprovante_anexado"}
+    desp_por_chave = {chave_registro(r): r for r in registros if r.tipo_documento == "despesa_listada"}
+    grupo, restantes = [], []
+    for a in achados:
+        comp = next((comp_por_chave[k] for k in a.registros_relacionados if k in comp_por_chave), None)
+        if (a.tipo == "ok_verificado" and comp is not None
+                and "não foi enviado para a administradora" in (comp.texto_bruto or "").lower()):
+            grupo.append((a, comp, next((desp_por_chave[k] for k in a.registros_relacionados if k in desp_por_chave), None)))
+        else:
+            restantes.append(a)
+    if len(grupo) < 2:
+        return achados
+    def _limpa(desc: str) -> str:
+        # a descrição da listagem vem com data na frente e valor/código atrás ("06/07/2026 DA ELETROPAULO 18680192 101,27 0013")
+        desc = re.sub(r"^\d{2}/\d{2}/\d{4}\s+", "", desc or "")
+        return re.sub(r"(\s+\d{1,3}(?:\.\d{3})*,\d{2})+(\s+\d{3,5})?\s*$", "", desc).strip()
+
+    itens = [{"codigo": d.codigo if d else comp.codigo, "valor": round(a.valor_esperado or 0.0, 2),
+              "descricao": _limpa((d.descricao if d else comp.descricao) or ""), "data": (d.vencimento if d else None),
+              "categoria": a.linha_demonstrativo, "pagina": comp.pagina} for a, comp, d in grupo]
+    primeiro = grupo[0][0]
+    from conciliacao.base import Achado as _Achado
+    consolidado = _Achado(
+        id=primeiro.id, tipo="documento_original_nao_enviado", severidade_sugerida="atencao",
+        regra_aplicada="demonstrativo_de_pagamento_no_lugar_do_documento_original",
+        registros_relacionados=list(primeiro.registros_relacionados),
+        linha_demonstrativo=primeiro.linha_demonstrativo,
+        valor_esperado=round(sum(i["valor"] for i in itens), 2), valor_encontrado=round(sum(i["valor"] for i in itens), 2),
+        confianca_deterministica=1.0, detalhes={"itens": itens})
+    return restantes + [consolidado]
+
+
+# ── Auxiliadora XLS (Patrícia): as regras do DataDigitus + ajustes do formato ───────────────────────────────────────
+_RE_NF_NUMERO = re.compile(r"\bNF\b[\s.:\-]*\d{2,}", re.IGNORECASE)
+
+
+def gerar_achados_auxiliadora(registros, dados_financeiros=None, pasta_dados=None, mes_atual=None) -> list:
+    """O arquivo da Auxiliadora lista cada lançamento só com histórico e valor (sem data, fornecedor ou documento).
+    Duas diferenças em relação ao DataDigitus:
+      1. Duplicidade só vale quando a descrição traz o NÚMERO DA NOTA FISCAL ("... NF. 3019 ...") — o mesmo gasto lançado duas vezes
+         com a mesma NF e o mesmo valor. Tarifas por boleto ("TAR/CUSTAS COBRANCA R$ 3,76", uma por boleto) e outras linhas sem
+         documento repetem o valor naturalmente e não são duplicidade.
+      2. Se o arquivo traz o mesmo bloco de despesas repetido N vezes (o total declarado é N × o total de um bloco), a soma não
+         'bate' por causa da repetição do próprio arquivo: o achado vira uma pergunta específica sobre o arquivo."""
+    achados = gerar_achados_datadigitus(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    por_chave = {chave_registro(r): r for r in registros}
+    saida = []
+    for a in achados:
+        if a.tipo == "duplicidade":
+            descricoes = [(por_chave[k].descricao or "") for k in a.registros_relacionados if k in por_chave]
+            if not descricoes or not all(_RE_NF_NUMERO.search(d) for d in descricoes):
+                continue
+        saida.append(a)
+    totais = [r for r in registros if r.tipo_documento == "total_conta_declarado" and "COPIAS=" in (r.texto_bruto or "")]
+    for t in totais:
+        m = re.search(r"COPIAS=(\d+) \| TOTAL_UM_BLOCO=([\d.]+)", t.texto_bruto)
+        if not m:
+            continue
+        for a in saida:
+            if a.tipo == "divergencia_valor" and chave_registro(t) in a.registros_relacionados:
+                a.regra_aplicada = "demonstrativo_de_despesas_repetido_no_arquivo"
+                a.detalhes = {**(a.detalhes or {}), "copias": int(m.group(1)), "total_um_bloco": float(m.group(2)),
+                              "total_declarado": t.valor}
+    return saida
