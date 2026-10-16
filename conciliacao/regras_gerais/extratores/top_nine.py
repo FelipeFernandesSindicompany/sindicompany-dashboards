@@ -161,8 +161,8 @@ class Extrator:
     # ── Variante "resumo" (10 páginas): W018L livro caixa, W015D, W020C analítico por conta ────────────────────
     def _extrair_resumo(self, doc, tipos: dict, dados: DadosRegras) -> None:
         dados.variante = "resumo"
-        dados.avisos.append("arquivo na versão resumida (10 páginas: livro caixa W018L, W015D, W020C): sem os comprovantes, a posição do Fundo de Obras "
-                            "e a tela de receitas analítica")
+        dados.avisos.append("arquivo na versão resumida (10 páginas: livro caixa W018L, W015D, W020C): o saldo é o CAIXA (conta ordinária + fundo de obras "
+                            "somados — em jun/2026 19.922,25 + 11.976,93 = 31.899,18), sem os comprovantes e sem a tela de receitas analítica")
         # 1) W015D: saldo inicial/final, receitas e despesas do mês (conta ordinária / caixa)
         resumo, total_desp_d = {}, None
         for i in tipos.get("W015D", [])[:1]:
@@ -252,7 +252,7 @@ class Extrator:
         # 4) conta e conferências
         rend = round(sum(r.valor for r in receitas if r.tipo == "rendimento"), 2)
         if resumo.get("ant") is not None and resumo.get("atu") is not None:
-            dados.contas = [ContaMes(nome="CONTA ORDINÁRIA", saldo_anterior=resumo["ant"], saldo_atual=resumo["atu"],
+            dados.contas = [ContaMes(nome="CAIXA (ORDINÁRIA + FUNDO DE OBRAS)", saldo_anterior=resumo["ant"], saldo_atual=resumo["atu"],
                                      creditos=resumo.get("rec") or round(cred_caixa, 2), debitos=resumo.get("desp") or round(deb_caixa, 2),
                                      rendimento=rend, pagina=pag_resumo)]
         soma = round(sum(l.valor for l in lanc), 2)
@@ -263,8 +263,8 @@ class Extrator:
         if abs(dif_r) > _CENT or abs(dif_d) > _CENT:
             dados.avisos.append(f"livro caixa (W018L) x demonstrativo (W015D): créditos diferem {dif_r:,.2f} e débitos diferem {dif_d:,.2f}")
         dados.cobertura = {"receitas": bool(receitas), "rendimentos": False, "lancamentos": bool(lanc)}
-        dados.motivos_nao_cobertos["rendimentos"] = ("a versão resumida do arquivo traz só a conta ordinária (livro caixa); a posição do Fundo de Obras "
-                                                      "e das demais contas não vem, então não há como conferir a distribuição do rendimento entre contas")
+        dados.motivos_nao_cobertos["rendimentos"] = ("a versão resumida do arquivo traz só o saldo do CAIXA (ordinária + fundo de obras somados); a posição de cada "
+                                                      "conta não vem, então não há como conferir a distribuição do rendimento entre contas")
         if not receitas:
             dados.motivos_nao_cobertos["receitas"] = "o livro caixa (W018L) não foi encontrado neste PDF"
         if not lanc:

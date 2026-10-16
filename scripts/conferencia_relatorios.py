@@ -174,6 +174,23 @@ def main():
                 try:
                     d = ex.extrair(arq, f"{aaaa}-{mm:02d}")
                     ind = {_norm(c.nome): c for c in d.contas}
+                    # continuidade com o mês anterior (identidade do arquivo): o saldo anterior de cada conta deve ser o saldo final do mês passado
+                    ma, aa = (mm - 1, aaaa) if mm > 1 else (12, aaaa - 1)
+                    arq_ant = localizar_arquivo_mes(pasta, ma, aa, preferir_sufixo=arq.suffix)
+                    if arq_ant is not None:
+                        try:
+                            d_ant = ex.extrair(arq_ant, f"{aa}-{ma:02d}")
+                            ant_ind = {_norm(c.nome): c for c in d_ant.contas}
+                            comuns = [(k, c) for k, c in ind.items() if k in ant_ind and not k.startswith("CONSOLIDADO")]
+                            quebras = [(c.nome, c.saldo_anterior, ant_ind[k].saldo_atual) for k, c in comuns
+                                       if abs(c.saldo_anterior - ant_ind[k].saldo_atual) > 0.011]
+                            if comuns and len(quebras) == len(comuns):
+                                probs.append("CONTINUIDADE: NENHUM saldo anterior bate com o saldo final do mês anterior — o arquivo pode ser de outro condomínio ou "
+                                             f"o mês anterior está errado ({quebras[:2]})")
+                            elif quebras:
+                                probs.append(f"continuidade: {len(quebras)} de {len(comuns)} contas com saldo anterior diferente do saldo final do mês anterior, ex.: {quebras[:2]}")
+                        except Exception as e:
+                            probs.append(f"(continuidade não conferida: {str(e)[:80]})")
                     for nome, ant, cre, deb, atu in contas:
                         c = ind.get(_norm(nome))
                         if c is None:

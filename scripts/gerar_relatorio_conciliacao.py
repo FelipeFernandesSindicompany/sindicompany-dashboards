@@ -348,6 +348,8 @@ def _conferir_identidade_do_arquivo(condo: dict, arquivo: Path) -> None:
     ok, msg = identidade_arquivo.conferir(arquivo, condo, todos)
     if not ok:
         raise ValueError(msg)
+    if msg:
+        print(f"[AVISO] {msg}")
 
 
 def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:

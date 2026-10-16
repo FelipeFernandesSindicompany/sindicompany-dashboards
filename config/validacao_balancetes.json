@@ -26,6 +26,7 @@
       }
     },
     "plano_cambuci": {
+      "nomes_no_arquivo": ["PLANO E CAMBUCI INDEPENDENCIA"],
       "pasta_prestacao": "Dashboard de Análise de Balancete Plano Cambuci Independencia",
       "regras": {
         "rendimento": {
@@ -296,6 +297,7 @@
       }
     },
     "living_for_consolacao": {
+      "nomes_no_arquivo": ["FOR CONSOLACAO"],
       "pasta_prestacao": "Dashboard de Análise de Balancete Living For Consolação",
       "regras": {
         "rendimento": {
@@ -416,6 +418,7 @@
       }
     },
     "patricia": {
+      "identidade_sem_nome": true,
       "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia",
       "regras": {

@@ -1109,6 +1109,19 @@ def gerar_achados_planilha_com_links(
                     and a.regra_aplicada == "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor")]
 
 
+_RE_DOC_NF = re.compile(r"\bNFS?-?E?\b[\s.:\-]*\d{2,}|\bFATURA\b[\s.:\-]*\d{2,}", re.IGNORECASE)
+_RE_DATA_DMA = re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}")
+_RE_NUMERO_LONGO = re.compile(r"(?:\d[\s.\-/]?){8,}")
+
+
+def _tem_identificador_de_documento(r) -> bool:
+    """O lançamento traz algo que o distingue de outro igual: nº de documento extraído, NF/fatura ou número longo na descrição."""
+    if getattr(r, "autenticacao", None):
+        return True
+    desc = _RE_DATA_DMA.sub(" ", r.descricao or "")
+    return bool(_RE_DOC_NF.search(desc) or _RE_NUMERO_LONGO.search(desc))
+
+
 def gerar_achados_datadigitus(
     registros: list[RegistroComprovante], dados_financeiros=None,
     pasta_dados: str | None = None, mes_atual: str | None = None,
@@ -1154,7 +1167,10 @@ def gerar_achados_datadigitus(
         chave = (d.vencimento, round(d.valor, 2), d.categoria_demonstrativo, d.descricao.strip().upper(), d.autenticacao)
         grupos_por_data_valor_cat.setdefault(chave, []).append(d)
     for grupo in grupos_por_data_valor_cat.values():
-        if len(grupo) >= 2:
+        # Duplicidade só quando há como distinguir o gasto: nº de NF/fatura, nº de documento extraído ou um número longo (telefone,
+        # instalação, contrato) na descrição. Linhas só com histórico genérico e valor ("TAR/CUSTAS COBRANCA 3,76", uma por boleto)
+        # repetem por natureza e não são duplicidade.
+        if len(grupo) >= 2 and all(_tem_identificador_de_documento(d) for d in grupo):
             achados.append(Achado(
                 id=_proximo_id(contador),
                 tipo="duplicidade",
