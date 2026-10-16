@@ -400,6 +400,37 @@ def regra_saldo_negativo(dados: DadosRegras, historico: list, cont: _Contador, c
     return achados
 
 
+# ── Alerta de saldo negativo: há quanto tempo (padrão em todos os condomínios que não configuram `saldo_negativo`) ──────
+
+def regra_alerta_saldo_negativo(dados: DadosRegras, historico: list, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """Só informa: cada conta com saldo final negativo e há quantos meses seguidos (contando o mês atual e os meses lidos da pasta do
+    projeto, em ordem do mais recente para o mais antigo). Um achado por relatório, com todas as contas."""
+    cfg = cfg or {}
+    minimo = float(cfg.get("saldo_minimo", 1.0))
+    lidos = len(historico) + 1
+    contas = []
+    for c in dados.contas:
+        if c.nome.upper().startswith("CONSOLIDADO") or c.saldo_atual > -minimo:
+            continue
+        n, interrompeu = 1, False
+        for h in historico:
+            x = next((y for y in h.contas if _mesma_conta(y.nome, c.nome)), None)
+            if x is None or x.saldo_atual > -_CENTAVO:
+                interrompeu = True
+                break
+            n += 1
+        contas.append({"nome": c.nome, "saldo_atual": round(c.saldo_atual, 2), "saldo_anterior": round(c.saldo_anterior, 2),
+                       "meses": n, "ate_o_limite_lido": (not interrompeu) and n >= lidos, "pagina": c.pagina})
+    if not contas:
+        return []
+    contas.sort(key=lambda x: x["saldo_atual"])
+    return [Achado(
+        id=cont.proximo(), tipo="saldo_negativo_persistente", severidade_sugerida="atencao",
+        regra_aplicada="alerta_saldo_negativo_e_ha_quanto_tempo", linha_demonstrativo=contas[0]["nome"],
+        valor_encontrado=contas[0]["saldo_atual"],
+        detalhes={"contas": contas, "meses_lidos": lidos, "pagina": contas[0]["pagina"]})]
+
+
 # ── Movimento entre contas (só para quem pede: regras.movimento_entre_contas) ───────────────────────────────────
 
 def regra_movimento_entre_contas(dados: DadosRegras, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
@@ -537,7 +568,41 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
                       "pagina": ref.pagina if ref else None, "rendimento_total_mes": round(sum(x.rendimento for x in contas), 2),
                       "contas_com_rendimento": [{"nome": x.nome, "saldo_medio": _sm(x), "rendimento": round(x.rendimento, 2)} for x in com],
                       "contas_sem_rendimento": [{"nome": c.nome, "saldo_medio": _sm(c)} for c, _ in sem_rend]}))
+    if not achados and cfg.get("concentracao", True) is not False:
+        achados += _rendimento_concentrado(dados, anterior, cont, cfg, _ignorada)
     return achados
+
+
+def _rendimento_concentrado(dados: DadosRegras, anterior: Optional[DadosRegras], cont: _Contador, cfg: dict, ignorada) -> list[Achado]:
+    """Vale para TODOS os condomínios: o rendimento do mês caiu em UMA só conta (ou, tendo rendido no mês anterior, em nenhuma) enquanto
+    outras contas têm saldo médio relevante (padrão R$ 10.000) e não receberam nada. Compara contas entre si só funciona com 2+ contas
+    rendendo; aqui a pergunta é se há aplicações e se o rendimento está nas contas corretas."""
+    todas = [c for c in dados.contas if not c.nome.upper().startswith("CONSOLIDADO")]
+    com = [c for c in todas if c.rendimento > _CENTAVO]
+    minimo = float(cfg.get("concentracao_minimo", 10000.0))
+
+    def _sm(x):
+        return round((x.saldo_anterior + x.saldo_atual) / 2.0, 2)
+
+    sem = [c for c in todas if c not in com and not ignorada(c.nome) and _sm(c) >= minimo]
+    if not sem:
+        return []
+    if len(com) == 0:
+        rendeu_antes = anterior is not None and any(x.rendimento > _CENTAVO for x in anterior.contas)
+        if not rendeu_antes:
+            return []   # sem rendimento em lugar nenhum e sem histórico de rendimento: não dá para afirmar que deveria haver
+    elif len(com) != 1:
+        return []
+    ref = com[0] if com else None
+    total = round(sum(x.rendimento for x in todas), 2)
+    return [Achado(
+        id=cont.proximo(), tipo="rendimento_desproporcional", severidade_sugerida="atencao",
+        regra_aplicada="rendimento_concentrado_em_uma_conta_e_contas_com_saldo_sem_rendimento",
+        linha_demonstrativo=ref.nome if ref else sem[0].nome, valor_esperado=None, valor_encontrado=total,
+        detalhes={"conta": ref.nome if ref else sem[0].nome, "motivo": "sem_rendimento_consolidado", "perguntar_aplicacoes": True,
+                  "pagina": ref.pagina if ref else None, "rendimento_total_mes": total,
+                  "contas_com_rendimento": [{"nome": x.nome, "saldo_medio": _sm(x), "rendimento": round(x.rendimento, 2)} for x in com],
+                  "contas_sem_rendimento": [{"nome": c.nome, "saldo_medio": _sm(c)} for c in sem]})]
 
 
 # ── Regra 5: pagamento sem identificação ─────────────────────────────────────
@@ -800,7 +865,8 @@ REGRAS_NOMES = {
 
 
 def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras],
-                   cfg_condo: Optional[dict] = None, historico: Optional[list] = None) -> tuple[list[Achado], dict]:
+                   cfg_condo: Optional[dict] = None, historico: Optional[list] = None,
+                   historico_saldos: Optional[list] = None) -> tuple[list[Achado], dict]:
     """(achados, status) — status: {regra: {"aplicada": bool, "motivo": str|None}} para a seção
     'Verificações realizadas'. Regra que o formato não permite fica 'não aplicável' COM o motivo."""
     cfg_condo = cfg_condo or {}
@@ -837,6 +903,9 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
     hist_regras = [h for h in (historico if historico is not None else ([anterior] if anterior is not None else [])) if h is not None]
     if cfg_condo.get("saldo_negativo") is not None:
         achados += regra_saldo_negativo(dados, hist_regras, cont, cfg_condo.get("saldo_negativo"))
+    elif cfg_condo.get("alerta_saldo_negativo", True) is not False:
+        achados += regra_alerta_saldo_negativo(dados, historico_saldos if historico_saldos is not None else hist_regras, cont,
+                                               cfg_condo.get("alerta_saldo_negativo") if isinstance(cfg_condo.get("alerta_saldo_negativo"), dict) else None)
     if cfg_condo.get("movimento_entre_contas") is not None:
         achados += regra_movimento_entre_contas(dados, cont, cfg_condo.get("movimento_entre_contas"))
     if cfg_condo.get("nf_repetida") is not None and dados.lancamentos:

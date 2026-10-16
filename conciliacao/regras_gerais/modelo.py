@@ -81,3 +81,6 @@ class DadosRegras:
     emissao: Optional[dict] = None
     # Indicadores do Análise Financeira lidos do arquivo quando o leitor antigo não lê o formato: {"prev", "real", "inad", "inadProc"}
     indicadores: Optional[dict] = None
+    # Variante do formato dentro do mesmo tipo de arquivo (ex.: Top Nine 'resumo' de 10 páginas x pasta digital completa). Meses de variantes
+    # diferentes não se comparam entre si (subcontas/checklist de gestor).
+    variante: Optional[str] = None

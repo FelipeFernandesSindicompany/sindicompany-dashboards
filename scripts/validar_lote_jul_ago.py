@@ -22,7 +22,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 from conciliacao import pasta_prestacao
 from conciliacao.demonstrativo_reader import localizar_arquivo_mes
 
-EXCLUIR = {"fatto_morumbi"}
+EXCLUIR = {"fatto_morumbi", "go_barra_funda", "top_nine", "parque_saint_afonso"}   # Barra Funda: sem validação (decisão do usuário); Top Nine: arquivo incompleto; Saint Afonso: sem arquivos de jul/ago
 PLANILHA = Path.home() / "OneDrive - Perfil de E-mail" / "Verificação Mensal de Balancetes.xlsx"
 # nome (normalizado) na planilha de controle -> id do condomínio
 ID_PLANILHA = {

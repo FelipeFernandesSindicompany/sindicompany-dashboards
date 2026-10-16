@@ -47,6 +47,7 @@ def executar(condo: dict, mes: str, arquivo: Path, pasta_busca_anterior: Optiona
     # a união de todos (uma despesa eventual que some e volta não vira alarme). Para de ler se a
     # leitura estiver demorando (PDF grande, OCR) — o que já foi lido basta.
     historico: list = []
+    historico_saldos: list = []      # todos os meses lidos, de qualquer formato (saldos não dependem do formato)
     outro_formato: list = []
     anterior = None
     if pasta_busca_anterior and pasta_busca_anterior.is_dir():
@@ -69,9 +70,10 @@ def executar(condo: dict, mes: str, arquivo: Path, pasta_busca_anterior: Optiona
                 if k == 0:
                     avisos.append(f"não foi possível ler o mês anterior ({arq_k.name}): {exc}")
                 continue
+            historico_saldos.append(dados_k)
             if k == 0:
                 anterior = dados_k      # rendimento: nomes de conta são os mesmos em qualquer formato
-            if arq_k.suffix.lower() != arquivo.suffix.lower() and not ((condo.get("regras") or {}).get("subcontas") or {}).get("comparar_entre_formatos"):
+            if (arq_k.suffix.lower() != arquivo.suffix.lower() or getattr(dados_k, "variante", None) != getattr(dados, "variante", None)) and not ((condo.get("regras") or {}).get("subcontas") or {}).get("comparar_entre_formatos"):
                 # Subcontas só se comparam entre meses do MESMO formato (a planilha Lello e o PDF do mesmo
                 # condomínio nomeiam as subcontas em níveis diferentes: comparar geraria alertas falsos).
                 outro_formato.append(f"{mes_k:02d}/{ano_k}")
@@ -81,5 +83,5 @@ def executar(condo: dict, mes: str, arquivo: Path, pasta_busca_anterior: Optiona
     if outro_formato:
         avisos.append(f"meses anteriores em outro formato de arquivo ({', '.join(outro_formato)}) ficaram fora da comparação "
                       f"de subcontas — a planilha e o PDF nomeiam as subcontas em níveis diferentes")
-    achados, status = aplicar_regras(dados, anterior, condo.get("regras"), historico=historico)
+    achados, status = aplicar_regras(dados, anterior, condo.get("regras"), historico=historico, historico_saldos=historico_saldos)
     return achados, status, avisos

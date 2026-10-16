@@ -316,7 +316,7 @@
     </div>
     {% endif %}
   </div>
-  <div class="o-que-verificar"><strong>Pergunta à administradora:</strong> {{ a.o_que_verificar }}</div>
+  {% if a.o_que_verificar %}  <div class="o-que-verificar"><strong>Pergunta à administradora:</strong> {{ a.o_que_verificar }}</div>{% endif %}
 </div>
 {% endfor %}
 

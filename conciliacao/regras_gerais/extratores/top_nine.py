@@ -128,6 +128,10 @@ class Extrator:
                 m = re.search(r"\bW\d{3}[A-Z]\b", t)
                 if m:
                     tipos.setdefault(m.group(0), []).append(i)
+            if not tipos.get("W016B") and not tipos.get("W020B") and tipos.get("W020C") and tipos.get("W018L"):
+                self._extrair_resumo(doc, tipos, dados)       # versão resumida (10 págs, sem comprovantes) que a Conister passou a enviar
+                aplicar_config_receitas_negativas(dados, self.condo)
+                return dados
             totais: dict = {}
             contas = self._ler_resumo(doc, tipos.get("W016B", []), dados)
             nomes_sub = self._nomes_subcontas(doc, tipos.get("W011A", []))
@@ -153,6 +157,126 @@ class Extrator:
                 "não recebem rendimento — não há distribuição entre contas para conferir a proporcionalidade")
         aplicar_config_receitas_negativas(dados, self.condo)
         return dados
+
+    # ── Variante "resumo" (10 páginas): W018L livro caixa, W015D, W020C analítico por conta ────────────────────
+    def _extrair_resumo(self, doc, tipos: dict, dados: DadosRegras) -> None:
+        dados.variante = "resumo"
+        dados.avisos.append("arquivo na versão resumida (10 páginas: livro caixa W018L, W015D, W020C): sem os comprovantes, a posição do Fundo de Obras "
+                            "e a tela de receitas analítica")
+        # 1) W015D: saldo inicial/final, receitas e despesas do mês (conta ordinária / caixa)
+        resumo, total_desp_d = {}, None
+        for i in tipos.get("W015D", [])[:1]:
+            linhas = [l.strip() for l in doc[i].get_text().splitlines() if l.strip()]
+            for k, l in enumerate(linhas):
+                if l.startswith("Total de Despesas") and k + 2 < len(linhas):
+                    total_desp_d = _num(linhas[k + 2]) if _num(linhas[k + 2]) is not None else _num(linhas[k + 1])
+                if l == "Resumo":
+                    resto = linhas[k + 1:k + 9]
+                    for a, b in zip(resto[0::2], resto[1::2]):
+                        v = _num(b)
+                        if a.startswith("Saldo em 01") or a.startswith("Saldo em 1/"):
+                            resumo["ant"] = v
+                        elif a.startswith("Receitas"):
+                            resumo["rec"] = v
+                        elif a.startswith("Despesas"):
+                            resumo["desp"] = v
+                        elif a.startswith("Saldo em"):
+                            resumo["atu"] = v
+                    pag_resumo = i + 1
+        # 2) W018L: livro caixa (receitas por linha; rendimento)
+        receitas, deb_caixa, cred_caixa = [], 0.0, 0.0
+        ano = int(dados.mes[:4])
+        for i in tipos.get("W018L", []):
+            cabecalho = None
+            for yc, ws in _linhas(doc[i]):
+                tn = _norm(_texto(ws))
+                if tn.startswith("DATA DESCRICAO") or ("DEBITO" in tn and "CREDITO" in tn and "SALDO" in tn):
+                    cabecalho = {_norm(w[4]): (w[0] + w[2]) / 2 for w in ws}
+                    continue
+                if cabecalho is None or not re.match(r"^\d{2}/\d{2}/\d{2}$", ws[0][4]):
+                    continue
+                numeros = [(w, _num(w[4])) for w in ws[1:] if _num(w[4]) is not None]
+                if not numeros:
+                    continue
+                desc = " ".join(w[4] for w in ws[1:] if _num(w[4]) is None).strip()
+                data = ws[0][4]
+                data = f"{data[:6]}20{data[6:]}"
+                for w, v in numeros:
+                    centro = (w[0] + w[2]) / 2
+                    col = min(("DEBITO", "CREDITO", "SALDO"), key=lambda c: abs(cabecalho.get(c, 1e9) - centro))
+                    if col == "CREDITO":
+                        cred_caixa += v
+                        receitas.append(LinhaReceita(conta="CONTA ORDINÁRIA", descricao=desc, valor=v,
+                                                     tipo=("cota" if "COBRANC" in _norm(desc) else _tipo_receita(desc)),
+                                                     data=data, pagina=i + 1))
+                    elif col == "DEBITO":
+                        deb_caixa += v
+        dados.receitas = receitas
+        # 3) W020C: despesas analíticas por conta (categoria > subconta > lançamento)
+        lanc = []
+        marcos = sorted(tipos.get("W020C", []))
+        for idx, i0 in enumerate(marcos):
+            m = re.search(r'"([^"]+)"', doc[i0].get_text()[:300])
+            conta = (m.group(1).strip() if m else "CONTA ORDINÁRIA")
+            fim = marcos[idx + 1] if idx + 1 < len(marcos) else self._fim_secao(doc, i0, tipos)
+            nivel1 = nivel2 = ""
+            pend = None
+            for i in range(i0, fim):
+                for linha in doc[i].get_text().splitlines():
+                    if not linha.strip():
+                        continue
+                    ind = len(linha) - len(linha.lstrip(" "))
+                    t = linha.strip()
+                    if (t in ("Despesas", "Documento", "Valor") or t.startswith(("W0", "Conister Administra", "Rua Bar", "Tel. (", "Entre ", "Demonstrativo de Despesas Anal"))
+                            or re.match(r"^\d+ de \d+$", t)):
+                        continue
+                    if t.startswith(("Total de ", "Total Geral")):
+                        pend = None
+                        continue
+                    v = _num(t)
+                    if v is not None and ind == 0:
+                        if pend is not None:
+                            lanc.append(LancamentoDespesa(descricao=pend["d"], valor=v, categoria=pend["c"], conta=conta, pagina=i + 1,
+                                                          local=f"W020C, página {i + 1}"))
+                            pend = None
+                        continue
+                    if ind == 3:
+                        nivel1, nivel2, pend = t, "", None
+                    elif ind == 6:
+                        nivel2, pend = t, None
+                    elif ind >= 9:
+                        pend = {"d": t, "c": f"{nivel1} > {nivel2}".strip(" >")}
+                    elif pend is not None:
+                        pend["d"] = f"{pend['d']} {t}"          # linha que quebrou / marcador "NF-123"
+        dados.lancamentos = lanc
+        # 4) conta e conferências
+        rend = round(sum(r.valor for r in receitas if r.tipo == "rendimento"), 2)
+        if resumo.get("ant") is not None and resumo.get("atu") is not None:
+            dados.contas = [ContaMes(nome="CONTA ORDINÁRIA", saldo_anterior=resumo["ant"], saldo_atual=resumo["atu"],
+                                     creditos=resumo.get("rec") or round(cred_caixa, 2), debitos=resumo.get("desp") or round(deb_caixa, 2),
+                                     rendimento=rend, pagina=pag_resumo)]
+        soma = round(sum(l.valor for l in lanc), 2)
+        if total_desp_d is not None and abs(soma - total_desp_d) > _CENT:
+            dados.avisos.append(f"W020C: os lançamentos somam {soma:,.2f}, mas o Total de Despesas do W015D é {total_desp_d:,.2f}")
+        dif_r = round((resumo.get("rec") or 0) - cred_caixa, 2)
+        dif_d = round((resumo.get("desp") or 0) - deb_caixa, 2)
+        if abs(dif_r) > _CENT or abs(dif_d) > _CENT:
+            dados.avisos.append(f"livro caixa (W018L) x demonstrativo (W015D): créditos diferem {dif_r:,.2f} e débitos diferem {dif_d:,.2f}")
+        dados.cobertura = {"receitas": bool(receitas), "rendimentos": False, "lancamentos": bool(lanc)}
+        dados.motivos_nao_cobertos["rendimentos"] = ("a versão resumida do arquivo traz só a conta ordinária (livro caixa); a posição do Fundo de Obras "
+                                                      "e das demais contas não vem, então não há como conferir a distribuição do rendimento entre contas")
+        if not receitas:
+            dados.motivos_nao_cobertos["receitas"] = "o livro caixa (W018L) não foi encontrado neste PDF"
+        if not lanc:
+            dados.motivos_nao_cobertos["lancamentos"] = "o Demonstrativo de Despesas Analítico (W020C) não foi encontrado neste PDF"
+
+    @staticmethod
+    def _fim_secao(doc, i0: int, tipos: dict) -> int:
+        """Primeira página depois de i0 que começa outra tela W0xx (ou o fim do PDF)."""
+        for i in range(i0 + 1, len(doc)):
+            if re.search(r"\bW\d{3}[A-Z]\b", doc[i].get_text()[:200]):
+                return i
+        return len(doc)
 
     # ── W016B: Resumo Financeiro ─────────────────────────────────────────────
     def _ler_resumo(self, doc, paginas, dados) -> list:

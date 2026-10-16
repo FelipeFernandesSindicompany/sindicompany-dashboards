@@ -51,8 +51,8 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
             if d.get("perguntar_aplicacoes"):
                 return ("Nenhuma conta recebeu rendimento no mês; há aplicações financeiras?",
                         f"Nenhuma conta recebeu rendimento neste mês, embora tenham recebido em meses anteriores ou tenham saldo: {sem_txt}. "
-                        + ("Conta com saldo negativo não deveria receber rendimento; " if any((x.get("saldo_medio") or 0) < 0 for x in sem) else "")
-                        + "o rendimento das aplicações deve ser creditado nas contas com saldo e distribuído na proporção do saldo de cada uma.",
+                        + ("Conta com saldo negativo não deveria receber rendimento; o" if any((x.get("saldo_medio") or 0) < 0 for x in sem) else "O")
+                        + " rendimento das aplicações deve ser creditado nas contas com saldo e distribuído na proporção do saldo de cada uma.",
                         "O condomínio possui aplicações financeiras (fundos de reserva, locação e obras)? Por que não houve rendimento em nenhuma conta neste mês? "
                         "O rendimento está sendo creditado nas contas corretas? Podem enviar o extrato das aplicações do mês?")
             return ("Nenhuma conta recebeu rendimento no mês",
@@ -268,6 +268,17 @@ def texto_cobranca(a: Achado) -> tuple[str, str, str]:
 
 def texto_saldo_negativo(a: Achado) -> tuple[str, str, str]:
     d = a.detalhes
+    if d.get("contas"):
+        def _tempo(c):
+            n = c["meses"]
+            return f"há {'pelo menos ' if c.get('ate_o_limite_lido') else ''}{n} {'mês' if n == 1 else 'meses'} seguido{'' if n == 1 else 's'}"
+        itens = "; ".join(f"{c['nome']} {_tempo(c)} ({_moeda(c['saldo_atual'])}, saldo anterior {_moeda(c['saldo_anterior'])})" for c in d["contas"])
+        nomes = ", ".join(c["nome"] for c in d["contas"][:3]) + (f" e mais {len(d['contas']) - 3}" if len(d["contas"]) > 3 else "")
+        titulo = f"Contas com saldo negativo e há quanto tempo — {nomes}"
+        paragrafo = (f"Fecharam o mês com saldo negativo: {itens}. Saldo negativo significa despesas pagas com o caixa de outras contas. "
+                     f"A contagem usa o mês atual e os meses anteriores lidos da pasta do projeto ({d.get('meses_lidos')} meses no máximo); "
+                     f"'pelo menos' indica que a conta já estava negativa em todos os meses lidos.")
+        return titulo, paragrafo, ""
     conta = d.get("conta") or a.linha_demonstrativo or "conta"
     n = d.get("meses_seguidos")
     mais = "pelo menos " if n >= (d.get("meses_lidos") or 0) else ""
