@@ -43,7 +43,7 @@ _RE_PARCELA = re.compile(r"\bPARC(?:ELA)?S?\.?\s*(\d{1,2})\s*(?:/|DE|-)\s*(\d{1,
 # pode ser data ou competência.
 
 
-_RE_NF = re.compile(r"\bNFS?E?\b\.?\s*(?:N[º°O]\.?)?\s*[:.]?\s*(\d{2,})", re.IGNORECASE)
+_RE_NF = re.compile(r"\bNFS?E?\b\.?\s*(?:N[º°O]\.?)?\s*[:.\-]?\s*(\d{2,})", re.IGNORECASE)
 
 
 def nf_da_descricao(descricao: str) -> Optional[str]:
@@ -721,7 +721,10 @@ def _mesma_categoria(a: str, b: str) -> bool:
     if na == nb:
         return True
     curto, longo = sorted((na, nb), key=len)
-    return len(curto) >= _PREFIXO_MINIMO_CATEGORIA and longo.startswith(curto)
+    if len(curto) >= _PREFIXO_MINIMO_CATEGORIA and longo.startswith(curto):
+        return True
+    # cabeçalho do GRUPO x subconta ("CONSUMO" x "CONSUMO DE GAS"): a 1ª palavra inteira do nome mais longo, com 7+ letras, é o mesmo grupo
+    return len(curto) >= 7 and longo.startswith(curto + " ")
 
 
 # Descrição que é SÓ o nome de quem recebe (órgão fiscal/previdenciário), sem dizer o que foi pago: o mesmo nome

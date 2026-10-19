@@ -80,6 +80,49 @@ def _chave_fornecedor(l) -> str:
     return termos(l.descricao or "")[0] if termos(l.descricao or "") else _norm(l.descricao)
 
 
+_GENERICAS = {"MANUTENCAO", "MANUT", "ASSESSORIA", "ADMINISTRACAO", "CONSULTORIA", "LOCACAO", "COMPRA", "MATERIAIS", "MATERIAL", "EQUIPAMENTOS",
+              "EQUIPAMENTO", "SEGURANCA", "ELEVADORES", "ELEVADOR", "LIMPEZA", "PORTARIA", "CONDOMINIO", "PREDIAL", "TECNOLOGIA", "ENGENHARIA",
+              "PRODUTOS", "SERVICOS", "TRANSPORTE", "REFEICAO", "ALIMENTACAO", "GINASTICA", "JARDINAGEM", "PROJETO", "INSTALACAO", "REPARO", "REPAROS",
+              "HONORARIOS", "ADVOCATICIOS", "JURIDICO", "JURIDICOS", "CUSTAS", "REEMBOLSAVEIS", "ADIANTAMENTO"}
+_RE_FOLHA = re.compile(r"^\s*(?:\d+\s*[ºO°]?\s*)?(?:FOLHA\s+DE\s+PAGAMENTO|SALARIO|PRO[\s-]*LABORE|ADIANTAMENTO\s+SALARIAL|VALE\s+TRANSPORTE)\b", re.IGNORECASE)
+
+
+def _termos_forn(txt: str) -> list:
+    return [t for t in re.sub(r"\d+", " ", _norm(txt)).split() if t not in _RUIDO and len(t) > 1]
+
+
+def _trecho_fornecedor(l) -> str:
+    """O pedaço da descrição que NOMEIA o fornecedor (mesma escolha de _chave_fornecedor)."""
+    if l.fornecedor and _termos_forn(l.fornecedor):
+        return l.fornecedor
+    partes = [x.strip() for x in re.split(r"\s+-\s+", l.descricao or "") if x.strip()]
+    ordem = ([partes[1], partes[-1], partes[0]] + partes[2:-1]) if len(partes) >= 3 else partes
+    for trecho in ordem:
+        if _termos_forn(trecho):
+            return trecho
+    return l.descricao or ""
+
+
+def _presente_em(l, outros: list) -> bool:
+    """O fornecedor de `l` aparece (pelo nome, em qualquer descrição) nos lançamentos `outros`? Confere pelas PALAVRAS do nome, não pela
+    chave: o mesmo fornecedor vem escrito de jeitos diferentes entre meses ("USECORP LTDA.." x "USECORP LTDA. - NF 18763. LOCACAO..."),
+    com abreviação (TK = Thyssenkrupp) ou com o mês no meio, e a chave exata gerava falso "fornecedor novo"/"despesa sumiu"."""
+    toks = []
+    for t in _termos_forn(f"{l.fornecedor or ''} {l.descricao or ''}"):
+        t = _sem_acento(t).upper()
+        if (len(t) >= 4 or (not toks and len(t) == 3)) and t not in _GENERICAS and t not in toks                 and not t.startswith(("JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ")):
+            toks.append(t)          # (a 1ª palavra pode ter 3 letras: sigla do fornecedor, ex.: HFX)
+    toks = toks[:3]
+    if not toks:
+        return False
+    precisa = (len(toks) + 1) // 2
+    for o in outros:
+        texto = _norm(f"{o.descricao or ''} {o.fornecedor or ''}")
+        if sum(1 for t in toks if t in texto) >= precisa:
+            return True
+    return False
+
+
 def estabilidade_fornecedores(hist: list) -> Optional[float]:
     """Parcela das chaves de fornecedor do mês mais recente do histórico que também aparecem no mês anterior a ele (None se não há 2 meses).
     Mede se, NESTE formato, o nome do fornecedor é um identificador confiável entre meses."""
@@ -236,8 +279,11 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
 
     ids_novo: set = set()
     if "fornecedor_novo" not in desativar and len(por_mes) >= cfg["meses_minimos_historico"]:
+        lancs_hist = [x for h in hist for x in h.lancamentos]      # inclui retenções (ex.: 'PIS/COFINS/CSLL - NF - FORNECEDOR')
         itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves and not _eventual(l)
-                 and not any(_parecido(chave(l), h) for h in historico_chaves)]
+                 and not any(_parecido(chave(l), h) for h in historico_chaves)
+                 and not _RE_FOLHA.search(_sem_acento(l.descricao or ""))       # funcionário (salário/folha) não é fornecedor
+                 and not _presente_em(l, lancs_hist)]
         if itens:
             ids_novo = {id(l) for l in itens}
             novo("fornecedor_novo", itens, "Fornecedores sem lançamento nos meses anteriores", sum(l.valor for l in itens),
@@ -265,6 +311,8 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 continue
             if any((p := parcela_da_descricao(l.descricao)) and p[0] >= p[1] for l in amostra):
                 continue                                   # série de parcelas que terminou
+            if _presente_em(amostra[0], dados.lancamentos):
+                continue                                   # o fornecedor tem lançamento neste mês (outra competência/NF/descrição)
             faltando.append((k, amostra[0], statistics.median(vals)))
         if faltando:
             achados.append(Achado(
