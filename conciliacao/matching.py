@@ -170,7 +170,10 @@ _RE_BENEFICIO_FUNCIONARIO = re.compile(
     r"|\bSEGUROS?\b|\bAPOLICE\b|\bPREMIO\b", re.IGNORECASE)    # seguro: o documento é a fatura/apólice (IOF), não há nota fiscal de serviço
 
 
-_RE_HONORARIOS_ADVOCATICIOS = re.compile(r"HONORARIO|ADVOCAT|ADVOGAD|\bSOC\.?\s*ADV\b|\bADV\b", re.IGNORECASE)
+# honorários advocatícios/custas e serviço de cartório (emolumento com recibo): o comprovante de pagamento basta, sem nota fiscal
+_RE_HONORARIOS_ADVOCATICIOS = re.compile(
+    r"HONORARIO|ADVOCAT|ADVOGAD|\bSOC\.?\s*ADV\b|\bADV\b|CARTORIO|REGISTRO\s+DE\s+(?:ATA|DOCUMENTO|TITULO)S?|TITULOS\s+E\s+DOCUMENTOS|\bCDT\b",
+    re.IGNORECASE)
 
 
 def _sem_acento_nf(s: str) -> str:

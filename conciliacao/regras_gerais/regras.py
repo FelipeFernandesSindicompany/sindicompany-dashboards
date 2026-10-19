@@ -62,7 +62,7 @@ def parcela_da_descricao(descricao: str) -> Optional[tuple[int, int]]:
 
 
 _RE_LIXO_BASE = re.compile(
-    r"\b(PARC(?:ELA)?S?\.?\s*\d+\s*(?:/|DE|-)\s*\d+|NFS?E?\.?\s*:?\s*\d+|NF\s*N?[ºO°]?\s*\d+|"
+    r"\b(D[EÉ]B\.?\s*C\s*/\s*C\b\.?|PARC(?:ELA)?S?\.?\s*\d+\s*(?:/|DE|-)\s*\d+|NFS?E?\.?\s*:?\s*\d+|NF\s*N?[ºO°]?\s*\d+|"
     r"NOTA FISCAL\s*\d*|\d{1,2}/\d{2,4}|\d{2}\.\d{4}|\d+|"
     r"JAN(?:EIRO)?|FEV(?:EREIRO)?|MAR(?:CO)?|ABR(?:IL)?|MAI(?:O)?|JUN(?:HO)?|JUL(?:HO)?|AGO(?:STO)?|SET(?:EMBRO)?|OUT(?:UBRO)?|NOV(?:EMBRO)?|DEZ(?:EMBRO)?)\b",
     re.IGNORECASE,

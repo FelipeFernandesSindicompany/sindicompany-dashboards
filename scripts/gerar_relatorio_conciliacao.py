@@ -509,7 +509,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
             continue
         for c in confs:
             # "divergencia_real" também vale para itens já classificados (ex.: texto de cartão de crédito que não descreve a situação real)
-            if a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor") and not (c.get("divergencia_real") and a.tipo == "ok_verificado"):
+            if a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor", "nota_fiscal_ausente") and not (c.get("divergencia_real") and a.tipo == "ok_verificado"):
                 continue
             if any(f"cod{c['codigo']}" in k for k in a.registros_relacionados) and abs(a.valor_esperado - c["valor_listagem"]) <= 0.005:
                 if c.get("divergencia_real"):
@@ -518,6 +518,10 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
                     item.update(
                         titulo=c["resumo"], paragrafo=c["como"], revisado_por="humano:conferencia_visual", revisado_em=agora, confianca_ia=1.0,
                         **({"o_que_verificar": c["pergunta"]} if c.get("pergunta") else {}))
+                    if item.get("severidade_final") == "informativo":
+                        # o achado automático estava como "verificado", mas a conferência visual achou uma pendência real: o item volta a aparecer
+                        item.update(severidade_final="atencao", motivo_divergencia_da_sugestao=(
+                            f"Conferência visual do anexo ({c.get('documento', '')}) encontrou uma divergência que a leitura automática não apontou."))
                     n += 1
                     break
                 item.update(
@@ -527,6 +531,38 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
                     motivo_divergencia_da_sugestao=f"Valor conferido visualmente na imagem do anexo ({c['documento']}).")
                 n += 1
                 break
+    return n
+
+
+def _unir_subconta_nova_ja_reportada(achados: list, esqueleto: list) -> int:
+    """O MESMO lançamento (mesmo valor, mesma subconta) não pode aparecer em dois itens do relatório: se o lançamento de uma "Subconta nova
+    neste mês" já está em outro item (ex.: "Comprovante sem anexo"), o item da subconta some e a informação vai como frase no outro item."""
+    def _n(s):
+        return re.sub(r"[^A-Z0-9]", "", (s or "").upper())
+
+    por_id = {a.id: a for a in achados}
+    por_item = {i["achado_id"]: i for i in esqueleto}
+    n = 0
+    for a in achados:
+        det = a.detalhes or {}
+        lancs = det.get("lancamentos") or []
+        if a.tipo != "subconta_atipica" or det.get("reorganizacao") or len(lancs) != 1:
+            continue
+        item_sub = por_item.get(a.id)
+        if item_sub is None or item_sub.get("severidade_final") == "informativo":
+            continue
+        valor, cat = round(lancs[0].get("valor") or 0.0, 2), _n(det.get("categoria"))
+        hospedeiro = next((o for o in achados if o.id != a.id and o.tipo in ("sem_comprovante", "nota_fiscal_ausente", "divergencia_valor", "conteudo_nao_verificavel")
+                           and o.valor_esperado is not None and abs(round(o.valor_esperado, 2) - valor) <= 0.01 and _n(o.linha_demonstrativo) == cat
+                           and por_item.get(o.id) and por_item[o.id].get("severidade_final") != "informativo"), None)
+        if hospedeiro is None:
+            continue
+        item_host = por_item[hospedeiro.id]
+        item_host["paragrafo"] = (item_host["paragrafo"].rstrip() + f" Este lançamento também está em subconta nova neste mês ({det.get('categoria')}), "
+                                  f"que não existia no mês anterior.")
+        item_sub["severidade_final"] = "informativo"
+        item_sub["motivo_divergencia_da_sugestao"] = f"Mesmo lançamento já reportado no item {hospedeiro.id}; informação incorporada lá."
+        n += 1
     return n
 
 
@@ -547,6 +583,7 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
+    _unir_subconta_nova_ja_reportada(achados, esqueleto)
     if n_visuais:
         print(f"[OK] {n_visuais} achado(s) tratados como VERIFICADOS por conferência visual do anexo "
               f"(data/<condomínio>/conferencias_visuais/{mes}.json).")

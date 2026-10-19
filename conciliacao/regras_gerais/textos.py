@@ -4,6 +4,8 @@ Narrativa (título, parágrafo, "o que verificar") dos achados das regras gerais
 Estilo definido pelo usuário nos relatórios do Club Park: dizer o fato com os números e
 perguntar à administradora — nunca afirmar uma causa que o arquivo não mostra.
 """
+import re
+
 from conciliacao.base import Achado
 
 
@@ -335,6 +337,17 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         if d.get("redondos"):
             par += f" O valor {', '.join(_moeda(x) for x in d['redondos'])} é redondo (centenas exatas) e não se repetia em meses anteriores — pode ser orçamento/sinal fechado ou estimativa."
         ver = "Como foi a contratação desse fornecedor novo (cotações, aprovação do síndico/conselho) e onde está a nota fiscal?" + _ver_ordinaria(d)
+        lancs = d.get("lancamentos") or []
+        projetos = [l for l in lancs if re.search(r"\bPROJETO\b", (l.get("descricao") or "").upper())]
+        if projetos:
+            # locação/contrato de "projeto" (ex.: projeto de segurança): a pergunta é sobre o fim do projeto e as parcelas, não sobre a contratação
+            pergunta_projeto = ("Esse projeto já acabou? Quantas parcelas já foram pagas (identificar o número de parcelas no lançamento)?")
+            if len(projetos) == len(lancs):
+                ver = pergunta_projeto
+            else:
+                nomes = "; ".join((l.get("descricao") or "").strip() for l in projetos)
+                ver = (f"Em relação aos demais fornecedores: como foi a contratação (cotações, aprovação do síndico/conselho) e onde está a nota fiscal? "
+                       f"Em relação ao projeto ({nomes}): {pergunta_projeto}") + _ver_ordinaria(d)
     elif v == "recorrente_ausente":
         itens = d.get("ausentes") or []
         lista = "; ".join(f"{i['descricao']} (mediana {_moeda(i['mediana'])})" for i in itens[:6])
@@ -350,11 +363,17 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         for i in acumulos:
             comps = ", ".join(i.get("competencias") or [])
             datas = "; ".join(f"{q} em {dt}" for dt, q in (i.get("datas") or {}).items())
-            partes_par.append(
-                f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, cada um de {_moeda(i['valor_unitario'])} (o valor mensal de sempre; mediana dos "
-                f"meses anteriores {_moeda(i['mediana'])}), totalizando {_moeda(i['valor'])}" + (f", referentes às competências {comps}" if comps else "")
-                + (f" e pagos nas datas: {datas}" if datas else "")
-                + ". Não é aumento de valor: são pagamentos de meses anteriores feitos juntos neste mês.")
+            if i.get("sem_comparacao") or i.get("mediana") is None:
+                partes_par.append(
+                    f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, cada um de {_moeda(i['valor_unitario'])}, totalizando {_moeda(i['valor'])}"
+                    + (f", referentes às competências {comps}" if comps else "") + (f" e pagos nas datas: {datas}" if datas else "")
+                    + ". Há mais de uma competência paga no mesmo mês, incluindo meses anteriores.")
+            else:
+                partes_par.append(
+                    f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, cada um de {_moeda(i['valor_unitario'])} (o valor mensal de sempre; mediana dos "
+                    f"meses anteriores {_moeda(i['mediana'])}), totalizando {_moeda(i['valor'])}" + (f", referentes às competências {comps}" if comps else "")
+                    + (f" e pagos nas datas: {datas}" if datas else "")
+                    + ". Não é aumento de valor: são pagamentos de meses anteriores feitos juntos neste mês.")
         if outros:
             lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])})" for i in outros[:6])
             partes_par.append(f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}.")
@@ -371,7 +390,10 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
                               f"na mesma data)? Houve atraso no pagamento, multa ou juros, e as notas dos meses anteriores já estavam em aberto?")
         if outros:
             partes_ver.append("Qual a justificativa do aumento (reajuste, serviço extra, acúmulo de meses)? Podem enviar a nota fiscal?")
-        if acumulos and not outros:
+        if acumulos and not outros and all(i.get("sem_comparacao") or i.get("mediana") is None for i in acumulos):
+            titulo = pre + (f"{acumulos[0]['descricao']}: {acumulos[0]['n']} competências pagas no mesmo mês ({total})"
+                            if len(acumulos) == 1 else f"{len(acumulos)} fornecedores com mais de uma competência paga neste mês ({total})")
+        elif acumulos and not outros:
             titulo = pre + (f"{acumulos[0]['descricao']}: {acumulos[0]['n']} meses pagos juntos em um só mês ({total}) — pagamentos de meses anteriores, não aumento"
                             if len(acumulos) == 1 else f"{len(acumulos)} fornecedores com meses anteriores pagos juntos neste mês ({total}) — não é aumento")
         else:

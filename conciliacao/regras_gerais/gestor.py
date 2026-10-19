@@ -144,6 +144,31 @@ def _parecido(a: str, b: str) -> bool:
     return difflib.SequenceMatcher(None, a, b).ratio() >= 0.88
 
 
+_RE_NATUREZA = re.compile(r"^(INSTALA\w*|IMPLANTA\w*|MANUT\w*|LOCA\w*|REPAR\w*|CONSERT\w*|REFORM\w*|TROCA\w*|PROJETO\w*|COMPRA\w*|MATERIA\w*|"
+                          r"ADIANT\w*|OBRA\w*|CONTRAT\w*|SUBSTITUI\w*)$")
+
+
+def _objeto(l, chave) -> set:
+    """Palavras da descrição que dizem O QUE foi pago (sem o nome do fornecedor, números, meses e ruído)."""
+    termos = [t for t in re.sub(r"\d+", " ", _norm(l.descricao or "")).split() if t not in _RUIDO and len(t) > 1]
+    return {t for t in termos if t not in set(chave(l).split())}
+
+
+def _semelhante(a, b, chave) -> bool:
+    """Dois lançamentos do mesmo fornecedor são do MESMO tipo de serviço? Natureza diferente (instalação x manutenção x locação...) ou objeto
+    sem nenhuma palavra em comum (postagens x tarifas) = comparação inválida."""
+    oa, ob = _objeto(a, chave), _objeto(b, chave)
+    na = {t[:5] for t in oa if _RE_NATUREZA.match(t)}
+    nb = {t[:5] for t in ob if _RE_NATUREZA.match(t)}
+    if na and nb and not (na & nb):
+        return False
+    ra = {t[:6] for t in oa if not _RE_NATUREZA.match(t)}      # raiz de 6 letras: ELEVADOR = ELEVADORES
+    rb = {t[:6] for t in ob if not _RE_NATUREZA.match(t)}
+    if not ra or not rb:
+        return True
+    return len(ra & rb) / len(ra | rb) >= 0.34
+
+
 def _estrutural(l) -> bool:
     c = _norm(l.categoria)
     return c.startswith(("TRANSFERENCIA", "APLICACAO RESGATE")) or bool(_RE_RETENCAO.search(_sem_acento(l.descricao or "")))
@@ -206,7 +231,8 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
 
     def _redondo(l) -> bool:
         return (l.valor >= cfg["valor_redondo_min"] and round(l.valor * 100) % 10000 == 0
-                and round(l.valor, 2) not in valores_antes and not parcela_da_descricao(l.descricao))
+                and round(l.valor, 2) not in valores_antes and not parcela_da_descricao(l.descricao)
+                and not nf_da_descricao(l.descricao or ""))     # com nº de NF na descrição o valor veio da nota: redondo não é indício
 
     ids_novo: set = set()
     if "fornecedor_novo" not in desativar and len(por_mes) >= cfg["meses_minimos_historico"]:
@@ -249,25 +275,46 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                           "lancamentos": []}))
 
     if "valor_atipico" not in desativar and hist:
-        totais_hist: dict = {}
-        for h in hist:
-            soma: dict = {}
-            for l in _lancamentos_validos(h):
-                soma[chave(l)] = soma.get(chave(l), 0.0) + l.valor
-            for k, v in soma.items():
-                totais_hist.setdefault(k, []).append(v)
-        total_atual: dict = {}
+        # Compara semelhante com semelhante: o mesmo fornecedor pode prestar serviços de natureza diferente (instalação x manutenção) e o nome
+        # abreviado ("DESPESAS COM ...") junta objetos que nada têm a ver (postagens x tarifas). Cada grupo é comparado só com os
+        # lançamentos do histórico que têm o mesmo fornecedor E o mesmo tipo de serviço (ver _semelhante).
+        grupos: list = []
         for l in atuais:
-            if not parcela_da_descricao(l.descricao) and not _eventual(l):
-                total_atual[chave(l)] = total_atual.get(chave(l), 0.0) + l.valor
+            if parcela_da_descricao(l.descricao) or _eventual(l):
+                continue
+            for rep, membros in grupos:
+                if chave(rep) == chave(l) and _semelhante(rep, l, chave):
+                    membros.append(l)
+                    break
+            else:
+                grupos.append((l, [l]))
         itens, medianas = [], []
-        for k, v in total_atual.items():
-            vs = totais_hist.get(k, [])
+        for rep, ls in grupos:
+            k = chave(rep)
+            v = sum(x.valor for x in ls)
+            vs = []
+            for h in hist:
+                s = sum(x.valor for x in _lancamentos_validos(h) if chave(x) == k and _semelhante(rep, x, chave))
+                if s > _CENTAVO:
+                    vs.append(s)
             if len(vs) < 2:
+                # Sem histórico comparável do mesmo serviço não dá para falar em "valor acima do histórico", mas várias competências pagas
+                # juntas no mês (valores iguais, com meses anteriores) continuam sendo um fato do próprio arquivo.
+                comps0 = _competencias_num(ls)
+                valores0 = [x.valor for x in ls]
+                mes_num0 = (int(dados.mes[:4]), int(dados.mes[5:7]))
+                # (pagar no mês a competência do mês anterior é o normal; só vale quando 2+ competências são de meses ANTERIORES ao atual)
+                if (len(ls) >= 2 and len(comps0) >= 2 and sum(1 for ym, _ in comps0 if ym < mes_num0) >= 2
+                        and (max(valores0) - min(valores0)) <= 0.15 * (sum(valores0) / len(valores0))):
+                    datas0: dict = {}
+                    for x in ls:
+                        datas0[x.data or "sem data"] = datas0.get(x.data or "sem data", 0) + 1
+                    itens += ls
+                    medianas.append({"descricao": k, "valor": round(v, 2), "mediana": None, "acumulo": True, "sem_comparacao": True, "n": len(ls),
+                                     "valor_unitario": round(sum(valores0) / len(valores0), 2), "competencias": [r for _, r in comps0], "datas": datas0})
                 continue
             m = statistics.median(vs)
             if m > _CENTAVO and v >= cfg["atipico_fator"] * m and v - m >= cfg["atipico_diferenca_min"]:
-                ls = [l for l in atuais if chave(l) == k and not parcela_da_descricao(l.descricao)]
                 itens += ls
                 item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2)}
                 # Total alto porque vários meses foram pagos de uma vez (cada lançamento no valor mensal de sempre): não é aumento de valor,
@@ -282,8 +329,10 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 mes_atual_num = (int(dados.mes[:4]), int(dados.mes[5:7]))
                 anteriores = [rotulo for (ym, rotulo) in comps if ym < mes_atual_num]
                 if len(ls) >= 2 and len(comps) >= 2 and (max(valores) - min(valores)) <= 0.15 * (sum(valores) / len(valores)):
-                    item.update(acumulo=True, n=len(ls), valor_unitario=round(sum(valores) / len(valores), 2),
-                                competencias=[r for _, r in comps], datas=datas)
+                    unit = sum(valores) / len(valores)
+                    item.update(acumulo=True, n=len(ls), valor_unitario=round(unit, 2),
+                                competencias=[r for _, r in comps], datas=datas,
+                                sem_comparacao=abs(unit - m) > 0.15 * m)     # só diz "valor mensal de sempre" quando a mediana confirma
                 elif len(anteriores) >= 2:
                     item.update(competencias_anteriores=anteriores, n=len(ls), datas=datas)
                 medianas.append(item)
