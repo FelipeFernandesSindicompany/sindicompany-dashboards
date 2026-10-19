@@ -421,6 +421,18 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
                                f"Podem encaminhá-los?")
             base["confianca_ia"] = 1.0
             base["revisado_por"] = "sistema:regra_deterministica"
+        elif achado.tipo == "conta_concessionaria_nao_anexada":
+            itens = (achado.detalhes or {}).get("itens") or []
+            lista = "; ".join(f"cód. {i['codigo']} — {i['descricao'].strip()} ({_fmt_moeda(i['valor'])})" for i in itens)
+            titulo = f"Conta (fatura) de concessionária não anexada — {len(itens)} lançamento(s) ({_fmt_moeda(achado.valor_encontrado)})"
+            paragrafo = (
+                f"Em {len(itens)} lançamento(s) de concessionárias (energia, água, gás, telefone/internet; total {_fmt_moeda(achado.valor_encontrado)}) "
+                f"o anexo é apenas a confirmação do pagamento — a conta (fatura) com o consumo e o vencimento não está anexada. Lançamentos: {lista}."
+            )
+            o_que_verificar = (f"Podem enviar a conta (fatura) de cada um desses {len(itens)} lançamento(s) de concessionária, "
+                               f"para conferirmos o consumo, o vencimento e o valor cobrado?")
+            base["confianca_ia"] = 1.0
+            base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "sem_comprovante":
             titulo, paragrafo, o_que_verificar = _texto_sem_comprovante(achado, registro)
         elif achado.tipo == "divergencia_valor":

@@ -31,6 +31,7 @@ Uso:
 """
 import argparse
 import json
+import re
 import shutil
 import sys
 import time
@@ -52,6 +53,7 @@ from conciliacao.matching import (
     gerar_achados_balancete_mensal, gerar_achados_palm_beach, gerar_achados_planilha_com_links,
 )
 from conciliacao import interpretacao
+from conciliacao import matching
 from conciliacao import render
 from conciliacao import analise_financeira
 from conciliacao import demonstrativo_reader
@@ -503,10 +505,21 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
     n = 0
     for item in esqueleto:
         a = por_id.get(item["achado_id"])
-        if a is None or a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor") or a.valor_esperado is None:
+        if a is None or a.valor_esperado is None:
             continue
         for c in confs:
+            # "divergencia_real" também vale para itens já classificados (ex.: texto de cartão de crédito que não descreve a situação real)
+            if a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor") and not (c.get("divergencia_real") and a.tipo == "ok_verificado"):
+                continue
             if any(f"cod{c['codigo']}" in k for k in a.registros_relacionados) and abs(a.valor_esperado - c["valor_listagem"]) <= 0.005:
+                if c.get("divergencia_real"):
+                    # a imagem foi lida e a divergência é REAL (o comprovante é legível): tira o aviso de "possível erro de OCR", mantém a
+                    # gravidade e a pergunta à administradora (pode vir reescrita em "pergunta")
+                    item.update(
+                        titulo=c["resumo"], paragrafo=c["como"], revisado_por="humano:conferencia_visual", revisado_em=agora, confianca_ia=1.0,
+                        **({"o_que_verificar": c["pergunta"]} if c.get("pergunta") else {}))
+                    n += 1
+                    break
                 item.update(
                     titulo=f"Conferido visualmente no anexo — {c['resumo']}",
                     paragrafo=c["como"], o_que_verificar="Nenhuma ação necessária.", severidade_final="informativo",
@@ -525,6 +538,13 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
 
     achados = storage.read_dataclass_list(version_dir / "achados_brutos.json", Achado)
     registros = storage.read_dataclass_list(version_dir / "registros_comprovantes.json", RegistroComprovante)
+    # conta (fatura) de concessionária: regra geral, calculada aqui a partir dos registros já lidos (idempotente)
+    achados = [a for a in achados if a.tipo != "conta_concessionaria_nao_anexada"]
+    _prox = max([int(a.id.split("-")[1]) for a in achados if re.match(r"ACH-[0-9]+$", a.id)] + [0]) + 1
+    _conta = matching.achado_conta_concessionaria_nao_anexada(registros, achados, _prox)
+    if _conta is not None:
+        achados.append(_conta)
+    storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
     if n_visuais:
@@ -537,6 +557,18 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     print(f"[OK] Esqueleto gravado em {version_dir / 'achados_revisados.json'} "
           f"(narrativa gerada automaticamente para os {len(esqueleto)} achado(s) — nenhuma revisão manual necessária).")
     return version_dir
+
+
+def _aviso_escopo_sem_comprovantes(registros: list) -> str | None:
+    """Regra geral (decisão do dono): se o arquivo lista despesas mas NENHUM comprovante veio anexado, o relatório sempre avisa que os
+    comprovantes não foram validados porque a administradora não enviou o arquivo com eles."""
+    if (any(r.tipo_documento == "despesa_listada" for r in registros)
+            and not any(r.tipo_documento == "comprovante_anexado" for r in registros)):
+        return ("Os comprovantes e notas fiscais não foram validados, pois o arquivo com os comprovantes não foi enviado pela Administradora "
+                "(o arquivo recebido traz a listagem das despesas, sem os comprovantes anexados). Por isso esta validação conferiu somente os "
+                "valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja "
+                "integralmente correto.")
+    return None
 
 
 def etapa_render(condo: dict, mes: str) -> Path:
@@ -909,7 +941,8 @@ def etapa_render(condo: dict, mes: str) -> Path:
         achados=achados_render,
         analise=analise,
         categorias_novas=categorias_novas_lista,
-        aviso_escopo=(condo.get("aviso_escopo") or (condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "") or None),
+        aviso_escopo=(condo.get("aviso_escopo") or (condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "")
+                      or _aviso_escopo_sem_comprovantes(registros) or None),
         gerado_em=datetime.now().strftime("%d/%m/%Y"),
     )
 

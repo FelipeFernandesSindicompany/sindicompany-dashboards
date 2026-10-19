@@ -58,10 +58,61 @@ def _totais_demonstrativos(caminho: Path) -> list[tuple[int, str, float]]:
     return out
 
 
+_RE_DATA_CURTA = re.compile(r"^\d{2}/\d{2}/\d{2}$")
+_RE_VALOR_LINHA = re.compile(r"^\d{1,3}(?:\.\d{3})*,\d{2}$")
+_RE_ITENS = re.compile(r"^\d+ itens$")
+_RODAPE_HSA = ("HSA CONDOM", "Rua da Consola", "(11) 3125", "Doc.", "Liquid.", "Fornecedor", "Ch.", "Valor liqu")
+
+
+def _lancamentos_despesas_liquidadas(caminho: Path) -> list[RegistroComprovante]:
+    """Arquivo reduzido da HSA (sem as capas "Comprovantes de despesas"): a listagem "Despesas liquidadas" (W014C) traz uma linha por
+    pagamento — [doc], data de liquidação, fornecedor (1 a 3 linhas), [cheque], valor — e fecha com "N itens TOTAL". Cada linha vira um
+    lançamento listado (sem comprovante), para a soma e a duplicidade poderem ser conferidas."""
+    import fitz
+
+    saida: list[RegistroComprovante] = []
+    with fitz.open(str(caminho)) as doc:
+        dentro = False
+        estado, doc_nf, data, forn = "pre", [], None, []
+        for i, page in enumerate(doc):
+            for bruto in page.get_text().splitlines():
+                linha = bruto.strip()
+                if "Despesas liquidadas" in linha:
+                    dentro = True
+                    continue
+                if not dentro:
+                    continue
+                if _RE_ITENS.match(linha):
+                    return saida
+                if not linha or linha.startswith(_RODAPE_HSA) or linha.startswith("W0") or linha.startswith("Entre "):
+                    continue
+                if estado == "pre":
+                    if _RE_DATA_CURTA.match(linha):
+                        data, forn, estado = linha, [], "forn"
+                    else:
+                        doc_nf.append(linha)
+                elif estado == "forn":
+                    if _RE_VALOR_LINHA.match(linha):
+                        valor = _num(linha)
+                        nome = " ".join(forn).strip()
+                        saida.append(RegistroComprovante(
+                            pagina=i + 1, tipo_documento="despesa_listada", codigo=str(len(saida) + 1), descricao=nome, fornecedor=nome,
+                            vencimento=data, pagamento=data, valor=valor, autenticacao=(doc_nf[-1] if doc_nf else None),
+                            texto_bruto=f"{data} | {nome} | {linha}"))
+                        estado, doc_nf, data, forn = "pre", [], None, []
+                    else:
+                        forn.append(linha)
+    return saida
+
+
 class Conciliador(ConciliadorGcontNativo):
     def extrair_comprovantes(self, caminho) -> list:
         registros = super().extrair_comprovantes(caminho)
         if not any(r.tipo_documento == "despesa_com_comprovante" for r in registros):
+            try:
+                registros = registros + _lancamentos_despesas_liquidadas(Path(caminho))
+            except Exception as exc:
+                print(f"[AVISO] não foi possível ler a listagem 'Despesas liquidadas': {exc}")
             return registros
         if any(r.tipo_documento == "total_declarado" for r in registros):
             return registros

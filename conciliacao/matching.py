@@ -170,6 +170,9 @@ _RE_BENEFICIO_FUNCIONARIO = re.compile(
     r"|\bSEGUROS?\b|\bAPOLICE\b|\bPREMIO\b", re.IGNORECASE)    # seguro: o documento é a fatura/apólice (IOF), não há nota fiscal de serviço
 
 
+_RE_HONORARIOS_ADVOCATICIOS = re.compile(r"HONORARIO|ADVOCAT|ADVOGAD|\bSOC\.?\s*ADV\b|\bADV\b", re.IGNORECASE)
+
+
 def _sem_acento_nf(s: str) -> str:
     import unicodedata
     return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
@@ -215,6 +218,9 @@ def achado_nota_fiscal_ausente(
     # NÃO emitem nota fiscal para esses benefícios — o nº que a listagem cita é o do documento/fatura de cobrança, e cobrar "Nota Fiscal
     # anexada" aqui é alerta falso.
     if _RE_BENEFICIO_FUNCIONARIO.search(_sem_acento_nf(f"{categoria or ''} {descricao or ''}")):
+        return None
+    # Honorários advocatícios / custas: o prestador pode ou não emitir nota fiscal — o comprovante de pagamento basta (decisão do dono).
+    if _RE_HONORARIOS_ADVOCATICIOS.search(_sem_acento_nf(f"{categoria or ''} {descricao or ''}")):
         return None
     texto_comp = texto_comprovante or ""
     if len(texto_comp) < _TAMANHO_MINIMO_TEXTO_CONFIAVEL:
@@ -1313,7 +1319,8 @@ def gerar_achados_gcont(
     contador = [0]
     achados: list[Achado] = []
 
-    despesas = [r for r in registros if r.tipo_documento == "despesa_com_comprovante"]
+    # (HSA reduzido, sem as capas de comprovante: "despesa_listada" = linha da listagem "Despesas liquidadas")
+    despesas = [r for r in registros if r.tipo_documento in ("despesa_com_comprovante", "despesa_listada")]
     # "total_declarado" = Livro Caixa (Club Park, Saint Afonso); "total_demonstrativos_declarado" =
     # soma dos "Total de DESPESAS" dos Demonstrativos Analíticos (HSA, ex.: I-Gloo Alphaville).
     totais_declarados = [r for r in registros
@@ -1618,12 +1625,14 @@ def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
             # A guia paga mais do que os lançamentos listados que apontam para ela: em vez de N "valor diverge" (um por lançamento, todos
             # comparados com o total da guia), UM achado só — a guia não fecha com a soma — e a pergunta é sobre a diferença.
             primeiro = membros[0][0]
+            valores_originais = [round(m.valor_esperado or 0.0, 2) for m, _ in membros]   # antes de sobrescrever o do primeiro com a soma
             primeiro.regra_aplicada = "guia_consolidada_nao_fecha_com_a_soma_dos_lancamentos"
             primeiro.valor_esperado = round(soma, 2)
             primeiro.valor_encontrado = round(total, 2)
             primeiro.registros_relacionados = [k for m, _ in membros for k in m.registros_relacionados]
             primeiro.detalhes = {**(primeiro.detalhes or {}), "n": len(membros), "soma": round(soma, 2), "total": round(total, 2),
-                                 "itens": [{"descricao": (d.descricao or "")[:90], "valor": round(m.valor_esperado or 0.0, 2)} for m, d in membros]}
+                                 "itens": [{"descricao": ((d.descricao or next((r.descricao for r in registros if r.tipo_documento == "despesa_listada" and r.codigo == d.codigo and r.descricao), None)
+                                          or f"cód. {d.codigo}"))[:90], "valor": valores_originais[k]} for k, (m, d) in enumerate(membros)]}
             for m, _ in membros[1:]:
                 m.tipo = "ok_verificado"          # absorvidos pelo achado agregado (não aparecem como itens)
                 m.severidade_sugerida = "informativo"
@@ -1717,10 +1726,12 @@ _RE_VALOR_EXTRATO = re.compile(r"(-?)\s?R\$\s?(\d{1,3}(?:\.\d{3})*,\d{2})")
 _cache_extrato: dict = {}
 
 
-def _pagamentos_do_extrato(arquivo, pagina: int):
-    """OCR (psm 4, 250 dpi) da página `pagina` (1-based) de um extrato de conta (ex.: Banco Inter) e leitura das
-    saídas ('-R$ x') de cada dia. Devolve {'dd/mm/aaaa': [valores]} ou None se o OCR não está disponível/falhou."""
-    chave = (str(arquivo), pagina)
+def _pagamentos_do_extrato(arquivo, paginas):
+    """OCR (psm 4, 250 dpi) das páginas `paginas` (1-based; o extrato anexado pode ter 2+ páginas — o dia corrente continua de uma
+    página para a outra) de um extrato de conta (ex.: Banco Inter) e leitura das saídas ('-R$ x') de cada dia.
+    Devolve {'dd/mm/aaaa': [valores]} ou None se o OCR não está disponível/falhou."""
+    paginas = [paginas] if isinstance(paginas, int) else list(paginas)
+    chave = (str(arquivo), tuple(paginas))
     if chave in _cache_extrato:
         return _cache_extrato[chave]
     saidas = None
@@ -1732,19 +1743,20 @@ def _pagamentos_do_extrato(arquivo, pagina: int):
         from conciliacao import ocr
         if ocr.tesseract_disponivel():
             doc = fitz.open(str(arquivo))
-            img = Image.open(io.BytesIO(doc[pagina - 1].get_pixmap(dpi=250).tobytes("png")))
-            texto = pytesseract.image_to_string(img, lang="por", config="--psm 4")
             saidas, dia = {}, None
-            for linha in texto.splitlines():
-                m = _RE_DIA_EXTRATO.search(linha)
-                if m:
-                    mes = _MESES_PT.get(unicodedata.normalize("NFKD", m.group(2)).encode("ascii", "ignore").decode().lower())
-                    dia = f"{int(m.group(1)):02d}/{mes:02d}/{m.group(3)}" if mes else None
-                    saidas.setdefault(dia, []) if dia else None
-                    continue
-                v = _RE_VALOR_EXTRATO.search(linha)
-                if dia and v and v.group(1) == "-":        # 1º valor da linha = o da transação; negativo = saída
-                    saidas[dia].append(round(float(v.group(2).replace(".", "").replace(",", ".")), 2))
+            for pagina in paginas:
+                img = Image.open(io.BytesIO(doc[pagina - 1].get_pixmap(dpi=250).tobytes("png")))
+                texto = pytesseract.image_to_string(img, lang="por", config="--psm 4")
+                for linha in texto.splitlines():
+                    m = _RE_DIA_EXTRATO.search(linha)
+                    if m:
+                        mes = _MESES_PT.get(unicodedata.normalize("NFKD", m.group(2)).encode("ascii", "ignore").decode().lower())
+                        dia = f"{int(m.group(1)):02d}/{mes:02d}/{m.group(3)}" if mes else None
+                        saidas.setdefault(dia, []) if dia else None
+                        continue
+                    v = _RE_VALOR_EXTRATO.search(linha)
+                    if dia and v and v.group(1) == "-":        # 1º valor da linha = o da transação; negativo = saída
+                        saidas[dia].append(round(float(v.group(2).replace(".", "").replace(",", ".")), 2))
     except Exception:
         saidas = None
     _cache_extrato[chave] = saidas
@@ -1766,7 +1778,7 @@ def conferir_extrato_bancario(achados: list, registros: list, arquivo) -> list:
         d = next((desp_por_chave[k] for k in a.registros_relacionados if k in desp_por_chave), None)
         if comp is None or d is None or "saldo do dia" not in (comp.texto_bruto or "").lower():
             continue
-        saidas = _pagamentos_do_extrato(arquivo, comp.pagina)
+        saidas = _pagamentos_do_extrato(arquivo, [n for n, _ in _lp.paginas_do_texto_bruto(comp.texto_bruto)] or [comp.pagina])
         if not saidas:
             continue
         dia = d.vencimento if re.fullmatch(r"\d{2}/\d{2}/\d{4}", d.vencimento or "") else None
@@ -1874,3 +1886,101 @@ def gerar_achados_ucondo(registros, dados_financeiros=None, pasta_dados=None, me
     for i, a in enumerate(achados, 1):
         a.id = f"ACH-{i:04d}"
     return achados
+
+
+# ── Conta (fatura) de concessionária: sempre pedir (decisão do dono) ────────────────────────────────────────────────
+# Vale para QUALQUER formato: lançamento de Vivo, Claro, Sabesp, Enel, Comgás (e equivalentes) cujo anexo é só a confirmação
+# bancária / linha de extrato — sem a conta com consumo e vencimento. Vira UM achado por relatório, com a lista dos lançamentos.
+# Só dispara quando o anexo foi LIDO (nenhuma página ilegível): "não achamos a conta" nunca é afirmado sobre página que o OCR
+# não conseguiu ler.
+_RE_CONCESSIONARIA_NOMEADA = re.compile(
+    r"\b(?:ENEL|ELETROPAULO|SABESP|COMGAS|NATURGY|VIVO|CLARO|TELEFONICA|NET|TIM|CPFL|ENERGISA)\b")
+_RE_CONCESSIONARIA_GENERICA = re.compile(
+    r"^\s*(?:\d{2}/\d{2}/\d{4}\s+)?(?:ENERGIA\s+ELETRICA|AGUA\s*(?:E|/)\s*ESGOTO|GAS)\s*-\s")
+_RE_FATURA_MARCADOR = re.compile(
+    r"\bFATURA\b|NOTA\s+FISCAL|CONTA\s+DE\s+(?:ENERGIA|AGUA|GAS|TELEFONE|LUZ)|\bLEITURA\b|NUMERO\s+DA\s+INSTALA|"
+    r"CODIGO\s+(?:DO\s+CLIENTE|DE\s+INSTALA)|NUMERO\s+DO\s+CLIENTE|CONSUMO\s+(?:EM|FATURADO|MEDIDO|KWH|M3)|"
+    r"HISTORICO\s+DE\s+CONSUMO|DEMONSTRATIVO\s+DE\s+CONSUMO|TOTAL\s+(?:A\s+PAGAR|DA\s+FATURA)|VALOR\s+DA\s+FATURA", re.IGNORECASE)
+
+
+_RE_CONTADOR_PAGINAS = re.compile(r"(?<![\d/.,])0?(\d{1,2})/0?(\d{1,2})(?![\d/.,])")
+_RE_PAGINA_EXTRATO_RAZAO = re.compile(r"Rela[cç][aã]o\s+de\s+Lan[cç]amentos|EXTRATO", re.IGNORECASE)
+
+
+def _eh_concessionaria(desp) -> bool:
+    d = _normalizar_texto(f"{desp.descricao or ''} {desp.fornecedor or ''}")
+    return bool(_RE_CONCESSIONARIA_NOMEADA.search(d) or _RE_CONCESSIONARIA_GENERICA.search(_normalizar_texto(desp.descricao or "")))
+
+
+def _situacao_conta_no_anexo(comps: list, valor) -> str:
+    """'conta' (há página com a conta), 'so_pagamento' (só confirmação bancária/boleto/linha de extrato) ou 'desconhecida'."""
+    from conciliacao import ocr as _ocr
+    pagamento_ou_extrato = 0
+    # a capa do comprovante declara "01/02" = o anexo tem 2 páginas: se só a 1ª foi lida, a conta pode estar na página não lida
+    declaradas, lidas = 0, 0
+    for c in comps:
+        for m in _RE_CONTADOR_PAGINAS.finditer(c.texto_bruto or ""):
+            a, b = int(m.group(1)), int(m.group(2))
+            if 1 <= a <= b <= 30:
+                declaradas = max(declaradas, b)
+        lidas += len(_lp.paginas_do_texto_bruto(c.texto_bruto)) or 1
+    if declaradas > lidas:
+        return "desconhecida"
+    for c in comps:
+        texto = c.texto_bruto or ""
+        paginas = _lp.paginas_do_texto_bruto(texto) or [(0, texto)]
+        for _p, t in paginas:
+            if len(t.strip()) < 10:
+                return "desconhecida"
+            if _RE_FATURA_MARCADOR.search(_normalizar_texto(t)):
+                return "conta"      # a página (mesmo junto de um comprovante) traz a conta: consumo, leitura, fatura...
+            if len(t) >= 1800 and _ocr._pontuacao_texto(t) >= 8:
+                return "conta"                 # página muito longa: comprovante bancário nunca chega a esse tamanho
+            if _lp.eh_pagina_pagamento(t):
+                pagamento_ou_extrato += 1
+                continue
+            if _RE_PAGINA_EXTRATO_RAZAO.search(t) or _lp._RE_PAGINA_BOLETO.search(t):
+                pagamento_ou_extrato += 1      # razão/extrato ou boleto: não é a conta de consumo
+                continue
+            if len(t) >= 300 and _ocr._pontuacao_texto(t) >= 8:
+                return "conta"                 # página legível que não é comprovante, boleto nem extrato: é o documento da concessionária
+            curto_com_valor = len(t) < 60 and valor is not None and _lp.valor_aparece_no_texto(t, valor)
+            if not curto_com_valor and (len(t) < 60 or _ocr._pontuacao_texto(t) < 8):
+                return "desconhecida"
+            pagamento_ou_extrato += 1
+    return "so_pagamento" if pagamento_ou_extrato else "desconhecida"
+
+
+def achado_conta_concessionaria_nao_anexada(registros: list, achados_existentes: list, proximo_numero: int):
+    comp_por_cod: dict = {}
+    for r in registros:
+        if r.tipo_documento == "comprovante_anexado":
+            comp_por_cod.setdefault(r.codigo, []).append(r)
+    tem_doc_original = any(a.tipo == "documento_original_nao_enviado" for a in achados_existentes)
+    ja_tem_achado = set()
+    for a in achados_existentes:
+        if a.tipo in ("conteudo_nao_verificavel", "sem_comprovante", "divergencia_valor"):
+            ja_tem_achado.update(a.registros_relacionados)
+    itens, relacionados = [], []
+    for d in registros:
+        if d.tipo_documento != "despesa_listada" or not _eh_concessionaria(d):
+            continue
+        comps = comp_por_cod.get(d.codigo)
+        if not comps or any(chave_registro(c) in ja_tem_achado for c in comps) or chave_registro(d) in ja_tem_achado:
+            continue
+        if tem_doc_original and any("não foi enviado para a administradora" in (c.texto_bruto or "").lower() for c in comps):
+            continue
+        if _situacao_conta_no_anexo(comps, d.valor) != "so_pagamento":
+            continue
+        desc = re.sub(r"^(?:\d{6,}\s+)?\d{2}/\d{2}/\d{4}\s+", "", d.descricao or "")
+        desc = re.sub(r"(\s+\d{1,3}(?:\.\d{3})*,\d{2})+(\s+\d{1,5})?\s*$", "", desc).strip()
+        itens.append({"codigo": d.codigo, "descricao": desc[:60], "valor": round(d.valor or 0.0, 2), "pagina": d.pagina})
+        relacionados.append(chave_registro(comps[0]))
+    if not itens:
+        return None
+    total = round(sum(i["valor"] for i in itens), 2)
+    return Achado(
+        id=f"ACH-{proximo_numero:04d}", tipo="conta_concessionaria_nao_anexada", severidade_sugerida="atencao",
+        regra_aplicada="concessionaria_sem_a_conta_anexada_so_comprovante_de_pagamento", registros_relacionados=relacionados[:1],
+        linha_demonstrativo="Concessionárias", valor_esperado=total, valor_encontrado=total, confianca_deterministica=1.0,
+        detalhes={"itens": itens})

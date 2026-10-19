@@ -149,18 +149,15 @@ class Extrator:
 
         self._conferir(dados, contas, totais)
         com_rend = [c for c in contas if abs(c.rendimento) > _CENT]
-        dados.cobertura = {"receitas": bool(dados.receitas), "rendimentos": bool(contas) and len(com_rend) >= 2,
+        dados.cobertura = {"receitas": bool(dados.receitas), "rendimentos": bool(contas) and len(com_rend) >= 1,
                            "lancamentos": bool(dados.lancamentos)}
         if not dados.receitas:
             dados.motivos_nao_cobertos["receitas"] = "o 'Demonstrativo de Receitas' não foi encontrado/legível neste PDF"
         if not dados.lancamentos:
             dados.motivos_nao_cobertos["lancamentos"] = "o 'Demonstrativo de Despesas' não foi encontrado/legível neste PDF"
         if not dados.cobertura["rendimentos"]:
-            quais = ", ".join(c.nome for c in com_rend) or "nenhuma"
             dados.motivos_nao_cobertos["rendimentos"] = (
-                f"neste mês o rendimento da aplicação (RENTAB.INVEST ... menos a provisão de IR) foi lançado em apenas {len(com_rend)} "
-                f"conta(s) ({quais}); a ORDINARIA tem saldo contábil devedor e o balancete não distribui o rendimento entre "
-                "as contas — não há proporcionalidade a conferir")
+                "neste mês não há rendimento da aplicação (RENTAB.INVEST ... menos a provisão de IR) lançado em nenhuma conta — não há o que conferir")
         aplicar_config_receitas_negativas(dados, self.condo)
         return dados
 
