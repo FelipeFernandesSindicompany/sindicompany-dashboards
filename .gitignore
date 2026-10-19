@@ -29,8 +29,11 @@ env/
 *.env
 secrets.json
 
-# Claude Code (sessão local)
-.claude/
+# Claude Code (sessão local) — só a habilidade conferir-relatorios é versionada
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/conferir-relatorios/
 
 # Node.js
 node_modules/
