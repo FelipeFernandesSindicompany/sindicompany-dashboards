@@ -90,7 +90,17 @@ def _texto_divergencia_valor(achado: Achado, registro: RegistroComprovante | Non
     encontrado = _fmt_moeda(achado.valor_encontrado)
     regra = achado.regra_aplicada
     repetido = bool((achado.detalhes or {}).get("valor_repetido_no_comprovante"))   # marca posta só nos condomínios que pedem
-    if regra == "demonstrativo_de_despesas_repetido_no_arquivo":
+    if regra == "guia_consolidada_nao_fecha_com_a_soma_dos_lancamentos":
+        det = achado.detalhes or {}
+        soma, total, n = _fmt_moeda(det.get("soma")), _fmt_moeda(det.get("total")), det.get("n")
+        dif = _fmt_moeda(round((det.get("total") or 0) - (det.get("soma") or 0), 2))
+        itens = "; ".join(f"{i['descricao']} ({_fmt_moeda(i['valor'])})" for i in (det.get("itens") or [])[:12])
+        titulo = f"Guia consolidada de {total} não fecha com os lançamentos listados ({n} lançamentos somam {soma})"
+        paragrafo = (f"O comprovante anexado a {n} lançamentos é uma mesma guia de recolhimento no valor de {total}, mas os lançamentos listados que apontam "
+                     f"para ela somam {soma}; a diferença de {dif} não aparece nesses lançamentos. Lançamentos: {itens}.")
+        o_que_verificar = (f"A que lançamentos correspondem os {dif} restantes da guia de {total}? Podem enviar a composição completa da guia e indicar "
+                           f"em quais lançamentos da listagem ela foi dividida?")
+    elif regra == "demonstrativo_de_despesas_repetido_no_arquivo":
         det = achado.detalhes or {}
         n = det.get("copias")
         um_bloco = _fmt_moeda(det.get("total_um_bloco"))
@@ -415,7 +425,7 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             titulo, paragrafo, o_que_verificar = _texto_sem_comprovante(achado, registro)
         elif achado.tipo == "divergencia_valor":
             titulo, paragrafo, o_que_verificar = _texto_divergencia_valor(achado, registro)
-            if achado.regra_aplicada in ("extrato_bancario_nao_contem_o_valor_listado", "demonstrativo_de_despesas_repetido_no_arquivo"):
+            if achado.regra_aplicada in ("extrato_bancario_nao_contem_o_valor_listado", "demonstrativo_de_despesas_repetido_no_arquivo", "guia_consolidada_nao_fecha_com_a_soma_dos_lancamentos"):
                 base["severidade_final"] = "atencao"
                 base["motivo_divergencia_da_sugestao"] = (
                     "Pergunta sobre o arquivo/anexo enviado pela administradora (conferido pelas linhas do próprio documento), "

@@ -128,6 +128,6 @@ class Extrator(_ContasData):
 
     def _tipo_receita(self, categoria: str, historico: str) -> str:
         h = _norm(historico)
-        if re.match(r"^(RESGATE|APLICACAO)", h) or h.startswith("APLICACAO RESGATE"):
+        if re.match(r"^(RESGATE|APLICACAO)\b", h) or h.startswith("APLICACAO RESGATE"):
             return "transferencia"
         return super()._tipo_receita(categoria, historico)

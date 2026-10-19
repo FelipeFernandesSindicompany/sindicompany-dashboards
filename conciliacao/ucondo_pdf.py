@@ -39,6 +39,9 @@ _RE_VENCIMENTO = re.compile(r'Vencimento\s+(\d{2}/\d{2}/\d{4})')
 _RE_VALOR_PAGO = re.compile(r'Valor pago\s+R\$\s*([\d.]+,\d{2})')
 _RE_FORNECEDOR = re.compile(r'Fornecedor\s*(.*?)\s*\n\s*Links dos anexos', re.DOTALL)
 _RE_DESCRICAO = re.compile(r'Descri[cç][aã]o\s+(.+?)\s*\n\s*Vencimento')
+_RE_VENC_BANCO = re.compile(r"Data do vencimento\s*(?:[A-Za-zçÇáéíóúÁÉÍÓÚ\-]+,?\s*)?(\d{2}/\d{2}/\d{4})", re.IGNORECASE)
+_RE_TRANSACAO_BANCO = re.compile(r"Data da transa[cç][aã]o\s*(?:[A-Za-zçÇáéíóúÁÉÍÓÚ\-]+,?\s*)?(\d{2}/\d{2}/\d{4})", re.IGNORECASE)
+_RE_DATA_PAGAMENTO = re.compile(r'Data do pagamento\s+(\d{2}/\d{2}/\d{4})')
 
 
 def _num(s: str) -> float:
@@ -57,7 +60,9 @@ class ConciliadorUcondoPDF(ConciliadorBase):
         import pdfplumber
 
         registros: list[RegistroComprovante] = []
-        vistos: set[tuple] = set()
+        vistos: dict = {}                  # chave da despesa -> código
+        paginas_da_despesa: dict = {}      # código -> índices (0-based) das páginas de anexo
+        pagamento_da_despesa: dict = {}    # código -> "Data do pagamento" impressa no cabeçalho da página
         total_declarado: float | None = None
         indice = 0
 
@@ -99,10 +104,15 @@ class ConciliadorUcondoPDF(ConciliadorBase):
 
                 chave = (categoria, vencimento, round(valor, 2), fornecedor, descricao)
                 if chave in vistos:
+                    paginas_da_despesa[vistos[chave]].append(pagina_num - 1)
                     continue  # mesma despesa, outra página de anexo (Cobrança/Comprovante)
-                vistos.add(chave)
-
                 indice += 1
+                vistos[chave] = str(indice)
+                paginas_da_despesa[str(indice)] = [pagina_num - 1]
+                m_pag = _RE_DATA_PAGAMENTO.search(texto)
+                if m_pag:
+                    pagamento_da_despesa[str(indice)] = m_pag.group(1)
+
                 registros.append(RegistroComprovante(
                     pagina=pagina_num,
                     codigo=str(indice),
@@ -116,6 +126,8 @@ class ConciliadorUcondoPDF(ConciliadorBase):
                     texto_bruto=texto,
                 ))
 
+        self._anexar_comprovantes(caminho, registros, paginas_da_despesa, pagamento_da_despesa)
+
         if total_declarado is not None:
             registros.append(RegistroComprovante(
                 pagina=1,
@@ -128,3 +140,37 @@ class ConciliadorUcondoPDF(ConciliadorBase):
             ))
 
         return registros
+
+
+    def _anexar_comprovantes(self, caminho: Path, registros: list, paginas_da_despesa: dict, pagamento_da_despesa: dict) -> None:
+        """Cada despesa tem 1+ páginas de anexo (Cobrança, Comprovante de Pagamento, Nota Fiscal...) — imagens. Lê todas por OCR (cache em disco) e cria
+        o `comprovante_anexado` da despesa: texto lido, valor (o da listagem quando ele aparece no texto dos anexos, senão o lido pela cadeia
+        compartilhada) e as datas do cabeçalho da página (vencimento e "Data do pagamento", estruturadas — não dependem de OCR).
+        Nunca lança: sem OCR, a despesa fica sem comprovante lido (conteúdo não verificável), nunca "confirmada"."""
+        try:
+            from conciliacao import ocr
+            from conciliacao.lirba_pdf import preencher_de_texto, valor_aparece_no_texto
+
+            despesas = [r for r in registros if r.tipo_documento == "despesa_listada"]
+            todas = sorted({i for r in despesas for i in paginas_da_despesa.get(r.codigo, [])})
+            textos = ocr.ocr_paginas(Path(caminho), todas, dpi=150, nativa=True) if todas else {}   # nativa: lê a imagem embutida ampliada (recibo do banco)
+            for r in despesas:
+                paginas = paginas_da_despesa.get(r.codigo, [])
+                if not paginas:
+                    continue
+                texto = "\n\n---\n\n".join(f"[Página {i + 1}]\n{textos.get(i, '')}" for i in paginas)
+                comp = RegistroComprovante(pagina=paginas[0] + 1, tipo_documento="comprovante_anexado", codigo=r.codigo,
+                                           vencimento=r.vencimento, pagamento=pagamento_da_despesa.get(r.codigo), texto_bruto=texto)
+                if valor_aparece_no_texto(texto, r.valor):
+                    comp.valor = r.valor
+                else:
+                    preencher_de_texto(comp, texto)
+                    comp.vencimento, comp.pagamento = r.vencimento, pagamento_da_despesa.get(r.codigo)
+                # recibo do banco (ex.: Inter): "Data do vencimento" (do boleto) e "Data da transação" (pagamento) valem sobre as datas do cabeçalho
+                m_v = _RE_VENC_BANCO.search(texto)
+                m_t = _RE_TRANSACAO_BANCO.search(texto)
+                if m_v and m_t:
+                    comp.vencimento, comp.pagamento = m_v.group(1), m_t.group(1)
+                registros.append(comp)
+        except Exception as exc:
+            print(f"[AVISO] leitura dos anexos do uCondo não concluída: {exc}")

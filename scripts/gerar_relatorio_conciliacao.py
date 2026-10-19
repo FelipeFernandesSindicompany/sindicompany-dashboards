@@ -48,7 +48,7 @@ from conciliacao import get_conciliador
 from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
 from conciliacao.matching import (
-    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_auxiliadora, gerar_achados_gcont,
+    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_auxiliadora, gerar_achados_ucondo, gerar_achados_gcont,
     gerar_achados_balancete_mensal, gerar_achados_palm_beach, gerar_achados_planilha_com_links,
 )
 from conciliacao import interpretacao
@@ -133,7 +133,7 @@ GERAR_ACHADOS_POR_EMPRESA = {
     # nas páginas de comprovante — mesmas regras de consistência.
     "alliz_pdf": gerar_achados_datadigitus,
     "auxiliadora_xls": gerar_achados_auxiliadora,
-    "ucondo_pdf": gerar_achados_datadigitus,
+    "ucondo_pdf": gerar_achados_ucondo,
     "iello_pdf": gerar_achados_balancete_mensal,
     "lello_pdf": gerar_achados_balancete_mensal,
 }
@@ -214,7 +214,7 @@ VERIFICACOES_POR_EMPRESA = {
                                       "comprovante anexado também traz a Nota Fiscal (não só a confirmação bancária)."),
     },
 }
-for _e in ("lirba_pdf", "gk_pdf", "manager_adm_pdf", "convivium_pdf"):
+for _e in ("lirba_pdf", "gk_pdf", "manager_adm_pdf", "convivium_pdf", "habitacional_xlsx", "lfc_xlsx", "ucondo_pdf"):   # planilha: anexos baixados do Webware e lidos
     VERIFICACOES_POR_EMPRESA[_e] = {
         "conteudo_comprovante": (True, "extraído por OCR quando o comprovante é uma imagem digitalizada; "
                                         "marcado como \"conteúdo não verificável\" quando o OCR não confirma o valor."),
@@ -223,8 +223,8 @@ for _e in ("lirba_pdf", "gk_pdf", "manager_adm_pdf", "convivium_pdf"):
         "nota_fiscal_ausente": (True, "quando a própria listagem cita um nº de Nota Fiscal, confere se o "
                                       "comprovante anexado também traz a Nota Fiscal (não só a confirmação bancária)."),
     }
-for _e in ("habitacional_xlsx", "lfc_xlsx", "datadigitus_pdf", "consvicta_pdf",
-           "lello_xls", "alliz_pdf", "auxiliadora_xls", "ucondo_pdf"):
+for _e in ("datadigitus_pdf", "consvicta_pdf",
+           "lello_xls", "alliz_pdf", "auxiliadora_xls"):
     VERIFICACOES_POR_EMPRESA[_e] = {
         "conteudo_comprovante": (False, _TEXTO_CONTEUDO_NAO_ESTENDIDO),
         "atraso_pagamento": (False, _TEXTO_ATRASO_UMA_DATA),
@@ -437,10 +437,13 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     if (condo.get("regras") or {}).get("apropriacao") is not None:
         from conciliacao.matching import reclassificar_apropriacoes
         achados = reclassificar_apropriacoes(achados, registros)
-    if (condo.get("regras") or {}).get("guia_consolidada") is not None:
+    cfg_guia = (condo.get("regras") or {}).get("guia_consolidada")
+    if cfg_guia is None and condo.get("empresa_gestora") in ("habitacional_xlsx", "lfc_xlsx"):
+        cfg_guia = {"por_numero": True}      # planilha: anexos lidos do Webware; DARF/GPS pagos de uma vez cobrem várias retenções
+    if cfg_guia is not None:
         from conciliacao.matching import reclassificar_guias_consolidadas
         achados = reclassificar_guias_consolidadas(achados, registros)
-        if (condo.get("regras") or {}).get("guia_consolidada", {}).get("por_numero"):
+        if cfg_guia.get("por_numero"):
             from conciliacao.matching import reclassificar_guias_por_numero
             achados = reclassificar_guias_por_numero(achados, registros)
     if (condo.get("regras") or {}).get("texto_valor_repetido"):
@@ -906,7 +909,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         achados=achados_render,
         analise=analise,
         categorias_novas=categorias_novas_lista,
-        aviso_escopo=condo.get("aviso_escopo") or None,
+        aviso_escopo=(condo.get("aviso_escopo") or (condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "") or None),
         gerado_em=datetime.now().strftime("%d/%m/%Y"),
     )
 

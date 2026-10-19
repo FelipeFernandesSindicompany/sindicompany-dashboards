@@ -48,6 +48,8 @@ def specs_para(a: Achado) -> list[dict]:
         for i in d.get("lancamentos", [])[:4]:
             if i.get("pagina"):
                 specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])), "Lançamento citado nesta observação"))
+    elif a.tipo == "continuidade_saldo" and d.get("pagina") and d.get("contas"):
+        specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_anterior"])), "Saldo anterior da conta " + d["contas"][0]["nome"]))
     elif a.tipo == "movimento_entre_contas" and d.get("pagina"):
         specs.append(_spec(d["pagina"], re.escape(_br(d["movimento"])), "Movimento entre contas de " + (d.get("conta") or "")))
     elif a.tipo == "compensacao_nao_fecha" and d.get("pagina"):

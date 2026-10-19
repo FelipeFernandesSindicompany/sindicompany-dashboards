@@ -89,6 +89,13 @@ class Conciliador(ConciliadorLirbaPDF):
             # NFS-e cujo total o leitor parcial pegou como 17,49): está confirmado — mesma regra que o motor aplica ao PDF.
             confirmado = esperado is not None and any(
                 _valor_aparece_no_texto(t, esperado) or _total_damsp(t) == round(esperado, 2) for t in textos_doc)
+            if esperado is not None and not confirmado:
+                # fatura/guia escaneada com o total em quadro cinza: relê binarizado (ver anexos_reler.py) antes de desistir
+                from conciliacao import anexos_reler
+                extras = anexos_reler.textos_binarizados(docs)
+                if any(_valor_aparece_no_texto(t, esperado) for t in extras):
+                    textos_doc = textos_doc + [t for t in extras if _valor_aparece_no_texto(t, esperado)][:1]
+                    confirmado = True
             if confirmado:
                 melhor = melhor or candidatos[0]
                 melhor.valor = esperado
@@ -99,6 +106,13 @@ class Conciliador(ConciliadorLirbaPDF):
                 comp.fornecedor = melhor.fornecedor
                 comp.cnpj_cpf = melhor.cnpj_cpf
                 comp.autenticacao = melhor.autenticacao
+            # Vencimento e pagamento valem os do COMPROVANTE BANCÁRIO ("Comprovante de Pagamento Eletrônico": Vencimento / Pago em), não os de outro
+            # documento do mesmo link (guia consolidada, NF): senão um pagamento em dia aparece como atraso (Go Liberdade ago/2026: guia com 16/08,
+            # comprovante com vencimento e pagamento em 18/08).
+            banc = next((c for c, t in zip(candidatos, textos_doc)
+                         if re.search(r"Comprovante\s+de\s+Pagamento", t, re.IGNORECASE) and c.vencimento and c.pagamento), None)
+            if banc is not None:
+                comp.vencimento, comp.pagamento = banc.vencimento, banc.pagamento
             comp.texto_bruto = "\n\n---\n\n".join(t for t in textos_doc if t.strip())
             comp.arquivo_evidencia_externa = gocontroledocumentos.salvar_evidencia_externa(caminho, comp.codigo, docs[0][0], docs[0][1])
         except Exception:                   # um anexo com problema não derruba os demais

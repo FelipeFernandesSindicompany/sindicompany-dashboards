@@ -65,6 +65,7 @@
       }
     },
     "cap_d_antibes": {
+      "aviso_escopo": "O arquivo enviado não traz os anexos dos lançamentos (comprovantes e notas fiscais): é um resumo de poucas páginas. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Cap D Antibes",
       "regras": {
         "movimento_entre_contas": {},
@@ -201,6 +202,7 @@
       "leitor_financeiro": "regras_gerais"
     },
     "elo_elo_duo": {
+      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o demonstrativo de receitas) não foi enviado. Esta validação utilizou o Resumo Financeiro e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes, notas fiscais, receitas nem rendimentos. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
       "pasta_prestacao": "Dashboard de Análise de Balancete Elo & Elo",
       "regras": {
         "rendimento": {
@@ -297,6 +299,7 @@
       }
     },
     "living_for_consolacao": {
+      "aviso_escopo": "O arquivo enviado (planilha) não traz os anexos dos lançamentos: não há links de comprovantes nem de notas fiscais. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que a própria planilha permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "nomes_no_arquivo": ["FOR CONSOLACAO"],
       "pasta_prestacao": "Dashboard de Análise de Balancete Living For Consolação",
       "regras": {

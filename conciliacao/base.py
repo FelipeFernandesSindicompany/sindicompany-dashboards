@@ -83,6 +83,7 @@ TIPOS_ACHADO = {
     "previsto_realizado_inconsistente",  # Resumo de Emissão (Previsto x Realizado) fora do padrão dos meses anteriores
     "nf_repetida_entre_meses",   # mesma Nota Fiscal do mesmo fornecedor paga em meses diferentes (só condomínios que pedem)
     "inadimplencia_arrecadacao",  # arrecadação do mês abaixo do mínimo / inadimplência alta frente à emissão (só condomínios que pedem)
+    "continuidade_saldo",        # saldo anterior da conta != saldo final do mês anterior (todos os condomínios)
     "movimento_entre_contas",    # saldo da conta varia além de créditos e débitos (transferência/aplicação/resgate) — só quem pede
     "saldo_negativo_persistente",  # conta com saldo negativo há vários meses seguidos (só condomínios que pedem)
     "variacao_categoria",        # categoria de despesa variou muito em relação ao mês anterior (só condomínios que pedem)

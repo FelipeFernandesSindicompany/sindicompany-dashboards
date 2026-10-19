@@ -431,6 +431,35 @@ def regra_alerta_saldo_negativo(dados: DadosRegras, historico: list, cont: _Cont
         detalhes={"contas": contas, "meses_lidos": lidos, "pagina": contas[0]["pagina"]})]
 
 
+# ── Continuidade de saldos entre meses (padrão em todos os condomínios) ─────────────────────────────────────────────
+
+def regra_continuidade_saldos(dados: DadosRegras, anterior: Optional[DadosRegras], cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
+    """O saldo anterior de cada conta no mês tem de ser o saldo final dessa conta no mês anterior. Diferença = o mês anterior foi alterado
+    depois de fechado, ou o arquivo não é continuação do anterior. Um achado por relatório, com todas as contas que não batem."""
+    if anterior is None or getattr(dados, "variante", None) != getattr(anterior, "variante", None):
+        return []
+    tol = float((cfg or {}).get("tolerancia", 0.02))
+    quebras = []
+    for c in dados.contas:
+        if c.nome.upper().startswith("CONSOLIDADO"):
+            continue
+        x = next((y for y in anterior.contas if _mesma_conta(y.nome, c.nome) and not y.nome.upper().startswith("CONSOLIDADO")), None)
+        if x is None:
+            continue
+        dif = round(c.saldo_anterior - x.saldo_atual, 2)
+        if abs(dif) > tol:
+            quebras.append({"nome": c.nome, "saldo_anterior": round(c.saldo_anterior, 2), "saldo_final_mes_anterior": round(x.saldo_atual, 2),
+                            "diferenca": dif, "pagina": c.pagina})
+    if not quebras:
+        return []
+    quebras.sort(key=lambda q: -abs(q["diferenca"]))
+    return [Achado(
+        id=cont.proximo(), tipo="continuidade_saldo", severidade_sugerida="atencao",
+        regra_aplicada="saldo_anterior_diferente_do_saldo_final_do_mes_anterior", linha_demonstrativo=quebras[0]["nome"],
+        valor_encontrado=quebras[0]["diferenca"],
+        detalhes={"mes": dados.mes, "mes_anterior": anterior.mes, "contas": quebras, "pagina": quebras[0]["pagina"]})]
+
+
 # ── Movimento entre contas (só para quem pede: regras.movimento_entre_contas) ───────────────────────────────────
 
 def regra_movimento_entre_contas(dados: DadosRegras, cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
@@ -908,6 +937,8 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
                                                cfg_condo.get("alerta_saldo_negativo") if isinstance(cfg_condo.get("alerta_saldo_negativo"), dict) else None)
     if cfg_condo.get("movimento_entre_contas") is not None:
         achados += regra_movimento_entre_contas(dados, cont, cfg_condo.get("movimento_entre_contas"))
+    if cfg_condo.get("continuidade_saldos", True) is not False:
+        achados += regra_continuidade_saldos(dados, anterior, cont, cfg_condo.get("continuidade_saldos") if isinstance(cfg_condo.get("continuidade_saldos"), dict) else None)
     if cfg_condo.get("nf_repetida") is not None and dados.lancamentos:
         achados += regra_nf_repetida(dados, [h for h in hist_regras if h.lancamentos], cont, cfg_condo.get("nf_repetida"))
 

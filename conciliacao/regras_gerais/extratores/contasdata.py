@@ -220,7 +220,7 @@ class Extrator:
         marcas = re.search(r"Voltar ao [íi]ndice|ContasData|N[ºo°] lancto", inicio, re.I)
         # "Prestação de Contas" (livro completo, com índice) OU "Demonstrativo de Contas" (exportação parcial só
         # com os demonstrativos, ex.: Splendor Square ago/2026, gerada pelo Stimulsoft, sem índice nem comprovantes)
-        indice = (re.search(r"Presta[çc][ãa]o de Contas|Demonstrativo de Contas", inicio)
+        indice = (re.search(r"Presta[çc][ãa]o de Contas|Demonstrativo de Contas|Demonstrativo de Despesas", inicio)
                   and re.search(r"Condom[ií]nio:\s*\d+\s*-", inicio))
         if not (marcas and indice):
             raise ValueError("formato não reconhecido como ContasData")

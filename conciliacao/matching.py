@@ -130,6 +130,10 @@ def achado_atraso_pagamento(registro: RegistroComprovante, contador: list) -> Ac
     prazo_limite = _proximo_dia_util(venc)
     if pago <= prazo_limite:
         return None
+    # Data lida por OCR com dígito trocado (ex.: ano 2026 lido como 2028: "pagamento em 06/08/2028"): atraso de mais de 120 dias, ou pagamento
+    # antes do vencimento por mais de 60 dias, não é atraso real — é leitura duvidosa; não vira achado (o valor segue conferido à parte).
+    if (pago - venc).days > 120 or (pago - venc).days < -60:
+        return None
     dias_atraso = (pago - prazo_limite).days
     return Achado(
         id=_proximo_id(contador),
@@ -162,7 +166,8 @@ _TAMANHO_MINIMO_TEXTO_CONFIAVEL = 300
 
 
 _RE_BENEFICIO_FUNCIONARIO = re.compile(
-    r"\bVALE\s*[- ]?\s*(?:TRANSPORTE|REFEIC|ALIMENT|COMBUSTIVEL|CULTURA)|\bVT\s*/\s*VR\b|\bCESTA\s*BASICA\b|\bVALE\s+REFEICAO\b", re.IGNORECASE)
+    r"\bVALE\s*[- ]?\s*(?:TRANSPORTE|REFEIC|ALIMENT|COMBUSTIVEL|CULTURA)|\bVT\s*/\s*VR\b|\bCESTA\s*BASICA\b|\bVALE\s+REFEICAO\b"
+    r"|\bSEGUROS?\b|\bAPOLICE\b|\bPREMIO\b", re.IGNORECASE)    # seguro: o documento é a fatura/apólice (IOF), não há nota fiscal de serviço
 
 
 def _sem_acento_nf(s: str) -> str:
@@ -1572,7 +1577,8 @@ def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
         if comp is None or desp is None or not comp.valor or comp.valor <= 0 or not comp.texto_bruto:
             continue
         doc = re.sub(r"\s+", " ", comp.texto_bruto)[:400]
-        grupos.setdefault((doc, round(comp.valor, 2)), []).append((a, desp))
+        m_num = _RE_NUMERO_DOC_GUIA.search(comp.texto_bruto)
+        grupos.setdefault((m_num.group(0) if m_num else doc, round(comp.valor, 2)), []).append((a, desp))
     for (_doc, total), membros in grupos.items():
         if len(membros) < 2:
             continue
@@ -1608,6 +1614,21 @@ def reclassificar_guias_consolidadas(achados: list, registros: list) -> list:
                 m.regra_aplicada = "guia_consolidada_confere_com_a_soma_dos_lancamentos"
                 m.valor_encontrado = m.valor_esperado
                 m.confianca_deterministica = 1.0
+        else:
+            # A guia paga mais do que os lançamentos listados que apontam para ela: em vez de N "valor diverge" (um por lançamento, todos
+            # comparados com o total da guia), UM achado só — a guia não fecha com a soma — e a pergunta é sobre a diferença.
+            primeiro = membros[0][0]
+            primeiro.regra_aplicada = "guia_consolidada_nao_fecha_com_a_soma_dos_lancamentos"
+            primeiro.valor_esperado = round(soma, 2)
+            primeiro.valor_encontrado = round(total, 2)
+            primeiro.registros_relacionados = [k for m, _ in membros for k in m.registros_relacionados]
+            primeiro.detalhes = {**(primeiro.detalhes or {}), "n": len(membros), "soma": round(soma, 2), "total": round(total, 2),
+                                 "itens": [{"descricao": (d.descricao or "")[:90], "valor": round(m.valor_esperado or 0.0, 2)} for m, d in membros]}
+            for m, _ in membros[1:]:
+                m.tipo = "ok_verificado"          # absorvidos pelo achado agregado (não aparecem como itens)
+                m.severidade_sugerida = "informativo"
+                m.regra_aplicada = "absorvido_na_guia_consolidada_que_nao_fecha"
+                m.valor_encontrado = m.valor_esperado
     return achados
 
 
@@ -1839,3 +1860,17 @@ def gerar_achados_auxiliadora(registros, dados_financeiros=None, pasta_dados=Non
                 a.detalhes = {**(a.detalhes or {}), "copias": int(m.group(1)), "total_um_bloco": float(m.group(2)),
                               "total_declarado": t.valor}
     return saida
+
+
+def gerar_achados_ucondo(registros, dados_financeiros=None, pasta_dados=None, mes_atual=None) -> list:
+    """uCondo (Saint Simon): cada despesa traz as páginas de anexo (cobrança, comprovante de pagamento, nota fiscal). Une:
+      - conferência dos comprovantes (valor, nota fiscal, atraso por vencimento x data do pagamento do cabeçalho): mesmas regras do Lirba;
+      - duplicidade e soma dos lançamentos x total declarado: regras do DataDigitus."""
+    comprovantes = gerar_achados_lirba(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    base = [a for a in gerar_achados_datadigitus(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+            if a.tipo == "duplicidade" or ("soma" in (a.regra_aplicada or "")) or ("total" in (a.regra_aplicada or ""))]
+    ja = {(a.tipo, tuple(a.registros_relacionados)) for a in comprovantes}
+    achados = comprovantes + [a for a in base if (a.tipo, tuple(a.registros_relacionados)) not in ja]
+    for i, a in enumerate(achados, 1):
+        a.id = f"ACH-{i:04d}"
+    return achados

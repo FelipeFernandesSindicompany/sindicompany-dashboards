@@ -218,8 +218,9 @@ def texto_previsto_realizado(a: Achado) -> tuple[str, str, str]:
         partes.append(f"A Posição Financeira da conta registra crédito de {_moeda(dp['posicao'])} em \"EMISSÃO DO PERÍODO\", "
                       f"mas a tabela Previsto x Realizado traz {_moeda(dp['tabela'])} nessa linha — as duas partes do mesmo "
                       f"balancete não conferem.")
+    partes.append("Enquanto não houver explicação, o percentual de arrecadação apresentado no balancete não é confiável.")
     verificar = ("Qual é o Resumo de Emissão completo deste mês (emissão do período, reembolsos e diversos) e como se explica a diferença "
-                 "apontada? Enquanto não houver explicação, o percentual de arrecadação apresentado no balancete não é confiável.")
+                 "apontada?")
     return titulo, " ".join(partes), verificar
 
 
@@ -304,9 +305,9 @@ def _ver_ordinaria(d: dict) -> str:
         return ""
     quais = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])})" for i in itens[:3])
     saldo = d.get("saldo_ordinaria")
-    return (f" Esse valor ({quais}) tem que sair mesmo da conta Ordinária ou deveria ser pago por outra conta "
-            f"(Fundo de Reserva, Obras ou Extraordinária), já que é despesa de valor alto e fora do custeio mensal"
-            + (f"? A Ordinária fechou o mês com saldo de {_moeda(saldo)}." if saldo is not None else "?"))
+    return (f" Esse valor ({quais}) é despesa de valor alto e fora do custeio mensal"
+            + (f", e a Ordinária fechou o mês com saldo de {_moeda(saldo)}" if saldo is not None else "")
+            + ". Ele tem que sair mesmo da conta Ordinária ou deveria ser pago por outra conta (Fundo de Reserva, Obras ou Extraordinária)?")
 
 
 def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
@@ -452,11 +453,35 @@ def texto_movimento_entre_contas(a: Achado) -> tuple[str, str, str]:
     return titulo, paragrafo, verificar
 
 
+def _mes_extenso(m: str) -> str:
+    nomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+    try:
+        return f"{nomes[int(m[5:7]) - 1]}/{m[:4]}"
+    except (ValueError, IndexError):
+        return m
+
+
+def texto_continuidade_saldo(a: Achado) -> tuple[str, str, str]:
+    d = a.detalhes
+    atual, ant = _mes_extenso(d.get("mes", "")), _mes_extenso(d.get("mes_anterior", ""))
+    contas = d["contas"]
+    itens = "; ".join(f"{c['nome']}: saldo anterior de {atual} {_moeda(c['saldo_anterior'])}, saldo final de {ant} {_moeda(c['saldo_final_mes_anterior'])} "
+                      f"(diferença de {_moeda(c['diferenca'])})" for c in contas)
+    nomes = ", ".join(c["nome"] for c in contas[:3]) + (f" e mais {len(contas) - 3}" if len(contas) > 3 else "")
+    titulo = f"Saldo anterior de {atual} diferente do saldo final de {ant} — {nomes}"
+    paragrafo = (f"O saldo anterior de uma conta deve ser igual ao saldo final do mês anterior. Neste arquivo isso não ocorre em {len(contas)} "
+                 f"conta{'s' if len(contas) > 1 else ''}: {itens}.")
+    verificar = (f"Por que o saldo anterior de {atual} não é igual ao saldo final de {ant} nessas contas? Houve ajuste, estorno, lançamento "
+                 f"retroativo ou reabertura de {ant}? Podem enviar o balancete corrigido de {ant}?")
+    return titulo, paragrafo, verificar
+
+
 TEXTOS = {
     "observacao_gestor": texto_observacao_gestor,
     "nf_repetida_entre_meses": texto_nf_repetida,
     "inadimplencia_arrecadacao": texto_cobranca,
     "saldo_negativo_persistente": texto_saldo_negativo,
+    "continuidade_saldo": texto_continuidade_saldo,
     "movimento_entre_contas": texto_movimento_entre_contas,
     "variacao_categoria": texto_variacao_categoria,
     "previsto_realizado_inconsistente": texto_previsto_realizado,

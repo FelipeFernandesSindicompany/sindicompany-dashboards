@@ -152,6 +152,13 @@ def ocr_imagem_bytes(dados: bytes, lang: str = "por") -> str:
     """
     if not tesseract_disponivel():
         return ""
+    import hashlib as _hl
+    cache = Path(__file__).resolve().parent.parent / "data" / "_ocr_cache_imagens" / (_hl.sha1(dados).hexdigest() + "_" + lang + "_x2.txt")
+    try:
+        if cache.exists():
+            return cache.read_text(encoding="utf-8")
+    except OSError:
+        pass
     try:
         import pytesseract
         from PIL import Image
@@ -159,11 +166,22 @@ def ocr_imagem_bytes(dados: bytes, lang: str = "por") -> str:
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
             tmp_path = tmp.name
         try:
-            Image.open(io.BytesIO(dados)).convert("RGB").save(tmp_path)
+            img0 = Image.open(io.BytesIO(dados)).convert("RGB")
+            if img0.width < 1800:
+                # imagem pequena (comprovante bancário em JPEG ~1200 px): o OCR confunde dígitos (18/08 lido como 16/08 gerou 15 atrasos falsos
+                # no Go Liberdade/ago-2026). Em escala 2x lê certo.
+                img0 = img0.resize((img0.width * 2, img0.height * 2), Image.LANCZOS)
+            img0.save(tmp_path)
             angulo = _angulo_correcao(tmp_path)
             if angulo:
                 Image.open(tmp_path).rotate(-angulo, expand=True).save(tmp_path)
-            return pytesseract.image_to_string(tmp_path, lang=lang)
+            texto = pytesseract.image_to_string(tmp_path, lang=lang)
+            try:
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                cache.write_text(texto, encoding="utf-8")
+            except OSError:
+                pass
+            return texto
         finally:
             Path(tmp_path).unlink(missing_ok=True)
     except Exception as exc:

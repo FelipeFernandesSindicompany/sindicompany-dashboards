@@ -137,4 +137,27 @@ class ConciliadorHabitacionalXLSX(ConciliadorBase):
                     texto_bruto=anexo_cell.hyperlink.target or "",
                 ))
 
+        self._ler_anexos_webware(caminho, registros)
         return registros
+
+    def _ler_anexos_webware(self, caminho: Path, registros: list) -> None:
+        """Os anexos da planilha são links do Webware: baixa cada documento (comprovante bancário em JPEG, nota/fatura/guia em PDF), lê (texto
+        ou OCR) e preenche valor, datas, fornecedor e texto do comprovante — assim a planilha passa pelo MESMO conferidor de conteúdo (valor,
+        nota fiscal, atraso) do PDF, em vez de só "existe link". Nunca lança: link que não abre fica como comprovante sem conteúdo lido
+        (conteúdo não confirmado), nunca como confirmado. Desligável por condomínio com `anexos_webware: false`."""
+        if (getattr(self, "config", None) or {}).get("anexos_webware") is False:
+            return
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+
+            from conciliacao import webware_documentos
+            from conciliacao.condominios import fatto_morumbi as _leitor    # mesma leitura de anexos já validada no Fatto Morumbi
+
+            despesa_por_codigo = {r.codigo: r for r in registros if r.tipo_documento == "despesa_listada"}
+            alvos = [r for r in registros if r.tipo_documento == "comprovante_anexado" and webware_documentos.eh_link_webware(r.texto_bruto)]
+            if not alvos:
+                return
+            with ThreadPoolExecutor(max_workers=_leitor.TRABALHADORES) as pool:
+                list(pool.map(lambda r: _leitor.Conciliador._ler_anexo(None, caminho, r, despesa_por_codigo.get(r.codigo)), alvos))
+        except Exception as exc:     # a leitura dos anexos nunca derruba a validação
+            print(f"[AVISO] leitura dos anexos do Webware não concluída: {exc}")

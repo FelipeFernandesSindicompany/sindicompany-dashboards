@@ -102,7 +102,7 @@ class Extrator:
         """ValueError se não for GCONT/HSA. Devolve False quando é (o rodapé/ capa dizem GCONT ou HSA) mas o texto não traz os
         relatórios W0xx legíveis — PDF digitalizado com camada de OCR."""
         inicio = "\n".join(p.texto for p in paginas if len(p.texto) > 150)
-        nomes = re.search(r"HSA CONDOM[ÍI]NIOS|ADMINISTRADORA GCONT|G\s?C\s?O?\s?N\s?T|gcont\.net\.br", inicio, re.I)
+        nomes = re.search(r"HSA CONDOM[ÍI]NIOS|ADMINISTRADORA GCONT|G\s?C\s?O?\s?N\s?T\b|gcont\.net\.br", inicio, re.I)
         if not nomes:
             raise ValueError("formato não reconhecido como GCONT/HSA")
         return bool(re.search(r"^W0\d\d[A-Z]\s", inicio, re.M) and re.search(r"Resumo Financeiro", inicio))
