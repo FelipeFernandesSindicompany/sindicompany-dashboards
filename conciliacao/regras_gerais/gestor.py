@@ -84,6 +84,9 @@ _GENERICAS = {"MANUTENCAO", "MANUT", "ASSESSORIA", "ADMINISTRACAO", "CONSULTORIA
               "EQUIPAMENTO", "SEGURANCA", "ELEVADORES", "ELEVADOR", "LIMPEZA", "PORTARIA", "CONDOMINIO", "PREDIAL", "TECNOLOGIA", "ENGENHARIA",
               "PRODUTOS", "SERVICOS", "TRANSPORTE", "REFEICAO", "ALIMENTACAO", "GINASTICA", "JARDINAGEM", "PROJETO", "INSTALACAO", "REPARO", "REPAROS",
               "HONORARIOS", "ADVOCATICIOS", "JURIDICO", "JURIDICOS", "CUSTAS", "REEMBOLSAVEIS", "ADIANTAMENTO"}
+_RE_VALOR_VARIAVEL = re.compile(
+    r"\b(?:ENEL|ELETROPAULO|SABESP|COMGAS|NATURGY|VIVO|CLARO|TELEFONICA|NET|TIM|CPFL|ENERGISA|SUPERGASBRAS|ULTRAGAZ)\b|"
+    r"ENERGIA\s+ELETRICA|AGUA\s*(?:E|/)\s*ESGOTO|FATURA\s+(?:DO\s+)?CARTAO|CARTAO\s+DE\s+CREDITO", re.IGNORECASE)
 _RE_FOLHA = re.compile(r"^\s*(?:\d+\s*[ºO°]?\s*)?(?:FOLHA\s+DE\s+PAGAMENTO|SALARIO|PRO[\s-]*LABORE|ADIANTAMENTO\s+SALARIAL|VALE\s+TRANSPORTE)\b", re.IGNORECASE)
 
 
@@ -363,9 +366,13 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                                      "valor_unitario": round(sum(valores0) / len(valores0), 2), "competencias": [r for _, r in comps0], "datas": datas0})
                 continue
             m = statistics.median(vs)
-            if m > _CENTAVO and v >= cfg["atipico_fator"] * m and v - m >= cfg["atipico_diferenca_min"]:
+            # Concessionária (energia, água, gás, telefone) e fatura de cartão: o valor varia todo mês, então a trava é mais curta — mais de 10% acima
+            # da mediana dos meses anteriores (decisão do dono). Demais fornecedores: mais de 2,5 vezes a mediana.
+            variavel = bool(_RE_VALOR_VARIAVEL.search(_sem_acento(" ".join(f"{x.descricao or ''} {x.fornecedor or ''}" for x in ls))))
+            fator = cfg.get("atipico_fator_variavel", 1.10) if variavel else cfg["atipico_fator"]
+            if m > _CENTAVO and v >= fator * m and v - m >= cfg["atipico_diferenca_min"]:
                 itens += ls
-                item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2)}
+                item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2), "variavel": variavel, "acima_pct": round((v / m - 1) * 100, 1)}
                 # Total alto porque vários meses foram pagos de uma vez (cada lançamento no valor mensal de sempre): não é aumento de valor,
                 # é pagamento acumulado de competências anteriores — a pergunta certa é o motivo de pagarem juntos.
                 # Só é "acúmulo" quando os lançamentos têm praticamente o mesmo valor (a mensalidade de sempre) e citam competências diferentes;

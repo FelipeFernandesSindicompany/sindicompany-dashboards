@@ -375,8 +375,17 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
                     + (f" e pagos nas datas: {datas}" if datas else "")
                     + ". Não é aumento de valor: são pagamentos de meses anteriores feitos juntos neste mês.")
         if outros:
-            lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])})" for i in outros[:6])
-            partes_par.append(f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}.")
+            def _pct(i):
+                return f", {str(i['acima_pct']).replace('.', ',')}% acima" if (i.get("acima_pct") is not None and i.get("variavel")) else ""
+            lista = "; ".join(f"{i['descricao']} ({_moeda(i['valor'])} contra mediana de {_moeda(i['mediana'])}{_pct(i)})" for i in outros[:6])
+            fixos = [i for i in outros if not i.get("variavel")]
+            if fixos and len(fixos) == len(outros):
+                partes_par.append(f"O valor pago é mais de {str(d.get('fator')).replace('.', ',')} vezes a mediana dos meses anteriores do mesmo fornecedor: {lista}.")
+            elif not fixos:
+                partes_par.append(f"Conta de concessionária/cartão com valor mais de 10% acima da mediana dos meses anteriores do mesmo fornecedor: {lista}.")
+            else:
+                partes_par.append(f"O valor pago está acima da mediana dos meses anteriores do mesmo fornecedor (mais de {str(d.get('fator')).replace('.', ',')} vezes; "
+                                  f"concessionárias e cartão: mais de 10%): {lista}.")
             for i in outros:
                 if i.get("competencias_anteriores"):
                     partes_par.append(
@@ -388,7 +397,9 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
             nomes = ", ".join(i["descricao"] for i in acumulos)
             partes_ver.append(f"Por que {nomes} está com várias competências pagas juntas neste mês (pagamentos de meses anteriores "
                               f"na mesma data)? Houve atraso no pagamento, multa ou juros, e as notas dos meses anteriores já estavam em aberto?")
-        if outros:
+        if outros and all(i.get("variavel") for i in outros):
+            partes_ver.append("Qual a justificativa do aumento do valor (consumo, tarifa/reajuste, multa ou juros)? Podem enviar a conta (fatura) do mês?")
+        elif outros:
             partes_ver.append("Qual a justificativa do aumento (reajuste, serviço extra, acúmulo de meses)? Podem enviar a nota fiscal?")
         if acumulos and not outros and all(i.get("sem_comparacao") or i.get("mediana") is None for i in acumulos):
             titulo = pre + (f"{acumulos[0]['descricao']}: {acumulos[0]['n']} competências pagas no mesmo mês ({total})"
@@ -396,6 +407,8 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         elif acumulos and not outros:
             titulo = pre + (f"{acumulos[0]['descricao']}: {acumulos[0]['n']} meses pagos juntos em um só mês ({total}) — pagamentos de meses anteriores, não aumento"
                             if len(acumulos) == 1 else f"{len(acumulos)} fornecedores com meses anteriores pagos juntos neste mês ({total}) — não é aumento")
+        elif outros and all(i.get("variavel") for i in outros) and not acumulos:
+            titulo = pre + f"{n} conta(s) de concessionária/cartão acima da mediana dos meses anteriores ({total})"
         else:
             titulo = pre + f"{n} despesa(s) muito acima do histórico do próprio fornecedor ({total})"
         par = " ".join(partes_par)
