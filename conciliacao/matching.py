@@ -165,6 +165,10 @@ _RE_NF_NO_COMPROVANTE = _lp.RE_MARCADOR_NF
 _TAMANHO_MINIMO_TEXTO_CONFIAVEL = 300
 
 
+_RE_MARKETPLACE_NF = re.compile(
+    r"MERCADO\s*PAGO|MERCADOPAGO|MERCADO\s*LIVRE|MERCADOLIVRE|AMAZON|MAGAZINE\s*LUIZA|MAGALU|SHOPEE|ALIEXPRESS|KABUM|AMERICANAS|SHEIN|"
+    r"CASAS\s*BAHIA|PONTO\s*FRIO|SUBMARINO|PAGSEGURO|PAYPAL|\bPICPAY\b", re.IGNORECASE)
+
 _RE_BENEFICIO_FUNCIONARIO = re.compile(
     r"\bVALE\s*[- ]?\s*(?:TRANSPORTE|REFEIC|ALIMENT|COMBUSTIVEL|CULTURA)|\bVT\s*/\s*VR\b|\bCESTA\s*BASICA\b|\bVALE\s+REFEICAO\b"
     r"|\bSEGUROS?\b|\bAPOLICE\b|\bPREMIO\b", re.IGNORECASE)    # seguro: o documento é a fatura/apólice (IOF), não há nota fiscal de serviço
@@ -215,7 +219,10 @@ def achado_nota_fiscal_ausente(
     cuja descrição não cita "NF." (evita alarme falso em massa).
     """
     m_nf = _RE_NF_NA_DESCRICAO.search(descricao or "")
-    if not m_nf:
+    # Compra em marketplace (Mercado Pago/Livre, Magalu, Amazon...): a nota fiscal TEM que estar anexada mesmo que a listagem não cite o nº
+    # (decisão do dono) — o comprovante é o da plataforma/boleto, que não prova o que foi comprado nem de quem.
+    marketplace = bool(_RE_MARKETPLACE_NF.search(_sem_acento_nf(descricao or "")))
+    if not m_nf and not marketplace:
         return None
     # Benefícios pagos a funcionários (vale transporte, vale refeição/alimentação, cesta básica, vale combustível): as empresas emissoras
     # NÃO emitem nota fiscal para esses benefícios — o nº que a listagem cita é o do documento/fatura de cobrança, e cobrar "Nota Fiscal
@@ -238,7 +245,7 @@ def achado_nota_fiscal_ausente(
     # comprovante de pagamento, só porque o sistema copia a descrição — não
     # prova que a Nota Fiscal em si foi anexada). Só um marcador de Nota
     # Fiscal de verdade ("NOTA FISCAL", "NFS-e", "DANFE") conta.
-    if _RE_NF_NO_COMPROVANTE.search(texto_comp):
+    if _RE_NF_NO_COMPROVANTE.search(_lp.limpar_falsos_marcadores_nf(texto_comp)):
         return None
     # Página do anexo que o OCR não conseguiu LER (foto de baixa resolução, escaneada de lado...: muito texto, quase
     # nenhuma palavra de documento): não dá para afirmar que a Nota Fiscal NÃO está ali.
@@ -253,12 +260,12 @@ def achado_nota_fiscal_ausente(
         return None
     # Anexo de várias páginas (ContasData): o documento que traz o MESMO nº de NF (ex.: recibo/fatura com
     # "nº 1.378") conta, desde que não seja o comprovante bancário nem o boleto — esses só repetem o histórico.
-    if "[Página " in texto_comp and _lp.numero_nf_em_documento(texto_comp, m_nf.group(1)):
+    if m_nf and "[Página " in texto_comp and _lp.numero_nf_em_documento(texto_comp, m_nf.group(1)):
         return None
     # A NF citada pode estar anexada à despesa de OUTRO código do mesmo arquivo (caso típico: a retenção
     # "INSS - NF. 24282 - FORNECEDOR" paga em guia; a NF 24282 acompanha a despesa do serviço). Nesse caso a
     # NF está na pasta — "Nota Fiscal não anexada" só vale quando nenhum anexo do arquivo traz essa NF.
-    if nf_em_outros_anexos is not None and nf_em_outros_anexos(m_nf.group(1), descricao or ""):
+    if m_nf and nf_em_outros_anexos is not None and nf_em_outros_anexos(m_nf.group(1), descricao or ""):
         return None
     return Achado(
         id=_proximo_id(contador),

@@ -226,6 +226,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
     """(achados, notas) — notas = o que NÃO pôde ser verificado e por quê (vai para 'Verificações realizadas')."""
     cfg = {**_PADROES, **(cfg or {})}
     desativar = set(cfg.get("desativar") or [])
+    desativar.add("compra_marketplace")   # decisão do dono: não se pergunta por que comprou em marketplace — exige-se comprovante e NF como nas demais despesas
     notas: list[str] = []
     hist = [h for h in historico if h is not None and h.lancamentos]
     atuais = _lancamentos_validos(dados)

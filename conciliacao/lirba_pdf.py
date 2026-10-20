@@ -522,8 +522,19 @@ _RE_PAGINA_BOLETO = re.compile(r"Benefici[aá]rio|Linha\s+Digit|Recibo\s+do\s+Pa
 _RE_SPLIT_PAGINAS = re.compile(r"\[P[aá]gina (\d+)\]\n")
 
 
+# Frases que CONTÊM o marcador mas dizem o contrário / não são uma nota fiscal: a tela do Mercado Livre ("NF-e não disponível") e o texto do
+# formulário da administradora ("Encaminhar a Nota Fiscal junto com a Solicitação de Pagamento...").
+_RE_FALSO_MARCADOR_NF = re.compile(
+    r"PRESTADORES\s+PESSOA[\s\S]{0,2500}|prestador\s+de\s+servi[cç]o\s+(?:n[aã]o|deve)[^\n]{0,200}|NF-?e\s+n[aã]o\s+\w+|encaminhar[^.;\n]{0,100}Nota\s+Fiscal[^.;\n]{0,120}|Nota\s+Fiscal[^.;\n]{0,40}Solicita[cç][aã]o\s+de\s+Pagamento[^\n]{0,80}|"
+    r"NF\s+ser[aá]\s+emitida[^\n]{0,60}", re.IGNORECASE)
+
+
+def limpar_falsos_marcadores_nf(texto: str | None) -> str:
+    return _RE_FALSO_MARCADOR_NF.sub(" ", texto or "")
+
+
 def tem_marcador_nf(texto: str | None) -> bool:
-    return bool(RE_MARCADOR_NF.search(texto or ""))
+    return bool(RE_MARCADOR_NF.search(limpar_falsos_marcadores_nf(texto)))
 
 
 def paginas_do_texto_bruto(texto_bruto: str | None) -> list[tuple[int, str]]:
