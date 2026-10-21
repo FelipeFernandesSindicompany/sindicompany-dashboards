@@ -536,6 +536,32 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
     return n
 
 
+def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
+    """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
+    config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
+        [{"verificacao": "fornecedor_novo", "valor_total": 10246.57, "decidido_por": "...", "data": "AAAA-MM-DD", "motivo": "..."}]
+    Só vale para a MESMA observação (mesmo tipo de verificação e mesmo valor total): se o arquivo mudar e o valor mudar, ela volta.
+    Só dispensa observações de gestor (pontos de atenção) — nunca divergência de saldo, soma, sinal ou comprovante."""
+    arq = ROOT / "config" / "dispensas_validacao" / base_dir.parent.parent.name / f"{mes}.json"
+    if not arq.exists():
+        return 0
+    dispensas = json.load(open(arq, encoding="utf-8"))
+    por_id = {a.id: a for a in achados}
+    agora = datetime.now(timezone.utc).isoformat()
+    n = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or a.tipo != "observacao_gestor" or item.get("severidade_final") == "informativo":
+            continue
+        for d in dispensas:
+            if (a.detalhes or {}).get("verificacao") == d["verificacao"] and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01:
+                item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
+                            motivo_divergencia_da_sugestao=f"Retirado do relatório por decisão de {d['decidido_por']} em {d['data']}: {d['motivo']}")
+                n += 1
+                break
+    return n
+
+
 def _unir_subconta_nova_ja_reportada(achados: list, esqueleto: list) -> int:
     """O MESMO lançamento (mesmo valor, mesma subconta) não pode aparecer em dois itens do relatório: se o lançamento de uma "Subconta nova
     neste mês" já está em outro item (ex.: "Comprovante sem anexo"), o item da subconta some e a informação vai como frase no outro item."""
@@ -593,6 +619,9 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
+    n_dispensas = _aplicar_dispensas(base_dir, mes, achados, esqueleto)
+    if n_dispensas:
+        print(f"[OK] {n_dispensas} observação(ões) de gestor retirada(s) do relatório por decisão do responsável (config/dispensas_validacao).")
     _unir_subconta_nova_ja_reportada(achados, esqueleto)
     if n_visuais:
         print(f"[OK] {n_visuais} achado(s) tratados como VERIFICADOS por conferência visual do anexo "
