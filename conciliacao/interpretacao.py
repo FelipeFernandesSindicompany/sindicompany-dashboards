@@ -430,8 +430,8 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
                 f"Não existe despesa negativa: um valor negativo é um crédito (recebimento, reembolso ou estorno) e não pode constar como despesa — "
                 f"deve ser lançado como receita, sem reduzir o total das despesas do mês."
             )
-            o_que_verificar = ("Por que esse(s) valor(es) foi(ram) lançado(s) como despesa com sinal negativo? Podem corrigir o lançamento, "
-                               "passando-o para as receitas (crédito) e retirando-o das despesas?")
+            o_que_verificar = ("O que é esse(s) lançamento(s) e por que foi(ram) lançado(s) como despesa com sinal negativo? Se for crédito "
+                               "(recebimento, reembolso ou estorno), podem corrigir, passando-o para as receitas e retirando-o das despesas?")
             base["confianca_ia"] = 1.0
             base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "conta_concessionaria_nao_anexada":

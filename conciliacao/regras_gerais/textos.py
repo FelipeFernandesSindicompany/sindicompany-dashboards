@@ -38,8 +38,8 @@ def texto_receita_negativa(a: Achado) -> tuple[str, str, str]:
                      f"({_moeda(a.valor_encontrado)}). Não existe receita negativa: um valor negativo é uma saída (débito, estorno ou devolução) "
                      f"e deve ser lançado como despesa/ajuste na conta correspondente, e não como receita com sinal negativo, que reduz a "
                      f"arrecadação do mês.")
-    verificar = ("Por que este valor foi lançado como receita negativa? Podem corrigir o lançamento (despesa/estorno na conta correspondente) e, "
-                 "se houve estorno ou devolução, enviar o documento que o sustenta?")
+    verificar = ("O que é este lançamento e por que foi lançado como receita negativa? Se for uma saída (estorno ou devolução), podem corrigir "
+                 "o lançamento (despesa/estorno na conta correspondente) e enviar o documento que o sustenta?")
     return titulo, paragrafo, verificar
 
 

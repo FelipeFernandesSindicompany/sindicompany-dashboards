@@ -511,7 +511,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
             continue
         for c in confs:
             # "divergencia_real" também vale para itens já classificados (ex.: texto de cartão de crédito que não descreve a situação real)
-            if a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor", "nota_fiscal_ausente") and not (c.get("divergencia_real") and a.tipo == "ok_verificado"):
+            if a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor", "nota_fiscal_ausente") and not (c.get("divergencia_real") and a.tipo in ("ok_verificado", "sem_comprovante")):
                 continue
             if any(f"cod{c['codigo']}" in k for k in a.registros_relacionados) and abs(a.valor_esperado - c["valor_listagem"]) <= 0.005:
                 if c.get("divergencia_real"):

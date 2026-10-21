@@ -5,5 +5,23 @@
     "documento": "validação do responsável",
     "resumo": "Locação de rádio — Leve Sistema de Segurança (R$ 385,00)",
     "como": "Lançamento validado pelo responsável pela validação em 19/10/2026: correto, sem pendência de nota fiscal."
+  },
+  {
+    "codigo": "378",
+    "valor_listagem": 26750.24,
+    "divergencia_real": true,
+    "documento": "Demonstrativo de Despesas, linha 378; Posição Financeira da conta EXTRAORDINARIA, linhas 94 a 98",
+    "resumo": "Estorno Sombreadores — EXTRAORDINARIA (R$ 26.750,24)",
+    "como": "O lançamento \"Estorno Sombreadores\" (14/07/2026, R$ 26.750,24) consta no Demonstrativo de Despesas, na conta EXTRAORDINARIA, e na Posição Financeira dessa conta como débito (\"Despesas conf. demonstrativo anexo\"): o saldo da conta passou de R$ 26.750,64 para zero. Não há crédito de mesmo valor em nenhuma conta do mês e não há comprovante anexado. Um estorno que é valor devolvido ao condomínio deve constar como crédito, e não como despesa.",
+    "pergunta": "O que é este lançamento \"Estorno Sombreadores\"? O valor saiu da conta EXTRAORDINARIA: para quem foi pago e por quê? Se for valor devolvido ao condomínio, deve ser lançado como crédito e não como despesa. Podem explicar e enviar o documento que sustenta o lançamento?"
+  },
+  {
+    "codigo": "386",
+    "valor_listagem": 207.67,
+    "divergencia_real": true,
+    "documento": "Demonstrativo de Despesas, linha 386",
+    "resumo": "Receita não antecipada — Consumo de Gás (R$ 207,67)",
+    "como": "O lançamento \"Receita não antecipada\" (14/07/2026, R$ 207,67) consta na listagem de despesas, na categoria Consumo de Gás, com valor positivo, e por isso soma ao total das despesas dessa categoria (R$ 62.819,06). Pelo nome, trata-se de uma receita, e não de uma despesa.",
+    "pergunta": "O que é este lançamento \"Receita não antecipada\"? Por que consta como despesa de Consumo de Gás, somando ao total das despesas? Se for uma receita, podem corrigir o lançamento, passando-o para as receitas?"
   }
 ]
