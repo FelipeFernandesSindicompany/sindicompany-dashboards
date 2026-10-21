@@ -60,7 +60,38 @@ def _categoria_generica(linha: str) -> str | None:
 
 
 class ConciliadorDatadigitusPDF(ConciliadorBase):
+    def _registros_ruggiero(self, paginas, rug) -> list:
+        """Layout nativo da Predial Ruggiero (Maison du Rhône a partir de set/2026): lançamentos sem data, com os totais por conta declarados."""
+        r = rug.ler(paginas)
+        registros: list[RegistroComprovante] = []
+        por_pagina: dict[int, int] = {}
+
+        def _cod(pag: int) -> str:
+            por_pagina[pag] = por_pagina.get(pag, 0) + 1
+            return str(por_pagina[pag])
+
+        for lanc in r["lancamentos"]:
+            registros.append(RegistroComprovante(
+                pagina=lanc.pagina, codigo=_cod(lanc.pagina), tipo_documento="despesa_listada", descricao=lanc.descricao[:200] or None,
+                valor=lanc.valor, categoria_demonstrativo=lanc.categoria, conta=lanc.conta, texto_bruto=lanc.descricao, bbox_crop=lanc.bbox))
+        for conta, valor, pag in r["totais_conta"]:
+            registros.append(RegistroComprovante(
+                pagina=pag, codigo=_cod(pag), tipo_documento="total_conta_declarado", descricao=conta, valor=valor,
+                texto_bruto=f"TOTAL DA CONTA {valor}"))
+        return registros
+
     def extrair_comprovantes(self, caminho: Path) -> list:
+        import fitz
+
+        from conciliacao.regras_gerais.extratores import datadigitus_ruggiero as _rug
+        from conciliacao.regras_gerais.extratores.datadigitus import _linhas
+        _doc = fitz.open(str(caminho))
+        try:
+            _paginas = [(i + 1, _doc[i].rect.width, _linhas(_doc[i])) for i in range(len(_doc))]
+        finally:
+            _doc.close()
+        if _rug.eh_ruggiero(_paginas):
+            return self._registros_ruggiero(_paginas, _rug)
         import pdfplumber
         with pdfplumber.open(str(caminho)) as pdf:
             textos = [p.extract_text() or "" for p in pdf.pages]
@@ -83,6 +114,13 @@ class ConciliadorDatadigitusPDF(ConciliadorBase):
                     continue
 
                 if _RE_TOTAL_GERAL.match(l):
+                    dentro_demonstrativo = False
+                    break
+
+                # Fim da seção: outro demonstrativo (ex.: "Demonstrativo de Receitas") começou. Sem isso, o Maison Du Rhone 08 (cuja
+                # listagem de receitas começa na mesma página do total das despesas e não tem "TOTAL GERAL") tinha cabeçalhos em
+                # CAIXA ALTA da receita ("DO PERIODO", "ATRASADO", "MULTAS"...) lidos como categorias e as receitas somadas como despesas.
+                if re.match(r"^Demonstrativo\s+de\s+(?!Despesas)", l, re.IGNORECASE):
                     dentro_demonstrativo = False
                     break
 

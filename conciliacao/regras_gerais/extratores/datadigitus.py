@@ -102,6 +102,9 @@ class Extrator:
             dados.motivos_nao_cobertos = {k: motivo for k in ("receitas", "rendimentos", "lancamentos")}
             dados.avisos.append("PDF sem texto (impressão em imagem): regras gerais não verificadas neste mês")
             return dados
+        from conciliacao.regras_gerais.extratores import datadigitus_ruggiero as _rug
+        if _rug.eh_ruggiero(paginas):                 # layout nativo da Predial Ruggiero (Maison du Rhône a partir de set/2026)
+            return self._extrair_ruggiero(dados, paginas, _rug)
         texto_all = " ".join(l["texto"] for _, _, ls in paginas for l in ls[:40])
         if "DataDigitus" not in " ".join(l["texto"] for _, _, ls in paginas for l in ls) and "Resumo Financeiro Contábil" not in texto_all:
             motivo = ("este PDF não é o 'Balancete consolidado' DataDigitus (sem Resumo Financeiro Contábil / Demonstrativo de Despesas); "
@@ -125,6 +128,25 @@ class Extrator:
         if not dados.cobertura["rendimentos"]:
             dados.motivos_nao_cobertos["rendimentos"] = "não consegui ler as contas (Resumo Financeiro Contábil) ou as receitas por conta"
         if not dados.cobertura["lancamentos"]:
+            dados.motivos_nao_cobertos["lancamentos"] = "o PDF não traz o Demonstrativo de Despesas com lançamentos"
+        return dados
+
+    # ── layout nativo Predial Ruggiero (ver datadigitus_ruggiero.py) ─────────
+    def _extrair_ruggiero(self, dados: DadosRegras, paginas, rug) -> DadosRegras:
+        r = rug.ler(paginas)
+        dados.contas, dados.lancamentos, dados.receitas = r["contas"], r["lancamentos"], r["receitas"]
+        dados.avisos.extend(r["avisos"])
+        achou_desp, achou_rec = bool(dados.lancamentos), bool(dados.receitas)
+        self._falta_debito = self._debitos_sem_lancamento(dados) if achou_desp else {}
+        if achou_desp:
+            self._transferencias(dados)
+        self._rendimentos_e_conferencias(dados, achou_rec, achou_rec)
+        dados.cobertura = {"receitas": achou_rec, "rendimentos": bool(dados.contas) and achou_rec, "lancamentos": achou_desp}
+        if not achou_rec:
+            dados.motivos_nao_cobertos["receitas"] = "o PDF não traz o Demonstrativo Financeiro (Posição Financeira) por conta"
+        if not dados.cobertura["rendimentos"]:
+            dados.motivos_nao_cobertos["rendimentos"] = "não consegui ler as contas (Resumo Financeiro) ou as receitas por conta"
+        if not achou_desp:
             dados.motivos_nao_cobertos["lancamentos"] = "o PDF não traz o Demonstrativo de Despesas com lançamentos"
         return dados
 

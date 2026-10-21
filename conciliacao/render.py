@@ -640,7 +640,16 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                     # lançamento com a descrição quebrada em 2-3 linhas: o destaque cobre todas, até a próxima linha que começa com data
                     import re as _re
                     altura_l = m["bottom"] - m["top"]
+                    # Página SEM datas nas linhas (ex.: Predial Ruggiero, "histórico ..... valor"): o que marca o fim do lançamento é a linha que já traz
+                    # o valor — a linha seguinte é OUTRO lançamento, não continuação do histórico.
+                    sem_data = not any(_re.match(r"\d{2}/\d{2}/\d{4}$", w["text"]) and w["x0"] < 0.2 * float(page.width) for w in palavras)
+                    atual = da_linha or [m]
+
+                    def _tem_valor(ws) -> bool:
+                        return any(_re.fullmatch(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", str(w.get("text", ""))) and w["x0"] > 0.6 * float(page.width) for w in ws)
                     for _ in range(3):
+                        if sem_data and _tem_valor(atual):
+                            break
                         prox = [w for w in palavras if base_d - 1 <= w["top"] <= base_d + altura_l * 0.9]
                         if not prox:
                             break
@@ -652,6 +661,7 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                         mesma = [w for w in prox if abs(w["top"] - topo_p) < 2.5]
                         base_d = max(w["bottom"] for w in mesma)
                         x_fim = max(x_fim, max(w["x1"] for w in mesma))
+                        atual = mesma
                 destaques = [(x_ini - 2, m["top"] - 1.5, x_fim + 2, base_d + 1.5)]
         else:
             destaques = [tuple(d) for d in spec.get("destaques", [])]

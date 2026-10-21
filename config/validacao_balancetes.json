@@ -313,6 +313,7 @@
     },
     "maison_du_rhone": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Maison Du Rhone",
+      "leitor_financeiro": "regras_gerais",
       "regras": {
         "rendimento": {
           "ignorar_contas": [

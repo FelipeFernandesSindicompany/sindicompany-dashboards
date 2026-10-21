@@ -1008,6 +1008,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         "i_gloo_alphaville": "GCONT",
         "parque_saint_afonso": "GCONT",
         "top_nine": "Conister",
+        "maison_du_rhone": "Predial Ruggiero",     # DataDigitus é só o software; o PDF traz "PREDIAL RUGGIERO LTDA"
         "plano_estacao_campo_limpo": "Foccus",
         "serra_da_mantiqueira": "FL Condomínios",
         "palm_beach": "Group Condomínios",
