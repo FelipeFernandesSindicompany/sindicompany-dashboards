@@ -662,18 +662,28 @@ def etapa_render(condo: dict, mes: str) -> Path:
     except (OSError, ValueError):
         _specs_extras = {}
 
+    # pasta do projeto onde ficam os arquivos dos meses (o arquivo "de origem" pode ser uma cópia em outra pasta): print do mês anterior sai daqui
+    _pasta_meses = pasta_prestacao.pasta_do_condominio(condo) or (pdf_origem.parent if pdf_origem else Path("."))
+
     def _evidencias_planilha(achado, registro) -> list[dict]:
-        # Prestação em planilha: recorta as linhas do próprio XLSX (com nº da linha e letra da coluna).
+        # Prestação em planilha: recorta as linhas do próprio arquivo (com nº da linha e letra da coluna). XLSX: planos(); XLS (Lello/Auxiliadora): planos_xls().
         out = []
-        for k, plano in enumerate(evidencia_planilha.planos(pdf_origem, achado, registro), start=1):
+        eh_xls = pdf_origem.suffix.lower() == ".xls"
+        planos = evidencia_planilha.planos_xls(pdf_origem, achado, registro, _pasta_meses) if eh_xls else evidencia_planilha.planos(pdf_origem, achado, registro)
+        for k, plano in enumerate(planos, start=1):
             destino = version_dir / "evidencias_planilha" / f"{achado.id}_{k}.pdf"
-            rec = evidencia_planilha.recorte_pdf(pdf_origem, plano["linhas"], plano["destacar"], destino,
-                                                 cabecalho=plano.get("cabecalho"))
+            arq_plano = (_pasta_meses / plano["arquivo"]) if plano.get("arquivo") else pdf_origem   # (mês anterior: outro arquivo da mesma pasta)
+            if not arq_plano.exists():
+                continue
+            if plano.get("dados") is not None:
+                rec = evidencia_planilha.recorte_linhas(plano["dados"], plano["linhas"], plano["destacar"], destino, cabecalho=plano.get("cabecalho"))
+            else:
+                rec = evidencia_planilha.recorte_pdf(arq_plano, plano["linhas"], plano["destacar"], destino, cabecalho=plano.get("cabecalho"))
             if not rec:
                 continue
             ev = render.preparar_evidencia_extra(destino, {
                 "pagina": 1, "bbox": rec["bbox"], "destaques": rec["destaques"],
-                "legenda": f"{plano['legenda']} — {pdf_origem.name}, linhas {plano['linhas'][0]} a {plano['linhas'][-1]}"})
+                "legenda": f"{plano['legenda']} — {arq_plano.name}, linhas {plano['linhas'][0]} a {plano['linhas'][-1]}"})
             if ev:
                 out.append(ev)
         return out
@@ -739,20 +749,45 @@ def etapa_render(condo: dict, mes: str) -> Path:
         # valem os automáticos da família (conciliacao/evidencias.py).
         if not pdf_origem:
             return []
-        if pdf_origem.suffix.lower() in (".xlsx", ".xlsm") and achado is not None and chave not in _specs_extras:
+        if pdf_origem.suffix.lower() in (".xlsx", ".xlsm", ".xls") and achado is not None and chave not in _specs_extras:
             try:
                 return _evidencias_planilha(achado, registro)
             except Exception as exc:
                 print(f"[AVISO] print de evidência da planilha não gerado para {chave}: {exc}")
                 return []
         if pdf_origem.suffix.lower() != ".pdf":
-            return []  # .xls (HTML/Excel antigo) não tem páginas: não há print de página a montar
+            return []
         specs = _specs_extras.get(chave) or specs_auto or []
-        evs = [render.preparar_evidencia_extra(pdf_origem, s) for s in specs]
+        def _prep(sp):
+            if sp.get("arquivo"):                       # print de outro arquivo da mesma pasta (ex.: mês anterior)
+                alt = _pasta_meses / sp["arquivo"]
+                return render.preparar_evidencia_extra(alt, {k: v for k, v in sp.items() if k != "arquivo"}) if alt.exists() else None
+            return render.preparar_evidencia_extra(pdf_origem, sp)
+        evs = [_prep(s) for s in specs]
         evs = [e for e in evs if e]
         if not evs and achado is not None and (achado.id or "").startswith("RG-") and chave not in _specs_extras:
             evs = _evidencias_pagina_por_ocr(achado)
+        if not evs and achado is not None and (achado.detalhes or {}).get("so_total") and chave not in _specs_extras:
+            # formato só com totais por categoria (balancete mensal): o print é a linha da categoria, localizada pelo nome no próprio PDF
+            evs = _evidencia_categoria(achado)
         return evs
+
+    def _evidencia_categoria(achado) -> list[dict]:
+        import fitz as _fitz
+        nome = str((achado.detalhes or {}).get("categoria") or achado.linha_demonstrativo or "").strip()
+        if not nome:
+            return []
+        try:
+            with _fitz.open(str(pdf_origem)) as doc:
+                for i, pg in enumerate(doc):
+                    if pg.search_for(nome):
+                        ev = render.preparar_evidencia_extra(pdf_origem, {"pagina": i + 1, "buscar": re.escape(nome[:40]).replace(r"\ ", r"\s+"),
+                                                                           "legenda": f"Categoria {nome} no balancete (página {i + 1} do arquivo)", "linha_inteira": True})
+                        if ev:
+                            return [ev]
+        except Exception:
+            return []
+        return []
 
     # O destaque de página escaneada usa OCR (~10 s por página): limita o TEMPO
     # total por relatório pra não alongar a geração quando há dezenas de
@@ -813,7 +848,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 rev.achado_id,
                 evidencias.evidencias_agregadas(achado, registros_por_pagina, pdf_origem)
                 if achado.regra_aplicada in _REGRAS_AGREGADAS and pdf_origem and pdf_origem.suffix.lower() == ".pdf" else (
-                    regras_gerais_evidencias.specs_para(achado) if (achado.id or "").startswith("RG-") else None),
+                    regras_gerais_evidencias.specs_para(achado) if ((achado.id or "").startswith("RG-") or achado.tipo == "conta_concessionaria_nao_anexada") else None),
                 achado, registros_por_pagina.get(achado.registros_relacionados[0]) if achado.registros_relacionados else None,
             ),
             "evidencia_texto": regras_gerais_evidencias.texto_origem(achado),

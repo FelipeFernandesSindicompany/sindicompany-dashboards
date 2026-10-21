@@ -284,6 +284,8 @@ class Extrator:
             p = _parse_demonstrativo(texto)
             pag_demo = ini + 1
             self._montar(dados, p, pag_demo, doc, caminho, chave)
+            for c in dados.contas:      # a tabela de contas está nesta página do demonstrativo (print de evidência)
+                c.pagina = c.pagina or pag_demo
         finally:
             doc.close()
         aplicar_config_receitas_negativas(dados, self.condo)

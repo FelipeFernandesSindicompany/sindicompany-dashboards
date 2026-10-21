@@ -24,7 +24,8 @@ def _trecho(descricao: Optional[str], n: int = 28) -> Optional[str]:
 
 
 def _spec(pagina, buscar, legenda) -> dict:
-    return {"pagina": pagina, "buscar": buscar, "legenda": legenda}
+    # linha_inteira: o retângulo cobre a linha do lançamento inteira (não só o trecho encontrado), inclusive as linhas de descrição quebrada
+    return {"pagina": pagina, "buscar": buscar, "legenda": legenda, "linha_inteira": True}
 
 
 def specs_para(a: Achado) -> list[dict]:
@@ -44,6 +45,20 @@ def specs_para(a: Achado) -> list[dict]:
             if i.get("pagina"):
                 specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])),
                                    "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or "")))
+    elif a.tipo == "saldo_negativo_persistente" and d.get("pagina") and d.get("contas"):
+        specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_atual"])), "Saldo atual da conta " + d["contas"][0]["nome"]))
+    elif a.tipo == "observacao_gestor" and d.get("verificacao") == "deficit_conta" and d.get("pagina"):
+        specs.append(_spec(d["pagina"], re.escape(_br(d.get("debitos") or 0)), "Débitos da conta " + (d.get("conta") or "")))
+    elif a.tipo == "observacao_gestor" and d.get("verificacao") == "recorrente_ausente":
+        # a despesa NÃO está neste mês: o print é a linha dela no mês anterior (arquivo do mês anterior, mesma pasta)
+        for x in d.get("ausentes", [])[:3]:
+            if x.get("pagina") and x.get("arquivo"):
+                specs.append({**_spec(x["pagina"], _trecho(x.get("descricao")) or re.escape(_br(x["mediana"])),
+                                      f"Lançamento do mês anterior ({x.get('mes')}) que não aparece neste mês"), "arquivo": x["arquivo"]})
+    elif a.tipo == "conta_concessionaria_nao_anexada":
+        for i in d.get("itens", [])[:3]:
+            if i.get("pagina"):
+                specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])), "Lançamento de concessionária"))
     elif a.tipo == "observacao_gestor":
         for i in d.get("lancamentos", [])[:4]:
             if i.get("pagina"):
@@ -55,6 +70,9 @@ def specs_para(a: Achado) -> list[dict]:
     elif a.tipo == "compensacao_nao_fecha" and d.get("pagina"):
         specs.append(_spec(d["pagina"], r"ESTAC", "Lançamentos do grupo " + (d.get("grupo") or "")))
     elif a.tipo == "rendimento_desproporcional" and d.get("pagina"):
+        if d.get("motivo") in ("sem_rendimento", "sem_rendimento_consolidado") and d.get("conta"):
+            # conta que NÃO recebeu rendimento: não há linha de rendimento para marcar — marca a linha da própria conta na tabela de contas
+            specs.append(_spec(d["pagina"], re.escape(str(d["conta"]))[:40].replace(r"\ ", r"\s+"), "Conta " + str(d["conta"]) + " (sem rendimento no mês)"))
         specs.append({**_spec(d["pagina"], r"REND", "Rendimento creditado na conta " + (d.get("conta") or "")), "linha_inteira": True})
     return [s for s in specs if s["buscar"]]
 

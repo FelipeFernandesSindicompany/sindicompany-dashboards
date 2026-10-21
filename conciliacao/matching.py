@@ -176,7 +176,8 @@ _RE_BENEFICIO_FUNCIONARIO = re.compile(
 
 # honorários advocatícios/custas e serviço de cartório (emolumento com recibo): o comprovante de pagamento basta, sem nota fiscal
 _RE_HONORARIOS_ADVOCATICIOS = re.compile(
-    r"HONORARIO|ADVOCAT|ADVOGAD|\bSOC\.?\s*ADV\b|\bADV\b|CARTORIO|REGISTRO\s+DE\s+(?:ATA|DOCUMENTO|TITULO)S?|TITULOS\s+E\s+DOCUMENTOS|\bCDT\b",
+    r"HONORARIO|ADVOCAT|ADVOGAD|\bSOC\.?\s*ADV\b|\bADV\b|CARTORIO|REGISTRO\s+DE\s+(?:ATA|DOCUMENTO|TITULO)S?|TITULOS\s+E\s+DOCUMENTOS|\bCDT\b|"
+    r"\bLOCACAO\b|\bLOCACOES\b|\bALUGUEL\b|\bALUGUEIS\b",       # locação/aluguel: o documento é o contrato/recibo, não nota fiscal (decisão do dono)
     re.IGNORECASE)
 
 

@@ -67,11 +67,16 @@ def _latin(s: str) -> str:
 
 def recorte_pdf(caminho: Path, linhas: list, destacar: list, destino: Path, legenda_arquivo: str = "",
                 cabecalho: Optional[int] = None) -> Optional[dict]:
-    """Desenha as `linhas` (números 1-based da planilha) numa página PDF em `destino`.
+    """Planilha XLSX: ver recorte_linhas."""
+    return recorte_linhas(_linhas(caminho), linhas, destacar, destino, cabecalho=cabecalho)
+
+
+def recorte_linhas(dados: list, linhas: list, destacar: list, destino: Path, legenda_arquivo: str = "",
+                   cabecalho: Optional[int] = None) -> Optional[dict]:
+    """Desenha as `linhas` (números 1-based da planilha/tabela; `dados[n-1]` = linha n) numa página PDF em `destino`.
     `destacar`: números das linhas a marcar. `cabecalho`: linha de títulos de coluna mostrada antes.
     Devolve {"bbox": [...], "destaques": [[...]]} (pontos, y para baixo) ou None se não houver o que mostrar."""
     import fitz
-    dados = _linhas(caminho)
     linhas = [n for n in sorted(set(linhas)) if 1 <= n <= len(dados)]
     if not linhas:
         return None
@@ -83,7 +88,7 @@ def recorte_pdf(caminho: Path, linhas: list, destacar: list, destino: Path, lege
     for j in cols:
         m = max(len(_fmt(dados[n - 1][j])) if j < len(dados[n - 1]) else 0 for n in mostrar)
         larg[j] = max(22.0, min(m * _FONTE * 0.58 + 12, 520.0))
-    total_l = _LARG_NUM + sum(larg.values()) + 8
+    total_l = max(_LARG_NUM + sum(larg.values()) + 8, 430.0)   # largura mínima: recorte estreito não é ampliado nem estoura o cartão
     cab_h = _ALT_LINHA + 4
     # linhas "puladas" entre trechos não contíguos viram uma linha de reticências
     seq: list = []
@@ -128,7 +133,7 @@ def recorte_pdf(caminho: Path, linhas: list, destacar: list, destino: Path, lege
             else:
                 pg.insert_text((pos_x[j] + 3, y + _ALT_LINHA - 3), t, fontsize=_FONTE, fontname=f)
         if n in destacar:
-            destaques.append([_LARG_NUM - 1, y + 0.5, pg.rect.width - 1, y + _ALT_LINHA - 0.5])
+            destaques.append([1.0, y + 0.5, pg.rect.width - 1, y + _ALT_LINHA - 0.5])   # a linha inteira, do nº da linha até a última coluna
         y += _ALT_LINHA
     destino.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(destino))
@@ -176,6 +181,30 @@ def linha_do_lancamento(caminho: Path, codigo, valor) -> Optional[int]:
     return achou
 
 
+def _bloco_posicao(dados: list, conta) -> Optional[tuple]:
+    """(linha inicial, linha final) 1-based do bloco 'Posição Financeira' da conta (de 'POSICAO FINANCEIRA' até 'SALDO ATUAL')."""
+    alvo = _norm(conta)
+    if not alvo:
+        return None
+    for i, r in enumerate(dados):
+        if r and r[0] and _norm(r[0]) == alvo and not any(str(x or "").strip() for x in r[1:]):
+            for k in range(i + 1, min(i + 40, len(dados))):
+                if dados[k] and _norm(dados[k][0]).startswith("POSICAO FINANCEIRA"):
+                    ini = k + 1
+                    fim = ini
+                    for kk in range(ini, min(ini + 40, len(dados))):
+                        fim = kk + 1
+                        if dados[kk] and _norm(dados[kk][0]).startswith("SALDO ATUAL"):
+                            break
+                    return ini, fim
+    return None
+
+
+def _linhas_com(dados: list, ini: int, fim: int, prefixos: tuple) -> list:
+    """Linhas (1-based) do intervalo cujo 1º campo começa com um dos prefixos."""
+    return [k + 1 for k in range(ini - 1, fim) if dados[k] and dados[k][0] and _norm(dados[k][0]).startswith(prefixos)]
+
+
 def planos(caminho: Path, achado, registro=None) -> list[dict]:
     """Lista de planos de recorte [{"linhas": [...], "destacar": [...], "cabecalho": n|None, "legenda": str}]."""
     d = achado.detalhes or {}
@@ -208,27 +237,53 @@ def planos(caminho: Path, achado, registro=None) -> list[dict]:
                         "cabecalho": _cabecalho_despesas(dados, g[0]),
                         "legenda": "Lançamento(s) na subconta " + str(d.get("categoria_atual") or d.get("categoria") or achado.linha_demonstrativo or "")})
     elif t == "rendimento_desproporcional":
-        conta = _norm(d.get("conta"))
-        ini = None
-        for i, r in enumerate(dados):
-            if r and r[0] and _norm(r[0]) == conta and not any(str(x or "").strip() for x in r[1:]):
-                for k in range(i + 1, min(i + 14, len(dados))):
-                    if dados[k] and _norm(dados[k][0]).startswith("POSICAO FINANCEIRA"):
-                        ini = k + 1
-                        break
-                if ini:
-                    break
-        if ini:
-            fim = ini
-            for k in range(ini, min(ini + 40, len(dados))):
-                fim = k + 1
-                if dados[k] and _norm(dados[k][0]).startswith("SALDO ATUAL"):
-                    break
+        bloco = _bloco_posicao(dados, d.get("conta"))
+        if bloco:
+            ini, fim = bloco
             dest = [k + 1 for k in range(ini - 1, fim) if dados[k] and _norm(dados[k][0]).startswith("RENDIMENTO")]
+            if not dest:      # sem linha de rendimento: marca o total creditado e o saldo, que mostram que nada foi creditado
+                dest = _linhas_com(dados, ini, fim, ("TOTAIS", "SALDO ATUAL"))
             out.append({"linhas": list(range(ini, fim + 1)), "destacar": dest, "cabecalho": None,
                         "legenda": f"Posição Financeira da conta {d.get('conta')}"
-                                   + ("" if dest else " — não há linha de rendimento")})
-    elif t in ("sem_comprovante", "divergencia_valor", "duplicidade", "sem_lancamento_correspondente", "cnpj_ausente") and registro is not None:
+                                   + ("" if any(_norm(dados[k - 1][0]).startswith("RENDIMENTO") for k in dest if dados[k - 1] and dados[k - 1][0]) else " — não há linha de rendimento")})
+    elif t in ("movimento_entre_contas", "continuidade_saldo", "saldo_negativo_persistente", "saldo_negativo") \
+            or (t == "observacao_gestor" and d.get("verificacao") == "deficit_conta"):
+        if t == "continuidade_saldo":
+            contas, chaves, rotulo = [c["nome"] for c in d.get("contas", [])][:3], ("SALDO ANTERIOR",), "saldo anterior"
+        elif t.startswith("saldo_negativo"):
+            contas, chaves, rotulo = [c["nome"] for c in d.get("contas", [])][:3], ("SALDO ATUAL",), "saldo atual"
+        elif t == "movimento_entre_contas":
+            contas, chaves, rotulo = [d.get("conta")], ("SALDO ANTERIOR", "TOTAIS", "SALDO ATUAL"), "saldos e movimento"
+        else:
+            contas, chaves, rotulo = [d.get("conta")], ("TOTAIS", "SALDO ATUAL"), "créditos e débitos"
+        for conta in contas:
+            bloco = _bloco_posicao(dados, conta)
+            if bloco:
+                ini, fim = bloco
+                out.append({"linhas": list(range(ini, fim + 1)), "destacar": _linhas_com(dados, ini, fim, chaves), "cabecalho": None,
+                            "legenda": f"Posição Financeira da conta {conta} ({rotulo})"})
+    elif t == "parcelas_mesmo_mes":
+        locais = [_n(p.get("local")) for p in d.get("parcelas", [])]
+        for g in _agrupar([n for n in locais if n], folga=40)[:1]:
+            out.append({"linhas": sorted(set(g)), "destacar": g, "cabecalho": _cabecalho_despesas(dados, g[0]), "legenda": "Parcelas pagas no mesmo mês"})
+    elif t == "observacao_gestor" and d.get("verificacao") == "recorrente_ausente":
+        for x in d.get("ausentes", [])[:3]:
+            n = _n(x.get("local"))
+            if n and x.get("arquivo"):
+                out.append({"linhas": [n - 1, n, n + 1], "destacar": [n], "cabecalho": None, "arquivo": x["arquivo"],
+                            "legenda": f"Lançamento do mês anterior ({x.get('mes')}) que não aparece neste mês — {x['descricao'][:60]}"})
+    elif t == "observacao_gestor":
+        locais = [_n(i.get("local")) for i in d.get("lancamentos", [])]
+        for g in _agrupar([n for n in locais if n], folga=1)[:3]:
+            out.append({"linhas": list(range(max(1, g[0] - 1), g[-1] + 2)), "destacar": g, "cabecalho": _cabecalho_despesas(dados, g[0]),
+                        "legenda": "Lançamento(s) citado(s) nesta observação"})
+    elif t == "conta_concessionaria_nao_anexada":
+        ns = [linha_do_lancamento(caminho, i.get("codigo"), i.get("valor")) for i in d.get("itens", [])]
+        for g in _agrupar([n for n in ns if n], folga=2)[:3]:
+            out.append({"linhas": list(range(max(1, g[0] - 1), g[-1] + 2)), "destacar": g, "cabecalho": _cabecalho_despesas(dados, g[0]),
+                        "legenda": "Lançamento(s) de concessionária"})
+    elif t in ("sem_comprovante", "divergencia_valor", "duplicidade", "sem_lancamento_correspondente", "cnpj_ausente", "nota_fiscal_ausente",
+               "conteudo_nao_verificavel", "atraso_pagamento") and registro is not None:
         # No extrator de planilha o "código" e a "página" do registro são o número da própria linha do Excel.
         n = None
         pg = getattr(registro, "pagina", None)
@@ -241,4 +296,197 @@ def planos(caminho: Path, achado, registro=None) -> list[dict]:
         if n:
             out.append({"linhas": [n - 1, n, n + 1], "destacar": [n], "cabecalho": _cabecalho_despesas(dados, n),
                         "legenda": "Lançamento no Demonstrativo de Despesas"})
+    return out
+
+
+# ── Planilhas .xls: Lello (HTML/MHTML — "tabela T, linha R") e Auxiliadora (BIFF — "aba 'X', linha N") ──────────────────────
+
+_cache_xls: dict = {}
+
+
+def _fonte_xls(caminho: Path) -> dict:
+    """{'tipo': 'mhtml'|'biff', 'tabelas': {tabela: [linhas]}} (mhtml) ou {'abas': {nome: [linhas]}} (biff). Linha n = índice n-1."""
+    chave = str(caminho)
+    if chave in _cache_xls:
+        return _cache_xls[chave]
+    f: dict = {}
+    try:
+        import xlrd
+        wb = xlrd.open_workbook(chave)
+        f = {"tipo": "biff", "abas": {ws.name: [[ws.cell_value(r, c) for c in range(ws.ncols)] for r in range(ws.nrows)] for ws in wb.sheets()}}
+    except Exception:
+        try:
+            from conciliacao.regras_gerais.extratores import lello_mhtml as L
+            tabs: dict = {}
+            for ti, ri, cel in L._linhas(L._texto_html(Path(caminho))):
+                t = tabs.setdefault(ti, [])
+                while len(t) < ri - 1:
+                    t.append([])
+                t.append(list(cel))
+            f = {"tipo": "mhtml", "tabelas": tabs}
+        except Exception:
+            f = {}
+    _cache_xls[chave] = f
+    return f
+
+
+def _ref_local(local) -> tuple:
+    """('tabela', T, N) | ('aba', nome, N) | (None, None, N) a partir do texto de localização do extrator."""
+    s = str(local or "")
+    n = re.search(r"linha\s+(\d+)", s)
+    n = int(n.group(1)) if n else None
+    t = re.search(r"tabela\s+(\d+)", s)
+    if t:
+        return ("tabela", int(t.group(1)), n)
+    a = re.search(r"aba\s+'([^']+)'", s) or re.search(r"aba\s+([^,]+),", s)
+    if a:
+        return ("aba", a.group(1).strip(), n)
+    return (None, None, n)
+
+
+def _rows_ref(fonte: dict, tipo, chave) -> list:
+    if tipo == "tabela":
+        return fonte.get("tabelas", {}).get(chave, [])
+    if tipo == "aba":
+        for nome, rows in fonte.get("abas", {}).items():
+            if _norm(nome) == _norm(chave):
+                return rows
+    return []
+
+
+def _bloco_conta_xls(fonte: dict, conta) -> Optional[tuple]:
+    """(rows, ini, fim) 1-based do bloco 'Posição Financeira' da conta numa fonte .xls."""
+    alvo = _norm(conta)
+    if not alvo or not fonte:
+        return None
+    if fonte["tipo"] == "mhtml":
+        tabs = fonte["tabelas"]
+        for ti in sorted(tabs):
+            rows = tabs[ti]
+            if rows and rows[0] and _norm(rows[0][0]) == alvo:
+                for tj in (ti + 1, ti + 2):
+                    r2 = tabs.get(tj) or []
+                    if any(r and r[0] and _norm(r[0]).startswith("POSICAO FINANCEIRA") for r in r2[:4]):
+                        return r2, 1, len(r2)
+        return None
+    for nome, rows in fonte["abas"].items():
+        if not _norm(nome).startswith("DEMONST") or "CONTAS" not in _norm(nome):
+            continue
+        for i, r in enumerate(rows):
+            if r and r[0] and _norm(r[0]) == alvo and i + 1 < len(rows) and rows[i + 1] and _norm(rows[i + 1][0]).startswith("POSICAO FINANCEIRA"):
+                fim = i + 1
+                for k in range(i + 2, min(i + 40, len(rows))):
+                    if k + 1 < len(rows) and rows[k + 1] and _norm(rows[k + 1][0]).startswith("POSICAO FINANCEIRA"):
+                        break
+                    fim = k + 1
+                return rows, i + 1, fim
+    return None
+
+
+def _rotulo(r) -> str:
+    """1º campo preenchido da linha (nas tabelas HTML o rótulo pode estar numa coluna que não é a A)."""
+    for c in r or []:
+        if str(c or "").strip():
+            return _norm(c)
+    return ""
+
+
+def _destacar_prefixos(rows: list, ini: int, fim: int, prefixos: tuple) -> list:
+    return [k + 1 for k in range(ini - 1, min(fim, len(rows))) if _rotulo(rows[k]).startswith(prefixos)]
+
+
+def planos_xls(caminho: Path, achado, registro=None, pasta_meses: Optional[Path] = None) -> list[dict]:
+    """Planos de recorte para .xls — cada plano traz as linhas já lidas em "dados" (índice n-1 = linha n)."""
+    fonte = _fonte_xls(Path(caminho))
+    if not fonte:
+        return []
+    d = achado.detalhes or {}
+    t = achado.tipo
+    out: list[dict] = []
+
+    def _por_locais(locais: list, legenda: str, folga: int = 1) -> None:
+        por_ref: dict = {}
+        for loc in locais:
+            tipo, chave, n = _ref_local(loc)
+            if n:
+                por_ref.setdefault((tipo, chave), []).append(n)
+        for (tipo, chave), ns in list(por_ref.items())[:3]:
+            rows = _rows_ref(fonte, tipo, chave)
+            if not rows:
+                continue
+            for g in _agrupar(ns, folga=folga)[:2]:
+                out.append({"dados": rows, "linhas": list(range(max(1, g[0] - 1), min(len(rows), g[-1] + 1) + 1)), "destacar": g, "cabecalho": None,
+                            "legenda": legenda})
+
+    def _por_contas(contas: list, prefixos: tuple, rotulo: str) -> None:
+        for conta in contas[:3]:
+            b = _bloco_conta_xls(fonte, conta)
+            if b:
+                rows, ini, fim = b
+                out.append({"dados": rows, "linhas": list(range(ini, fim + 1)), "destacar": _destacar_prefixos(rows, ini, fim, prefixos), "cabecalho": None,
+                            "legenda": f"Posição Financeira da conta {conta} ({rotulo})"})
+
+    if t in ("subconta_atipica", "lancamento_em_outra_subconta"):
+        _por_locais([i.get("local") for i in d.get("lancamentos", [])], "Lançamento(s) na subconta " + str(d.get("categoria_atual") or d.get("categoria") or ""))
+    elif t == "receita_negativa":
+        _por_locais([i.get("local") for i in d.get("itens", [])] or [d.get("local")], "Linha de receita com valor negativo")
+    elif t == "parcelas_mesmo_mes":
+        _por_locais([p.get("local") for p in d.get("parcelas", [])], "Parcelas pagas no mesmo mês", folga=40)
+    elif t == "observacao_gestor" and d.get("verificacao") == "recorrente_ausente":
+        for x in d.get("ausentes", [])[:3]:
+            arq = x.get("arquivo")
+            if not arq or not x.get("local"):
+                continue
+            f2 = _fonte_xls(Path(pasta_meses or Path(caminho).parent) / arq)
+            tipo, chave, n = _ref_local(x["local"])
+            rows = _rows_ref(f2, tipo, chave) if f2 else []
+            if rows and n:
+                out.append({"dados": rows, "linhas": list(range(max(1, n - 1), min(len(rows), n + 1) + 1)), "destacar": [n], "cabecalho": None, "arquivo": arq,
+                            "legenda": f"Lançamento do mês anterior ({x.get('mes')}) que não aparece neste mês — {x['descricao'][:60]}"})
+    elif t == "observacao_gestor" and d.get("verificacao") == "deficit_conta":
+        _por_contas([d.get("conta")], ("TOTAIS", "SALDO ATUAL"), "créditos e débitos")
+    elif t == "observacao_gestor":
+        _por_locais([i.get("local") for i in d.get("lancamentos", [])], "Lançamento(s) citado(s) nesta observação")
+    elif t == "movimento_entre_contas":
+        _por_contas([d.get("conta")], ("SALDO ANTERIOR", "TOTAIS", "SALDO ATUAL"), "saldos e movimento")
+    elif t == "continuidade_saldo":
+        _por_contas([c["nome"] for c in d.get("contas", [])], ("SALDO ANTERIOR",), "saldo anterior")
+    elif t in ("saldo_negativo_persistente", "saldo_negativo"):
+        _por_contas([c["nome"] for c in d.get("contas", [])], ("SALDO ATUAL",), "saldo atual")
+    elif t == "divergencia_valor" and "repetido" in str(achado.regra_aplicada):
+        # Demonstrativo de Despesas repetido no arquivo: o print mostra as linhas de TOTAL de cada cópia
+        for nome_aba in [n for n in fonte.get("abas", {}) if "DESPESAS" in _norm(n)][:1]:
+            rows = fonte["abas"][nome_aba]
+            tot = [i + 1 for i, r in enumerate(rows) if _rotulo(r).startswith("TOTAL")]
+            for n in tot[:3]:
+                out.append({"dados": rows, "linhas": list(range(max(1, n - 1), min(len(rows), n + 1) + 1)), "destacar": [n], "cabecalho": None,
+                            "legenda": "Linha de total do Demonstrativo de Despesas (o bloco se repete no arquivo)"})
+    elif t in ("duplicidade", "sem_comprovante", "divergencia_valor", "nota_fiscal_ausente", "conteudo_nao_verificavel", "atraso_pagamento") and registro is not None             and (registro.descricao or "").strip():
+        # arquivo sem nº de linha no registro: localiza a(s) linha(s) pelo texto da descrição do lançamento
+        alvo = _norm(registro.descricao)[:32]
+        achou = []
+        if fonte["tipo"] == "mhtml":
+            for ti, rows in fonte["tabelas"].items():
+                for ri, r in enumerate(rows):
+                    if alvo and alvo in " ".join(_norm(c) for c in r):
+                        achou.append((ti, ri + 1))
+        else:
+            for nome_aba, rows in fonte["abas"].items():
+                for ri, r in enumerate(rows):
+                    if alvo and alvo in " ".join(_norm(c) for c in r):
+                        achou.append((nome_aba, ri + 1))
+        for ref in sorted({a for a, _ in achou}, key=str)[:1]:
+            ns = [n for a, n in achou if a == ref]
+            rows = fonte["tabelas"][ref] if fonte["tipo"] == "mhtml" else fonte["abas"][ref]
+            for g in _agrupar(ns, folga=2)[:2]:
+                out.append({"dados": rows, "linhas": list(range(max(1, g[0] - 1), min(len(rows), g[-1] + 1) + 1)), "destacar": g, "cabecalho": None,
+                            "legenda": "Lançamento no demonstrativo"})
+    elif t == "rendimento_desproporcional":
+        conta = d.get("conta")
+        b = _bloco_conta_xls(fonte, conta)
+        if b:
+            rows, ini, fim = b
+            dest = _destacar_prefixos(rows, ini, fim, ("RENDIMENTO",)) or _destacar_prefixos(rows, ini, fim, ("TOTAIS", "SALDO ATUAL"))
+            out.append({"dados": rows, "linhas": list(range(ini, fim + 1)), "destacar": dest, "cabecalho": None,
+                        "legenda": f"Posição Financeira da conta {conta} (rendimento)"})
     return out

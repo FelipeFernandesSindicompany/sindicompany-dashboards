@@ -43,6 +43,7 @@ REGRAS = [
     ("Continuidade", "Saldo anterior = saldo final do mês anterior; se não bate, o relatório precisa ter a pergunta correspondente"),
     ("Sinal", "Valor negativo aparece com '-' (nunca como positivo) nos itens e nas tabelas"),
     ("Perguntas", "Todo item tem 'Pergunta à administradora' que termina em '?' (exceto o alerta de saldo negativo, que só informa)"),
+    ("Evidência", "Todo item tem print do local (sem 'Evidência não disponível'/'Origem no arquivo'), dentro do cartão e com o destaque vermelho cobrindo a linha"),
     ("Texto", "Sem 'None', 'nan', '{{', 'undefined'; sem texto antigo (atraso 'além do dia útil seguinte')"),
     ("Atraso", "Datas de vencimento/pagamento plausíveis (mesmo ano; diferença até 120 dias)"),
     ("NF de benefício/seguro", "Vale transporte/refeição/cesta e seguro não são cobrados como 'Nota Fiscal não anexada'"),
@@ -163,6 +164,24 @@ def analisar(f, condos, por_nome, com_origem):
         add("ALTA", "Texto", "texto antigo de atraso ('além do dia útil seguinte') — relatório precisa ser regenerado")
     if "Nenhuma divergência encontrada" in texto:
         add("ALTA", "Texto", "frase 'Nenhuma divergência encontrada' (não deve aparecer em relatório entregue)")
+
+    # prints de evidência: todo item precisa de print do local, dentro do cartão e com o destaque cobrindo a linha
+    n_sem_print = texto.count("Evidência não disponível") + texto.count("Origem no arquivo:")
+    if n_sem_print:
+        add("ALTA", "Evidência", f"{n_sem_print} item(ns) sem print do local (aparece 'Evidência não disponível' ou só 'Origem no arquivo')")
+    estouro = 0
+    for pg in doc:
+        desenhos = pg.get_drawings()
+        cartoes = [dr["rect"] for dr in desenhos if dr.get("color") and abs(dr["color"][0] - 0.89) < 0.02 and dr["rect"].width > 480 and dr["rect"].x0 < 45]
+        if not cartoes:
+            continue
+        x1_cartao = max(c.x1 for c in cartoes)
+        for dr in desenhos:
+            col = dr.get("color")
+            if col and col[0] > 0.7 and col[1] < 0.2 and dr["rect"].x1 > x1_cartao - 1:      # destaque (borda vermelha) que sai da moldura
+                estouro += 1
+    if estouro:
+        add("ALTA", "Evidência", f"{estouro} destaque(s) vermelho(s) saem da moldura do cartão (print maior que o cartão)")
 
     # itens e perguntas
     i0 = texto.find("Divergências e Pendências")

@@ -237,7 +237,7 @@ _GAP_MAXIMO_PT = 60  # além disso, considera o resto rodapé/marca d'água isol
 
 # Largura útil dentro de um card .achado (ver templates/conciliacao_relatorio.html):
 # A4 = 210mm - padding do body (6mm x2) - padding do .achado (4mm x2) = 190mm.
-_CONTEUDO_LARGURA_MM = 190.0
+_CONTEUDO_LARGURA_MM = 174.0   # = largura interna do cartão do achado (190 estourava o cartão em ~6 mm e o print/retângulo saíam da moldura)
 # Acima disso, a evidência sozinha já não cabe ao lado do título/parágrafo/
 # rodapé na mesma página (margens de impressão deixam ~279mm úteis por
 # página) — o achado inteiro (page-break-inside: avoid) então pula pra
@@ -611,7 +611,7 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                 if not achados:
                     return None
                 m = achados[0]
-                palavras = page.extract_words()
+                palavras = page.extract_words(extra_attrs=["fontname"])
                 if not palavras:
                     return None
                 esquerda = max(0.0, min(w["x0"] for w in palavras) - 4)
@@ -635,7 +635,24 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                 da_linha = [w for w in palavras if w["top"] >= m["top"] - 2 and w["bottom"] <= m["bottom"] + 2]
                 x_ini = min([w["x0"] for w in da_linha] + [m["x0"]])
                 x_fim = max([w["x1"] for w in da_linha] + [m["x1"]]) if spec.get("linha_inteira") else m["x1"]
-                destaques = [(x_ini - 2, m["top"] - 1.5, x_fim + 2, m["bottom"] + 1.5)]
+                base_d = m["bottom"]
+                if spec.get("linha_inteira"):
+                    # lançamento com a descrição quebrada em 2-3 linhas: o destaque cobre todas, até a próxima linha que começa com data
+                    import re as _re
+                    altura_l = m["bottom"] - m["top"]
+                    for _ in range(3):
+                        prox = [w for w in palavras if base_d - 1 <= w["top"] <= base_d + altura_l * 0.9]
+                        if not prox:
+                            break
+                        prox.sort(key=lambda w: w["x0"])
+                        if (_re.match(r"\d{2}/\d{2}/\d{4}", prox[0]["text"]) or prox[0]["x0"] < x_ini - 6
+                                or "bold" in str(prox[0].get("fontname", "")).lower()):      # cabeçalho de categoria (negrito) não é continuação
+                            break
+                        topo_p = prox[0]["top"]
+                        mesma = [w for w in prox if abs(w["top"] - topo_p) < 2.5]
+                        base_d = max(w["bottom"] for w in mesma)
+                        x_fim = max(x_fim, max(w["x1"] for w in mesma))
+                destaques = [(x_ini - 2, m["top"] - 1.5, x_fim + 2, base_d + 1.5)]
         else:
             destaques = [tuple(d) for d in spec.get("destaques", [])]
     except Exception:
