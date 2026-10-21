@@ -29,15 +29,17 @@ def texto_receita_negativa(a: Achado) -> tuple[str, str, str]:
     if n > 1:
         titulo = f"Receita com valor negativo — {conta}: {desc} ({n} lançamentos, {_moeda(a.valor_encontrado)})"
         paragrafo = (f"A receita \"{desc}\", na conta {conta}, aparece com valor negativo em {n} lançamentos "
-                     f"neste mês, somando {_moeda(a.valor_encontrado)}. Receita negativa reduz a arrecadação do "
-                     f"mês e normalmente indica estorno, devolução ou ajuste.")
+                     f"neste mês, somando {_moeda(a.valor_encontrado)}. Não existe receita negativa: um valor negativo é uma saída (débito, estorno ou "
+                     f"devolução) e deve ser lançado como despesa/ajuste na conta correspondente, e não como receita com sinal negativo, que reduz "
+                     f"a arrecadação do mês.")
     else:
         titulo = f"Receita com valor negativo — {conta} ({_moeda(a.valor_encontrado)})"
         paragrafo = (f"A receita \"{desc}\"{quando}, na conta {conta}, aparece com valor negativo "
-                     f"({_moeda(a.valor_encontrado)}). Receita negativa reduz a arrecadação do mês e normalmente "
-                     f"indica estorno, devolução ou ajuste.")
-    verificar = ("O que originou este lançamento negativo? Existe documento (estorno de boleto, devolução, correção) que o sustente? "
-                 "Podem explicar e enviar o documento?")
+                     f"({_moeda(a.valor_encontrado)}). Não existe receita negativa: um valor negativo é uma saída (débito, estorno ou devolução) "
+                     f"e deve ser lançado como despesa/ajuste na conta correspondente, e não como receita com sinal negativo, que reduz a "
+                     f"arrecadação do mês.")
+    verificar = ("Por que este valor foi lançado como receita negativa? Podem corrigir o lançamento (despesa/estorno na conta correspondente) e, "
+                 "se houve estorno ou devolução, enviar o documento que o sustenta?")
     return titulo, paragrafo, verificar
 
 
@@ -279,8 +281,8 @@ def texto_saldo_negativo(a: Achado) -> tuple[str, str, str]:
         nomes = ", ".join(c["nome"] for c in d["contas"][:3]) + (f" e mais {len(d['contas']) - 3}" if len(d["contas"]) > 3 else "")
         titulo = f"Contas com saldo negativo e há quanto tempo — {nomes}"
         paragrafo = (f"Fecharam o mês com saldo negativo: {itens}. Saldo negativo significa despesas pagas com o caixa de outras contas. "
-                     f"A contagem usa o mês atual e os meses anteriores lidos da pasta do projeto ({d.get('meses_lidos')} meses no máximo); "
-                     f"'pelo menos' indica que a conta já estava negativa em todos os meses lidos.")
+                     f"A contagem considera o mês deste balancete e os balancetes dos meses anteriores (até {d.get('meses_lidos')} meses); "
+                     f"'pelo menos' indica que a conta já estava negativa em todos esses meses.")
         return titulo, paragrafo, ""
     conta = d.get("conta") or a.linha_demonstrativo or "conta"
     n = d.get("meses_seguidos")

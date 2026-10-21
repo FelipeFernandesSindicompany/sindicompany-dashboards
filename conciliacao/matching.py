@@ -1995,3 +1995,25 @@ def achado_conta_concessionaria_nao_anexada(registros: list, achados_existentes:
         regra_aplicada="concessionaria_sem_a_conta_anexada_so_comprovante_de_pagamento", registros_relacionados=relacionados[:1],
         linha_demonstrativo="Concessionárias", valor_esperado=total, valor_encontrado=total, confianca_deterministica=1.0,
         detalhes={"itens": itens})
+
+
+# ── Princípio básico: não existe despesa negativa (nem receita negativa) ─────────────────────────────────────────────
+# Lançamento de DESPESA com valor negativo é um crédito/recebimento (reembolso, estorno, ressarcimento): não pode constar como despesa
+# nem pedir "comprovante de pagamento" — deve ser lançado como receita. Um item consolidado por relatório (decisão do dono).
+def achado_despesa_negativa(registros: list, proximo_numero: int):
+    """(achado, codigos) ou (None, set()). `codigos`: códigos dos lançamentos negativos (para tirar os 'sem comprovante' deles)."""
+    itens, codigos = [], set()
+    for r in registros:
+        if r.tipo_documento in ("despesa_listada", "despesa_com_comprovante") and (r.valor or 0) < -0.005:
+            desc = re.sub(r"^(?:\d{6,}\s+)?\d{2}/\d{2}/\d{4}\s+", "", r.descricao or "")
+            desc = re.sub(r"(\s+-?\d{1,3}(?:\.\d{3})*,\d{2})+(\s+\d{1,5})?\s*$", "", desc).strip()
+            itens.append({"codigo": r.codigo, "descricao": desc[:70], "valor": round(r.valor, 2), "categoria": r.categoria_demonstrativo,
+                          "pagina": r.pagina, "vencimento": r.vencimento})
+            codigos.add(r.codigo)
+    if not itens:
+        return None, set()
+    total = round(sum(i["valor"] for i in itens), 2)
+    return Achado(
+        id=f"ACH-{proximo_numero:04d}", tipo="despesa_negativa", severidade_sugerida="atencao",
+        regra_aplicada="despesa_com_valor_negativo_deve_ser_credito", linha_demonstrativo="Despesas com valor negativo",
+        valor_esperado=total, valor_encontrado=total, confianca_deterministica=1.0, detalhes={"itens": itens}), codigos

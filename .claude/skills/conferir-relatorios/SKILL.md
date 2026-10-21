@@ -37,7 +37,9 @@ python scripts/check_final_relatorios.py --desde AAAA-MM-DD [--meses 2026-07,202
 8. **Barreira de identidade** do arquivo (`conciliacao/identidade_arquivo.py`) deve ficar ATIVA.
 9. **Prints (evidência)**: todo item tem print do local (planilha XLSX/XLS e PDF), **dentro da moldura do cartão** (174 mm) e com o **retângulo cobrindo a linha inteira** do lançamento (inclusive descrição quebrada). "Evidência não disponível" ou "Origem no arquivo: linha N" **não pode aparecer** — o check marca ALTA.
 10. **Conferência visual** (`config/conferencias_visuais/<condomínio>/<AAAA-MM>.json`, também lida de `data/`): registra o que foi visto na imagem (item verificado, ou `divergencia_real` com texto e pergunta reescritos). Vale só para o mesmo código e o mesmo valor.
-11. **Não tocar** em adapters/dashboards; relatórios de outras sessões (ex.: Villa Park fora do lote) não se sobrescrevem sem perguntar.
+11. **Princípio financeiro básico — não existe despesa negativa nem receita negativa.** Despesa com valor negativo é crédito (recebimento/reembolso/estorno): NUNCA pedir comprovante/NF dela; um item único "Despesa lançada com valor negativo" pede para lançar como receita (crédito), e uma nota sob a tabela de despesas mostra o total sem ela. Receita negativa é saída: o texto diz "Não existe receita negativa" e pede para lançar como despesa/estorno na conta correta. O check marca ALTA se aparecer pedido de comprovante de valor negativo ou receita negativa sem a explicação.
+12. **Sem jargão interno** nos relatórios (ex.: "pasta do projeto", "lidos"): a administradora não sabe o que é. O check marca ALTA.
+13. **Não tocar** em adapters/dashboards; relatórios de outras sessões (ex.: Villa Park fora do lote) não se sobrescrevem sem perguntar.
 
 ## O que o check verifica (ver aba "Regras verificadas")
 

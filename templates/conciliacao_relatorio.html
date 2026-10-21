@@ -199,6 +199,13 @@
     {% endfor %}
     <tr class="total"><td>Total</td><td class="num">{{ analise.despesas_total_fmt }}</td><td class="num">100,0%</td></tr>
   </table>
+  {% if analise.nota_despesa_negativa %}
+  <p class="nota">
+    Nota: o total de despesas acima inclui {{ analise.nota_despesa_negativa.negativo }} de lançamento(s) com valor negativo (créditos lançados como
+    despesa — ver a divergência "Despesa lançada com valor negativo"). Não existe despesa negativa: sem esses lançamentos, as despesas do mês seriam
+    {{ analise.nota_despesa_negativa.sem_negativo }}.
+  </p>
+  {% endif %}
   {% if analise.nota_transferencia_entre_contas_fmt %}
   <p class="nota">
     Nota: a soma dos débitos da tabela "Situação Financeira por Conta" acima ({{ analise.soma_debitos_contas_fmt }})

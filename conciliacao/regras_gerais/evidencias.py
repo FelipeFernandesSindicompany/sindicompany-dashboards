@@ -55,7 +55,7 @@ def specs_para(a: Achado) -> list[dict]:
             if x.get("pagina") and x.get("arquivo"):
                 specs.append({**_spec(x["pagina"], _trecho(x.get("descricao")) or re.escape(_br(x["mediana"])),
                                       f"Lançamento do mês anterior ({x.get('mes')}) que não aparece neste mês"), "arquivo": x["arquivo"]})
-    elif a.tipo == "conta_concessionaria_nao_anexada":
+    elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
         for i in d.get("itens", [])[:3]:
             if i.get("pagina"):
                 specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])), "Lançamento de concessionária"))

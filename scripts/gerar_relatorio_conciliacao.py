@@ -582,6 +582,14 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     _conta = matching.achado_conta_concessionaria_nao_anexada(registros, achados, _prox)
     if _conta is not None:
         achados.append(_conta)
+    # princípio básico: não existe despesa negativa — o lançamento negativo é crédito; vira UM item e sai dos pedidos de comprovante/NF
+    achados = [a for a in achados if a.tipo != "despesa_negativa"]
+    _prox_neg = max([int(a.id.split("-")[1]) for a in achados if re.match(r"ACH-[0-9]+$", a.id)] + [0]) + 1
+    _neg, _cod_neg = matching.achado_despesa_negativa(registros, _prox_neg)
+    if _neg is not None:
+        achados = [a for a in achados if not (a.tipo not in ("ok_verificado",) and a.registros_relacionados
+                                              and any(re.search(rf"_cod{re.escape(str(c))}$", k) for k in a.registros_relacionados for c in _cod_neg))]
+        achados.append(_neg)
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
@@ -850,7 +858,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 rev.achado_id,
                 evidencias.evidencias_agregadas(achado, registros_por_pagina, pdf_origem)
                 if achado.regra_aplicada in _REGRAS_AGREGADAS and pdf_origem and pdf_origem.suffix.lower() == ".pdf" else (
-                    regras_gerais_evidencias.specs_para(achado) if ((achado.id or "").startswith("RG-") or achado.tipo == "conta_concessionaria_nao_anexada") else None),
+                    regras_gerais_evidencias.specs_para(achado) if ((achado.id or "").startswith("RG-") or achado.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa")) else None),
                 achado, registros_por_pagina.get(achado.registros_relacionados[0]) if achado.registros_relacionados else None,
             ),
             "evidencia_texto": regras_gerais_evidencias.texto_origem(achado),
@@ -896,6 +904,13 @@ def etapa_render(condo: dict, mes: str) -> Path:
             except Exception:
                 pass
             analise = analise_financeira.montar_analise(bal_atual, bal_anterior, _mes_titulo(mes), aviso_previsto)
+            try:        # princípio: não existe despesa negativa — o total de despesas do arquivo inclui o crédito lançado como despesa; a nota explica
+                _neg_tot = sum(i["valor"] for x in _bruto if x.tipo == "despesa_negativa" for i in (x.detalhes or {}).get("itens", []))
+                if _neg_tot < 0:
+                    _tot_desp = sum(d["v"] for d in bal_atual.get("desp", []))
+                    analise["nota_despesa_negativa"] = {"negativo": analise_financeira._fmt_r(_neg_tot), "sem_negativo": analise_financeira._fmt_r(_tot_desp - _neg_tot)}
+            except Exception:
+                pass
             aviso_fechamento = checagens_leitura.verificar_fechamento_categorias(condo, bal_atual)
             if aviso_fechamento:
                 print(f"[AVISO] {aviso_fechamento}")

@@ -44,6 +44,7 @@ REGRAS = [
     ("Sinal", "Valor negativo aparece com '-' (nunca como positivo) nos itens e nas tabelas"),
     ("Perguntas", "Todo item tem 'Pergunta à administradora' que termina em '?' (exceto o alerta de saldo negativo, que só informa)"),
     ("Evidência", "Todo item tem print do local (sem 'Evidência não disponível'/'Origem no arquivo'), dentro do cartão e com o destaque vermelho cobrindo a linha"),
+    ("Princípio financeiro", "Não existe despesa negativa nem receita negativa: valor negativo em despesa é crédito (não pede comprovante); receita negativa é saída (texto explica); sem jargão interno"),
     ("Texto", "Sem 'None', 'nan', '{{', 'undefined'; sem texto antigo (atraso 'além do dia útil seguinte')"),
     ("Atraso", "Datas de vencimento/pagamento plausíveis (mesmo ano; diferença até 120 dias)"),
     ("NF de benefício/seguro", "Vale transporte/refeição/cesta e seguro não são cobrados como 'Nota Fiscal não anexada'"),
@@ -164,6 +165,17 @@ def analisar(f, condos, por_nome, com_origem):
         add("ALTA", "Texto", "texto antigo de atraso ('além do dia útil seguinte') — relatório precisa ser regenerado")
     if "Nenhuma divergência encontrada" in texto:
         add("ALTA", "Texto", "frase 'Nenhuma divergência encontrada' (não deve aparecer em relatório entregue)")
+
+    # princípio básico: não existe despesa negativa nem receita negativa
+    if re.search(r"(?:Comprovante sem anexo|Nota Fiscal não anexada|Estorno/devolução sem documento anexo) — [^\n(]*\(-?R\$ -", texto):
+        add("ALTA", "Princípio financeiro", "pede comprovante/NF de lançamento com valor NEGATIVO — despesa negativa é crédito e deve ser apontada como tal")
+    texto_1l = re.sub(r"\s+", " ", texto)
+    for m_ in re.finditer(r"\d+\. Receita com valor negativo", texto_1l):
+        if "Não existe receita negativa" not in texto_1l[m_.start():m_.start() + 1200]:
+            add("ALTA", "Princípio financeiro", "item de receita negativa sem a explicação 'Não existe receita negativa'")
+            break
+    if "pasta do projeto" in texto or "pasta de projeto" in texto:
+        add("ALTA", "Texto", "texto interno ('pasta do projeto') aparece no relatório para a administradora")
 
     # prints de evidência: todo item precisa de print do local, dentro do cartão e com o destaque cobrindo a linha
     n_sem_print = texto.count("Evidência não disponível") + texto.count("Origem no arquivo:")

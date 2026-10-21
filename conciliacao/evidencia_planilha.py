@@ -277,11 +277,17 @@ def planos(caminho: Path, achado, registro=None) -> list[dict]:
         for g in _agrupar([n for n in locais if n], folga=1)[:3]:
             out.append({"linhas": list(range(max(1, g[0] - 1), g[-1] + 2)), "destacar": g, "cabecalho": _cabecalho_despesas(dados, g[0]),
                         "legenda": "Lançamento(s) citado(s) nesta observação"})
-    elif t == "conta_concessionaria_nao_anexada":
-        ns = [linha_do_lancamento(caminho, i.get("codigo"), i.get("valor")) for i in d.get("itens", [])]
+    elif t in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
+        ns = []
+        for i in d.get("itens", []):
+            pg, n = i.get("pagina"), None
+            if isinstance(pg, int) and 1 <= pg <= len(dados):          # no extrator de planilha a "página" é o nº da linha do Excel
+                if any(isinstance(c, (int, float)) and abs(abs(c) - abs(i.get("valor") or 0)) < 0.011 for c in (dados[pg - 1] or [])):
+                    n = pg
+            ns.append(n or linha_do_lancamento(caminho, i.get("codigo"), i.get("valor")))
         for g in _agrupar([n for n in ns if n], folga=2)[:3]:
             out.append({"linhas": list(range(max(1, g[0] - 1), g[-1] + 2)), "destacar": g, "cabecalho": _cabecalho_despesas(dados, g[0]),
-                        "legenda": "Lançamento(s) de concessionária"})
+                        "legenda": "Lançamento(s) com valor negativo na listagem de despesas" if t == "despesa_negativa" else "Lançamento(s) de concessionária"})
     elif t in ("sem_comprovante", "divergencia_valor", "duplicidade", "sem_lancamento_correspondente", "cnpj_ausente", "nota_fiscal_ausente",
                "conteudo_nao_verificavel", "atraso_pagamento") and registro is not None:
         # No extrator de planilha o "código" e a "página" do registro são o número da própria linha do Excel.
@@ -461,7 +467,24 @@ def planos_xls(caminho: Path, achado, registro=None, pasta_meses: Optional[Path]
             for n in tot[:3]:
                 out.append({"dados": rows, "linhas": list(range(max(1, n - 1), min(len(rows), n + 1) + 1)), "destacar": [n], "cabecalho": None,
                             "legenda": "Linha de total do Demonstrativo de Despesas (o bloco se repete no arquivo)"})
-    elif t in ("duplicidade", "sem_comprovante", "divergencia_valor", "nota_fiscal_ausente", "conteudo_nao_verificavel", "atraso_pagamento") and registro is not None             and (registro.descricao or "").strip():
+    elif t == "despesa_negativa":
+        for it in d.get("itens", [])[:3]:
+            alvo = _norm(it.get("descricao"))[:32]
+            if not alvo:
+                continue
+            achou = []
+            if fonte["tipo"] == "mhtml":
+                for ti, rows in fonte["tabelas"].items():
+                    achou += [(ti, ri + 1) for ri, r in enumerate(rows) if alvo in " ".join(_norm(c) for c in r)]
+            else:
+                for nome_aba, rows in fonte["abas"].items():
+                    achou += [(nome_aba, ri + 1) for ri, r in enumerate(rows) if alvo in " ".join(_norm(c) for c in r)]
+            for ref in sorted({x for x, _ in achou}, key=str)[:1]:
+                ns = [n for x, n in achou if x == ref]
+                rows = fonte["tabelas"][ref] if fonte["tipo"] == "mhtml" else fonte["abas"][ref]
+                out.append({"dados": rows, "linhas": list(range(max(1, ns[0] - 1), min(len(rows), ns[0] + 1) + 1)), "destacar": [ns[0]], "cabecalho": None,
+                            "legenda": "Lançamento com valor negativo na listagem de despesas"})
+    elif t in ("duplicidade", "sem_comprovante", "divergencia_valor", "nota_fiscal_ausente", "conteudo_nao_verificavel", "atraso_pagamento") and registro is not None            and (registro.descricao or "").strip():
         # arquivo sem nº de linha no registro: localiza a(s) linha(s) pelo texto da descrição do lançamento
         alvo = _norm(registro.descricao)[:32]
         achou = []
