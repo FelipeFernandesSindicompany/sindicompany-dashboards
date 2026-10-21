@@ -497,6 +497,8 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
     O registro só vale para o MESMO lançamento (código) com o MESMO valor listado — se a listagem mudar, a conferência deixa de se aplicar e o
     apontamento volta. Vale só para achados "conteúdo não verificável"/"valor diverge"; o achado vira verificado e o texto diz que foi visual."""
     arq = base_dir.parent.parent / "conferencias_visuais" / f"{mes}.json"
+    if not arq.exists():          # cópia versionada (config/conferencias_visuais/<condomínio>/<mês>.json): data/ não vai para o Git
+        arq = ROOT / "config" / "conferencias_visuais" / base_dir.parent.parent.name / f"{mes}.json"
     if not arq.exists():
         return 0
     confs = json.load(open(arq, encoding="utf-8"))

@@ -1,0 +1,20 @@
+[
+  {
+    "codigo": "0045",
+    "valor_listagem": 1095.25,
+    "divergencia_real": true,
+    "documento": "págs. 225 a 228 do PDF",
+    "resumo": "Nota fiscal não anexada — compra no Mercado Livre paga por boleto (R$ 1.095,25)",
+    "como": "Conferido visualmente nos anexos (págs. 225 a 228): o lançamento é uma compra de 13 produtos no Mercado Livre (material para reparo solicitado pelo zelador), paga por boleto bancário de R$ 1.095,25 em 06/08/2026 (Mercado Pago Instituição de Pagamento) — não é fatura de cartão de crédito. O valor do boleto confere com o lançamento, mas não há nota fiscal anexada: a própria observação da administradora diz 'NF será emitida após a confirmação de pagamento'.",
+    "pergunta": "A nota fiscal da compra de R$ 1.095,25 no Mercado Livre (boleto pago em 06/08/2026, 13 produtos), que a observação diz que seria emitida após a confirmação do pagamento, já foi emitida? Podem anexá-la ao lançamento?"
+  },
+  {
+    "codigo": "0050",
+    "valor_listagem": 248.89,
+    "divergencia_real": true,
+    "documento": "págs. 242 a 245 do PDF",
+    "resumo": "Nota fiscal não anexada — compra no Mercado Livre paga por boleto (R$ 248,89)",
+    "como": "Conferido visualmente nos anexos (págs. 242 a 245): o lançamento é a compra de 1 decibelímetro digital no Mercado Livre, paga por boleto bancário de R$ 248,89 em 04/08/2026 (Mercado Pago). O valor do boleto confere com o lançamento, mas não há nota fiscal anexada: a observação da administradora diz 'NF será emitida após o pagamento'.",
+    "pergunta": "A nota fiscal da compra do decibelímetro digital (Mercado Livre, boleto de R$ 248,89 pago em 04/08/2026), que a observação diz que seria emitida após o pagamento, já foi emitida? Podem anexá-la ao lançamento?"
+  }
+]

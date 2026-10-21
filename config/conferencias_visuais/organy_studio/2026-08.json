@@ -1,0 +1,20 @@
+[
+  {
+    "codigo": "0030",
+    "valor_listagem": 178.0,
+    "divergencia_real": true,
+    "documento": "pág. 138 do PDF",
+    "resumo": "O comprovante do seguro HDI mostra R$ 1.607,70, e a listagem R$ 178,00 (HDI SEGUROS)",
+    "como": "Conferido visualmente no anexo (pág. 138 do PDF): o comprovante de débito automático do Itaú (DEB AUTOR HDI SEGUROS, 03/08/2026, conta 98863-2, 'CONDOMINIO ORGANY') mostra R$ 1.607,70 — não é erro de leitura. A listagem do Organy Studio registra R$ 178,00 e a do Organy Residencial R$ 1.373,09, que somam R$ 1.551,09; faltam R$ 56,61 para os R$ 1.607,70 debitados.",
+    "pergunta": "O débito automático do seguro HDI foi de R$ 1.607,70, mas o Organy Studio lançou R$ 178,00 e o Organy Residencial R$ 1.373,09 (soma R$ 1.551,09). Para qual lançamento, de qual condomínio, foram os R$ 56,61 restantes? Podem enviar o rateio do seguro?"
+  },
+  {
+    "codigo": "0014",
+    "valor_listagem": 257.49,
+    "divergencia_real": true,
+    "documento": "pág. 91 do PDF",
+    "resumo": "O comprovante da Verdejas mostra R$ 514,98, e a listagem R$ 257,49 (VERDEJAS NF. 973)",
+    "como": "Conferido visualmente no anexo (pág. 91 do PDF): o comprovante de pagamento eletrônico do Itaú (T.E.D. para Verdejas Jardinagem, pago em 05/08/2026, conta bancária 1113 - Organy Studio) mostra 'Valor do lançto R$ 514,98' — não é erro de leitura. A listagem do Organy Studio registra R$ 257,49 para a NF 973 (mais ISS R$ 9,51 e INSS R$ 33,00, ou seja, nota de R$ 300,00); em julho o mesmo serviço foi de R$ 514,98 (NF 951).",
+    "pergunta": "O comprovante da Verdejas (NF 973, agosto) mostra pagamento de R$ 514,98, mas o lançamento do Organy Studio é de R$ 257,49. Qual valor foi realmente pago? Se foi R$ 514,98, por que a listagem registra R$ 257,49 — e o restante foi lançado em outro condomínio ou conta?"
+  }
+]

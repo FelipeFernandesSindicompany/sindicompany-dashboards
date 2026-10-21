@@ -1,0 +1,25 @@
+[
+  {
+    "codigo": "149",
+    "valor_listagem": 2540.0,
+    "documento": "comprovante Webware (PIX) e relação de cálculo",
+    "resumo": "Folha de pagamento JUN/26: PIX de R$ 2.540,00 e líquido do cálculo de R$ 2.534,00 (R$ 6,00 de diferença)",
+    "como": "Conferido visualmente nos anexos: o comprovante de PIX do Itaú mostra R$ 2.540,00 em 06/07/2026 (ONZE 22 para Graiche Construtora e Imobiliária), igual ao lançamento. A Relação de Cálculo de junho/2026 do colaborador mostra líquido de R$ 2.534,00 — R$ 6,00 a menos que o valor pago (consta o provento 'Tr. Cartão Sal.' de R$ 6,00).",
+    "divergencia_real": true,
+    "pergunta": "O PIX da folha foi de R$ 2.540,00, mas a Relação de Cálculo de junho/2026 mostra líquido de R$ 2.534,00. Os R$ 6,00 de diferença correspondem a algum imposto ou outro encargo? Podem explicar a composição?"
+  },
+  {
+    "codigo": "161",
+    "valor_listagem": 358.32,
+    "documento": "guia FGTS e comprovante Webware",
+    "resumo": "FGTS junho/2026 (R$ 358,32)",
+    "como": "Conferido visualmente nos anexos: guia do FGTS Digital da competência 06/2026 de R$ 358,32 e comprovante de pagamento do Itaú de R$ 358,32 em 16/07/2026 (Caixa Econômica Federal) — iguais ao lançamento."
+  },
+  {
+    "codigo": "224",
+    "valor_listagem": 494.46,
+    "documento": "comprovante Webware (Itaú) e e-mail da Graiche",
+    "resumo": "Repasse ref. a 22% da energia da Torre A (R$ 494,46)",
+    "como": "Conferido visualmente nos anexos: o comprovante do Itaú é uma transferência única de R$ 1.857,15 em 31/07/2026 (Onze 22 NR → Onze 22 Residencial) e o e-mail da Graiche anexado lista a composição: 22% energia da Torre A R$ 494,46 + 22% jardim mensal R$ 638,00 + 22% Império mensal R$ 306,38 + Vivo R$ 59,99 + FGTS R$ 358,32 = R$ 1.857,15. O lançamento de R$ 494,46 é uma das parcelas; a soma fecha com o comprovante."
+  }
+]

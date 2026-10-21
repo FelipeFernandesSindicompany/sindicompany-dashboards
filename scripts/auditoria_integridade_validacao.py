@@ -115,8 +115,9 @@ def parte_b(d, regras_condo: dict) -> dict:
             LancamentoDespesa(descricao="MUTACAO MANUTENCAO PREDIAL NF 7777 TESTE", valor=777.77, categoria=cat, conta=conta, data="12/01/2026"),
             LancamentoDespesa(descricao="MUTACAO MANUTENCAO PREDIAL NF 7777 TESTE", valor=777.77, categoria=cat, conta=conta, data="12/01/2026")]),
             None, "B4_duplicidade_no_mes", verif="duplicidade_no_mes")
-        rodar(lambda x: x.lancamentos.append(LancamentoDespesa(descricao="MERCADO PAGO COMPRA TESTE", valor=250.0, categoria=cat, conta=conta, data="12/01/2026")),
-              None, "B5_marketplace", verif="compra_marketplace")
+        # B5 (alerta de gestor "compra em marketplace") foi DESLIGADO por decisão do dono: compra em marketplace é conferida pela regra de
+        # comprovante + nota fiscal anexados (matching.achado_nota_fiscal_ausente), não por pergunta "por que comprou lá".
+        res["B5_marketplace"] = "desligado: marketplace é conferido por comprovante + nota fiscal"
     else:
         for k in ("B2_sem_identificacao", "B3_parcelas_mesmo_mes", "B4_duplicidade_no_mes", "B5_marketplace"):
             res[k] = "n/a: formato não lista lançamentos individuais"

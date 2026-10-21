@@ -1,0 +1,20 @@
+[
+  {
+    "codigo": "0079",
+    "valor_listagem": 1373.09,
+    "divergencia_real": true,
+    "documento": "pág. 293 do PDF",
+    "resumo": "O comprovante do seguro HDI mostra R$ 1.607,70, e a listagem R$ 1.373,09 (HDI SEGUROS)",
+    "como": "Conferido visualmente no anexo (pág. 293 do PDF): o comprovante de débito automático do Itaú (DEB AUTOR HDI SEGUROS, 03/08/2026, conta 98863-2, 'CONDOMINIO ORGANY') mostra R$ 1.607,70 — não é erro de leitura. A listagem do Organy Residencial registra R$ 1.373,09 e a do Organy Studio R$ 178,00, que somam R$ 1.551,09; faltam R$ 56,61 para os R$ 1.607,70 debitados.",
+    "pergunta": "O débito automático do seguro HDI foi de R$ 1.607,70, mas o Organy Residencial lançou R$ 1.373,09 e o Organy Studio R$ 178,00 (soma R$ 1.551,09). Para qual lançamento, de qual condomínio, foram os R$ 56,61 restantes? Podem enviar o rateio do seguro?"
+  },
+  {
+    "codigo": "0063",
+    "valor_listagem": 231.1,
+    "divergencia_real": true,
+    "documento": "págs. 242 a 248 do PDF",
+    "resumo": "Nota fiscal não anexada — compra de lâmpadas no Mercado Livre (R$ 231,10)",
+    "como": "Conferido visualmente nos anexos (págs. 242 a 248): o anexo traz o comprovante do Itaú de R$ 231,10 (07/08/2026, Mercadopago.com Representações), a Solicitação de Pagamento da administradora, o boleto, as telas do carrinho do Mercado Livre (kit de refletores e lâmpadas LED) e a ficha de pagamento. Não há nota fiscal da compra.",
+    "pergunta": "O anexo da compra de lâmpadas e refletores LED no Mercado Livre (R$ 231,10, pago em 07/08/2026) traz só o comprovante, o boleto e as telas do carrinho. Podem anexar a nota fiscal da compra?"
+  }
+]

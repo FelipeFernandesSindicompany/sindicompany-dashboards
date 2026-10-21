@@ -1,0 +1,16 @@
+[
+  {
+    "codigo": "0027",
+    "valor_listagem": 34979.16,
+    "resumo": "Sabesp (R$ 34.979,16)",
+    "documento": "págs. 218 e 219 do PDF",
+    "como": "Conferido visualmente na imagem do anexo (págs. 218-219 do PDF): fatura de água/esgoto da Sabesp, vencimento 15/05/2026, débito automático, com TOTAL de R$ 34.979,16 (água R$ 17.402,57 + esgoto R$ 17.402,57 + taxa de regulação R$ 174,02). A 2ª página repete o total de R$ 34.979,16 no código de barras. O valor da fatura é igual ao valor listado."
+  },
+  {
+    "codigo": "0132",
+    "valor_listagem": 270.90,
+    "resumo": "INSS de autônomos - Edson (R$ 270,90)",
+    "documento": "pág. 474 do PDF; comprovante consolidado nas págs. 467 a 469",
+    "como": "Conferido visualmente na imagem do anexo (pág. 474 do PDF): o Relatório de Pagamentos de Autônomos de abril/2026 mostra, para Edson Vieira da Silva, INSS retido de R$ 96,12 e INSS da empresa de R$ 174,78, que somam R$ 270,90, o valor listado. O pagamento é o DCTF-Web consolidado dos autônomos: o comprovante de pagamento (págs. 467-469) traz 'Lançamento 05790841 (CONSOLIDADO)' de R$ 701,79, que é a soma dos três lançamentos de INSS de autônomos do mês (R$ 160,00 + R$ 270,89 + R$ 270,90), e a guia da Receita Federal lista INSS de contribuinte individual de R$ 192,24 e contribuição patronal de R$ 509,55 (total R$ 701,79)."
+  }
+]
