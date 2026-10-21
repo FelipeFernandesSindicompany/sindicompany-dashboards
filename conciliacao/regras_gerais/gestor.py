@@ -445,7 +445,8 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
     if "deficit_conta" not in desativar:
         alvos = list(map(_norm, cfg["deficit_contas"]))
         for c in dados.contas:
-            if any(t in _norm(c.nome) for t in alvos) and not _norm(c.nome).startswith("CONSOLIDADO") and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
+            # "EXTRAORDINARIA" contém "ORDINARIA": conta extraordinária é fundo/obra, não a conta que paga as despesas correntes
+            if any(t in _norm(c.nome) for t in alvos) and "EXTRAORDINARIA" not in _norm(c.nome) and not _norm(c.nome).startswith("CONSOLIDADO") and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
                 achados.append(Achado(
                     id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_deficit_conta",
                     linha_demonstrativo=c.nome, valor_encontrado=round(c.debitos - c.creditos, 2),

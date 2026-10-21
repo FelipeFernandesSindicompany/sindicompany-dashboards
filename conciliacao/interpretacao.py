@@ -468,11 +468,24 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             valor = _fmt_moeda(achado.valor_encontrado)
             descricao_curta = (registro.descricao or categoria) if registro else categoria
             titulo = f"Nota Fiscal não anexada — {descricao_curta} ({valor})"
-            paragrafo = (
-                f"O valor deste lançamento ({valor}) confere, mas a própria listagem cita um número de "
-                f"Nota Fiscal e o comprovante anexado é só a confirmação bancária do pagamento — não traz "
-                f"a Nota Fiscal em si."
-            )
+            from conciliacao import matching as _m
+            # a chave "pag223_cod223" é a mesma da despesa e do comprovante (o dicionário guarda só um): busca a despesa na lista
+            _rel = set(achado.registros_relacionados or [])
+            _desc_nf = " ".join((r_.descricao or "") for r_ in (registros or [])
+                                if r_.tipo_documento == "despesa_listada" and chave_registro(r_) in _rel)
+            if _desc_nf and not _m._RE_NF_NA_DESCRICAO.search(_desc_nf) and _m._RE_MARKETPLACE_NF.search(_m._sem_acento_nf(_desc_nf)):
+                # compra em marketplace sem nº de NF na listagem: não se pode dizer que "a listagem cita a NF"
+                paragrafo = (
+                    f"Compra em marketplace (plataforma de vendas). O valor deste lançamento ({valor}) confere, mas o comprovante anexado é só "
+                    f"a confirmação do pagamento — não traz a Nota Fiscal da compra, e a listagem também não cita o número dela. "
+                    f"Toda compra em marketplace precisa ter o comprovante e a Nota Fiscal anexados."
+                )
+            else:
+                paragrafo = (
+                    f"O valor deste lançamento ({valor}) confere, mas a própria listagem cita um número de "
+                    f"Nota Fiscal e o comprovante anexado é só a confirmação bancária do pagamento — não traz "
+                    f"a Nota Fiscal em si."
+                )
             o_que_verificar = "Onde está a Nota Fiscal deste lançamento? Por que ela não foi anexada junto ao comprovante de pagamento? Podem enviá-la?"
             base["confianca_ia"] = 0.8
             base["revisado_por"] = "sistema:regra_deterministica"

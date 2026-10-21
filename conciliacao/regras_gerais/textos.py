@@ -462,7 +462,15 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         titulo = pre + f"conta {d.get('conta')} pagou {_moeda(a.valor_encontrado)} a mais do que recebeu no mês"
         par = (f"Na conta {d.get('conta')}, os créditos do mês foram {_moeda(d.get('creditos'))} e os débitos {_moeda(d.get('debitos'))} "
                f"(saldo anterior {_moeda(d.get('saldo_anterior'))}, saldo final {_moeda(d.get('saldo_atual'))}).")
-        ver = "De onde veio o caixa que cobriu a diferença (outra conta, reserva)? Existe plano de recomposição?"
+        _ant, _atu = d.get("saldo_anterior") or 0.0, d.get("saldo_atual") or 0.0
+        if _atu >= 0 and _ant > 0:
+            # a diferença foi paga com o saldo que a conta já tinha: perguntar "de onde veio o caixa" não faz sentido
+            _pct = f"{(_ant - _atu) / _ant * 100:.1f}".replace(".", ",")
+            par = (f"Na conta {d.get('conta')}, os créditos do mês foram {_moeda(d.get('creditos'))} e os débitos {_moeda(d.get('debitos'))}; "
+                   f"a diferença foi paga com o saldo que a conta já tinha, que caiu de {_moeda(_ant)} para {_moeda(_atu)} ({_pct}% de redução).")
+            ver = "Essa redução do saldo da conta é esperada (pagamento sazonal, obra, despesa concentrada no mês)? Existe previsão de recompor o saldo?"
+        else:
+            ver = "De onde veio o caixa que cobriu a diferença (outra conta, reserva)? Existe plano de recomposição?"
     elif v == "inadimplencia_crescente":
         serie = " → ".join(f"{x['mes']}: {_moeda(x['inad'])}" for x in reversed(d.get("serie") or []))
         titulo = pre + f"inadimplência subiu {str(d.get('variacao_pct')).replace('.', ',')}% em relação ao mês anterior ({_moeda(d.get('anterior'))} → {_moeda(d.get('atual'))})"
