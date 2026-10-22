@@ -320,6 +320,10 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         return _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
 
     bal = _dados_financeiros_para_bal(dados, mes_titulo, periodo)
+    if condo.get("inadimplencia_validacao") == "total_atrasados":
+        # Decisão do dono (Patrícia, 22/10/2026): inadimplência = "Total atrasados" da Posição de Devedores. A planilha não tem esse bloco, e o
+        # adaptador antigo lia outro conceito (REC COTAS EM ATRASO da Ordinária): nos meses em planilha o relatório fica sem esse número.
+        bal["inad"] = None
     if not bal["desp"] and not bal["tDesp"]:
         # O adaptador "leu" mas sem despesa nenhuma (formato que ele não entende, ex.: Serra da Mantiqueira):
         # prefere o leitor das regras gerais, que fecha com os totais do próprio arquivo.

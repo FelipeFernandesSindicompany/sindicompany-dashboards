@@ -430,6 +430,7 @@
       }
     },
     "patricia": {
+      "inadimplencia_validacao": "total_atrasados",
       "identidade_sem_nome": true,
       "aviso_escopo_por_extensao": {".pdf": "Os comprovantes e notas fiscais não foram validados, pois o arquivo com os comprovantes não foi enviado pela Administradora (o arquivo recebido traz a listagem das despesas, sem os comprovantes anexados). Por isso esta validação conferiu somente os valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."},
       "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia",

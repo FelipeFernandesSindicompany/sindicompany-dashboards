@@ -54,6 +54,8 @@ def specs_para(a: Achado) -> list[dict]:
         specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_atual"])), "Saldo atual da conta " + d["contas"][0]["nome"]))
     elif a.tipo == "observacao_gestor" and d.get("verificacao") == "deficit_conta" and d.get("pagina"):
         specs.append(_spec(d["pagina"], re.escape(_br(d.get("debitos") or 0)), "Débitos da conta " + (d.get("conta") or "")))
+    elif a.tipo == "observacao_gestor" and d.get("verificacao") == "inadimplencia_crescente" and d.get("pagina"):
+        specs.append(_spec(d["pagina"], "Totais", "Posição de Devedores — total anterior e total atrasados"))
     elif a.tipo == "observacao_gestor" and d.get("verificacao") == "recorrente_ausente":
         # a despesa NÃO está neste mês: o print é a linha dela no mês anterior (arquivo do mês anterior, mesma pasta)
         for x in d.get("ausentes", [])[:3]:

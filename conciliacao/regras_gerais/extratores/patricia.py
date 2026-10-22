@@ -6,9 +6,10 @@ Em set/2026 veio um PDF de 8 páginas, impressão do MESMO sistema ("DEMONSTRATI
 Contábil, "DESPESAS" e "RECEITAS" por unidade) -> leitor ContasData (extratores/contasdata.py). O formato é escolhido pela EXTENSÃO do arquivo.
 
 No PDF, o "Resumo de Emissões Geral" termina com uma linha só de valores: PREVISTO (coluna da esquerda) e REALIZADO (direita) do total de
-emissões — o mesmo "TOTAL DE EMISSÕES" que o leitor da planilha usa para o card "Arrecadação x Previsto". A inadimplência NÃO é lida do PDF:
-a planilha usa a "REC COTAS EM ATRASO" da conta Ordinária (cotas atrasadas do mês anterior), conceito diferente do "Total atrasados" do
-"Posição de Devedores", e misturar os dois produziria uma comparação mês a mês enganosa.
+emissões — o mesmo "TOTAL DE EMISSÕES" que o leitor da planilha usa para o card "Arrecadação x Previsto". INADIMPLÊNCIA (decisão do dono, 22/10/2026): vale o "Total atrasados" da linha "Totais" da "Posição de Devedores" (cotas em atraso no fim do
+mês); o "Total anterior" da mesma linha é o atraso do mês anterior (`indicadores["inad_anterior"]`, usado na regra de inadimplência crescente).
+A planilha .xls NÃO tem esse bloco: nos meses em planilha a inadimplência fica sem valor (a "REC COTAS EM ATRASO" da Ordinária, que o
+leitor antigo usava, é outro conceito e não pode ser comparada).
 """
 import re
 from pathlib import Path
@@ -49,6 +50,32 @@ def _previsto_realizado(caminho: Path):
     return achado
 
 
+def _devedores(caminho: Path):
+    """(total_anterior, total_recebido, devedores_do_mes, total_atrasados, página) da linha "Totais" da Posição de Devedores, ou None."""
+    import fitz
+    achado = None
+    doc = fitz.open(str(caminho))
+    try:
+        for pg in doc:
+            if "Posição de Devedores" not in pg.get_text():
+                continue
+            linhas: list = []
+            for w in sorted(pg.get_text("words"), key=lambda w: ((w[1] + w[3]) / 2, w[0])):
+                yc = (w[1] + w[3]) / 2
+                if linhas and abs(yc - linhas[-1][0]) <= 3:
+                    linhas[-1][1].append(w)
+                else:
+                    linhas.append([yc, [w]])
+            for _yc, ws in linhas:
+                ws.sort(key=lambda w: w[0])
+                vals = [w for w in ws if _RE_VALOR.match(w[4])]
+                if ws and ws[0][4].lower().startswith("totais") and len(vals) == 4:
+                    achado = tuple(_num(w[4]) for w in vals) + (pg.number + 1,)
+    finally:
+        doc.close()
+    return achado
+
+
 class Extrator:
     def __init__(self, condo: dict):
         self.condo = condo
@@ -61,6 +88,9 @@ class Extrator:
             pr = _previsto_realizado(caminho)
             if pr is not None:
                 dados.indicadores = {"prev": pr[0], "real": pr[1], "inad": None, "inadProc": 0.0}
+            dv = _devedores(caminho)
+            if dv is not None:
+                dados.indicadores = {**(dados.indicadores or {"prev": 0.0, "real": 0.0}), "inad": dv[3], "inad_anterior": dv[0], "inadProc": dv[1], "pagina_inad": dv[4]}
             return dados
         from conciliacao.regras_gerais.extratores.auxiliadora_xls import Extrator as ExtratorPlanilha
         return ExtratorPlanilha(self.condo).extrair(caminho, mes)

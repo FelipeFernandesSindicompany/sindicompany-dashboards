@@ -510,13 +510,18 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                     detalhes={"verificacao": "deficit_conta", "conta": c.nome, "creditos": round(c.creditos, 2), "debitos": round(c.debitos, 2),
                               "saldo_anterior": round(c.saldo_anterior, 2), "saldo_atual": round(c.saldo_atual, 2), "pagina": c.pagina, "lancamentos": []}))
 
-    if "inadimplencia_crescente" not in desativar and dados.indicadores and anterior is not None and anterior.indicadores:
-        a, b = dados.indicadores.get("inad"), anterior.indicadores.get("inad")
+    # O mês anterior vem do arquivo do mês anterior; quando o PRÓPRIO arquivo do mês traz o valor do mês anterior ("Total anterior" da Posição de
+    # Devedores, `indicadores["inad_anterior"]`) e o mês anterior não tem a mesma medida (outro formato), vale o que o arquivo atual informa.
+    _b_arquivo = (dados.indicadores or {}).get("inad_anterior") if dados.indicadores else None
+    _b_mes_ant = anterior.indicadores.get("inad") if (anterior is not None and anterior.indicadores) else None
+    if "inadimplencia_crescente" not in desativar and dados.indicadores and (_b_mes_ant is not None or _b_arquivo is not None):
+        a, b = dados.indicadores.get("inad"), (_b_mes_ant if _b_mes_ant is not None else _b_arquivo)
         if a is not None and b is not None and b > _CENTAVO and a - b >= cfg["inad_crescimento_min"] and (a - b) / b * 100 >= cfg["inad_crescimento_pct"]:
             serie = [(h.mes, h.indicadores["inad"]) for h in hist if h.indicadores and h.indicadores.get("inad") is not None][:4]
             achados.append(Achado(
                 id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_inadimplencia_crescente",
                 linha_demonstrativo="Inadimplência total", valor_encontrado=round(a, 2),
                 detalhes={"verificacao": "inadimplencia_crescente", "atual": round(a, 2), "anterior": round(b, 2), "variacao_pct": round((a - b) / b * 100, 1),
+                          "pagina": (dados.indicadores or {}).get("pagina_inad"),
                           "serie": [{"mes": m, "inad": round(v, 2)} for m, v in serie], "lancamentos": []}))
     return achados, notas
