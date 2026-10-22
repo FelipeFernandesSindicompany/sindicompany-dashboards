@@ -540,7 +540,10 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 
 # Só estes tipos podem ser dispensados pelo responsável — nunca saldo, soma, comprovante/NF. Receita negativa só por decisão EXPLÍCITA do dono,
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
-_TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa"}
+_TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
+                       "saldo_negativo_persistente"}
+# achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
+_REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo"}
 
 
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
@@ -558,12 +561,13 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
     n = 0
     for item in esqueleto:
         a = por_id.get(item["achado_id"])
-        if a is None or a.tipo not in _TIPOS_DISPENSAVEIS or item.get("severidade_final") == "informativo":
+        if a is None or item.get("severidade_final") == "informativo" or (a.tipo not in _TIPOS_DISPENSAVEIS and a.regra_aplicada not in _REGRAS_DISPENSAVEIS):
             continue
         for d in dispensas:
             # "verificacao" (pontos de atenção de gestor) ou "tipo" (subconta nova / despesa em outra subconta / parcelas), sempre com o MESMO valor
             casa = ((d.get("verificacao") and a.tipo == "observacao_gestor" and (a.detalhes or {}).get("verificacao") == d["verificacao"])
-                    or (d.get("tipo") and a.tipo == d["tipo"]))
+                    or (d.get("tipo") and a.tipo == d["tipo"] and (not d.get("regra") or a.regra_aplicada == d["regra"]))
+                    or (d.get("regra") and not d.get("tipo") and not d.get("verificacao") and a.regra_aplicada == d["regra"]))
             if casa and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01:
                 item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
                             motivo_divergencia_da_sugestao=f"Retirado do relatório por decisão de {d['decidido_por']} em {d['data']}: {d['motivo']}")

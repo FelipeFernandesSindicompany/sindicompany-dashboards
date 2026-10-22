@@ -1,0 +1,24 @@
+[
+  {
+    "tipo": "divergencia_valor",
+    "regra": "demonstrativo_de_despesas_repetido_no_arquivo",
+    "valor_total": 80027.26,
+    "motivo": "Demonstrativo de Despesas repetido 9 vezes no arquivo (total declarado R$ 720.245,34) retirado do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -88837.74,
+    "motivo": "alerta de saldo negativo da conta Ordinária (há 5 meses) retirado do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "verificacao": "valor_redondo",
+    "valor_total": 3000.0,
+    "motivo": "observação de despesa de valor redondo (MG Pinturas, R$ 3.000,00) retirada do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  }
+]

@@ -350,7 +350,15 @@ def analisar(f, condos, por_nome, com_origem):
                 negativas = [c for c in d.contas if not c.nome.upper().startswith("CONSOLIDADO") and c.saldo_atual < -1.0]
                 if negativas and "saldo negativo e há quanto tempo" not in texto and cfg.get("regras", {}).get("saldo_negativo") is None \
                         and "Contas com saldo negativo" not in texto:
-                    add("ALTA", "Saldo negativo", f"conta(s) com saldo negativo ({', '.join(c.nome for c in negativas[:3])}) sem o alerta 'há quanto tempo'")
+                    # alerta retirado de propósito pelo dono (config/dispensas_validacao/<condomínio>/<mês>.json): registra, não reprova
+                    try:
+                        _disp = json.load(open(RAIZ / "config" / "dispensas_validacao" / condo["id"] / f"{mes}.json", encoding="utf-8"))
+                    except Exception:
+                        _disp = []
+                    if any(x.get("tipo") == "saldo_negativo_persistente" for x in _disp):
+                        add("INFO", "Saldo negativo", "alerta de saldo negativo retirado do relatório por decisão do responsável (dispensa registrada)")
+                    else:
+                        add("ALTA", "Saldo negativo", f"conta(s) com saldo negativo ({', '.join(c.nome for c in negativas[:3])}) sem o alerta 'há quanto tempo'")
                 # rendimento concentrado
                 if d.cobertura.get("rendimentos") or d.cobertura.get("receitas"):
                     todas_c = [c for c in d.contas if not c.nome.upper().startswith("CONSOLIDADO")]
