@@ -1,0 +1,23 @@
+[
+  {
+    "verificacao": "inadimplencia_crescente",
+    "valor_total": 3586.85,
+    "motivo": "observação de inadimplência crescente (R$ 1.063,31 -> R$ 3.586,85) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 468.0,
+    "motivo": "subconta nova Despesas Internas (R$ 468,00) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 774.97,
+    "motivo": "subconta nova Seguros (R$ 774,97) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  }
+]
