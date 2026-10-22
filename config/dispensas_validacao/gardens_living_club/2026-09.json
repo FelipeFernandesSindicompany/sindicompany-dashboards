@@ -61,5 +61,12 @@
     "decidido_por": "responsável pela validação",
     "data": "2026-10-22",
     "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -39.98,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "receita negativa de R$ 39,98 (Conta de Consumo - Gás, desconto de leitura de agosto) retirada do relatório de setembro/2026 por decisão do responsável"
   }
 ]

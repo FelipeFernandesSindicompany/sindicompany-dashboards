@@ -536,8 +536,9 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
     return n
 
 
-# Só pontos de atenção podem ser dispensados pelo responsável — nunca saldo, soma, sinal, comprovante/NF, receita/despesa negativa.
-_TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes"}
+# Só estes tipos podem ser dispensados pelo responsável — nunca saldo, soma, comprovante/NF. Receita negativa só por decisão EXPLÍCITA do dono,
+# registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
+_TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa"}
 
 
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
