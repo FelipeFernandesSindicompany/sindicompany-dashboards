@@ -431,16 +431,23 @@
     },
     "patricia": {
       "identidade_sem_nome": true,
-      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
+      "aviso_escopo_por_extensao": {".pdf": "Os comprovantes e notas fiscais não foram validados, pois o arquivo com os comprovantes não foi enviado pela Administradora (o arquivo recebido traz a listagem das despesas, sem os comprovantes anexados). Por isso esta validação conferiu somente os valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."},
       "pasta_prestacao": "Dashboard de Análise de Balancete Patrícia",
       "regras": {
+        "subcontas": {"comparar_entre_formatos": true},
         "rendimento": {
           "contas_aplicadas": [
             "FUNDO DE OBRAS",
             "SALÃO DE FESTAS/ CHURRASQUEIRA"
           ]
         },
-        "gestor": {}
+        "gestor": {
+          "desativar": ["fornecedor_novo", "recorrente_ausente", "valor_atipico"],
+          "parcelas_ausentes": true,
+          "esperadas": [
+            {"padrao": "ENEL|ENERGIA", "meses": 1, "valor_min": 500}
+          ]
+        }
       }
     },
     "plano_estacao_campo_limpo": {

@@ -353,10 +353,18 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
     elif v == "recorrente_ausente":
         itens = d.get("ausentes") or []
         lista = "; ".join(f"{i['descricao']} (mediana {_moeda(i['mediana'])})" for i in itens[:6])
-        titulo = pre + f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} por mês)"
-        par = (f"Despesas presentes em todos os últimos {len(d.get('meses_comparados') or [])} meses lidos e ausentes neste: {lista}. "
-               f"Pode ser fim de contrato, mas também lançamento que ficou para o mês seguinte ou conta não paga.")
-        ver = "O contrato dessas despesas terminou ou o lançamento foi postergado? Existe pagamento em atraso?"
+        titulo = pre + (f"{n} série(s) de parcelas sem parcela neste mês ({total})" if d.get("parcelas")
+                        else f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} por mês)")
+        n_meses = len(d.get("meses_comparados") or [])
+        if d.get("parcelas"):
+            par = (f"Séries de parcelas em andamento no mês anterior em que nenhuma parcela aparece neste mês: {lista}. "
+                   f"Pode ser parcela que ficou para o mês seguinte, pagamento em atraso ou renegociação.")
+            ver = "As parcelas seguintes dessas séries foram pagas? Estão atrasadas ou foram renegociadas? Podem informar o motivo de não constarem neste mês?"
+        else:
+            quando = "no mês anterior" if n_meses == 1 else f"em todos os últimos {n_meses} meses lidos"
+            par = (f"Despesas presentes {quando} e ausentes neste: {lista}. "
+                   f"Pode ser fim de contrato, mas também lançamento que ficou para o mês seguinte ou conta não paga.")
+            ver = "O contrato dessas despesas terminou ou o lançamento foi postergado? Existe pagamento em atraso?"
     elif v == "valor_atipico":
         itens = d.get("medianas") or []
         acumulos = [i for i in itens if i.get("acumulo")]

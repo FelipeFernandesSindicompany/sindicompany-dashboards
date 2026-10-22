@@ -23,7 +23,7 @@ from typing import Optional
 
 from conciliacao.base import Achado
 from conciliacao.regras_gerais.modelo import DadosRegras
-from conciliacao.regras_gerais.regras import _CENTAVO, _RE_RETENCAO, _norm, _sem_acento, nf_da_descricao, parcela_da_descricao
+from conciliacao.regras_gerais.regras import _CENTAVO, _RE_RETENCAO, _norm, _sem_acento, chave_despesa, nf_da_descricao, parcela_da_descricao
 
 _RE_MARKETPLACE = re.compile(
     r"MERCADO\s*PAGO|MERCADO\s*LIVRE|MERCADOLIVRE|AMAZON|MAGAZINE\s*LUIZA|MAGALU|SHOPEE|ALIEXPRESS|KABUM|AMERICANAS|SHEIN|"
@@ -355,6 +355,33 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                       "ausentes": [{"descricao": l.descricao, "mediana": round(v, 2), "categoria": l.categoria, "local": l.local, "pagina": l.pagina,
                                     "bbox": l.bbox, "mes": hs[0].mes, "arquivo": hs[0].arquivo} for l, v, hs in faltando_esp[:MAX_ITENS]],
                       "lancamentos": []}))
+
+    # Série de PARCELAS que parou (opt-in por condomínio: `regras.gestor.parcelas_ausentes: true`): no mês anterior a série estava em andamento (parcela
+    # n de t, n < t) e neste mês nenhuma parcela dela aparece. Chave = fornecedor/despesa + total de parcelas (o nº da NF muda a cada parcela).
+    if cfg.get("parcelas_ausentes") and hist:
+        ant = hist[0]
+        desta_vez = {(chave_despesa(l), parcela_da_descricao(l.descricao)[1]) for l in atuais if parcela_da_descricao(l.descricao)}
+        paradas: dict = {}
+        for l in _lancamentos_validos(ant):
+            p = parcela_da_descricao(l.descricao)
+            if not p or p[0] >= p[1]:
+                continue                                       # sem parcela, ou foi a última da série
+            k = (chave_despesa(l), p[1])
+            if k in desta_vez:
+                continue
+            if k not in paradas or p[0] > parcela_da_descricao(paradas[k].descricao)[0]:
+                paradas[k] = l
+        if paradas:
+            def _rotulo(l):
+                n, t = parcela_da_descricao(l.descricao)
+                return f"{(l.descricao or '').strip()} — parcela {n}/{t} no mês anterior; a parcela {n + 1}/{t} não aparece neste mês"
+            achados.append(Achado(
+                id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_recorrente_ausente",
+                linha_demonstrativo="Despesas recorrentes ausentes neste mês", valor_encontrado=round(sum(l.valor for l in paradas.values()), 2),
+                detalhes={"verificacao": "recorrente_ausente", "total_itens": len(paradas), "meses_comparados": [ant.mes], "parcelas": True,
+                          "ausentes": [{"descricao": _rotulo(l), "mediana": round(l.valor, 2), "categoria": l.categoria, "local": l.local, "pagina": l.pagina,
+                                        "bbox": l.bbox, "mes": ant.mes, "arquivo": ant.arquivo} for l in list(paradas.values())[:MAX_ITENS]],
+                          "lancamentos": []}))
 
     if "valor_atipico" not in desativar and hist:
         # Compara semelhante com semelhante: o mesmo fornecedor pode prestar serviços de natureza diferente (instalação x manutenção) e o nome

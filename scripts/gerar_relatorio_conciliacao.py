@@ -49,7 +49,7 @@ from conciliacao import get_conciliador
 from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
 from conciliacao.matching import (
-    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_auxiliadora, gerar_achados_ucondo, gerar_achados_gcont,
+    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_lirba_e_datadigitus, gerar_achados_auxiliadora, gerar_achados_ucondo, gerar_achados_gcont,
     gerar_achados_balancete_mensal, gerar_achados_palm_beach, gerar_achados_planilha_com_links,
 )
 from conciliacao import interpretacao
@@ -146,6 +146,8 @@ GERAR_ACHADOS_POR_EMPRESA = {
 from conciliacao.condominios._planilha_refino import gerar_achados_planilha_refinado as _gerar_achados_planilha_refinado
 
 GERAR_ACHADOS_POR_CONDO = {
+    # Gardens: comprovantes por OCR pareados por conteúdo + consistência da listagem (conciliacao/condominios/gardens_living_club.py)
+    "gardens_living_club": gerar_achados_lirba_e_datadigitus,
     "club_park_butanta": gerar_achados_gcont,
     # Mesmo formato GCONT/HSA do Club Park (comprovante em página de texto nativo,
     # "Parcela <código>") — ver conciliacao/condominios/{parque_saint_afonso,i_gloo_alphaville}.py.
@@ -712,14 +714,16 @@ def etapa_render(condo: dict, mes: str) -> Path:
     # pasta do projeto onde ficam os arquivos dos meses (o arquivo "de origem" pode ser uma cópia em outra pasta): print do mês anterior sai daqui
     _pasta_meses = pasta_prestacao.pasta_do_condominio(condo) or (pdf_origem.parent if pdf_origem else Path("."))
 
-    def _evidencias_planilha(achado, registro) -> list[dict]:
+    def _evidencias_planilha(achado, registro, origem=None) -> list[dict]:
         # Prestação em planilha: recorta as linhas do próprio arquivo (com nº da linha e letra da coluna). XLSX: planos(); XLS (Lello/Auxiliadora): planos_xls().
+        # `origem`: outra planilha da pasta (ex.: o mês anterior em planilha quando o mês atual veio em PDF); por padrão, o arquivo de origem.
         out = []
-        eh_xls = pdf_origem.suffix.lower() == ".xls"
-        planos = evidencia_planilha.planos_xls(pdf_origem, achado, registro, _pasta_meses) if eh_xls else evidencia_planilha.planos(pdf_origem, achado, registro)
+        origem = origem or pdf_origem
+        eh_xls = origem.suffix.lower() == ".xls"
+        planos = evidencia_planilha.planos_xls(origem, achado, registro, _pasta_meses) if eh_xls else evidencia_planilha.planos(origem, achado, registro)
         for k, plano in enumerate(planos, start=1):
             destino = version_dir / "evidencias_planilha" / f"{achado.id}_{k}.pdf"
-            arq_plano = (_pasta_meses / plano["arquivo"]) if plano.get("arquivo") else pdf_origem   # (mês anterior: outro arquivo da mesma pasta)
+            arq_plano = (_pasta_meses / plano["arquivo"]) if plano.get("arquivo") else origem   # (mês anterior: outro arquivo da mesma pasta)
             if not arq_plano.exists():
                 continue
             if plano.get("dados") is not None:
@@ -812,6 +816,15 @@ def etapa_render(condo: dict, mes: str) -> Path:
             return render.preparar_evidencia_extra(pdf_origem, sp)
         evs = [_prep(s) for s in specs]
         evs = [e for e in evs if e]
+        if not evs and achado is not None and (achado.detalhes or {}).get("verificacao") == "recorrente_ausente" and chave not in _specs_extras:
+            # mês atual em PDF e o lançamento ausente é do mês anterior, que veio em PLANILHA (ex.: Patrícia ago/2026 .xls -> set/2026 .pdf)
+            for nome_arq in sorted({x.get("arquivo") for x in ((achado.detalhes or {}).get("ausentes") or []) if x.get("arquivo")}):
+                prev = _pasta_meses / nome_arq
+                if prev.suffix.lower() in (".xlsx", ".xlsm", ".xls") and prev.exists():
+                    try:
+                        evs += _evidencias_planilha(achado, registro, prev)
+                    except Exception as exc:
+                        print(f"[AVISO] print de evidência do mês anterior (planilha) não gerado para {chave}: {exc}")
         if not evs and achado is not None and (achado.id or "").startswith("RG-") and chave not in _specs_extras:
             evs = _evidencias_pagina_por_ocr(achado)
         if not evs and achado is not None and (achado.detalhes or {}).get("so_total") and chave not in _specs_extras:

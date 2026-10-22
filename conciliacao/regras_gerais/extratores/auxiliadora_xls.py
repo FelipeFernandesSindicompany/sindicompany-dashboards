@@ -174,10 +174,16 @@ class Extrator:
         dados.contas = list(contas.values())
         dados.lancamentos = lanc
 
+        # A ORDINÁRIA só é "itemizada" quando o Demonstrativo de Despesas traz TODAS as linhas dela: a soma dos lançamentos da conta fecha com o
+        # débito do Resumo (ago/2026 em diante o arquivo passou a trazer; nos meses antigos só havia categorias). Sem esse fechamento, não há
+        # como afirmar que as regras de lançamento (parcelas, subcontas, fornecedores) viram o mês inteiro.
+        _ord = next((c for k, c in contas.items() if k.startswith("ORDINARIA")), None)
+        _soma_ord = round(sum(l.valor for l in lanc if _chave(l.conta).startswith("ORDINARIA")), 2)
+        itemizada = bool(_ord is not None and lanc and abs(_soma_ord - round(_ord.debitos, 2)) <= _CENTAVO)
         dados.cobertura = {
             "receitas": bool(blocos) or bool(pos),
             "rendimentos": bool(contas) and bool(pos),
-            "lancamentos": False,
+            "lancamentos": itemizada,
         }
         if not dados.cobertura["receitas"]:
             dados.motivos_nao_cobertos["receitas"] = "o arquivo não traz o Demonstrativo de Receitas nem a Posição Financeira por conta"
@@ -185,7 +191,8 @@ class Extrator:
             dados.motivos_nao_cobertos["rendimentos"] = "o arquivo não traz a Posição Financeira por conta"
         ordinaria = next((c for k, c in contas.items() if k.startswith("ORDINARIA")), None)
         extras = sorted({l.conta for l in lanc})
-        dados.motivos_nao_cobertos["lancamentos"] = (
+        if not itemizada:
+            dados.motivos_nao_cobertos["lancamentos"] = (
             "o arquivo da Auxiliadora só lista lançamentos individuais das contas extraordinárias"
             + (f" ({', '.join(extras)})" if extras else " (neste mês, nenhum)")
             + "; as despesas da ORDINÁRIA"
