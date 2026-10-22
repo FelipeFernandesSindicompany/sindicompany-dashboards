@@ -63,7 +63,13 @@ def specs_para(a: Achado) -> list[dict]:
     elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
         for i in d.get("itens", [])[:3]:
             if i.get("pagina"):
-                specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])), "Lançamento de concessionária"))
+                trecho = _trecho(i.get("descricao"))
+                sp = _spec(i["pagina"], trecho or re.escape(_br(i["valor"])), "Lançamento de concessionária")
+                if trecho:
+                    # o mesmo fornecedor pode ter várias linhas na página (ex.: duas faturas da Vivo): a linha certa traz também o VALOR
+                    sp["buscar"] = trecho + r"[^\n]{0,90}?" + re.escape(_br(i["valor"]))
+                    sp["buscar_alt"] = trecho
+                specs.append(sp)
     elif a.tipo == "observacao_gestor":
         for i in d.get("lancamentos", [])[:4]:
             if i.get("pagina"):

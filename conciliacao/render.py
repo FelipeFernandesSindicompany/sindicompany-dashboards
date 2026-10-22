@@ -608,6 +608,8 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                     return None
                 page = pdf.pages[pagina - 1]
                 achados = page.search(spec["buscar"], regex=True, case=False)
+                if not achados and spec.get("buscar_alt"):
+                    achados = page.search(spec["buscar_alt"], regex=True, case=False)      # busca mais frouxa quando a específica não acha
                 if not achados:
                     return None
                 m = achados[min(int(spec.get("ocorrencia", 0)), len(achados) - 1)]      # "ocorrencia": a N-ésima linha que casa (parcelas com o mesmo início de texto)

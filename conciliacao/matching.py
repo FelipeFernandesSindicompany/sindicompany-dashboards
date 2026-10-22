@@ -1238,6 +1238,72 @@ def gerar_achados_datadigitus(
     return achados
 
 
+# Retenção de imposto lançada com o nome do órgão ("Ministério da Previdência Social <fornecedor>", "Ministério da Fazenda ...", "Receita Federal
+# ...") é paga em GUIA CONSOLIDADA (DARF/GPS/DCTFWeb): o comprovante é o total da guia, não o valor de cada retenção.
+_RE_RETENCAO_EM_GUIA = re.compile(r"^(MINISTERIO DA (PREVIDENCIA|FAZENDA)|RECEITA FEDERAL)\b")
+
+
+_RE_LANCAMENTO_BANCO = re.compile(r"^BANCO [A-Z ]+(S/A|S\.A\.?)?$")
+
+
+def gerar_achados_lirba_e_datadigitus(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
+    """
+    Gardens Living Club (Consvicta): comprovantes lidos por OCR e pareados por conteúdo (ver conciliacao/condominios/gardens_living_club.py) —
+    toda a cadeia do formato Lirba (valor, NF, concessionária, atraso) MAIS as duas regras de consistência da listagem do DataDigitus
+    (duplicidade e soma x total declarado). Retenção de imposto paga em guia consolidada não tem comprovante individual: vira verificado.
+    """
+    achados = gerar_achados_lirba(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    extras = [a for a in gerar_achados_datadigitus(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+              if a.regra_aplicada in ("mesma_data_valor_categoria_historico_repetidos", "soma_lancamentos_diverge_total_da_conta_declarado")]
+    n = len(achados)
+    for i, a in enumerate(extras, start=1):
+        a.id = f"ACH-{n + i:04d}"
+    achados.extend(extras)
+    despesas = [d for d in registros if d.tipo_documento == "despesa_listada"]
+    em_guia = {chave_registro(d) for d in despesas if _RE_RETENCAO_EM_GUIA.match(_normalizar_texto(d.descricao or ""))}
+    # tarifa/encargo cobrado pelo banco: lançamento "Banco Itau S/A" sem documento (a listagem do Gardens agrupa em Despesas Bancárias)
+    tarifa_banco = {chave_registro(d) for d in despesas if _RE_LANCAMENTO_BANCO.match(_normalizar_texto(d.descricao or "")) and not d.autenticacao}
+    comp_por_codigo = {r.codigo: r for r in registros if r.tipo_documento == "comprovante_anexado"}
+    desp_por_chave = {chave_registro(d): d for d in despesas}
+    # pagamento AGRUPADO: várias notas pagas numa só transferência — a soma das despesas do mesmo comprovante é o valor pago
+    soma_por_pagina: dict = {}
+    for d in despesas:
+        c = comp_por_codigo.get(d.codigo)
+        if c is not None:
+            soma_por_pagina[c.pagina] = round(soma_por_pagina.get(c.pagina, 0.0) + d.valor, 2)
+
+    def _verificar(a, regra: str) -> None:
+        a.tipo, a.severidade_sugerida, a.regra_aplicada = "ok_verificado", "informativo", regra
+        a.valor_encontrado, a.confianca_deterministica = a.valor_esperado, 1.0
+
+    for a in achados:
+        if a.tipo not in ("sem_comprovante", "conteudo_nao_verificavel", "divergencia_valor", "nota_fiscal_ausente") or not a.registros_relacionados:
+            continue
+        if a.regra_aplicada == "soma_lancamentos_diverge_total_da_conta_declarado":
+            continue
+        chaves = a.registros_relacionados
+        if any(k in em_guia for k in chaves):
+            _verificar(a, "retencao_tributaria_paga_em_guia_consolidada")
+        elif any(k in tarifa_banco for k in chaves):
+            _verificar(a, "tarifa_bancaria_sem_comprovante_individual")
+        elif a.tipo in ("divergencia_valor", "conteudo_nao_verificavel"):
+            d = next((desp_por_chave[k] for k in chaves if k in desp_por_chave), None)
+            c = comp_por_codigo.get(d.codigo) if d is not None else None
+            if c is None:
+                continue
+            soma = soma_por_pagina.get(c.pagina, 0.0)
+            if _lp.valor_aparece_no_texto(c.texto_bruto or "", d.valor):
+                _verificar(a, "valor_da_listagem_aparece_no_comprovante_lido")          # transferência em lote / vários valores na página
+            elif a.valor_encontrado and abs(soma - a.valor_encontrado) <= 0.011:
+                _verificar(a, "pagamento_agrupado_soma_das_despesas_confere")
+            elif soma > 0 and abs(soma - d.valor) > 0.011 and _lp.valor_aparece_no_texto(c.texto_bruto or "", soma):
+                _verificar(a, "pagamento_agrupado_soma_das_despesas_confere")           # várias linhas da listagem = um documento (ex.: fatura Claro)
+    return achados
+
+
 def _pascoa(ano: int):
     """Domingo de Páscoa (algoritmo gregoriano anônimo)."""
     a, b, c = ano % 19, ano // 100, ano % 100

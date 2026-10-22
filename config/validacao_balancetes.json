@@ -606,7 +606,6 @@
     "gardens_living_club": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club",
       "leitor_financeiro": "regras_gerais",
-      "aviso_escopo": "Os comprovantes e notas fiscais não foram conferidos lançamento a lançamento: o arquivo traz as páginas de comprovantes de despesas, mas elas são imagens sem identificação que as ligue a cada lançamento da listagem, e por isso a conferência automática não é possível. Esta validação conferiu somente os valores e as regras que a listagem das despesas permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "regras": {
         "gestor": {}
       }
