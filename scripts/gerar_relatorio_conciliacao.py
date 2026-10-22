@@ -336,7 +336,7 @@ def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
 
 
 _EMPRESAS_SO_PLANILHA = {"habitacional_xlsx", "lfc_xlsx"}
-_CONDOS_PLANILHA_E_PDF = {"onze_22", "cores"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
+_CONDOS_PLANILHA_E_PDF = {"onze_22", "cores", "elo_elo_duo"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
 
 
 def _conferir_identidade_do_arquivo(condo: dict, arquivo: Path) -> None:
@@ -536,10 +536,14 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
     return n
 
 
+# Só pontos de atenção podem ser dispensados pelo responsável — nunca saldo, soma, sinal, comprovante/NF, receita/despesa negativa.
+_TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes"}
+
+
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
-        [{"verificacao": "fornecedor_novo", "valor_total": 10246.57, "decidido_por": "...", "data": "AAAA-MM-DD", "motivo": "..."}]
+        [{"verificacao": "fornecedor_novo" | "tipo": "subconta_atipica", "valor_total": 10246.57, "decidido_por": "...", "data": "AAAA-MM-DD", "motivo": "..."}]
     Só vale para a MESMA observação (mesmo tipo de verificação e mesmo valor total): se o arquivo mudar e o valor mudar, ela volta.
     Só dispensa observações de gestor (pontos de atenção) — nunca divergência de saldo, soma, sinal ou comprovante."""
     arq = ROOT / "config" / "dispensas_validacao" / base_dir.parent.parent.name / f"{mes}.json"
@@ -551,10 +555,13 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
     n = 0
     for item in esqueleto:
         a = por_id.get(item["achado_id"])
-        if a is None or a.tipo != "observacao_gestor" or item.get("severidade_final") == "informativo":
+        if a is None or a.tipo not in _TIPOS_DISPENSAVEIS or item.get("severidade_final") == "informativo":
             continue
         for d in dispensas:
-            if (a.detalhes or {}).get("verificacao") == d["verificacao"] and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01:
+            # "verificacao" (pontos de atenção de gestor) ou "tipo" (subconta nova / despesa em outra subconta / parcelas), sempre com o MESMO valor
+            casa = ((d.get("verificacao") and a.tipo == "observacao_gestor" and (a.detalhes or {}).get("verificacao") == d["verificacao"])
+                    or (d.get("tipo") and a.tipo == d["tipo"]))
+            if casa and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01:
                 item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
                             motivo_divergencia_da_sugestao=f"Retirado do relatório por decisão de {d['decidido_por']} em {d['data']}: {d['motivo']}")
                 n += 1
@@ -1060,7 +1067,11 @@ def etapa_render(condo: dict, mes: str) -> Path:
         achados=achados_render,
         analise=analise,
         categorias_novas=categorias_novas_lista,
-        aviso_escopo=(condo.get("aviso_escopo") or (condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "")
+        aviso_escopo=(condo.get("aviso_escopo")
+                      # aviso por extensão = "comprovantes não enviados": só vale quando NENHUM comprovante veio no arquivo (o PDF completo do Elo
+                      # em jul/2026 traz 449 comprovantes; o resumo de 4 páginas de ago/2026 não)
+                      or ((condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "")
+                          if not any(r.tipo_documento == "comprovante_anexado" for r in registros) else None)
                       or _aviso_escopo_sem_comprovantes(registros) or None),
         gerado_em=datetime.now().strftime("%d/%m/%Y"),
     )

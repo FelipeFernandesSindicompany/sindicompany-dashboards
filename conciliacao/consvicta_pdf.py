@@ -35,8 +35,10 @@ from conciliacao.base import ConciliadorBase, RegistroComprovante
 _RE_CATEGORIA = re.compile(r'^(.+?)\s+\(-?[\d.]+,\d{2}%\)\s*$')
 _RE_TOTAL_DESPESAS = re.compile(r'^Total de Despesas\s+[\d.]+,\d{2}%\s+\(?-?([\d.]+,\d{2})\)?\s*$', re.IGNORECASE)
 _RE_TOTAL_SUBGRUPO = re.compile(r'^Total de\s+.+?\s+\(?-?[\d.]+,\d{2}%\)?\s+\(?-?[\d.]+,\d{2}\)?\s*$', re.IGNORECASE)
+# O "documento" entre a data e o % pode ter mais de uma palavra ("Cupom Fiscal-14016", "NF-167457 / 167456", "NF-181/ 1361"): tudo que vier
+# entre a data de liquidação e o percentual é o documento (antes só uma palavra "XX-NNN" ou número, e esses lançamentos sumiam da soma).
 _RE_LANCAMENTO = re.compile(
-    r'^(.*?)\s+(\d{2}/\d{2}/\d{4})\s+(?:(\S+-\S+|\d+)\s+)?'
+    r'^(.*?)\s+(\d{2}/\d{2}/\d{4})\s+(?:(.+?)\s+)?'
     r'\(?-?[\d.]+,\d{2}%\)?\s+\(?-?([\d.]+,\d{2})\)?\s*$'
 )
 

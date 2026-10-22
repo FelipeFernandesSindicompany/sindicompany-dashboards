@@ -202,7 +202,7 @@
       "leitor_financeiro": "regras_gerais"
     },
     "elo_elo_duo": {
-      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o demonstrativo de receitas) não foi enviado. Esta validação utilizou o Resumo Financeiro e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes, notas fiscais, receitas nem rendimentos. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
+      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o demonstrativo de receitas) não foi enviado. Esta validação utilizou o Resumo Financeiro e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes, notas fiscais, receitas nem rendimentos. Também não foi possível comparar fornecedores e valores com o histórico dos meses anteriores (fornecedor novo ou valor acima do histórico), porque o arquivo deste mês veio em formato diferente do dos meses anteriores. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
       "pasta_prestacao": "Dashboard de Análise de Balancete Elo & Elo",
       "regras": {
         "rendimento": {
@@ -210,7 +210,15 @@
             "CAIXA ORDINARIO"
           ]
         },
-        "gestor": {}
+        "subcontas": {
+          "comparar_entre_formatos": true
+        },
+        "gestor": {
+          "desativar": ["fornecedor_novo", "recorrente_ausente", "valor_atipico"],
+          "esperadas": [
+            {"padrao": "TAXA ASSOCIATIVA", "meses": 3, "valor_min": 5000}
+          ]
+        }
       }
     },
     "giardino_d_italia": {
@@ -598,6 +606,7 @@
     "gardens_living_club": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club",
       "leitor_financeiro": "regras_gerais",
+      "aviso_escopo": "Os comprovantes e notas fiscais não foram conferidos lançamento a lançamento: o arquivo traz as páginas de comprovantes de despesas, mas elas são imagens sem identificação que as ligue a cada lançamento da listagem, e por isso a conferência automática não é possível. Esta validação conferiu somente os valores e as regras que a listagem das despesas permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "regras": {
         "gestor": {}
       }

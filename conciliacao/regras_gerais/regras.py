@@ -38,9 +38,9 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^A-Z0-9 ]", " ", _sem_acento(s).upper())).strip()
 
 
-_RE_PARCELA = re.compile(r"\bPARC(?:ELA)?S?\.?\s*(\d{1,2})\s*(?:/|DE|-)\s*(\d{1,2})\b", re.IGNORECASE)
-# "PARC 02/06", "PARCELA 2/12", "PARC. 10 DE 12". Só com a palavra PARC: "02/06" solto
-# pode ser data ou competência.
+_RE_PARCELA = re.compile(r"\bPARC(?:ELA)?S?\.?\s*(\d{1,2})\s*(?:/|DE|-)\s*(\d{1,2})\b|\bPC\.?\s*(\d{1,2})\s*/\s*(\d{1,2})\b", re.IGNORECASE)
+# "PARC 02/06", "PARCELA 2/12", "PARC. 10 DE 12" e, no padrão Habitacional (Elo etc.), "PC 1/2" / "PC. 2/2" (PC só com a barra).
+# Só com a palavra PARC/PC: "02/06" solto pode ser data ou competência.
 
 
 _RE_NF = re.compile(r"\bNFS?E?\b\.?\s*(?:N[º°O]\.?)?\s*[:.\-]?\s*(\d{2,})", re.IGNORECASE)
@@ -57,7 +57,7 @@ def parcela_da_descricao(descricao: str) -> Optional[tuple[int, int]]:
     m = _RE_PARCELA.search(descricao or "")
     if not m:
         return None
-    n, total = int(m.group(1)), int(m.group(2))
+    n, total = int(m.group(1) or m.group(3)), int(m.group(2) or m.group(4))
     return (n, total) if 1 <= n <= total <= 99 else None
 
 
@@ -786,6 +786,20 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
     def _existia(cat_nome: str, conjunto: dict) -> bool:
         return any(_mesma_categoria(cat_nome, n) for n in conjunto.values())
 
+    # Mesma despesa com o TEXTO alterado de um mês para o outro (ex.: "ELO CAMINHOS DA LAPA - PC 3/6 - REPASSE SEGURO ALLIANZ" virou
+    # ". REPASSE SEGURO - ALLIANZ"): a chave por descrição não casa, mas o VALOR é idêntico (≥ R$ 300) e ≥ 2 palavras distintivas se repetem.
+    _GENERICAS = {"REPASSE", "SERVICO", "SERVICOS", "MANUTENCAO", "LTDA", "EIRELI", "CONDOMINIO", "DESPESAS", "MATERIAL", "MATERIAIS",
+                  "REFERENTE", "PAGAMENTO", "COMPRA", "AQUISICAO"}
+
+    def _tokens(s: str) -> set:
+        return {w for w in _norm(s).split() if len(w) >= 4 and not w.isdigit() and w not in _GENERICAS}
+
+    por_valor: dict[float, list] = {}
+    for h in historico:
+        for l in h.lancamentos:
+            if l.valor >= 300:
+                por_valor.setdefault(round(l.valor, 2), []).append((_tokens(l.descricao or ""), _canon(l.categoria)))
+
     achados = []
     por_nova: dict[str, list[LancamentoDespesa]] = {}
     por_troca: dict[tuple, list[LancamentoDespesa]] = {}
@@ -796,6 +810,12 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
         antes = cat_anterior.get(K(l))
         if antes and any(rx.search(K(l)) for rx in ignorar_despesas):
             antes = None
+        if not antes and l.valor >= 300 and not _RE_RETENCAO.search(_sem_acento(l.descricao or "")):
+            tk = _tokens(l.descricao or "")
+            cats_v = {_norm(c): c for tks, c in por_valor.get(round(l.valor, 2), []) if len(tk & tks) >= 2}
+            if cats_v:
+                antes = cats_v
+                cat_anterior[K(l)] = cats_v      # o texto do achado lista as subcontas do mês anterior a partir daqui
         # "Mesma despesa em outra subconta" só vale para despesa RECORRENTE e CONSISTENTE: apareceu em pelo menos 2 meses
         # anteriores e sempre na MESMA subconta. Fornecedor que presta serviços diferentes (cartão de crédito, tarifas,
         # peças/manutenção, portaria/controle de acesso...) aparece em subcontas diferentes legitimamente — e um único mês

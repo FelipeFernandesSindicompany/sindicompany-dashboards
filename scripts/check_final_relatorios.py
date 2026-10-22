@@ -293,7 +293,10 @@ def analisar(f, condos, por_nome, com_origem):
             if v:
                 try:
                     orig = json.load(open(v / "origem.json", encoding="utf-8")).get("arquivo_original", "")
-                    exige = exige or Path(orig).suffix.lower() in cfg["aviso_escopo_por_extensao"]
+                    tem_comprovantes = any(r.get("tipo_documento") == "comprovante_anexado"
+                                           for r in json.load(open(v / "registros_comprovantes.json", encoding="utf-8")))
+                    # o aviso por extensão é "comprovantes não enviados": só é exigido quando o arquivo realmente não traz comprovantes
+                    exige = exige or (Path(orig).suffix.lower() in cfg["aviso_escopo_por_extensao"] and not tem_comprovantes)
                 except Exception:
                     pass
         if exige and "Escopo da Validação" not in texto:
@@ -306,6 +309,14 @@ def analisar(f, condos, por_nome, com_origem):
         ex = get_extrator(cfg)
         suf = ".xlsx" if cfg.get("empresa_gestora") in ("habitacional_xlsx", "lfc_xlsx") else None
         arq = localizar_arquivo_mes(pasta, mm, aaaa, preferir_sufixo=suf) if pasta else None
+        # o relatório foi gerado de UM arquivo específico (ex.: Elo jul/2026: PDF completo, não a planilha antiga da pasta): compara com ele
+        try:
+            _vers = _ultima_versao(condo["id"], mes)
+            _orig = Path(json.load(open(_vers / "origem.json", encoding="utf-8")).get("arquivo_original", "")) if _vers else None
+            if _orig is not None and _orig.is_file():
+                arq = _orig
+        except Exception:
+            pass
         if ex is not None and arq is not None:
             try:
                 d = ex.extrair(arq, mes)

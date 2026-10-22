@@ -327,6 +327,35 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                                         "mes": ultimos[0].mes, "arquivo": ultimos[0].arquivo} for _, l, v in faltando[:MAX_ITENS]],
                           "lancamentos": []}))
 
+    # Despesas ESPERADAS por configuração do condomínio (`regras.gestor.esperadas`: [{"padrao": regex sobre a descrição, "meses": 3,
+    # "valor_min": 500}]): despesa fixa que existe todo mês (ex.: repasse da taxa associativa do Elo) e que sumiu neste. Vale mesmo
+    # quando a regra geral de "recorrente ausente" está desligada (nome do fornecedor instável no formato do arquivo), porque o padrão
+    # é escolhido a dedo para aquele condomínio.
+    faltando_esp = []
+    for esp in (cfg.get("esperadas") or []):
+        if "esperadas" in desativar:
+            break
+        rx = re.compile(esp["padrao"], re.IGNORECASE)
+        n_meses = int(esp.get("meses", 3))
+        ultimos_e = hist[:n_meses]
+        if len(ultimos_e) < n_meses:
+            continue
+        por_mes_l = [[l for l in _lancamentos_validos(h) if rx.search(_sem_acento(l.descricao or ""))] for h in ultimos_e]
+        if not all(por_mes_l) or any(rx.search(_sem_acento(l.descricao or "")) for l in atuais):
+            continue
+        soma_mes = [sum(l.valor for l in ls) for ls in por_mes_l]
+        if statistics.median(soma_mes) < esp.get("valor_min", cfg["recorrente_valor_min"]):
+            continue
+        faltando_esp.append((por_mes_l[0][0], statistics.median(soma_mes), ultimos_e))
+    if faltando_esp:
+        achados.append(Achado(
+            id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_recorrente_ausente",
+            linha_demonstrativo="Despesas recorrentes ausentes neste mês", valor_encontrado=round(sum(v for _, v, _ in faltando_esp), 2),
+            detalhes={"verificacao": "recorrente_ausente", "total_itens": len(faltando_esp), "meses_comparados": [h.mes for h in faltando_esp[0][2]],
+                      "ausentes": [{"descricao": l.descricao, "mediana": round(v, 2), "categoria": l.categoria, "local": l.local, "pagina": l.pagina,
+                                    "bbox": l.bbox, "mes": hs[0].mes, "arquivo": hs[0].arquivo} for l, v, hs in faltando_esp[:MAX_ITENS]],
+                      "lancamentos": []}))
+
     if "valor_atipico" not in desativar and hist:
         # Compara semelhante com semelhante: o mesmo fornecedor pode prestar serviços de natureza diferente (instalação x manutenção) e o nome
         # abreviado ("DESPESAS COM ...") junta objetos que nada têm a ver (postagens x tarifas). Cada grupo é comparado só com os
@@ -443,10 +472,11 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                  contas=sorted({l.conta for l in itens}))
 
     if "deficit_conta" not in desativar:
-        alvos = list(map(_norm, cfg["deficit_contas"]))
+        # "ORDINARIO" cobre "CAIXA ORDINARIO" (Habitacional: Elo, Go Liberdade...), que "ORDINARIA" não pega
+        alvos = list(map(_norm, cfg["deficit_contas"])) + ["ORDINARIO"]
         for c in dados.contas:
-            # "EXTRAORDINARIA" contém "ORDINARIA": conta extraordinária é fundo/obra, não a conta que paga as despesas correntes
-            if any(t in _norm(c.nome) for t in alvos) and "EXTRAORDINARIA" not in _norm(c.nome) and not _norm(c.nome).startswith("CONSOLIDADO") and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
+            # "EXTRAORDINARIA/O" contém "ORDINARIA/O": conta extraordinária é fundo/obra, não a conta que paga as despesas correntes
+            if any(t in _norm(c.nome) for t in alvos) and "EXTRAORDINAR" not in _norm(c.nome) and not _norm(c.nome).startswith("CONSOLIDADO") and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
                 achados.append(Achado(
                     id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_deficit_conta",
                     linha_demonstrativo=c.nome, valor_encontrado=round(c.debitos - c.creditos, 2),

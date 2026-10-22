@@ -36,10 +36,15 @@ def specs_para(a: Achado) -> list[dict]:
     elif a.tipo == "pagamento_sem_identificacao" and d.get("pagina"):
         specs.append(_spec(d["pagina"], re.escape(_br(a.valor_encontrado)), "Lançamento sem identificação do favorecido"))
     elif a.tipo == "parcelas_mesmo_mes":
+        vistos: dict = {}
         for p in d.get("parcelas", [])[:3]:
             if p.get("pagina"):
-                specs.append(_spec(p["pagina"], _trecho(p.get("descricao")) or re.escape(_br(p["valor"])),
-                                   f"Parcela {p['n']}/{d.get('total_parcelas')}"))
+                busca = _trecho(p.get("descricao")) or re.escape(_br(p["valor"]))
+                sp = _spec(p["pagina"], busca, f"Parcela {p['n']}/{d.get('total_parcelas')}")
+                # as parcelas da mesma série começam com o mesmo texto: a N-ésima parcela na mesma página é a N-ésima linha que casa
+                sp["ocorrencia"] = vistos.get((p["pagina"], busca), 0)
+                vistos[(p["pagina"], busca)] = sp["ocorrencia"] + 1
+                specs.append(sp)
     elif a.tipo in ("lancamento_em_outra_subconta", "subconta_atipica"):
         for i in d.get("lancamentos", [])[:2]:
             if i.get("pagina"):

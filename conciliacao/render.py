@@ -610,8 +610,10 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                 achados = page.search(spec["buscar"], regex=True, case=False)
                 if not achados:
                     return None
-                m = achados[0]
+                m = achados[min(int(spec.get("ocorrencia", 0)), len(achados) - 1)]      # "ocorrencia": a N-ésima linha que casa (parcelas com o mesmo início de texto)
                 palavras = page.extract_words(extra_attrs=["fontname"])
+                # marca-d'água do sistema (ex.: "ContasData") impressa FORA da página, na altura da linha: não faz parte do conteúdo
+                palavras = [w for w in palavras if w["x0"] >= -1 and w["x1"] <= float(page.width) + 1]
                 if not palavras:
                     return None
                 esquerda = max(0.0, min(w["x0"] for w in palavras) - 4)
@@ -646,7 +648,8 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                     atual = da_linha or [m]
 
                     def _tem_valor(ws) -> bool:
-                        return any(_re.fullmatch(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", str(w.get("text", ""))) and w["x0"] > 0.6 * float(page.width) for w in ws)
+                        return any(_re.fullmatch(r"-?\d{1,3}(?:\.\d{3})*,\d{2}", str(w.get("text", ""))) and w["x0"] > 0.5 * float(page.width) for w in ws)
+                    visto_valor = _tem_valor(atual)
                     for _ in range(3):
                         if sem_data and _tem_valor(atual):
                             break
@@ -659,6 +662,9 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
                             break
                         topo_p = prox[0]["top"]
                         mesma = [w for w in prox if abs(w["top"] - topo_p) < 2.5]
+                        if visto_valor and _tem_valor(mesma):
+                            break          # o lançamento já tem o seu valor e a linha seguinte traz OUTRO valor: é outro lançamento/linha da tabela
+                        visto_valor = visto_valor or _tem_valor(mesma)
                         base_d = max(w["bottom"] for w in mesma)
                         x_fim = max(x_fim, max(w["x1"] for w in mesma))
                         atual = mesma

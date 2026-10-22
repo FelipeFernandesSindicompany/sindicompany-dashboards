@@ -1,0 +1,65 @@
+[
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 7000.0,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "verificacao": "recorrente_ausente",
+    "valor_total": 765.4,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 6584.2,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 2039.6,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 71.5,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 1198.0,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 303.0,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 6.18,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 39.9,
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22",
+    "motivo": "itens avaliados e considerados ok pelo responsável; mantida no relatório de setembro/2026 apenas a divergência da receita negativa"
+  }
+]
