@@ -550,17 +550,24 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
         [{"verificacao": "fornecedor_novo" | "tipo": "subconta_atipica", "valor_total": 10246.57, "decidido_por": "...", "data": "AAAA-MM-DD", "motivo": "..."}]
+    Entrada com "ajuste_texto": true + "sem_comprovante": true não retira o item: só tira o pedido de comprovante da pergunta (mesmo tipo e valor).
     Só vale para a MESMA observação (mesmo tipo de verificação e mesmo valor total): se o arquivo mudar e o valor mudar, ela volta.
     Só dispensa observações de gestor (pontos de atenção) — nunca divergência de saldo, soma, sinal ou comprovante."""
     arq = ROOT / "config" / "dispensas_validacao" / base_dir.parent.parent.name / f"{mes}.json"
     if not arq.exists():
         return 0
-    dispensas = json.load(open(arq, encoding="utf-8"))
+    todas = json.load(open(arq, encoding="utf-8"))
+    # "ajuste_texto": o item continua no relatório, só muda a redação (hoje: tirar o pedido de comprovante de um movimento entre contas específico)
+    ajustes = [d for d in todas if d.get("ajuste_texto")]
+    dispensas = [d for d in todas if not d.get("ajuste_texto")]
     por_id = {a.id: a for a in achados}
     agora = datetime.now(timezone.utc).isoformat()
     n = 0
     for item in esqueleto:
         a = por_id.get(item["achado_id"])
+        for d in ajustes:
+            if a is not None and d.get("tipo") == a.tipo and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01 and d.get("sem_comprovante"):
+                item["o_que_verificar"] = re.sub(r",?\s*e onde est[aá] o comprovante\?", "?", item.get("o_que_verificar") or "")
         if a is None or item.get("severidade_final") == "informativo" or (a.tipo not in _TIPOS_DISPENSAVEIS and a.regra_aplicada not in _REGRAS_DISPENSAVEIS):
             continue
         for d in dispensas:

@@ -1,0 +1,32 @@
+[
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 14078.69,
+    "motivo": "fornecedor sem lançamento nos 4 meses anteriores (R$ 14.078,69) retirado do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -14078.69,
+    "motivo": "saldo negativo da CONTA REFORMA ELEVADOR (R$ -14.078,69) retirado do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 630.0,
+    "motivo": "subconta nova IMPREVISTOS E DIVERSOS (R$ 630,00) retirada do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "movimento_entre_contas",
+    "valor_total": 45167.47,
+    "ajuste_texto": true,
+    "sem_comprovante": true,
+    "motivo": "movimento de R$ 45.167,47 da CONTA APLICAÇÃO /CDB ORDINÁRIA em agosto/2026: não pedir comprovante, por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  }
+]
