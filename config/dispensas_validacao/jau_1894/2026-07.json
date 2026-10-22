@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 1010.71,
+    "motivo": "subconta nova MANUTENCAO CONSERV, CORRETIVA (R$ 1.010,71) retirada do relatório de julho/2026 por decisão do responsável: sem divergências. balancete validado",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 1815.41,
+    "motivo": "subconta nova MATERIAIS P/CONSERV, E MANUT, (R$ 1.815,41) retirada do relatório de julho/2026 por decisão do responsável: sem divergências. balancete validado",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-22"
+  }
+]
