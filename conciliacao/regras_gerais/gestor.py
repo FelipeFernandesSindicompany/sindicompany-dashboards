@@ -397,7 +397,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                     break
             else:
                 grupos.append((l, [l]))
-        itens, medianas = [], []
+        itens, medianas, representantes = [], [], []
         for rep, ls in grupos:
             k = chave(rep)
             v = sum(x.valor for x in ls)
@@ -419,6 +419,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                     for x in ls:
                         datas0[x.data or "sem data"] = datas0.get(x.data or "sem data", 0) + 1
                     itens += ls
+                    representantes.append(_item(max(ls, key=lambda x: x.valor)))
                     medianas.append({"descricao": k, "valor": round(v, 2), "mediana": None, "acumulo": True, "sem_comparacao": True, "n": len(ls),
                                      "valor_unitario": round(sum(valores0) / len(valores0), 2), "competencias": [r for _, r in comps0], "datas": datas0})
                 continue
@@ -429,6 +430,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
             fator = cfg.get("atipico_fator_variavel", 1.10) if variavel else cfg["atipico_fator"]
             if m > _CENTAVO and v >= fator * m and v - m >= cfg["atipico_diferenca_min"]:
                 itens += ls
+                representantes.append(_item(max(ls, key=lambda x: x.valor)))
                 item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2), "variavel": variavel, "acima_pct": round((v / m - 1) * 100, 1)}
                 # Total alto porque vários meses foram pagos de uma vez (cada lançamento no valor mensal de sempre): não é aumento de valor,
                 # é pagamento acumulado de competências anteriores — a pergunta certa é o motivo de pagarem juntos.
@@ -451,7 +453,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 medianas.append(item)
         if itens:
             novo("valor_atipico", itens, "Valores acima do histórico do fornecedor", sum(l.valor for l in itens), fator=cfg["atipico_fator"],
-                 medianas=medianas[:MAX_ITENS])
+                 medianas=medianas[:MAX_ITENS], representantes=representantes[:MAX_ITENS])
 
     if "apropriacao_despesa" not in desativar:
         aprop = [l for l in dados.lancamentos if re.search(r"\bAPROP\b", _sem_acento(l.descricao or ""), re.IGNORECASE)]
