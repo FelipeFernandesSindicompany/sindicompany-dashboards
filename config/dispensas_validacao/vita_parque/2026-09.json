@@ -1,0 +1,9 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -97800.74,
+    "motivo": "alerta de contas com saldo negativo (SEGURANCA, CONSUMO DE AGUA, CONSUMO DE LUZ, CONSUMO DE GAS) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-23"
+  }
+]
