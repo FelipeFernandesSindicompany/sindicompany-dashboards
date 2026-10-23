@@ -15,6 +15,12 @@ def _br(v: float) -> str:
     return f"{abs(v):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+def _mes_br(mes) -> str:
+    """'2026-07' -> '07/2026'."""
+    m = re.fullmatch(r"(\d{4})-(\d{2})", mes or "")
+    return f"{m.group(2)}/{m.group(1)}" if m else str(mes)
+
+
 def _trecho(descricao: Optional[str], n: int = 28) -> Optional[str]:
     """Regex tolerante (acentos viram '.') do começo da descrição, para localizar a linha."""
     if not descricao:
@@ -61,7 +67,7 @@ def specs_para(a: Achado) -> list[dict]:
         for x in d.get("ausentes", [])[:3]:
             if x.get("pagina") and x.get("arquivo"):
                 specs.append({**_spec(x["pagina"], _trecho(x.get("descricao")) or re.escape(_br(x["mediana"])),
-                                      f"Lançamento do mês anterior ({x.get('mes')}) que não aparece neste mês"), "arquivo": x["arquivo"]})
+                                      f"Lançamento de {_mes_br(x.get('mes'))} (último mês lido antes deste) que não aparece neste mês"), "arquivo": x["arquivo"]})
     elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
         for i in d.get("itens", [])[:3]:
             if i.get("pagina"):
