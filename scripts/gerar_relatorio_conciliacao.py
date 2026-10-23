@@ -153,7 +153,7 @@ GERAR_ACHADOS_POR_CONDO = {
     # "Parcela <código>") — ver conciliacao/condominios/{parque_saint_afonso,i_gloo_alphaville}.py.
     "parque_saint_afonso": gerar_achados_gcont,
     "i_gloo_alphaville": gerar_achados_gcont,
-    "top_nine": gerar_achados_gcont,
+    # Top Nine: capas GCONT + anexos lidos por OCR no formato Lirba (conciliacao/condominios/top_nine.py) -> matching Lirba padrão
     "plano_estacao_campo_limpo": gerar_achados_gcont,
     # Planilhas Habitacional/LFC: mesmo matching de gerar_achados_planilha_com_links + isenção de "IR S/ APLICAÇÃO"
     # (ver conciliacao/condominios/_planilha_refino.py). Baturité/Port Saint Tropez (PDF ContasData) ficam de fora.

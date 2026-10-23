@@ -1,0 +1,16 @@
+[
+  {
+    "codigo": "P109916",
+    "valor_listagem": 40.8,
+    "resumo": "Conister - disponibilização de dados via internet (R$ 40,80)",
+    "documento": "págs. 104 e 105 do PDF (recibo + comprovante de transferência Itaú)",
+    "como": "Conferido visualmente nas imagens do anexo: o recibo da Conister Administração Condominial (pág. 104) é de R$ 40,80 referente à disponibilização de dados do condomínio via internet em agosto/2026. O comprovante bancário (pág. 105) é uma transferência de R$ 1.332,10 em 01/09/2026 para a conta da Conister, com a mesma autenticação do comprovante da Taxa de Administração (parcela 109915, pág. 108): um único pagamento que quita as duas despesas (R$ 1.291,30 da taxa de administração + R$ 40,80 do serviço de internet = R$ 1.332,10). Não há divergência: o valor lido no comprovante é a soma dos dois lançamentos."
+  },
+  {
+    "codigo": "MD67425",
+    "valor_listagem": 2547.68,
+    "resumo": "Sabesp - água e esgoto (R$ 2.547,68)",
+    "documento": "págs. 71 a 73 do PDF (fatura Sabesp, 2 páginas + ficha de débito automático)",
+    "como": "Conferido visualmente na imagem do anexo: fatura de água e esgoto da Sabesp em nome do Edifício Moema Top Nine (Rua Periquito, 280), emissão 07/09/2026, vencimento 16/09/2026, débito automático, com TOTAL de R$ 2.547,68 (água R$ 1.267,50 + esgoto R$ 1.267,50 + taxa de regulação R$ 12,68). O valor da fatura é igual ao valor listado. A leitura automática (OCR) não conseguiu ler o total desta fatura escaneada."
+  }
+]
