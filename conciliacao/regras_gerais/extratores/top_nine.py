@@ -144,17 +144,15 @@ class Extrator:
             c.rendimento = round(rend_conta.get(_norm(c.nome), 0.0), 2)
         dados.contas = contas
         self._conferir(dados, contas, totais)
-        dados.cobertura = {"receitas": bool(dados.receitas), "rendimentos": len([c for c in contas if abs(c.rendimento) > _CENT]) >= 2,
+        dados.cobertura = {"receitas": bool(dados.receitas), "rendimentos": len([c for c in contas if abs(c.rendimento) > _CENT]) >= 1,   # com 1 só conta rendendo vale a pergunta geral de rendimento concentrado
                            "lancamentos": bool(dados.lancamentos)}
         if not dados.receitas:
             dados.motivos_nao_cobertos["receitas"] = "a tela W020B (Demonstrativo de Receitas Analítico) não foi encontrada neste PDF"
         if not dados.lancamentos:
             dados.motivos_nao_cobertos["lancamentos"] = "a tela W015D (Demonstrativo de Despesas Detalhado) não foi encontrada neste PDF"
         if not dados.cobertura["rendimentos"]:
-            quais = ", ".join(f"{c.nome} {c.rendimento:,.2f}" for c in contas if abs(c.rendimento) > _CENT) or "nenhuma"
             dados.motivos_nao_cobertos["rendimentos"] = (
-                f"o rendimento das aplicações automáticas é creditado em uma única conta neste mês ({quais}); as demais contas "
-                "não recebem rendimento — não há distribuição entre contas para conferir a proporcionalidade")
+                "o arquivo não traz rendimento das aplicações automáticas em nenhuma conta neste mês")
         aplicar_config_receitas_negativas(dados, self.condo)
         return dados
 
