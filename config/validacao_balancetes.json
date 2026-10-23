@@ -334,6 +334,8 @@
     },
     "monte_tabor": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Monte Tabor",
+      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o relatório de recebimentos) não foi enviado. Esta validação utilizou o Resumo Financeiro e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes, notas fiscais, receitas, rendimentos nem a inadimplência do mês. Os fornecedores e valores foram comparados com os meses anteriores. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
+      "leitor_financeiro": "regras_gerais",
       "regras": {
         "gestor": {}
       }

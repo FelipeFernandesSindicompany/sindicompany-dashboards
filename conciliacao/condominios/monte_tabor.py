@@ -42,6 +42,11 @@ def _tarifas_bancarias_do_demonstrativo(caminho: Path):
 class Conciliador(ConciliadorAllizPDF):
     def extrair_comprovantes(self, caminho: Path) -> list:
         registros = super().extrair_comprovantes(caminho)
+        if not any(r.tipo_documento == "despesa_listada" for r in registros):
+            # Resumo sem páginas de comprovante (ex.: set/2026, 4 páginas): não há o que somar contra o "Total geral das despesas" —
+            # comparar a soma (zero) com o total declarado gerava um "soma não confere" falso. Devolve vazio: o relatório fica com as
+            # regras gerais (saldos, categorias, gestor) e com o aviso de escopo.
+            return []
         if not any(r.tipo_documento == "total_conta_declarado" for r in registros):
             return registros
         try:
