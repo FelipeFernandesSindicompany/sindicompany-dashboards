@@ -70,7 +70,7 @@ def _num(t: str) -> float:
 def _indicadores_do_pdf(caminho: Path, mes: str):
     """Previsto x Realizado e Inadimplência do "Resumo de Emissões Colunado" de cada conta (Demonstrativo de Contas, págs. ~13-15), na mesma
     metodologia dos meses em planilha: previsto/realizado = totais da conta ORDINÁRIA (as duas últimas colunas da tabela de emissões);
-    inadimplência = soma, de todas as contas, da linha "Condôminos em Atraso em <último dia do mês>" (valor único, sem previsto)."""
+    inadimplência = "Total geral" da Relação de Cotas em Aberto (plano B: soma, de todas as contas, da linha "Condôminos em Atraso em <último dia do mês>" (valor único, sem previsto))."""
     import calendar
 
     import fitz
@@ -102,7 +102,31 @@ def _indicadores_do_pdf(caminho: Path, mes: str):
                             real, prev = _num(ls[k - 2]), _num(ls[k - 1])
     if prev is None and not achou_inad:
         return None
+    # Inadimplência = "Total geral" da RELAÇÃO DE COTAS EM ABERTO (decisão do dono, 26/10/2026); a soma dos atrasos de fim de mês das contas é só o plano B
+    tot, pg_rel = _total_geral_cotas_em_aberto(caminho)
+    if tot is not None:
+        inad, achou_inad, pagina = tot, True, pg_rel
     return {"prev": prev or 0.0, "real": real or 0.0, "inad": round(inad, 2) if achou_inad else None, "inadProc": 0.0, "pagina_inad": pagina}
+
+
+def _total_geral_cotas_em_aberto(caminho: Path):
+    """(valor, página) da linha "Total geral:" da página "RELAÇÃO DE COTAS EM ABERTO" (Relação de Devedores), ou (None, None)."""
+    import fitz
+
+    with fitz.open(str(caminho)) as doc:
+        for i in range(len(doc)):
+            t = doc[i].get_text()
+            if "RELAÇÃO DE COTAS EM ABERTO" not in t or "Total geral" not in t:
+                continue
+            ws = doc[i].get_text("words")
+            rot = next((w for w in ws if w[4].startswith("geral")), None)
+            if rot is None:
+                continue
+            yc = (rot[1] + rot[3]) / 2
+            nums = [w for w in ws if _RE_VALOR.match(w[4]) and abs((w[1] + w[3]) / 2 - yc) <= 4]
+            if nums:
+                return _num(max(nums, key=lambda w: w[0])[4]), i + 1
+    return None, None
 
 
 def _n(s: str) -> str:
