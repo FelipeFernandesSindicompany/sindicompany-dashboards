@@ -60,6 +60,51 @@ class _ExtratorPdf(_ExtratorContasData):
         return dados
 
 
+_RE_VALOR = re.compile(r"^-?[\d.]+,\d{2}$")
+
+
+def _num(t: str) -> float:
+    return float(t.replace(".", "").replace(",", "."))
+
+
+def _indicadores_do_pdf(caminho: Path, mes: str):
+    """Previsto x Realizado e Inadimplência do "Resumo de Emissões Colunado" de cada conta (Demonstrativo de Contas, págs. ~13-15), na mesma
+    metodologia dos meses em planilha: previsto/realizado = totais da conta ORDINÁRIA (as duas últimas colunas da tabela de emissões);
+    inadimplência = soma, de todas as contas, da linha "Condôminos em Atraso em <último dia do mês>" (valor único, sem previsto)."""
+    import calendar
+
+    import fitz
+
+    ano, m = int(mes[:4]), int(mes[5:7])
+    fim = f"{calendar.monthrange(ano, m)[1]:02d}/{m:02d}/{ano}"
+    prev = real = None
+    inad = 0.0
+    achou_inad = False
+    pagina = None
+    with fitz.open(str(caminho)) as doc:
+        for i in range(min(len(doc), 40)):
+            t = doc[i].get_text()
+            if "Resumo de Emissões Colunado" not in t or "Demonstrativo de Contas" not in t[:200]:
+                continue
+            for blk in re.split(r"\n(?=Resumo de Emissões Colunado)", t):
+                if not blk.startswith("Resumo de Emiss"):
+                    continue
+                ls = [l.strip() for l in blk.split("\n")]
+                fim_blk = next((k for k, l in enumerate(ls) if l.startswith("Posição Financeira")), len(ls))
+                ls = ls[:fim_blk]
+                for k, l in enumerate(ls):
+                    if l == f"Condôminos em Atraso em {fim}" and k + 1 < len(ls) and _RE_VALOR.match(ls[k + 1])                             and not (k + 2 < len(ls) and _RE_VALOR.match(ls[k + 2])):
+                        inad += _num(ls[k + 1])
+                        achou_inad = True
+                        pagina = pagina or i + 1
+                        # a primeira conta com atraso final é a ORDINÁRIA: os dois números antes da linha são realizado e previsto totais
+                        if prev is None and k >= 2 and _RE_VALOR.match(ls[k - 1]) and _RE_VALOR.match(ls[k - 2]):
+                            real, prev = _num(ls[k - 2]), _num(ls[k - 1])
+    if prev is None and not achou_inad:
+        return None
+    return {"prev": prev or 0.0, "real": real or 0.0, "inad": round(inad, 2) if achou_inad else None, "inadProc": 0.0, "pagina_inad": pagina}
+
+
 def _n(s: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", (s or "").upper())
 
@@ -67,5 +112,9 @@ def _n(s: str) -> str:
 class Extrator(ExtratorPlanilhaOuContasData):
     def extrair(self, caminho: Path, mes: str):
         if Path(caminho).suffix.lower() == ".pdf":
-            return _ExtratorPdf(self.condo).extrair(caminho, mes)
+            dados = _ExtratorPdf(self.condo).extrair(caminho, mes)
+            ind = _indicadores_do_pdf(Path(caminho), mes)
+            if ind:
+                dados.indicadores = ind
+            return dados
         return super().extrair(caminho, mes)
