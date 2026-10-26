@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -52275.88,
+    "motivo": "alerta de saldo negativo da conta ORDINÁRIA (-R$ 52.275,88) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-26"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 1774.24,
+    "motivo": "pergunta sobre rendimento concentrado no Fundo de Reserva (R$ 1.774,24) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-26"
+  }
+]
