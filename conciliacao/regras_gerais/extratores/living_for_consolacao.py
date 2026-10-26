@@ -1,0 +1,71 @@
+"""
+Extrator das regras gerais — Living For Consolação.
+
+Até jul/2026 a pasta tinha só planilhas Habitacional ("prestacao_contas_M_AAAA.xlsx"); em ago/set/2026 a administradora passou a enviar o PDF
+"Prestação de Contas" completo (ContasData/desti.net.br, 226 páginas, com comprovantes). Como o arquivo enviado pode ser de qualquer um dos dois
+formatos, o extrator despacha pela EXTENSÃO (mesmo desenho do Port Saint Tropez): .xlsx -> planilha Habitacional; .pdf -> ContasData.
+A comparação mês a mês de subcontas só vale entre arquivos do mesmo formato (o pipeline avisa quando o mês anterior está em outro formato).
+
+O PDF desta administradora não traz a tabela "Resumo Financeiro Contábil": as contas vêm da "Posição Financeira" de cada conta (Demonstrativo de
+Contas, pág. 13-15) e as receitas/despesas dos demonstrativos. O reconhecimento aceita esse layout (cabeçalho "Condomínio: NNNN -", Demonstrativo de
+Despesas com "TOTAL DA CONTA" e "Posição Financeira"); a leitura em si é a do ContasData.
+"""
+import re
+from pathlib import Path
+
+from conciliacao.regras_gerais.extratores.contasdata import Extrator as _ExtratorContasData
+from conciliacao.regras_gerais.extratores.port_saint_tropez import ExtratorPlanilhaOuContasData
+
+
+class _ExtratorPdf(_ExtratorContasData):
+    def _reconhecer(self, paginas: list) -> bool:
+        try:
+            ok = super()._reconhecer(paginas)
+        except ValueError:
+            ok = False
+        if ok:
+            return True
+        todo = "\n".join(p.texto for p in paginas)
+        return bool(re.search(r"Condom[ií]nio:\s*\d+\s*-", todo) and re.search(r"TOTAL DA CONTA", todo, re.I)
+                    and re.search(r"Posi[çc][ãa]o Financeira", todo) and any(p.tipo == "despesas" for p in paginas))
+
+    def _contas_da_posicao(self, pf: dict) -> list:
+        """Sem a tabela "Resumo Financeiro Contábil", as contas vêm da Posição Financeira de cada conta. Nesse layout a linha TOTAIS inclui o SALDO
+        ANTERIOR (credor entra nos créditos, devedor nos débitos) e "Descontos" aparece na coluna Débito: o crédito/débito DO MÊS é o total menos o
+        saldo anterior, e o desconto volta para os créditos (negativo). Fecha com anterior + créditos - débitos = atual."""
+        from conciliacao.regras_gerais.modelo import ContaMes
+        contas = []
+        for b in pf.values():
+            ant = b["saldo_anterior"]
+            cred = b["tot_cred"] - max(ant, 0.0)
+            deb = b["tot_deb"] - max(-ant, 0.0)
+            # crédito negativo (Descontos) impresso na coluna Débito: está em TOTAIS-débito mas o leitor o pôs entre os créditos (negativo)
+            movido = round(deb - sum(v for (_d, v, *_r) in b["debitos"]), 2)
+            movido = movido if movido > 0.005 else 0.0
+            contas.append(ContaMes(nome=b["nome"], saldo_anterior=ant, saldo_atual=b["saldo_atual"], creditos=round(cred - movido, 2),
+                                   debitos=round(deb - movido, 2), pagina=b["pagina"]))
+        return contas
+
+    def extrair(self, caminho, mes):
+        dados = super().extrair(caminho, mes)
+        # a Posição Financeira chama "Acordos" a conta que o Demonstrativo de Despesas chama "Acordos conta transitória": sem o mesmo nome,
+        # o leitor cria um débito "da Posição Financeira" duplicando o lançamento real — funde os dois
+        lancs = list(dados.lancamentos)
+        for x in [l for l in lancs if "Posição Financeira — não consta" in (l.descricao or "")]:
+            gemeo = next((l for l in lancs if l is not x and abs(l.valor - x.valor) <= 0.01 and _n(l.categoria) == _n(x.categoria)), None)
+            if gemeo is not None:
+                lancs.remove(x)
+                gemeo.conta = x.conta
+        dados.lancamentos = lancs
+        return dados
+
+
+def _n(s: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", (s or "").upper())
+
+
+class Extrator(ExtratorPlanilhaOuContasData):
+    def extrair(self, caminho: Path, mes: str):
+        if Path(caminho).suffix.lower() == ".pdf":
+            return _ExtratorPdf(self.condo).extrair(caminho, mes)
+        return super().extrair(caminho, mes)

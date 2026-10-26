@@ -307,7 +307,7 @@
       }
     },
     "living_for_consolacao": {
-      "aviso_escopo": "O arquivo enviado (planilha) não traz os anexos dos lançamentos: não há links de comprovantes nem de notas fiscais. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que a própria planilha permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
+      "aviso_escopo_por_extensao": {".xlsx": "O arquivo enviado (planilha) não traz os anexos dos lançamentos: não há links de comprovantes nem de notas fiscais. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que a própria planilha permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.", ".xls": "O arquivo enviado (planilha) não traz os anexos dos lançamentos: não há links de comprovantes nem de notas fiscais. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que a própria planilha permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."},
       "nomes_no_arquivo": ["FOR CONSOLACAO"],
       "pasta_prestacao": "Dashboard de Análise de Balancete Living For Consolação",
       "regras": {
