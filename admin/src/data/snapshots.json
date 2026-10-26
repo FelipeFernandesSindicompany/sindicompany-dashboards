@@ -178,8 +178,8 @@
     }
   },
   "Dashboard_Financeiro_CidadReal.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -195,15 +195,16 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 464133.03,
-      "tCred": 142330.73,
-      "tDeb": 134506.4,
-      "inad": 89672.99,
-      "tAnt": 456308.7
+      "tit": "Setembro / 2026",
+      "tAtual": 397704.98,
+      "tCred": 172777.74,
+      "tDeb": 239205.79,
+      "inad": 89208.77,
+      "tAnt": 464133.03
     }
   },
   "Dashboard_Financeiro_ClubParkButanta.html": {
