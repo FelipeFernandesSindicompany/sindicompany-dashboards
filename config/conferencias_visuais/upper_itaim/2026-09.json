@@ -1,0 +1,11 @@
+[
+  {
+    "codigo": "0028",
+    "valor_listagem": 586.18,
+    "divergencia_real": true,
+    "resumo": "Conta (fatura) de concessionária não anexada — 2 lançamento(s) (R$ 586,18)",
+    "documento": "anexo do lançamento 0028 (comprovante de débito automático Claro, 1 página)",
+    "como": "Em 2 lançamento(s) de concessionárias (telefone/internet; total R$ 586,18) o anexo é apenas a confirmação do pagamento — a conta (fatura) com o consumo e o vencimento não está anexada. Lançamentos: cód. 0028 — DEB. C/C CLARO BL/IT 62211535 - 08/2026 (R$ 255,74); cód. 0029 — DEB. C/C CLARO BL/IT 08215749 - 08/2026 (R$ 330,44). Além disso, conferido visualmente no anexo: o comprovante de débito automático do lançamento 0028 (R$ 255,74, Claro, identificação 862211535) informa pagamento realizado em 05/10/2026, data posterior ao lançamento de 08/09/2026 e ao fim do mês de setembro; o do lançamento 0029 informa 08/09/2026, igual à listagem.",
+    "pergunta": "Podem enviar a conta (fatura) de cada um desses 2 lançamento(s) de concessionária, para conferirmos o consumo, o vencimento e o valor cobrado? E por que o comprovante do lançamento 0028 (Claro, R$ 255,74) mostra pagamento em 05/10/2026, se o lançamento é de 08/09/2026?"
+  }
+]

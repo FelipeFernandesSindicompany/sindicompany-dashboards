@@ -74,8 +74,9 @@ _RE_OCR_VALORES_EM_ORDEM = [
     # seção "Lançamento consolidado", diferente do "Comprovante de Pagamento
     # Eletrônico" do Baturité, que sempre tem "do") — sempre o valor
     # INDIVIDUAL do lançamento, mesmo quando o pagamento em si é consolidado.
-    re.compile(r"[VW]+alor\s*(?:do\s*)?lan\S*to:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),
-    re.compile(r"Valor do pagamento:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),            # guia tributária (DARE etc.) sem conceito de "lancto"
+    re.compile(r"[VWY]+alor\s*(?:do\s*)?lan\S*to:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),
+    # (o OCR também lê o "V" do rótulo como "Y": "Yalor do pagamento"/"VYalor" — Upper Itaim, set/2026)
+    re.compile(r"[VWY]+alor do pagamento:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),            # guia tributária (DARE etc.) sem conceito de "lancto"
     re.compile(r"^Valor:\s*(?:R\$)?\s*([\d.]+,\d{2})\s*$", re.IGNORECASE | re.MULTILINE),     # débito automático de concessionária
     re.compile(r"Valor\s*R\$:?\s*(?:R\$)?\s*([\d.]+,\d{2})", re.IGNORECASE),                  # boleto Bradesco "Pag-For" (Dueto Morumbi/manager_adm_pdf)
     # Tabela de TED/DOC do Pag-For Bradesco: colunas viram texto solto no OCR

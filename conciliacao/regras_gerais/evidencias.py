@@ -82,7 +82,13 @@ def specs_para(a: Achado) -> list[dict]:
         # valor acima do histórico: um print por fornecedor citado no texto (o maior lançamento de cada), não os primeiros da lista
         for i in (d.get("representantes") or d.get("lancamentos", []))[:4]:
             if i.get("pagina"):
-                specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])), "Lançamento citado nesta observação"))
+                trecho = _trecho(i.get("descricao"))
+                sp = _spec(i["pagina"], trecho or re.escape(_br(i["valor"])), "Lançamento citado nesta observação")
+                if trecho and d.get("representantes"):
+                    # lançamentos do mesmo fornecedor começam com o mesmo texto (ex.: duas instalações da Enel): a linha certa traz também o VALOR
+                    sp["buscar"] = trecho + r"[^\n]{0,90}?" + re.escape(_br(i["valor"]))
+                    sp["buscar_alt"] = trecho
+                specs.append(sp)
     elif a.tipo == "continuidade_saldo" and d.get("pagina") and d.get("contas"):
         specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_anterior"])), "Saldo anterior da conta " + d["contas"][0]["nome"]))
     elif a.tipo == "movimento_entre_contas" and d.get("pagina"):

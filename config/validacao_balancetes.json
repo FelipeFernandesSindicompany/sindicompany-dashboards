@@ -394,7 +394,7 @@
     },
     "730_padre_carvalho": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Padre Carvalho",
-      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o relatório de recebimentos) não foi enviado: o arquivo traz só o Demonstrativo de Despesas e o Resumo Financeiro Contábil. Por isso esta validação não conferiu comprovantes, notas fiscais, receitas, rendimentos nem a inadimplência do mês. O arquivo de agosto/2026 não estava na pasta, então a comparação foi feita com os meses anteriores disponíveis (até julho/2026) e a continuidade do saldo com o mês anterior não pôde ser verificada. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
+      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o relatório de recebimentos) não foi enviado: o arquivo traz só o Demonstrativo de Despesas e o Resumo Financeiro Contábil. Por isso esta validação não conferiu comprovantes, notas fiscais, receitas, rendimentos nem a inadimplência do mês. Os fornecedores e valores foram comparados com os meses anteriores e o saldo anterior foi conferido com o fechamento do mês anterior. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
       "regras": {
         "rendimento": {
           "ignorar_contas": [
