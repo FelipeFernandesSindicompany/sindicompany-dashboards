@@ -521,7 +521,10 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
                     # gravidade e a pergunta à administradora (pode vir reescrita em "pergunta")
                     item.update(
                         titulo=c["resumo"], paragrafo=c["como"], revisado_por="humano:conferencia_visual", revisado_em=agora, confianca_ia=1.0,
-                        **({"o_que_verificar": c["pergunta"]} if c.get("pergunta") else {}))
+                        **({"o_que_verificar": c["pergunta"]} if c.get("pergunta") else {}),
+                        **({"severidade_final": c["severidade"],
+                            "motivo_divergencia_da_sugestao": f"Conferência visual do anexo ({c.get('documento', '')}): o valor fecha, o ponto é outro (ver o texto do item)."}
+                           if c.get("severidade") else {}))
                     if item.get("severidade_final") == "informativo":
                         # o achado automático estava como "verificado", mas a conferência visual achou uma pendência real: o item volta a aparecer
                         item.update(severidade_final="atencao", motivo_divergencia_da_sugestao=(
@@ -668,6 +671,22 @@ def _aviso_escopo_sem_comprovantes(registros: list) -> str | None:
     return None
 
 
+def _aplicar_valor_exibido(base_dir: Path, mes: str, achados: list) -> None:
+    """Conferência visual com "valor_exibido": o cartão do item mostra esse valor em vez do que o OCR leu (ex.: R$ 50,64 de uma só guia quando o
+    lançamento de R$ 226,65 quita 5). Só muda o que é exibido no relatório; o achado bruto em disco não é alterado."""
+    arq = base_dir.parent.parent / "conferencias_visuais" / f"{mes}.json"
+    if not arq.exists():
+        arq = ROOT / "config" / "conferencias_visuais" / base_dir.parent.parent.name / f"{mes}.json"
+    if not arq.exists():
+        return
+    for c in json.load(open(arq, encoding="utf-8")):
+        if c.get("valor_exibido") is None:
+            continue
+        for a in achados:
+            if a.valor_esperado is not None and abs(a.valor_esperado - c["valor_listagem"]) <= 0.005                     and any(f"cod{c['codigo']}" in k for k in a.registros_relacionados):
+                a.valor_encontrado = c["valor_exibido"]
+
+
 def etapa_render(condo: dict, mes: str) -> Path:
     base_dir = storage.condo_mes_dir(condo["pasta_dados"], mes)
     version_dir = storage.latest_version_dir(base_dir)
@@ -689,6 +708,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
     # (página sozinha não é única em formatos "listagem", ver base.py::chave_registro).
     registros_por_pagina = {chave_registro(r): r for r in registros}
     achados_por_id = {a.id: a for a in achados}
+    _aplicar_valor_exibido(base_dir, mes, achados)
 
     entradas_pdf = list((version_dir / "input").glob("*"))
     pdf_origem = entradas_pdf[0] if entradas_pdf else None

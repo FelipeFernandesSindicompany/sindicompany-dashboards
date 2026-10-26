@@ -2,9 +2,13 @@
   {
     "codigo": "0007",
     "valor_listagem": 226.65,
-    "resumo": "PIS sobre a folha — guias em atraso, líquido de multa e juros reembolsados (R$ 226,65)",
+    "divergencia_real": true,
+    "severidade": "atencao",
+    "resumo": "PIS sobre a folha de set/2025 a jan/2026 recolhido só em 04/09/2026, com multa e juros (R$ 226,65)",
     "documento": "págs. 57 a 62 do PDF (5 guias DARF de PIS + comprovante de PIX)",
-    "como": "Conferido visualmente nos anexos: são 5 guias DARF de PIS sobre a folha (competências set/2025, nov/2025, dez/2025, 13º/2025 e jan/2026), todas pagas em 04/09/2026 com multa e juros, no total de R$ 294,39 (principal R$ 226,65 + multa e juros R$ 67,74), e um PIX de R$ 67,74 recebido em 04/09/2026 da Sensa Consultoria Contábil com a descrição \"Devolução Multa e Juros PIS sobre a Folha Set/2025 a Jan/2026\". O valor listado, R$ 226,65, é o total das guias menos a devolução (294,39 − 67,74 = 226,65). A leitura automática (OCR) tinha lido só a primeira guia (R$ 50,64)."
+    "como": "O lançamento de PIS de R$ 226,65 (PESSOAL) quita 5 guias DARF de PIS sobre a folha de pagamento — competências set/2025, nov/2025, dez/2025, 13º/2025 e jan/2026 —, com vencimentos entre 24/10/2025 e 25/02/2026, todas pagas em 04/09/2026, de 6 a 10 meses depois do vencimento. As guias somam R$ 294,39: R$ 226,65 de PIS (o valor listado) e R$ 67,74 de multa e juros. Na mesma data a Sensa Consultoria Contábil devolveu ao condomínio, por PIX, os R$ 67,74 (\"Devolução Multa e Juros PIS sobre a Folha Set/2025 a Jan/2026\"). Os valores fecham; o ponto é o atraso no recolhimento do PIS.",
+    "pergunta": "Por que o PIS sobre a folha de set/2025 a jan/2026 só foi recolhido em 04/09/2026? A multa e os juros de R$ 67,74 foram pagos pelo condomínio e devolvidos pela Sensa Consultoria Contábil — podem confirmar que o condomínio não arcou com esse custo e que as guias de PIS das demais competências estão em dia?",
+    "valor_exibido": 226.65
   },
   {
     "codigo": "0009",

@@ -311,6 +311,7 @@
       "nomes_no_arquivo": ["FOR CONSOLACAO"],
       "pasta_prestacao": "Dashboard de Análise de Balancete Living For Consolação",
       "regras": {
+        "subcontas": {"comparar_entre_formatos": true},
         "rendimento": {
           "ignorar_contas": [
             "ORDINÁRIA"
