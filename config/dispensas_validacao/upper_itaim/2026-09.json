@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -2573.85,
+    "motivo": "alerta de saldo negativo da conta ORDINÁRIA (-R$ 2.573,85) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-26"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 24979.2,
+    "motivo": "observação de concessionárias acima da mediana (Enel e gás, R$ 24.979,20) retirada do relatório de setembro/2026 por decisão do responsável: as contas (faturas) estão anexadas e a pergunta pedia o envio",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-26"
+  }
+]
