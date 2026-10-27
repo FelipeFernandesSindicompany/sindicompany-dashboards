@@ -1,0 +1,30 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -23507.25,
+    "motivo": "alerta de saldos negativos (Consumo de Gás, Consumo de Água, Individualização Gás/Água e Consumo de Energia) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-27"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 12723.95,
+    "motivo": "observação de fornecedores novos (Vagaflix e Laager, R$ 12.723,95) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-27"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 50834.07,
+    "motivo": "observação de concessionárias acima da mediana (Sabesp, Enel e Comgás, R$ 50.834,07) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-27"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 12131.13,
+    "motivo": "subconta nova INDIVIDUALIZACAO AGUA/GAS (R$ 12.131,13) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-27"
+  }
+]
