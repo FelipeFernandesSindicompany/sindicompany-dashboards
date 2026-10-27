@@ -367,7 +367,9 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             )
         elif achado.tipo == "ok_verificado" and registro and re.search(
             r"CART[AÃ]O\s+DE\s+CR[EÉ]DITO|\b(?:VISA|MASTERCARD)\b", registro.texto_bruto or "", re.IGNORECASE
-        ) and not re.search(r"NOTA\s+FISCAL|NFS-?E|DANFE", registro.texto_bruto or "", re.IGNORECASE):
+        ) and not re.search(r"NOTA\s+FISCAL|NFS-?E|DANFE", registro.texto_bruto or "", re.IGNORECASE)                 and not re.search(r"MERCADO\s*PAGO|MERCADOPAGO|MERCADO\s*LIVRE|MERCADOLIVRE", registro.texto_bruto or "", re.IGNORECASE):
+            # (boleto de compra em marketplace traz, no rodapé, "...fatura do seu Cartão de crédito Mercado Pago": não é fatura de cartão —
+            # a pendência de nota fiscal já sai pela regra de marketplace)
             # Marcador ESTREITO de propósito — "cart" sozinho (ex.:
             # "Carteira", campo padrão de boleto bancário) já gerou falso
             # positivo confirmado em dados reais (Upper Itaim, código 0016:

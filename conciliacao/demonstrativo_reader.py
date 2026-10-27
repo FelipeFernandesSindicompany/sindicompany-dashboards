@@ -279,6 +279,28 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
     }
 
 
+def _previsto_realizado_resumo_emissoes(caminho: Path, mes: str):
+    """(realizado, previsto) totais da conta ORDINÁRIA no "Resumo de Emissões" do Demonstrativo de Contas (PDF desti.net.br/ContasData): são os dois
+    números impressos logo antes da linha "<COTAS|Condôminos> EM ATRASO EM <último dia do mês>" do primeiro bloco. None se o arquivo não traz."""
+    import calendar
+
+    import fitz
+
+    ano, m = int(mes[:4]), int(mes[5:7])
+    fim = f"{calendar.monthrange(ano, m)[1]:02d}/{m:02d}/{ano}"
+    rx = re.compile(rf"^(?:COTAS|COND[ÔO]MINOS)\s+EM\s+ATRASO\s+EM\s+{re.escape(fim)}$", re.IGNORECASE)
+    with fitz.open(str(caminho)) as doc:
+        for i in range(min(len(doc), 40)):
+            t = doc[i].get_text()
+            if "Resumo de Emiss" not in t:
+                continue
+            ls = [l.strip() for l in t.split("\n")]
+            for k, l in enumerate(ls):
+                if rx.match(l) and k >= 2 and re.match(r"^-?[\d.]+,\d{2}$", ls[k - 1]) and re.match(r"^-?[\d.]+,\d{2}$", ls[k - 2]):
+                    return _brl_para_float(ls[k - 2]), _brl_para_float(ls[k - 1])
+    return None
+
+
 def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
                        mes_titulo: str = "", periodo: str = "") -> dict | None:
     """
@@ -320,6 +342,11 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         return _bal_pelo_extrator_das_regras(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo)
 
     bal = _dados_financeiros_para_bal(dados, mes_titulo, periodo)
+    if condo.get("emissao_pdf") == "resumo_emissoes_ordinaria" and caminho_arquivo.suffix.lower() == ".pdf":
+        # (o adaptador antigo devolve prev = real = total de créditos, que não é previsto x realizado)
+        pr = _previsto_realizado_resumo_emissoes(caminho_arquivo, mes_referencia)
+        if pr:
+            bal["real"], bal["prev"] = pr
     if condo.get("inadimplencia_validacao") == "total_atrasados":
         # Decisão do dono (Patrícia, 22/10/2026): inadimplência = "Total atrasados" da Posição de Devedores. A planilha não tem esse bloco, e o
         # adaptador antigo lia outro conceito (REC COTAS EM ATRASO da Ordinária): nos meses em planilha o relatório fica sem esse número.

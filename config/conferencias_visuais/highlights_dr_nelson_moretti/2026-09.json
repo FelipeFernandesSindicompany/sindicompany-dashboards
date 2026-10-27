@@ -1,0 +1,12 @@
+[
+  {
+    "codigo": "0050",
+    "valor_listagem": 218.26,
+    "divergencia_real": true,
+    "severidade": "atencao",
+    "resumo": "Nota Fiscal não anexada — MATERIAIS/SUPRIMENTOS (R$ 218,26)",
+    "documento": "págs. 247 a 250 do PDF (comprovante, print da compra, boleto Mercado Pago, observação da administradora)",
+    "como": "Compra em marketplace (Mercado Livre/Mercado Pago, puxador inox para porta). O valor deste lançamento (R$ 218,26) confere com o comprovante de pagamento e com o boleto, mas o anexo traz só o comprovante bancário, o print da compra e o boleto — não traz a Nota Fiscal da compra, e a observação da própria administradora (pág. 250) diz que a NF será emitida depois. Toda compra em marketplace precisa ter o comprovante e a Nota Fiscal anexados.",
+    "pergunta": "Onde está a Nota Fiscal deste lançamento? Por que ela não foi anexada junto ao comprovante de pagamento? Podem enviá-la?"
+  }
+]

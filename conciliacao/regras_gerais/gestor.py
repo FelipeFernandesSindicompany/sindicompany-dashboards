@@ -51,6 +51,19 @@ _PADROES = {
 MAX_ITENS = 12
 
 
+_RE_CONCESSIONARIAS_NOMES = re.compile(r"\b(SABESP|ENEL|COMGAS|CPFL|ELETROPAULO|EDP|LIGHT|NATURGY|VIVO|CLARO|TIM|OI|NET|SUPERGASBRAS|ULTRAGAZ)\b", re.IGNORECASE)
+
+
+def _rotulo_fornecedor(ls: list, chave_padrao: str) -> str:
+    """Nome do fornecedor para o texto: a chave de agrupamento às vezes sai de uma palavra solta da descrição (ex.: "EMISSAO", "INSTAL"); se o grupo é
+    de uma concessionária conhecida, usa o nome dela."""
+    for l in ls:
+        m = _RE_CONCESSIONARIAS_NOMES.search(_sem_acento(f"{l.descricao or ''} {l.fornecedor or ''}"))
+        if m:
+            return m.group(1).upper()
+    return chave_padrao
+
+
 def _item(l) -> dict:
     return {"descricao": l.descricao, "valor": l.valor, "data": l.data, "codigo": l.codigo, "categoria": l.categoria, "conta": l.conta,
             "pagina": l.pagina, "local": l.local, "bbox": l.bbox}
@@ -431,7 +444,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
             if m > _CENTAVO and v >= fator * m and v - m >= cfg["atipico_diferenca_min"]:
                 itens += ls
                 representantes.append(_item(max(ls, key=lambda x: x.valor)))
-                item = {"descricao": k, "valor": round(v, 2), "mediana": round(m, 2), "variavel": variavel, "acima_pct": round((v / m - 1) * 100, 1)}
+                item = {"descricao": _rotulo_fornecedor(ls, k), "valor": round(v, 2), "mediana": round(m, 2), "variavel": variavel, "acima_pct": round((v / m - 1) * 100, 1)}
                 # Total alto porque vários meses foram pagos de uma vez (cada lançamento no valor mensal de sempre): não é aumento de valor,
                 # é pagamento acumulado de competências anteriores — a pergunta certa é o motivo de pagarem juntos.
                 # Só é "acúmulo" quando os lançamentos têm praticamente o mesmo valor (a mensalidade de sempre) e citam competências diferentes;

@@ -259,6 +259,7 @@
       }
     },
     "highlights_dr_nelson_moretti": {
+      "emissao_pdf": "resumo_emissoes_ordinaria",
       "pasta_prestacao": "Dashboard de Análise de Balancete Highlights Dr. Nelson Moretti",
       "regras": {
         "gestor": {}
