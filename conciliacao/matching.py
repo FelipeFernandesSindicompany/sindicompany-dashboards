@@ -181,6 +181,14 @@ _RE_HONORARIOS_ADVOCATICIOS = re.compile(
     re.IGNORECASE)
 
 
+# Páginas de anexo que o OCR leu bem mas que têm pouco texto (pontuação baixa) e que NÃO são nota fiscal: observação da administradora ("Recepção de
+# Pagamentos"), print da compra no marketplace ("Status da compra"), boleto ("Ficha de Compensação"/"Dados para pagamento"). Não servem de pretexto
+# para "não dá para afirmar que a NF não está ali".
+_RE_PAGINA_LEGIVEL_SEM_NF = re.compile(
+    r"OBSERVA[CÇ][OÕ]ES|Recep[cç][aã]o\s+de\s+Pagamentos|Status\s+da\s+compra|Detalhe\s+da\s+compra|Ficha\s+de\s+Compensa|Dados\s+para\s+pagamento",
+    re.IGNORECASE)
+
+
 def _sem_acento_nf(s: str) -> str:
     import unicodedata
     return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn")
@@ -253,7 +261,7 @@ def achado_nota_fiscal_ausente(
     if "[Página " in texto_comp:
         from conciliacao import ocr as _ocr
         for _p, _t in _lp.paginas_do_texto_bruto(texto_comp):
-            if len(_t) >= 200 and not _lp.eh_pagina_pagamento(_t) and _ocr._pontuacao_texto(_t) < 8:
+            if len(_t) >= 200 and not _lp.eh_pagina_pagamento(_t) and _ocr._pontuacao_texto(_t) < 8 and not _RE_PAGINA_LEGIVEL_SEM_NF.search(_t):
                 return None
     # "NF. 13462. REC.:" — a própria listagem diz que o documento é um RECIBO (prestador sem nota fiscal): o recibo
     # anexado é o documento fiscal esperado.
