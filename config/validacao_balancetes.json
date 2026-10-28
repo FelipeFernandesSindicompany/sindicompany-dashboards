@@ -472,9 +472,11 @@
       "pasta_prestacao": "Dashboard de Análise de Balancete Platinum"
     },
     "port_saint_tropez": {
+      "previsto_igual_ao_realizado_valido": true,
       "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes e as notas fiscais dos lançamentos) não foi enviado. Esta validação utilizou o Resumo Financeiro, o Demonstrativo de Receitas e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes nem notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
       "pasta_prestacao": "Dashboard de Análise de Balancete Saint Tropez",
       "regras": {
+        "alerta_saldo_negativo": false,
         "rendimento": {
           "ignorar_contas": [
             "ORDINÁRIA"

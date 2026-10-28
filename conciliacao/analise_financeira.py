@@ -105,7 +105,7 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str, 
     # um dado real. 100% de arrecadação batendo exatamente ao centavo é
     # praticamente impossível na prática — previsto==realizado é o sinal
     # confiável desse fallback, não de uma coincidência genuína.
-    previsto_confiavel = previsto > 0 and previsto != realizado
+    previsto_confiavel = previsto > 0 and (previsto != realizado or bool(bal_atual.get("prev_real_igual_confiavel")))
     realizado_pct = (realizado / previsto * 100.0) if previsto_confiavel else None
 
     # bal_atual["inad"] vem None (não 0.0) quando conciliacao/demonstrativo_
@@ -168,8 +168,9 @@ def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str, 
         frases.append(f"O Previsto x Realizado deste mês ({_fmt_pct_arrecadacao(realizado_pct)}) não é confiável: {aviso_previsto}")
     elif realizado_pct is not None:
         if realizado_pct >= 100.0:
+            verbo = "atingiu" if abs(realizado_pct - 100.0) < 0.005 else "superou"
             frases.append(
-                f"A arrecadação do mês superou o previsto ({_fmt_pct_arrecadacao(realizado_pct)} do orçado)."
+                f"A arrecadação do mês {verbo} o previsto ({_fmt_pct_arrecadacao(realizado_pct)} do orçado)."
             )
         else:
             frases.append(

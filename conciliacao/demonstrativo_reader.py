@@ -103,6 +103,11 @@ def localizar_arquivo_mes(pasta: Path, mes: int, ano: int, preferir_sufixo: str 
     if not candidatos:
         candidatos = _candidatos(a for a in pasta.rglob("*") if a.parent != pasta)
     candidatos = _sem_periodo_contraditorio(candidatos, mes, ano)
+    if preferir_sufixo and candidatos and not any(c.suffix.lower() == preferir_sufixo.lower() for c in candidatos):
+        # o que está na raiz é de outro formato (ex.: planilha) e o arquivo em mãos é PDF: procura o PDF do mês nas subpastas (ex.: "Pasta Digital")
+        extras = _sem_periodo_contraditorio([a for a in _candidatos(x for x in pasta.rglob("*") if x.parent != pasta)
+                                             if a.suffix.lower() == preferir_sufixo.lower()], mes, ano)
+        candidatos = extras or candidatos
     if not candidatos:
         return None
     # Pasta com o mesmo mês em dois formatos (ex.: Port Saint Tropez, planilha e PDF): prefere o da mesma
@@ -408,6 +413,10 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
     else:
         _reconciliar_sinais(condo, caminho_arquivo, mes_referencia, bal)
 
+    if condo.get("previsto_igual_ao_realizado_valido"):
+        # o previsto vem do Resumo de Emissão do próprio arquivo; previsto == realizado (100% de arrecadação, ex.: Port Saint Tropez em
+        # set/2026, quando toda a inadimplência foi quitada) é dado real, não o fallback do adaptador
+        bal["prev_real_igual_confiavel"] = True
     return bal
 
 

@@ -549,6 +549,35 @@ _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_o
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo"}
 
 
+_FRASE_PEDE_FATURA = " Podem enviar a conta (fatura) do mês?"
+
+
+def _pergunta_sem_fatura_ja_anexada(achados: list, registros: list, esqueleto: list) -> int:
+    """A observação de gestor "concessionária acima da mediana" termina pedindo a conta (fatura) do mês. Quando TODOS os lançamentos citados têm
+    anexo e nenhum achado diz que a fatura não foi anexada (conta_concessionaria_nao_anexada), o pedido está errado — a fatura já está no arquivo —
+    e a frase sai da pergunta (a justificativa do aumento continua sendo perguntada)."""
+    sem_fatura = {k for a in achados if a.tipo == "conta_concessionaria_nao_anexada" for k in a.registros_relacionados}
+    sem_fatura_codigos = {re.sub(r"^.*_cod", "", k) for k in sem_fatura}
+    despesas = [r for r in registros if r.tipo_documento in ("despesa_listada", "despesa_com_comprovante")]
+    com_anexo = {r.codigo for r in registros if r.tipo_documento == "comprovante_anexado"} | {r.codigo for r in registros if r.tipo_documento == "despesa_com_comprovante"}
+    por_id = {a.id: a for a in achados}
+    n = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or a.tipo != "observacao_gestor" or (a.detalhes or {}).get("verificacao") != "valor_atipico":
+            continue
+        if _FRASE_PEDE_FATURA not in (item.get("o_que_verificar") or ""):
+            continue
+        codigos = []
+        for l in (a.detalhes or {}).get("lancamentos", []):
+            c = next((r.codigo for r in despesas if abs(abs(r.valor) - abs(l.get("valor") or 0.0)) <= 0.01 and r.pagina == l.get("pagina")), None)                 or next((r.codigo for r in despesas if abs(abs(r.valor) - abs(l.get("valor") or 0.0)) <= 0.01), None)
+            codigos.append(c)
+        if codigos and all(c is not None and c in com_anexo and c not in sem_fatura_codigos for c in codigos):
+            item["o_que_verificar"] = item["o_que_verificar"].replace(_FRASE_PEDE_FATURA, "")
+            n += 1
+    return n
+
+
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
@@ -643,6 +672,7 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
+    _pergunta_sem_fatura_ja_anexada(achados, registros, esqueleto)
     n_dispensas = _aplicar_dispensas(base_dir, mes, achados, esqueleto)
     if n_dispensas:
         print(f"[OK] {n_dispensas} observação(ões) de gestor retirada(s) do relatório por decisão do responsável (config/dispensas_validacao).")

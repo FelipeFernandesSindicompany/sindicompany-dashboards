@@ -1,0 +1,12 @@
+[
+  {
+    "codigo": "0048",
+    "valor_listagem": 157.32,
+    "divergencia_real": true,
+    "severidade": "atencao",
+    "resumo": "Compra em marketplace sem comprovante de pagamento e sem Nota Fiscal — ORDINÁRIA (R$ 157,32)",
+    "documento": "págs. 155 a 158 do PDF (e-mail de confirmação do pedido na Magazine Luiza)",
+    "como": "Compra em marketplace (Magazine Luiza/Magalu Pay) de um telefone sem fio, R$ 157,32 (listagem: \"MAGALUPAY - REF.: COMPRA DE APARELHO TELEFONICO\", 25/11/2025). Conferido visualmente nos anexos: as 4 páginas são só o e-mail de confirmação do pedido (nº do pedido, produto, forma de pagamento \"PIX\", 1x de R$ 157,32 — a observação de \"cartão de crédito\" é só o rótulo da forma de pagamento no site) e a troca de e-mails do pedido de compra. Não há comprovante de pagamento bancário (PIX) nem Nota Fiscal da compra anexados. Toda compra em marketplace precisa ter o comprovante de pagamento e a Nota Fiscal anexados.",
+    "pergunta": "Onde estão o comprovante de pagamento (PIX) e a Nota Fiscal desta compra? Podem enviá-los?"
+  }
+]

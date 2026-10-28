@@ -1,0 +1,18 @@
+[
+  {
+    "codigo": "0028",
+    "valor_listagem": 189.99,
+    "divergencia_real": true,
+    "resumo": "Comprovante da Vivo é de outro condomínio e com valor diferente da listagem (R$ 189,99)",
+    "documento": "pág. 101 do PDF (comprovante de débito automático)",
+    "como": "O lançamento da listagem é \"DEB. C/C VIVO - 11 3051-7979 - Cliente 8999 4389 3454\", no valor de R$ 189,99, de 27/03/2026. Conferido visualmente no anexo (pág. 101 do PDF): o comprovante de débito automático anexado é de OUTRO condomínio — conta debitada de \"EDIFICIO MAISON VIVIANNE\" (agência 0188, conta 15445-4) —, refere-se a outra linha da Vivo (identificação 9453040403), no valor de R$ 212,36, pago em 27/03/2026. Não é o comprovante deste lançamento: nome do condomínio, linha da Vivo e valor não conferem, e a fatura da Vivo também não está anexada.",
+    "pergunta": "Por que o comprovante anexado ao lançamento da Vivo (R$ 189,99) é do Edifício Maison Vivianne, de outra linha e no valor de R$ 212,36? Podem enviar o comprovante de débito e a fatura da Vivo deste condomínio?"
+  },
+  {
+    "codigo": "0062",
+    "valor_listagem": 6435.85,
+    "resumo": "Sabesp - água (R$ 6.435,85)",
+    "documento": "pág. 194 do PDF (fatura Sabesp)",
+    "como": "Conferido visualmente no anexo (pág. 194 do PDF): fatura de água e esgoto da Sabesp do Condomínio Port Saint Tropez, em débito automático, com vencimento 16/03/2026 e TOTAL de R$ 6.435,85, igual ao valor listado. A leitura automática (OCR) não conseguiu ler o total desta fatura escaneada."
+  }
+]
