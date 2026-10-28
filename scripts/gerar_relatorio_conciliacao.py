@@ -646,6 +646,33 @@ def _pergunta_fundo_de_reserva(achados: list, registros: list, esqueleto: list) 
     return n
 
 
+_TIPOS_FALTA_DE_COMPROVANTE = {"sem_comprovante", "divergencia_valor", "conteudo_nao_verificavel", "conta_concessionaria_nao_anexada"}
+
+
+def _aplicar_escopo_so_comprovantes(condo: dict, mes: str, achados: list, esqueleto: list) -> int:
+    """TRABALHO ESPECÍFICO, NÃO É O PADRÃO (pedido do dono, 28/10/2026 — Port Saint Tropez, 12 meses): o relatório aponta SÓ falta/erro de comprovante
+    (sem comprovante, comprovante de outro condomínio/valor diferente/não confirmado, comprovante indisponível de concessionária). Só vale para os
+    meses listados em `escopo_so_comprovantes.meses` do condomínio (config/validacao_balancetes.json); fora deles o relatório segue completo.
+    Os demais itens saem do PDF como as dispensas: o motor continua validando e o achado fica gravado (revisado_por = humano:dispensa)."""
+    cfg = condo.get("escopo_so_comprovantes") or {}
+    if mes not in (cfg.get("meses") or []):
+        return 0
+    por_id = {a.id: a for a in achados}
+    agora = datetime.now(timezone.utc).isoformat()
+    n = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or item.get("severidade_final") == "informativo":
+            continue
+        if a.tipo in _TIPOS_FALTA_DE_COMPROVANTE or item.get("revisado_por") == "humano:conferencia_visual":
+            continue
+        item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
+                    motivo_divergencia_da_sugestao=("Retirado do relatório por decisão do responsável em 2026-10-28: neste trabalho (Port Saint Tropez, "
+                                                    "10/2025 a 09/2026) o relatório aponta apenas falta/erro de comprovante."))
+        n += 1
+    return n
+
+
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
@@ -746,6 +773,9 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     n_dispensas = _aplicar_dispensas(base_dir, mes, achados, esqueleto)
     if n_dispensas:
         print(f"[OK] {n_dispensas} observação(ões) de gestor retirada(s) do relatório por decisão do responsável (config/dispensas_validacao).")
+    n_escopo = _aplicar_escopo_so_comprovantes(condo, mes, achados, esqueleto)
+    if n_escopo:
+        print(f"[OK] {n_escopo} item(ns) fora do escopo \"só faltas de comprovantes\" retirado(s) do relatório (config: escopo_so_comprovantes).")
     _unir_subconta_nova_ja_reportada(achados, esqueleto)
     if n_visuais:
         print(f"[OK] {n_visuais} achado(s) tratados como VERIFICADOS por conferência visual do anexo "
