@@ -646,7 +646,8 @@ def _pergunta_fundo_de_reserva(achados: list, registros: list, esqueleto: list) 
     return n
 
 
-_TIPOS_FALTA_DE_COMPROVANTE = {"sem_comprovante", "divergencia_valor", "conteudo_nao_verificavel", "conta_concessionaria_nao_anexada"}
+# (nota fiscal sem anexar também entra — decisão do dono, 28/10/2026: "se estiver sem nota fiscal tem que aparecer")
+_TIPOS_FALTA_DE_COMPROVANTE = {"sem_comprovante", "divergencia_valor", "conteudo_nao_verificavel", "conta_concessionaria_nao_anexada", "nota_fiscal_ausente"}
 
 
 def _aplicar_escopo_so_comprovantes(condo: dict, mes: str, achados: list, esqueleto: list) -> int:
@@ -664,7 +665,8 @@ def _aplicar_escopo_so_comprovantes(condo: dict, mes: str, achados: list, esquel
         a = por_id.get(item["achado_id"])
         if a is None or item.get("severidade_final") == "informativo":
             continue
-        if a.tipo in _TIPOS_FALTA_DE_COMPROVANTE or item.get("revisado_por") == "humano:conferencia_visual":
+        if (a.tipo in _TIPOS_FALTA_DE_COMPROVANTE or item.get("revisado_por") == "humano:conferencia_visual"
+                or re.match(r"^Notas? fiscais?\b", item.get("titulo") or "", re.IGNORECASE)):      # inclui "Notas fiscais do cartão de crédito pendentes"
             continue
         item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
                     motivo_divergencia_da_sugestao=("Retirado do relatório por decisão do responsável em 2026-10-28: neste trabalho (Port Saint Tropez, "

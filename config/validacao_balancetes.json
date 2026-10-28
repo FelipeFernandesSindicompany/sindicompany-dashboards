@@ -474,7 +474,7 @@
     "port_saint_tropez": {
       "previsto_igual_ao_realizado_valido": true,
       "escopo_so_comprovantes": {
-        "_doc": "TRABALHO ESPECÍFICO de 28/10/2026 (12 meses do Port Saint Tropez): o relatório aponta só falta/erro de comprovante. NÃO é o padrão — meses fora desta lista (ex.: 10/2026 em diante) saem completos.",
+        "_doc": "TRABALHO ESPECÍFICO de 28/10/2026 (12 meses do Port Saint Tropez): o relatório aponta só falta/erro de comprovante E nota fiscal não anexada (se estiver sem nota fiscal tem que aparecer). NÃO é o padrão — meses fora desta lista (ex.: 10/2026 em diante) saem completos.",
         "meses": ["2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"]
       },
       "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes e as notas fiscais dos lançamentos) não foi enviado. Esta validação utilizou o Resumo Financeiro, o Demonstrativo de Receitas e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes nem notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
