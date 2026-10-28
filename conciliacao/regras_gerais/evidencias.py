@@ -34,6 +34,23 @@ def _spec(pagina, buscar, legenda) -> dict:
     return {"pagina": pagina, "buscar": buscar, "legenda": legenda, "linha_inteira": True}
 
 
+def _spec_lancamento(i: dict, legenda: str, vistos: dict) -> Optional[dict]:
+    """Print de UM lançamento: o começo da descrição + o VALOR na mesma linha (lançamentos do mesmo fornecedor começam com o mesmo texto —
+    ex.: três lançamentos da mesma empresa na mesma página — e só a descrição marcaria sempre o primeiro). Se ainda assim duas linhas casam igual
+    (mesmo texto e mesmo valor), a N-ésima ocorrência pedida é a N-ésima linha que casa."""
+    if not i.get("pagina"):
+        return None
+    trecho = _trecho(i.get("descricao"))
+    sp = _spec(i["pagina"], trecho or re.escape(_br(i["valor"])), legenda)
+    if trecho:
+        sp["buscar"] = trecho + r"[^\n]{0,90}?" + re.escape(_br(i["valor"]))
+        sp["buscar_alt"] = trecho
+    chave = (i["pagina"], sp["buscar"])
+    sp["ocorrencia"] = vistos.get(chave, 0)
+    vistos[chave] = sp["ocorrencia"] + 1
+    return sp
+
+
 def specs_para(a: Achado) -> list[dict]:
     d = a.detalhes or {}
     specs: list[dict] = []
@@ -52,10 +69,11 @@ def specs_para(a: Achado) -> list[dict]:
                 vistos[(p["pagina"], busca)] = sp["ocorrencia"] + 1
                 specs.append(sp)
     elif a.tipo in ("lancamento_em_outra_subconta", "subconta_atipica"):
-        for i in d.get("lancamentos", [])[:2]:
-            if i.get("pagina"):
-                specs.append(_spec(i["pagina"], _trecho(i.get("descricao")) or re.escape(_br(i["valor"])),
-                                   "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or "")))
+        vistos_l: dict = {}
+        for i in d.get("lancamentos", [])[:3]:
+            sp = _spec_lancamento(i, "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or ""), vistos_l)
+            if sp:
+                specs.append(sp)
     elif a.tipo == "saldo_negativo_persistente" and d.get("pagina") and d.get("contas"):
         specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_atual"])), "Saldo atual da conta " + d["contas"][0]["nome"]))
     elif a.tipo == "observacao_gestor" and d.get("verificacao") == "deficit_conta" and d.get("pagina"):
@@ -69,25 +87,17 @@ def specs_para(a: Achado) -> list[dict]:
                 specs.append({**_spec(x["pagina"], _trecho(x.get("descricao")) or re.escape(_br(x["mediana"])),
                                       f"Lançamento de {_mes_br(x.get('mes'))} (último mês lido antes deste) que não aparece neste mês"), "arquivo": x["arquivo"]})
     elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
+        vistos_c: dict = {}
         for i in d.get("itens", [])[:3]:
-            if i.get("pagina"):
-                trecho = _trecho(i.get("descricao"))
-                sp = _spec(i["pagina"], trecho or re.escape(_br(i["valor"])), "Lançamento de concessionária")
-                if trecho:
-                    # o mesmo fornecedor pode ter várias linhas na página (ex.: duas faturas da Vivo): a linha certa traz também o VALOR
-                    sp["buscar"] = trecho + r"[^\n]{0,90}?" + re.escape(_br(i["valor"]))
-                    sp["buscar_alt"] = trecho
+            sp = _spec_lancamento(i, "Lançamento de concessionária" if a.tipo == "conta_concessionaria_nao_anexada" else "Lançamento com valor negativo", vistos_c)
+            if sp:
                 specs.append(sp)
     elif a.tipo == "observacao_gestor":
         # valor acima do histórico: um print por fornecedor citado no texto (o maior lançamento de cada), não os primeiros da lista
+        vistos_g: dict = {}
         for i in (d.get("representantes") or d.get("lancamentos", []))[:4]:
-            if i.get("pagina"):
-                trecho = _trecho(i.get("descricao"))
-                sp = _spec(i["pagina"], trecho or re.escape(_br(i["valor"])), "Lançamento citado nesta observação")
-                if trecho and d.get("representantes"):
-                    # lançamentos do mesmo fornecedor começam com o mesmo texto (ex.: duas instalações da Enel): a linha certa traz também o VALOR
-                    sp["buscar"] = trecho + r"[^\n]{0,90}?" + re.escape(_br(i["valor"]))
-                    sp["buscar_alt"] = trecho
+            sp = _spec_lancamento(i, "Lançamento citado nesta observação", vistos_g)
+            if sp:
                 specs.append(sp)
     elif a.tipo == "continuidade_saldo" and d.get("pagina") and d.get("contas"):
         specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_anterior"])), "Saldo anterior da conta " + d["contas"][0]["nome"]))

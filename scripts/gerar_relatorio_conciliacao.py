@@ -578,6 +578,74 @@ def _pergunta_sem_fatura_ja_anexada(achados: list, registros: list, esqueleto: l
     return n
 
 
+_FRASE_PEDE_NF = " e onde está a nota fiscal?"
+
+
+def _codigo_do_lancamento(registros: list, l: dict):
+    """Código (4 dígitos) da despesa listada que corresponde a um lançamento citado numa observação de gestor (mesmo valor e página)."""
+    despesas = [r for r in registros if r.tipo_documento in ("despesa_listada", "despesa_com_comprovante")]
+    return (next((r.codigo for r in despesas if abs(abs(r.valor) - abs(l.get("valor") or 0.0)) <= 0.01 and r.pagina == l.get("pagina")), None)
+            or next((r.codigo for r in despesas if abs(abs(r.valor) - abs(l.get("valor") or 0.0)) <= 0.01), None))
+
+
+def _pergunta_nf_ja_anexada(achados: list, registros: list, esqueleto: list) -> int:
+    """"Fornecedor novo" pergunta "...e onde está a nota fiscal?". Quando TODOS os lançamentos citados têm anexo e nenhum achado diz que a nota fiscal
+    não foi anexada (nota_fiscal_ausente) nem que falta o comprovante, a nota está no pacote de documentos: o pedido sai da pergunta."""
+    sem_nf = {re.sub(r"^.*_cod", "", k) for a in achados if a.tipo in ("nota_fiscal_ausente", "sem_comprovante") for k in a.registros_relacionados}
+    com_anexo = {r.codigo for r in registros if r.tipo_documento in ("comprovante_anexado", "despesa_com_comprovante")}
+    por_id = {a.id: a for a in achados}
+    n = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or a.tipo != "observacao_gestor" or (a.detalhes or {}).get("verificacao") != "fornecedor_novo":
+            continue
+        if _FRASE_PEDE_NF not in (item.get("o_que_verificar") or ""):
+            continue
+        codigos = [_codigo_do_lancamento(registros, l) for l in (a.detalhes or {}).get("lancamentos", [])]
+        if codigos and all(c is not None and c in com_anexo and c not in sem_nf for c in codigos):
+            item["o_que_verificar"] = item["o_que_verificar"].replace(_FRASE_PEDE_NF, "?")
+            n += 1
+    return n
+
+
+def _eh_fundo_de_reserva(nome) -> bool:
+    n = re.sub(r"[^A-Z]", "", (nome or "").upper().replace("Ç", "C").replace("Ã", "A"))
+    return "FUNDODERESERVA" in n or "FUNDORESERVA" in n or "FRESERVA" in n
+
+
+def _pergunta_fundo_de_reserva(achados: list, registros: list, esqueleto: list) -> int:
+    """Despesa que sai do FUNDO DE RESERVA sempre leva a pergunta de aprovação (assembleia/previsão orçamentária) — em qualquer item que a cite,
+    não só na observação própria de "paga direto do fundo" (decisão do dono, 28/10/2026)."""
+    por_codigo = {r.codigo: r for r in registros if r.tipo_documento in ("despesa_listada", "despesa_com_comprovante")}
+    por_id = {a.id: a for a in achados}
+    n = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or item.get("severidade_final") == "informativo":
+            continue
+        pergunta = item.get("o_que_verificar") or ""
+        if not pergunta.strip() or "assembleia" in pergunta.lower() or a.tipo in ("saldo_negativo_persistente", "rendimento_desproporcional", "continuidade_saldo",
+                                                                               "movimento_entre_contas", "inadimplencia_arrecadacao", "despesa_negativa", "receita_negativa"):
+            continue
+        fundo = 0
+        if a.tipo == "observacao_gestor" or a.tipo == "subconta_atipica" or a.tipo == "lancamento_em_outra_subconta":
+            ls = (a.detalhes or {}).get("lancamentos", []) or []
+            fundo = sum(1 for l in ls if _eh_fundo_de_reserva(l.get("conta")))
+        else:
+            for k in a.registros_relacionados:
+                r = por_codigo.get(re.sub(r"^.*_cod", "", k))
+                if r is not None and r.tipo_documento == "despesa_listada" and (_eh_fundo_de_reserva(r.categoria_demonstrativo) or _eh_fundo_de_reserva(r.conta)):
+                    fundo += 1
+            if not fundo and _eh_fundo_de_reserva(a.linha_demonstrativo) and a.tipo in ("sem_comprovante", "nota_fiscal_ausente", "divergencia_valor", "conteudo_nao_verificavel", "atraso_pagamento"):
+                fundo = 1
+        if fundo:
+            plural = fundo > 1
+            item["o_que_verificar"] = pergunta.rstrip() + (" Essas despesas saíram do Fundo de Reserva: houve aprovação em assembleia/previsão orçamentária?" if plural
+                                                          else " Essa despesa saiu do Fundo de Reserva: houve aprovação em assembleia/previsão orçamentária?")
+            n += 1
+    return n
+
+
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
@@ -673,6 +741,8 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
     _pergunta_sem_fatura_ja_anexada(achados, registros, esqueleto)
+    _pergunta_nf_ja_anexada(achados, registros, esqueleto)
+    _pergunta_fundo_de_reserva(achados, registros, esqueleto)
     n_dispensas = _aplicar_dispensas(base_dir, mes, achados, esqueleto)
     if n_dispensas:
         print(f"[OK] {n_dispensas} observação(ões) de gestor retirada(s) do relatório por decisão do responsável (config/dispensas_validacao).")

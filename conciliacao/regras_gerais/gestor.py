@@ -38,7 +38,7 @@ _PADROES = {
     "atipico_fator": 2.5,
     "atipico_diferenca_min": 1000.0,
     "duplicidade_valor_min": 100.0,
-    "uso_fundo_min": 1000.0,
+    "uso_fundo_min": 0.01,     # qualquer despesa paga com o fundo de reserva pede a pergunta de aprovação (decisão do dono, 28/10/2026)
     "fundos": ["RESERVA"],
     "deficit_contas": ["ORDINARIA", "CONDOMINIO"],   # trechos do nome da conta que paga as despesas correntes
     "deficit_min": 1000.0,
