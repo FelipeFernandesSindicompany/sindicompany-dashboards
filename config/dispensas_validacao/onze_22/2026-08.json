@@ -1,0 +1,23 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -44758.73,
+    "motivo": "saldo negativo (CAIXA ORDINARIO e CONSUMOS) retirado do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 40022.98,
+    "motivo": "conta de concessionária (Sabesp) acima da mediana dos meses anteriores retirada do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 6863.2,
+    "motivo": "mudança de subconta da Enel (DESPESAS para ENERGIA) retirada do relatório de agosto/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  }
+]
