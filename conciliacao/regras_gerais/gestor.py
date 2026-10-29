@@ -62,6 +62,11 @@ def _rotulo_fornecedor(ls: list, chave_padrao: str) -> str:
         m = _RE_CONCESSIONARIAS_NOMES.search(_sem_acento(f"{l.descricao or ''} {l.fornecedor or ''}"))
         if m:
             return m.group(1).upper()
+    # chave de uma palavra só (ex.: "LIGHT" de "HOME LIGHT MATS.ELETR.LTDA - NF. 112210"): mostra o nome do fornecedor que antecede a NF
+    for l in ls:
+        nome = re.split(r"\s+-\s+NF|\s+NF\.?\s*\d", l.descricao or "", maxsplit=1)[0].strip()
+        if nome and _norm(chave_padrao) in _norm(nome) and len(nome) <= 60:
+            return nome
     return chave_padrao
 
 
