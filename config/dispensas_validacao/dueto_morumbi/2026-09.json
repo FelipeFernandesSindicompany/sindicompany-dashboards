@@ -1,0 +1,23 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -57229.47,
+    "motivo": "saldo negativo (ORDINARIA e CONSUMO (AGUA-GAS)) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 2938.48,
+    "motivo": "despesa acima do histórico do fornecedor (Home Light Mats. Eletr.) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "transferencia_conta",
+    "valor_total": 194003.1,
+    "motivo": "repasse da ORDINARIA a outras contas retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  }
+]
