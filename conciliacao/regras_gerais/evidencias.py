@@ -122,6 +122,10 @@ def specs_para(a: Achado) -> list[dict]:
             sp = _spec_lancamento(i, "Lançamento citado nesta observação", vistos_g)
             if sp:
                 specs.append(sp)
+    elif a.tipo == "inadimplencia_arrecadacao" and d.get("emissao_realizada"):
+        m_pg = re.search(r"\d+", str(d.get("local") or ""))
+        if m_pg:
+            specs.append(_spec(int(m_pg.group(0)), re.escape(_br(d["emissao_realizada"])), "Emissão do período — realizado e previsto"))
     elif a.tipo == "continuidade_saldo" and d.get("pagina") and d.get("contas"):
         specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_anterior"])), "Saldo anterior da conta " + d["contas"][0]["nome"]))
     elif a.tipo == "movimento_entre_contas" and d.get("pagina"):
