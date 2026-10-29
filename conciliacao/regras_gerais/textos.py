@@ -153,7 +153,9 @@ def texto_parcelas(a: Achado) -> tuple[str, str, str]:
     nums = ", ".join(f"{p['n']}/{d.get('total_parcelas')}" for p in parcelas)
     valores = "; ".join(f"parcela {p['n']}: {_moeda(p['valor'])}" + (f" em {p['data']}" if p.get("data") else "")
                         for p in parcelas)
-    titulo = f"Duas parcelas pagas no mesmo mês — {quem}"
+    qtd = len(parcelas)
+    palavra = {2: "Duas", 3: "Três", 4: "Quatro", 5: "Cinco"}.get(qtd, str(qtd))
+    titulo = f"{palavra} parcelas pagas no mesmo mês — {quem}"
     paragrafo = (f"No mesmo mês foram pagas as parcelas {nums} de \"{quem}\" ({valores}); "
                  f"total de {_moeda(a.valor_encontrado)} no mês.")
     nfs = sorted({p.get("nf") for p in parcelas if p.get("nf")})
@@ -168,12 +170,20 @@ def texto_outra_subconta(a: Achado) -> tuple[str, str, str]:
     d = a.detalhes
     if d.get("reclassificacao_em_massa"):
         n = d.get("quantidade", 0)
-        exemplos = "; ".join(f"{t['despesa']} ({_moeda(t['valor'])}): de \"{', '.join(t['de'])}\" para \"{t['para']}\""
-                             for t in d.get("trocas", [])[:5])
+        trocas = d.get("trocas", [])
+
+        def _antes(t):
+            de = t.get("de") or []
+            if len(de) <= 2:
+                return " e ".join(f"\"{c}\"" for c in de) or "outra subconta"
+            return f"{len(de)} subcontas diferentes (" + "; ".join(de[:4]) + ("; ..." if len(de) > 4 else "") + ")"
+
+        linhas = "\n".join(f"• {t['despesa']} — {_moeda(t['valor'])}: antes em {_antes(t)}; neste mês em \"{t['para']}\"" for t in trocas[:6])
+        mais = f"\n(e mais {len(trocas) - 6} caso(s) menores)" if len(trocas) > 6 else ""
         titulo = f"{n} despesas mudaram de subconta em relação aos meses anteriores ({_moeda(a.valor_encontrado)})"
-        paragrafo = (f"Neste mês {n} despesas/fornecedores que estavam em uma subconta nos meses anteriores aparecem em outra, "
-                     f"somando {_moeda(a.valor_encontrado)}. Maiores casos: {exemplos}. Tantas mudanças de uma vez costumam indicar "
-                     f"reclassificação em massa feita pela administradora.")
+        paragrafo = (f"Neste mês, {n} despesas (fornecedores) que nos meses anteriores eram lançadas em outra subconta aparecem agora em uma subconta "
+                     f"diferente, somando {_moeda(a.valor_encontrado)}. Os maiores casos, do maior para o menor valor:\n{linhas}{mais}\n"
+                     f"Tantas mudanças de uma vez costumam indicar reclassificação em massa feita pela administradora.")
         return titulo, paragrafo, "Qual o motivo da reclassificação em massa das despesas entre subcontas? As despesas foram remapeadas de forma consistente?"
 
     despesa = d.get("despesa") or "despesa"
