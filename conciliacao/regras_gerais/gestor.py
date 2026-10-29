@@ -15,6 +15,7 @@ Verificações (todas desligáveis em `gestor.desativar`):
   duplicidade_no_mes        mesmo histórico, mesma NF e mesmo valor lançados mais de uma vez no mês
   uso_fundo                 despesa paga direto de fundo (reserva etc.)
   deficit_conta             conta que pagou bem mais do que recebeu no mês
+  transferencia_conta       (opt-in `deficit_sem_transferencias`) conta que repassou a outras contas mais do que recebeu e fechou negativa
   inadimplencia_crescente   inadimplência total subiu forte em relação ao mês anterior
 """
 import re
@@ -23,7 +24,7 @@ from typing import Optional
 
 from conciliacao.base import Achado
 from conciliacao.regras_gerais.modelo import DadosRegras
-from conciliacao.regras_gerais.regras import _CENTAVO, _RE_RETENCAO, _norm, _sem_acento, chave_despesa, nf_da_descricao, parcela_da_descricao
+from conciliacao.regras_gerais.regras import _CENTAVO, _RE_RETENCAO, _mesma_conta, _norm, _sem_acento, chave_despesa, nf_da_descricao, parcela_da_descricao
 
 _RE_MARKETPLACE = re.compile(
     r"MERCADO\s*PAGO|MERCADO\s*LIVRE|MERCADOLIVRE|AMAZON|MAGAZINE\s*LUIZA|MAGALU|SHOPEE|ALIEXPRESS|KABUM|AMERICANAS|SHEIN|"
@@ -518,11 +519,34 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
         alvos = list(map(_norm, cfg["deficit_contas"])) + ["ORDINARIO"]
         for c in dados.contas:
             # "EXTRAORDINARIA/O" contém "ORDINARIA/O": conta extraordinária é fundo/obra, não a conta que paga as despesas correntes
-            if any(t in _norm(c.nome) for t in alvos) and "EXTRAORDINAR" not in _norm(c.nome) and not _norm(c.nome).startswith("CONSOLIDADO") and c.debitos - c.creditos >= cfg["deficit_min"] and c.debitos > c.creditos * 1.05:
+            if not (any(t in _norm(c.nome) for t in alvos) and "EXTRAORDINAR" not in _norm(c.nome) and not _norm(c.nome).startswith("CONSOLIDADO")):
+                continue
+            cred_c, deb_c = c.creditos, c.debitos
+            if cfg.get("deficit_sem_transferencias"):
+                # opt-in: repasse entre contas não é despesa (saída) nem receita (entrada) da conta — o déficit é calculado sem eles e o repasse vira item próprio
+                saidas = round(sum(l.valor for l in dados.lancamentos if _mesma_conta(l.conta, c.nome)
+                                   and "TRANSFER" in _norm(f"{l.categoria or ''} {l.descricao or ''}")), 2)
+                entradas = round(sum(r.valor for r in dados.receitas if r.tipo == "transferencia" and r.valor > 0 and _mesma_conta(r.conta, c.nome)), 2)
+                if saidas > _CENTAVO or entradas > _CENTAVO:
+                    cred_c, deb_c = round(c.creditos - entradas, 2), round(c.debitos - saidas, 2)
+                    if saidas - entradas >= cfg["deficit_min"] and c.saldo_atual < -_CENTAVO:
+                        destinos: dict = {}
+                        for r in dados.receitas:
+                            if r.tipo == "transferencia" and r.valor > 0 and not _mesma_conta(r.conta, c.nome):
+                                destinos[r.conta] = round(destinos.get(r.conta, 0.0) + r.valor, 2)
+                        achados.append(Achado(
+                            id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_transferencia_conta",
+                            linha_demonstrativo=c.nome, valor_encontrado=round(saidas, 2),
+                            detalhes={"verificacao": "transferencia_conta", "conta": c.nome, "saidas": saidas, "entradas": entradas,
+                                      "destinos": [{"conta": k, "valor": v} for k, v in sorted(destinos.items(), key=lambda kv: -kv[1])],
+                                      "creditos_sem_transferencias": cred_c, "despesas_sem_transferencias": deb_c,
+                                      "saldo_anterior": round(c.saldo_anterior, 2), "saldo_atual": round(c.saldo_atual, 2), "pagina": c.pagina,
+                                      "lancamentos": []}))
+            if deb_c - cred_c >= cfg["deficit_min"] and deb_c > cred_c * 1.05:
                 achados.append(Achado(
                     id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_deficit_conta",
-                    linha_demonstrativo=c.nome, valor_encontrado=round(c.debitos - c.creditos, 2),
-                    detalhes={"verificacao": "deficit_conta", "conta": c.nome, "creditos": round(c.creditos, 2), "debitos": round(c.debitos, 2),
+                    linha_demonstrativo=c.nome, valor_encontrado=round(deb_c - cred_c, 2),
+                    detalhes={"verificacao": "deficit_conta", "conta": c.nome, "creditos": round(cred_c, 2), "debitos": round(deb_c, 2),
                               "saldo_anterior": round(c.saldo_anterior, 2), "saldo_atual": round(c.saldo_atual, 2), "pagina": c.pagina, "lancamentos": []}))
 
     # O mês anterior vem do arquivo do mês anterior; quando o PRÓPRIO arquivo do mês traz o valor do mês anterior ("Total anterior" da Posição de

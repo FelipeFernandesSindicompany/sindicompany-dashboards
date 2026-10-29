@@ -97,6 +97,9 @@ def specs_para(a: Achado) -> list[dict]:
         specs.append(_spec(d["pagina"], re.escape(_br(d["contas"][0]["saldo_atual"])), "Saldo atual da conta " + d["contas"][0]["nome"]))
     elif a.tipo == "observacao_gestor" and d.get("verificacao") == "deficit_conta" and d.get("pagina"):
         specs.append(_spec(d["pagina"], re.escape(_br(d.get("debitos") or 0)), "Débitos da conta " + (d.get("conta") or "")))
+    elif a.tipo == "observacao_gestor" and d.get("verificacao") == "transferencia_conta" and d.get("pagina"):
+        specs.append(_spec(d["pagina"], r"TRANSFERENCIA\s+ENTRE\s+CONTAS\s*" + re.escape(_br(d.get("saidas") or 0)),
+                           "Repasse da conta " + (d.get("conta") or "") + " para outras contas"))
     elif a.tipo == "observacao_gestor" and d.get("verificacao") == "inadimplencia_crescente" and d.get("pagina"):
         specs.append(_spec(d["pagina"], "Totais", "Posição de Devedores — total anterior e total atrasados"))
     elif a.tipo == "observacao_gestor" and d.get("verificacao") == "recorrente_ausente":

@@ -504,6 +504,17 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
             ver = "Essa redução do saldo da conta é esperada (pagamento sazonal, obra, despesa concentrada no mês)? Existe previsão de recompor o saldo?"
         else:
             ver = "De onde veio o caixa que cobriu a diferença (outra conta, reserva)? Existe plano de recomposição?"
+    elif v == "transferencia_conta":
+        destinos = d.get("destinos") or []
+        lista = "; ".join(f"{x['conta']} {_moeda(x['valor'])}" for x in destinos)
+        titulo = pre + f"conta {d.get('conta')} repassou {_moeda(d.get('saidas'))} a outras contas e fechou o mês negativa ({_moeda(d.get('saldo_atual'))})"
+        par = (f"Na conta {d.get('conta')}, os débitos do mês incluem {_moeda(d.get('saidas'))} de \"TRANSFERENCIA ENTRE CONTAS\" para outras contas do próprio condomínio"
+               + (f" ({lista})" if lista else "")
+               + (f" e os créditos incluem {_moeda(d.get('entradas'))} recebidos de outras contas" if (d.get("entradas") or 0) > 0.005 else "")
+               + f". Sem esses repasses, a conta recebeu {_moeda(d.get('creditos_sem_transferencias'))} e pagou {_moeda(d.get('despesas_sem_transferencias'))} de despesas. "
+               f"O saldo da conta passou de {_moeda(d.get('saldo_anterior'))} para {_moeda(d.get('saldo_atual'))}.")
+        ver = ("Qual a origem e a finalidade dos repasses da conta " + str(d.get("conta")) + " para as outras contas, e por que foram feitos num valor que deixou a conta "
+               "negativa? Houve aprovação em assembleia e qual o plano para recompor o saldo?")
     elif v == "inadimplencia_crescente":
         serie = " → ".join(f"{x['mes']}: {_moeda(x['inad'])}" for x in reversed(d.get("serie") or []))
         titulo = pre + f"inadimplência subiu {str(d.get('variacao_pct')).replace('.', ',')}% em relação ao mês anterior ({_moeda(d.get('anterior'))} → {_moeda(d.get('atual'))})"

@@ -625,7 +625,9 @@
             "BOLETO CEDIDO GARANTIDORA"
           ]
         },
-        "gestor": {}
+        "gestor": {
+          "deficit_sem_transferencias": true
+        }
       }
     },
     "saint_simon": {
