@@ -1,0 +1,51 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -18784.39,
+    "motivo": "alerta de saldo negativo (TARIFAS CONCESSIONÁRIAS e SEGURANÇA) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 3407.37,
+    "motivo": "fornecedor sem lançamento nos 6 meses anteriores (manutenção de ar-condicionado NF 236) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "recorrente_ausente",
+    "valor_total": 3023.0,
+    "motivo": "despesas recorrentes ausentes neste mês retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 73576.88,
+    "motivo": "contas de concessionária/cartão acima da mediana retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "uso_fundo",
+    "valor_total": 13480.03,
+    "motivo": "despesas pagas direto do Fundo de Reserva retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 3407.37,
+    "motivo": "subconta nova AR-CONDICIONADO - EXTRA retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 460.6,
+    "motivo": "subconta nova LOCAÇÃO DE CAÇAMBA - EXTRA retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  }
+]
