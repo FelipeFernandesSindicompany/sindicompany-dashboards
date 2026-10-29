@@ -1,0 +1,44 @@
+[
+  {
+    "tipo": "inadimplencia_arrecadacao",
+    "valor_total": 50540.39,
+    "motivo": "alerta de arrecadação/inadimplência retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -68601.33,
+    "motivo": "saldo negativo da conta ORDINARIA retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -3688.75,
+    "motivo": "saldo negativo da conta OBRAS/MELHORIAS retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "tipo": "variacao_categoria",
+    "valor_total": 12484.01,
+    "motivo": "variação da categoria CONSERVAÇÃO/MANUTENÇÃO retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 20620.07,
+    "motivo": "contas de concessionária acima da mediana (Comgás) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 12264.04,
+    "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  }
+]
