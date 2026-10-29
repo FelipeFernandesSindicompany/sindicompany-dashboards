@@ -1,0 +1,49 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -2587.29,
+    "reescrever": {
+      "titulo": "Conta OBRAS/MELHORIAS com saldo negativo (-R$ 2.587,29)",
+      "paragrafo": "A conta OBRAS/MELHORIAS fechou setembro/2026 com saldo negativo de -R$ 2.587,29. No mês anterior o saldo era positivo (R$ 1.927,88): em setembro a conta pagou R$ 6.720,00 de despesas (tratamento das fachadas, Filemon Pinturas) e recebeu R$ 2.204,83. Saldo negativo significa despesa paga com o caixa de outras contas.",
+      "o_que_verificar": "A conta OBRAS/MELHORIAS ficou negativa em R$ 2.587,29 e no mês anterior não estava: esse valor será arrecadado ou será transferido de outra conta para que ela não fique negativa?"
+    },
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29",
+    "motivo": "texto do item reescrito a pedido do responsável"
+  },
+  {
+    "verificacao": "valor_redondo",
+    "valor_total": 3300.0,
+    "reescrever": {
+      "titulo": "Novo serviço prestado — DIEGO SILVA MARQUES DOS SANTOS (R$ 3.300,00)",
+      "paragrafo": "Foi lançado um novo serviço prestado por DIEGO SILVA MARQUES DOS SANTOS, no valor de R$ 3.300,00, referente ao período de 08/08/2026 a 08/09/2026. Não há lançamento de mesmo valor nos meses anteriores.",
+      "o_que_verificar": "Qual foi o serviço efetuado por DIEGO SILVA MARQUES DOS SANTOS neste lançamento de R$ 3.300,00?"
+    },
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29",
+    "motivo": "texto do item reescrito a pedido do responsável"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 2315.42,
+    "reescrever": {
+      "titulo": "Conta ORDINÁRIA: arrecadado menos do que foi gasto no mês (R$ 2.315,42)",
+      "paragrafo": "Na conta ORDINÁRIA foi arrecadado menos do que foi gasto no mês: os créditos foram R$ 19.143,70 e os débitos R$ 21.459,12, uma diferença de R$ 2.315,42, paga com o saldo da conta (de R$ 17.846,79 para R$ 15.531,37). Essa diferença pode ser inadimplência.",
+      "o_que_verificar": "A diferença de R$ 2.315,42 entre o que foi arrecadado e o que foi gasto na conta ORDINÁRIA é decorrente de inadimplência?"
+    },
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29",
+    "motivo": "texto do item reescrito a pedido do responsável"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 410.0,
+    "reescrever": {
+      "paragrafo": "O lançamento de \"PAULISTA CABOS CAMERA E CX PASSAGEM PC\" (R$ 410,00) aparece neste mês na subconta \"MANUTENÇÃO EVENTUAL\"; no mês anterior esta despesa estava em \"DIVERSOS\".",
+      "o_que_verificar": "O lançamento de PAULISTA (cabos, câmera e caixa de passagem, R$ 410,00) está na subconta correta (\"MANUTENÇÃO EVENTUAL\")?"
+    },
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29",
+    "motivo": "texto do item reescrito a pedido do responsável"
+  }
+]

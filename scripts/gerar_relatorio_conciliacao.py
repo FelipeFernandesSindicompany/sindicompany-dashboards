@@ -728,12 +728,23 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
     todas = json.load(open(arq, encoding="utf-8"))
     # "ajuste_texto": o item continua no relatório, só muda a redação (hoje: tirar o pedido de comprovante de um movimento entre contas específico)
     ajustes = [d for d in todas if d.get("ajuste_texto")]
-    dispensas = [d for d in todas if not d.get("ajuste_texto")]
+    # "reescrever": o item continua no relatório com o texto que o responsável pediu ({"titulo", "paragrafo", "o_que_verificar"}, cada um opcional),
+    # para o MESMO tipo/verificação e o MESMO valor — o achado e o print não mudam
+    reescritas = [d for d in todas if d.get("reescrever")]
+    dispensas = [d for d in todas if not d.get("ajuste_texto") and not d.get("reescrever")]
     por_id = {a.id: a for a in achados}
     agora = datetime.now(timezone.utc).isoformat()
     n = 0
     for item in esqueleto:
         a = por_id.get(item["achado_id"])
+        for d in reescritas:
+            if a is None or item.get("severidade_final") == "informativo" or abs((a.valor_encontrado or 0.0) - d["valor_total"]) > 0.01:
+                continue
+            casa = ((d.get("verificacao") and a.tipo == "observacao_gestor" and (a.detalhes or {}).get("verificacao") == d["verificacao"])
+                    or (d.get("tipo") and a.tipo == d["tipo"] and (not d.get("regra") or a.regra_aplicada == d["regra"])))
+            if casa:
+                item.update({k: v for k, v in d["reescrever"].items() if k in ("titulo", "paragrafo", "o_que_verificar")},
+                            revisado_por="humano:reescrita", revisado_em=agora)
         for d in ajustes:
             if a is not None and d.get("tipo") == a.tipo and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01 and d.get("sem_comprovante"):
                 item["o_que_verificar"] = re.sub(r",?\s*e onde est[aá] o comprovante\?", "?", item.get("o_que_verificar") or "")
