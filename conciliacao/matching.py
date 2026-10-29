@@ -1490,6 +1490,23 @@ def gerar_achados_gcont(
     return achados
 
 
+def gerar_achados_gcont_portal(
+    registros: list[RegistroComprovante], dados_financeiros=None,
+    pasta_dados: str | None = None, mes_atual: str | None = None,
+) -> list[Achado]:
+    """Club Park: prestação RESUMIDA com os anexos baixados do portal da GCONT (listagem + `comprovante_anexado`): toda a cadeia do formato Lirba
+    (valor x listagem, nota fiscal, concessionária, atraso) mais a duplicidade da listagem (pagamentos repetidos com o MESMO recibo). Sem anexos
+    (portal fora do ar), cai nas regras do formato GCONT comum."""
+    if not any(r.tipo_documento == "comprovante_anexado" for r in registros):
+        return gerar_achados_gcont(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    achados = gerar_achados_lirba(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    extras = [a for a in gerar_achados_gcont(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+              if a.regra_aplicada == "mesmo_fornecedor_documento_valor_repetidos"]
+    for i, a in enumerate(extras, start=len(achados) + 1):
+        a.id = f"ACH-{i:04d}"
+    return achados + extras
+
+
 def gerar_achados_balancete_mensal(
     registros: list[RegistroComprovante], dados_financeiros=None,
     pasta_dados: str | None = None, mes_atual: str | None = None,

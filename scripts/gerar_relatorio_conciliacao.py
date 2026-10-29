@@ -49,7 +49,7 @@ from conciliacao import get_conciliador
 from conciliacao import storage
 from conciliacao.base import Achado, AchadoRevisado, RegistroComprovante, chave_registro
 from conciliacao.matching import (
-    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_lirba_e_datadigitus, gerar_achados_auxiliadora, gerar_achados_ucondo, gerar_achados_gcont,
+    gerar_achados, gerar_achados_lirba, gerar_achados_datadigitus, gerar_achados_lirba_e_datadigitus, gerar_achados_auxiliadora, gerar_achados_ucondo, gerar_achados_gcont, gerar_achados_gcont_portal,
     gerar_achados_balancete_mensal, gerar_achados_palm_beach, gerar_achados_planilha_com_links,
 )
 from conciliacao import interpretacao
@@ -148,7 +148,7 @@ from conciliacao.condominios._planilha_refino import gerar_achados_planilha_refi
 GERAR_ACHADOS_POR_CONDO = {
     # Gardens: comprovantes por OCR pareados por conteúdo + consistência da listagem (conciliacao/condominios/gardens_living_club.py)
     "gardens_living_club": gerar_achados_lirba_e_datadigitus,
-    "club_park_butanta": gerar_achados_gcont,
+    "club_park_butanta": gerar_achados_gcont_portal,
     # Mesmo formato GCONT/HSA do Club Park (comprovante em página de texto nativo,
     # "Parcela <código>") — ver conciliacao/condominios/{parque_saint_afonso,i_gloo_alphaville}.py.
     "parque_saint_afonso": gerar_achados_gcont,
@@ -507,16 +507,21 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
     por_id = {a.id: a for a in achados}
     agora = datetime.now(timezone.utc).isoformat()
     n = 0
-    for item in esqueleto:
+    reais_aplicadas: set = set()          # conferência com "divergencia_real" vale para UM item só (o pendente, não o "verificado" do mesmo lançamento)
+    ordem = sorted(esqueleto, key=lambda it: getattr(por_id.get(it["achado_id"]), "tipo", "") == "ok_verificado")
+    for item in ordem:
         a = por_id.get(item["achado_id"])
         if a is None or a.valor_esperado is None:
             continue
         for c in confs:
+            if c.get("divergencia_real") and id(c) in reais_aplicadas:
+                continue
             # "divergencia_real" também vale para itens já classificados (ex.: texto de cartão de crédito que não descreve a situação real)
             if a.tipo not in ("conteudo_nao_verificavel", "divergencia_valor", "nota_fiscal_ausente") and not (c.get("divergencia_real") and a.tipo in ("ok_verificado", "sem_comprovante", "conta_concessionaria_nao_anexada")):
                 continue
             if any(f"cod{c['codigo']}" in k for k in a.registros_relacionados) and abs(a.valor_esperado - c["valor_listagem"]) <= 0.005:
                 if c.get("divergencia_real"):
+                    reais_aplicadas.add(id(c))
                     # a imagem foi lida e a divergência é REAL (o comprovante é legível): tira o aviso de "possível erro de OCR", mantém a
                     # gravidade e a pergunta à administradora (pode vir reescrita em "pergunta")
                     item.update(

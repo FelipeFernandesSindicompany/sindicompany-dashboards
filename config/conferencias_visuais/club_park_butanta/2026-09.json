@@ -1,0 +1,20 @@
+[
+  {
+    "codigo": "L015",
+    "valor_listagem": 69.4,
+    "divergencia_real": true,
+    "resumo": "Compra no Mercado Pago cancelada e valor devolvido à conta do Mercado Pago (R$ 69,40)",
+    "documento": "anexos do lançamento no portal da GCONT: comprovante de pagamento do boleto e extrato da conta Mercado Pago (Anexo 4 - cancelamento da compra)",
+    "como": "O lançamento da listagem é MERCADOPAGO.COM REPRESENTAÇÕES, R$ 69,40, de 04/09/2026 (compra de materiais elétricos — fita isolante). Conferido visualmente nos anexos do portal: o boleto foi pago em 04/09/2026 (R$ 69,40, comprovante Itaú) e, no mesmo dia, o valor foi devolvido à conta do condomínio no Mercado Pago — o extrato anexo (Anexo 4, \"cancelamento da compra\") mostra \"Devolução de pagamento\" de R$ 69,40 em 04/09/2026, com a anotação \"valor de R$ 69,40 devolvido na conta ao Mercado Pago\". O mesmo extrato traz outra devolução de R$ 189,85 em 08/09/2026 e saldo de R$ 856,39 em 30/09/2026 nessa conta. A despesa de R$ 69,40 continua lançada na listagem e não há crédito de R$ 69,40 no livro caixa do mês; a conta do Mercado Pago também não consta entre as contas do balancete. Não há nota fiscal porque a compra foi cancelada.",
+    "pergunta": "A compra de R$ 69,40 foi cancelada e o valor voltou para a conta do Mercado Pago: por que a despesa continua lançada, e onde foi registrada a devolução (estorno ou receita)? A conta do Mercado Pago (saldo de R$ 856,39 em 30/09/2026, com a devolução de R$ 189,85 de 08/09) está contabilizada no balancete?"
+  },
+  {
+    "codigo": "L074",
+    "valor_listagem": 14.99,
+    "divergencia_real": true,
+    "resumo": "Cartão de crédito: assinatura Google One (R$ 14,99) sem recibo/nota fiscal",
+    "documento": "anexos do lançamento no portal da GCONT: fatura do cartão Itaú Empresas Visa e comprovante de débito automático",
+    "como": "O lançamento da listagem é \"Cartão de Crédito\", R$ 14,99, de 15/09/2026. Conferido visualmente nos anexos do portal: o débito automático de R$ 14,99 em 15/09/2026 quita a fatura do cartão Itaú Empresas Visa (vencimento 15/09/2026, total R$ 14,99), cujo único lançamento é \"Google One\", R$ 14,99, em 22/08, no cartão de um portador (final 6980). O valor da fatura confere com o lançamento, mas não há recibo nem nota fiscal da assinatura Google One entre os anexos.",
+    "pergunta": "Qual a finalidade da assinatura Google One (R$ 14,99) paga com o cartão do condomínio (final 6980) e onde está o recibo ou nota fiscal dela?"
+  }
+]

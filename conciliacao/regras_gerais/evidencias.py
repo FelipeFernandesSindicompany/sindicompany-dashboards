@@ -128,6 +128,10 @@ def specs_para(a: Achado) -> list[dict]:
         specs.append(_spec(d["pagina"], re.escape(_br(d["movimento"])), "Movimento entre contas de " + (d.get("conta") or "")))
     elif a.tipo == "compensacao_nao_fecha" and d.get("pagina"):
         specs.append(_spec(d["pagina"], r"ESTAC", "Lançamentos do grupo " + (d.get("grupo") or "")))
+    elif a.tipo == "rendimento_desproporcional" and d.get("motivo") == "distribuicao_nao_informada":
+        for x in (d.get("linhas_maiores") or [])[:1]:
+            if x.get("pagina"):
+                specs.append(_spec(x["pagina"], re.escape(_br(x["valor"])), f"Rendimento creditado no livro caixa em {x['data']}"))
     elif a.tipo == "rendimento_desproporcional" and d.get("pagina"):
         if d.get("motivo") in ("sem_rendimento", "sem_rendimento_consolidado") and d.get("conta"):
             # conta que NÃO recebeu rendimento: não há linha de rendimento para marcar — marca a linha da própria conta na tabela de contas

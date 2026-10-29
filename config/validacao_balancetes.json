@@ -136,6 +136,9 @@
         "gestor": {},
         "continuidade_saldos": {
           "total_entre_formatos": true
+        },
+        "subcontas": {
+          "nova_mesmo_com_troca": true
         }
       }
     },

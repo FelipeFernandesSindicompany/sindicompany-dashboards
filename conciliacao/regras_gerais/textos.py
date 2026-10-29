@@ -47,6 +47,20 @@ def texto_rendimento(a: Achado) -> tuple[str, str, str]:
     d = a.detalhes
     conta = d.get("conta") or a.linha_demonstrativo or "conta"
     mediana = d.get("taxa_mediana")
+    if d.get("motivo") == "distribuicao_nao_informada":
+        total = _moeda(d.get("total"))
+        contas = d.get("contas") or []
+        nomes = ", ".join(c["nome"] for c in contas)
+        saldos = "; ".join(f"{c['nome']} {_moeda(c['saldo'])}" for c in contas)
+        detalhe = d.get("detalhe") or ""
+        titulo = f"Rendimento do mês sem indicação da conta creditada ({total})"
+        paragrafo = (f"O livro caixa registra {total} de rendimento no mês{(' (' + detalhe + ')') if detalhe else ''}, mas o arquivo não informa em qual "
+                     f"conta cada valor foi creditado."
+                     + (f" Saldos das contas em 30/09/2026: {saldos}." if saldos else "")
+                     + " O rendimento das aplicações deve ser distribuído entre as contas na proporção do saldo de cada uma.")
+        verificar = (f"Como ficou distribuído o rendimento do mês ({total}) entre as contas" + (f" ({nomes})" if nomes else "")
+                     + "? Podem enviar o extrato das aplicações com o rendimento de cada conta?")
+        return titulo, paragrafo, verificar
     if d.get("motivo") == "sem_rendimento_consolidado":
         com = d.get("contas_com_rendimento") or []
         sem = d.get("contas_sem_rendimento") or []
@@ -574,5 +588,5 @@ def texto_subconta_nova(a: Achado) -> tuple[str, str, str]:
     titulo = f"Subconta nova neste mês — {cat} ({_moeda(a.valor_encontrado)})"
     paragrafo = (f"A subconta \"{cat}\" não existia no balancete do mês anterior e recebeu "
                  f"{len(itens)} lançamento(s) neste mês, somando {_moeda(a.valor_encontrado)}: {lista}{mais}.")
-    verificar = "Por que esta subconta foi criada? Os lançamentos nela estão classificados corretamente? Podem explicar?"
+    verificar = f"Por que a subconta \"{cat}\" foi criada? Os lançamentos nela estão na categoria correta? Podem explicar?"
     return titulo, paragrafo, verificar

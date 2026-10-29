@@ -116,6 +116,7 @@ comprovante" nesse formato — o sistema só gera a página quando o pagamento
      fornecedor + vencimento + valor, quando não há nº de documento).
   2. Soma dos comprovantes extraídos x total declarado no Livro Caixa.
 """
+import itertools
 import re
 from pathlib import Path
 
@@ -320,6 +321,102 @@ def _extrair_dados_ocr(texto: str) -> dict:
     return {"valor": 0.0, "fornecedor": None, "vencimento": None, "pagamento": None, "autenticacao": None}
 
 
+def _norm_forn(texto: str) -> str:
+    from conciliacao.regras_gerais.extratores.contasdata import _norm
+
+    return re.sub(r"[^A-Z0-9]", "", _norm(re.sub(r"\(\d+\)\s*$", "", texto or "")))
+
+
+def _anexar_comprovantes_do_portal(caminho: Path, dados, registros: list) -> None:
+    """Cada despesa do livro caixa tem um link público para os documentos do pagamento no portal da GCONT (nota fiscal, boleto, comprovante
+    bancário): baixa (conciliacao/portal_gcont.py), lê o comprovante bancário (valor, data, favorecido) e junta o texto de TODOS os documentos.
+    Vira um `comprovante_anexado` por despesa — o resto segue a cadeia do formato Lirba (valor x listagem, NF, concessionária, atraso).
+    A evidência do relatório é o PRÓPRIO comprovante baixado (arquivo_evidencia_externa). Um pagamento que quita DUAS ou mais despesas da listagem
+    (um boleto só para duas notas do mesmo fornecedor) vira um comprovante por despesa com o mesmo identificador (consolidação)."""
+    from conciliacao import gocontroledocumentos, portal_gcont
+    from conciliacao.regras_gerais.extratores.club_park_butanta import Extrator as _ExtResumo
+
+    try:
+        linhas = _ExtResumo({}).livro_caixa_com_links(caminho)
+    except Exception:
+        return
+    if not any(l["uri"] for l in linhas):
+        return
+    livres = list(registros)
+    novos: list = []
+    sobras: list = []
+
+    def _documentos(l):
+        textos, prova, prova_texto, prova_dados = [], None, "", None
+        anexos = portal_gcont.anexos_da_parcela(l["uri"])
+        for arq, nome in anexos:
+            try:
+                t = portal_gcont.texto_do_arquivo(arq)
+            except Exception:
+                t = ""
+            textos.append(f"[{nome}]\n{t}")
+            eh_prova = bool(re.search(r"comprovante\s+de\s+(pagamento|transfer)", t, re.IGNORECASE)) or bool(
+                re.fullmatch(r"[\d._,]+(_DEBITO_AUTOMATICO)?\.pdf", nome, re.IGNORECASE))
+            if eh_prova and prova is None:
+                prova, prova_texto, prova_dados = arq, t, _extrair_dados_ocr(t)
+        return anexos, textos, prova, prova_texto, prova_dados
+
+    def _comprovante(desp, l, docs, valor_pago=None, ident=None):
+        anexos, textos, prova, prova_texto, prova_dados = docs
+        comp = RegistroComprovante(pagina=1000 + len(novos), tipo_documento="comprovante_anexado", codigo=desp.codigo,
+                                   texto_bruto="\n\n---\n\n".join(textos))
+        if prova_dados:
+            comp.valor = prova_dados["valor"] or 0.0
+            comp.pagamento, comp.vencimento = prova_dados["pagamento"], prova_dados["vencimento"]
+            comp.fornecedor, comp.autenticacao = prova_dados["fornecedor"], prova_dados["autenticacao"]
+            desp.texto_bruto += f"\n[RECIBO OCR pag. 1]\n{prova_texto}"
+            # comprovante de VÁRIAS páginas, cada uma um pagamento (folha: um PIX/TED por funcionário): o pago é a soma das páginas
+            if prova.suffix.lower() == ".pdf":
+                por_pagina = [_extrair_dados_ocr(t) for t in portal_gcont.textos_por_pagina(prova)]
+                validas = [x for x in por_pagina if x["valor"]]
+                if len(validas) >= 2 and len(validas) == len(por_pagina):
+                    comp.valor = round(sum(x["valor"] for x in validas), 2)
+                    comp.autenticacao = None
+                    desp.texto_bruto += "\n[RECIBO OCR pag. 1]\n" + "\n".join(f"pagamento {x['pagamento']} {x['valor']:,.2f}" for x in validas)
+        if ident:
+            comp.autenticacao = ident
+        alvo = prova or (anexos[0][0] if anexos else None)
+        if alvo is not None:
+            comp.arquivo_evidencia_externa = gocontroledocumentos.salvar_evidencia_externa(
+                caminho, desp.codigo, alvo.read_bytes(), "jpeg" if alvo.suffix.lower() in (".jpg", ".jpeg") else "pdf")
+        novos.append(comp)
+
+    for l in linhas:
+        if not l["uri"]:
+            continue
+        mesmos = [r for r in livres if abs(r.valor - l["valor"]) < 0.005]
+        prefixo = lambda r: _norm_forn(r.fornecedor)[:10]
+        cand = ([r for r in mesmos if r.pagamento == l["data"] and prefixo(r) and _norm_forn(l["desc"]).startswith(prefixo(r))]
+                or [r for r in mesmos if prefixo(r) and _norm_forn(l["desc"]).startswith(prefixo(r))]
+                or [r for r in mesmos if r.pagamento == l["data"]] or mesmos)
+        if not cand:
+            sobras.append(l)
+            continue
+        desp = cand[0]
+        livres.remove(desp)
+        _comprovante(desp, l, _documentos(l))
+
+    # pagamento único que quita 2+ despesas da listagem (mesmo fornecedor): comprovante por despesa, mesmo identificador e valor total
+    for l in sobras:
+        base = [r for r in livres if _norm_forn(r.fornecedor)[:10] and _norm_forn(l["desc"]).startswith(_norm_forn(r.fornecedor)[:10])]
+        for n in (2, 3, 4):
+            grupo = next((g for g in itertools.combinations(base, n) if abs(sum(r.valor for r in g) - l["valor"]) < 0.005), None)
+            if grupo:
+                docs = _documentos(l)
+                ident = (docs[4] or {}).get("autenticacao") or f"GRUPO{portal_gcont.id_parcela(l['uri'])}"
+                for desp in grupo:
+                    livres.remove(desp)
+                    _comprovante(desp, l, docs, ident=ident)
+                    novos[-1].valor = l["valor"]
+                break
+    registros.extend(novos)
+
+
 def _margem(bbox):
     """Recorte da linha da listagem com uma folga de 3 pt (ou None se a extração não registrou a posição)."""
     if not bbox:
@@ -355,6 +452,10 @@ class Conciliador(ConciliadorBase):
                 texto_bruto=f"[W078A] {l.fornecedor} {l.categoria} {compl} {l.valor:,.2f}",
                 bbox_crop=_margem(l.bbox),
             ))
+        _anexar_comprovantes_do_portal(caminho, dados, registros)
+        if any(r.tipo_documento == "comprovante_anexado" for r in registros):
+            # tarifa debitada pelo banco não tem documento no portal: sai da conferência de comprovantes
+            registros[:] = [r for r in registros if not (r.tipo_documento == "despesa_listada" and r.fornecedor == "Banco")]
         # lançamentos que se repetem (mesma chave da duplicidade): o print mostra todas as linhas da repetição, não só a primeira
         grupos: dict = {}
         for r in registros:

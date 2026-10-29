@@ -620,6 +620,19 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
     return achados
 
 
+def regra_rendimento_distribuicao(dados: DadosRegras, cont: _Contador) -> list[Achado]:
+    """Arquivo que registra o rendimento do mês só no caixa todo (livro caixa), sem dizer em qual conta foi creditado: não dá para comparar contas,
+    então a pergunta é como o rendimento ficou distribuído entre elas (extrator preenche `dados.rendimento_sem_conta`)."""
+    info = getattr(dados, "rendimento_sem_conta", None)
+    if not info or not info.get("total"):
+        return []
+    return [Achado(
+        id=cont.proximo(), tipo="rendimento_desproporcional", severidade_sugerida="atencao",
+        regra_aplicada="rendimento_sem_conta_creditada_informada", linha_demonstrativo="Rendimento do mês",
+        valor_esperado=None, valor_encontrado=round(info["total"], 2),
+        detalhes={"motivo": "distribuicao_nao_informada", "conta": "caixa", **info})]
+
+
 def _rendimento_concentrado(dados: DadosRegras, anterior: Optional[DadosRegras], cont: _Contador, cfg: dict, ignorada) -> list[Achado]:
     """Vale para TODOS os condomínios: o rendimento do mês caiu em UMA só conta (ou, tendo rendido no mês anterior, em nenhuma) enquanto
     outras contas têm saldo médio relevante (padrão R$ 10.000) e não receberam nada. Compara contas entre si só funciona com 2+ contas
@@ -845,6 +858,8 @@ def regra_subcontas(dados: DadosRegras, historico: list, cont: _Contador, cfg: O
                 continue
             # a mesma despesa/fornecedor estava em OUTRA subconta (vale mesmo se a atual também for nova)
             por_troca.setdefault((K(l), cat_l), []).append(l)
+            if cfg.get("nova_mesmo_com_troca") and not _existia(cat_l, categorias_anteriores):
+                por_nova.setdefault(cat_l, []).append(l)      # só quando o condomínio pede: subconta NOVA também ganha a própria pergunta
         elif not _existia(cat_l, categorias_anteriores):
             por_nova.setdefault(cat_l, []).append(l)
 
@@ -988,6 +1003,7 @@ def aplicar_regras(dados: Optional[DadosRegras], anterior: Optional[DadosRegras]
         status["rendimento"] = {"aplicada": True, "motivo": None}
     else:
         _nao("rendimento", "rendimentos", "o formato deste arquivo não traz o rendimento de cada conta")
+        achados += regra_rendimento_distribuicao(dados, cont)
 
     if cob.get("lancamentos"):
         achados += regra_sem_identificacao(dados, cont)

@@ -148,10 +148,68 @@ class Extrator(_Gcont):
         if resumo and abs(sum(l.valor for l in dados.lancamentos) - resumo["deb"]) > 0.011:
             dados.avisos.append(f"a soma das despesas por categoria ({sum(l.valor for l in dados.lancamentos):,.2f}) difere dos débitos do "
                                 f"livro caixa ({resumo['deb']:,.2f})")
+        rend = [r for r in dados.receitas if r.tipo == "rendimento"]
+        if rend:
+            def _br(v):
+                return f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            maior = max(rend, key=lambda r: r.valor)
+            outros = [r for r in rend if r is not maior]
+            dados.rendimento_sem_conta = {
+                "total": round(sum(r.valor for r in rend), 2), "lancamentos": len(rend),
+                "contas": [{"nome": n, "saldo": v} for n, v in contas_w023],
+                "linhas_maiores": [{"valor": maior.valor, "data": maior.data, "pagina": maior.pagina}],
+                "detalhe": f"{maior.descricao.strip()} R$ {_br(maior.valor)} em {maior.data[:5]}"
+                           + (f" e mais {len(outros)} lançamentos de rendimento de aplicação, somando R$ {_br(sum(r.valor for r in outros))}" if outros else "")}
         dados.cobertura = {"receitas": bool(dados.receitas), "rendimentos": False, "lancamentos": bool(dados.lancamentos)}
         dados.motivos_nao_cobertos["rendimentos"] = (
             "o livro caixa traz o rendimento das aplicações do caixa todo, sem dizer em qual conta foi creditado — não há como comparar o "
             "rendimento entre contas")
+
+    def livro_caixa_com_links(self, caminho: Path) -> list:
+        """Linhas de DÉBITO do livro caixa (W018L) com o link do portal da GCONT que cada uma traz: [{"data" dd/mm/aaaa, "desc", "valor", "uri",
+        "pagina"}]. Linha sem link (tarifa bancária) vem com uri None."""
+        import fitz
+
+        out: list = []
+        with fitz.open(str(caminho)) as doc:
+            inicios = []
+            for i, pg in enumerate(doc):
+                m = _CODIGO_PAGINA.match(pg.get_text()[:40])
+                if m:
+                    inicios.append((i, m.group(1)))
+            paginas = []
+            for k, (i, cod) in enumerate(inicios):
+                if cod == "W018L":
+                    paginas = list(range(i, inicios[k + 1][0] if k + 1 < len(inicios) else len(doc)))
+            blocos: list = []
+            for i in paginas:
+                ws = [w for w in doc[i].get_text("words") if w[1] < _RODAPE_Y]
+                y_stop = min((w[1] for w in ws if w[4] == "Contas" and w[0] < 60), default=None)
+                for w in sorted(ws, key=lambda w: (round(w[1] / 3), w[0])):
+                    if y_stop is not None and w[1] >= y_stop - 1:
+                        break
+                    if w[0] < 62 and _RE_DATA2.match(w[4]):
+                        blocos.append({"pg": i, "top": w[1], "bot": 9999.0, "w": []})
+                    if blocos:
+                        blocos[-1]["w"].append(w)
+            for k, b in enumerate(blocos):
+                if k + 1 < len(blocos) and blocos[k + 1]["pg"] == b["pg"]:
+                    b["bot"] = blocos[k + 1]["top"]
+            for b in blocos:
+                dc = next((w[4] for w in b["w"] if 375 < w[0] < 420 and w[4] in ("D", "C")), None)
+                vs = [w for w in b["w"] if 420 < w[0] < 497 and _RE_VALOR.match(w[4])]
+                if dc != "D" or not vs:
+                    continue
+                uri = None
+                for l in doc[b["pg"]].get_links():
+                    u = l.get("uri") or ""
+                    if "idParcela=" in u and b["top"] - 2 <= l["from"][1] < b["bot"]:
+                        uri = u
+                        break
+                d = b["w"][0][4]
+                out.append({"data": f"{d[:6]}20{d[6:]}", "desc": _ws(" ".join(w[4] for w in b["w"] if 90 < w[0] < 370)),
+                            "valor": _num(vs[0][4]), "uri": uri, "pagina": b["pg"] + 1})
+        return out
 
     # W078A — despesas por categoria ----------------------------------------------------------------------------
     def _ler_despesas(self, doc, paginas: list, cats: list) -> list:
