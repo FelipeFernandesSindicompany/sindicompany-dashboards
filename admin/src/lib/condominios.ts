@@ -35,7 +35,13 @@ export function getCondominios(): Condominio[] {
 }
 
 export function getCondominio(id: string): Condominio | undefined {
-  return getCondominios().find(c => c.id === id);
+  const condos = getCondominios();
+  const direct = condos.find(c => c.id === id);
+  if (direct) return direct;
+  // Tenta remover prefixo numérico externo (ex: "816_fit_casa_rio_bonito" → "fit_casa_rio_bonito")
+  const stripped = id.replace(/^\d+_/, '');
+  if (stripped !== id) return condos.find(c => c.id === stripped);
+  return undefined;
 }
 
 export const ADAPTER_LABELS: Record<string, string> = {
