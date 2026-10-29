@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -96640.29,
+    "motivo": "alerta de saldo negativo (TARIFAS CONCESSIONÁRIAS -R$ 96.640,29 e DESPESAS REEMBOLSÁVEIS -R$ 520,00) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 3150.0,
+    "motivo": "fornecedor sem lançamento nos 6 meses anteriores (conjunto de mesas, R$ 3.150,00) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-29"
+  }
+]
