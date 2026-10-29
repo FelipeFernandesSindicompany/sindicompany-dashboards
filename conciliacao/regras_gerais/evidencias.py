@@ -34,12 +34,26 @@ def _spec(pagina, buscar, legenda) -> dict:
     return {"pagina": pagina, "buscar": buscar, "legenda": legenda, "linha_inteira": True}
 
 
+def _spec_linha_listagem(i: dict, legenda: str) -> Optional[dict]:
+    """Print da LINHA da listagem "Despesas por categoria" (prestação resumida do Club Park, local "W078A, página N"): a linha vem em várias
+    colunas e quebras de linha, então não há texto corrido para buscar — o recorte e o destaque usam a posição registrada pelo extrator."""
+    bbox = i.get("bbox")
+    if not (bbox and i.get("pagina") and str(i.get("local") or "").startswith("W078A")):
+        return None
+    x0, top, x1, bottom = bbox
+    return {"pagina": i["pagina"], "legenda": legenda, "buscar": "", "bbox": [max(0.0, x0 - 4), max(0.0, top - 1), x1 + 4, bottom + 1],
+            "destaques": [[x0 - 1, top - 1, x1 + 1, bottom + 1]]}
+
+
 def _spec_lancamento(i: dict, legenda: str, vistos: dict) -> Optional[dict]:
     """Print de UM lançamento: o começo da descrição + o VALOR na mesma linha (lançamentos do mesmo fornecedor começam com o mesmo texto —
     ex.: três lançamentos da mesma empresa na mesma página — e só a descrição marcaria sempre o primeiro). Se ainda assim duas linhas casam igual
     (mesmo texto e mesmo valor), a N-ésima ocorrência pedida é a N-ésima linha que casa."""
     if not i.get("pagina"):
         return None
+    por_posicao = _spec_linha_listagem(i, legenda)
+    if por_posicao:
+        return por_posicao
     trecho = _trecho(i.get("descricao"))
     sp = _spec(i["pagina"], trecho or re.escape(_br(i["valor"])), legenda)
     if trecho:
@@ -62,6 +76,10 @@ def specs_para(a: Achado) -> list[dict]:
         vistos: dict = {}
         for p in d.get("parcelas", [])[:3]:
             if p.get("pagina"):
+                por_posicao = _spec_linha_listagem(p, f"Parcela {p['n']}/{d.get('total_parcelas')}")
+                if por_posicao:
+                    specs.append(por_posicao)
+                    continue
                 busca = _trecho(p.get("descricao")) or re.escape(_br(p["valor"]))
                 sp = _spec(p["pagina"], busca, f"Parcela {p['n']}/{d.get('total_parcelas')}")
                 # as parcelas da mesma série começam com o mesmo texto: a N-ésima parcela na mesma página é a N-ésima linha que casa
@@ -70,8 +88,9 @@ def specs_para(a: Achado) -> list[dict]:
                 specs.append(sp)
     elif a.tipo in ("lancamento_em_outra_subconta", "subconta_atipica"):
         vistos_l: dict = {}
-        for i in d.get("lancamentos", [])[:3]:
-            sp = _spec_lancamento(i, "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or ""), vistos_l)
+        # os maiores lançamentos primeiro: são os "maiores casos" citados no texto do item
+        for i in sorted(d.get("lancamentos", []), key=lambda x: -abs(x.get("valor") or 0))[:3]:
+            sp = _spec_lancamento(i, "Lançamento na subconta " + (d.get("categoria_atual") or d.get("categoria") or i.get("categoria") or ""), vistos_l)
             if sp:
                 specs.append(sp)
     elif a.tipo == "saldo_negativo_persistente" and d.get("pagina") and d.get("contas"):
@@ -84,6 +103,10 @@ def specs_para(a: Achado) -> list[dict]:
         # a despesa NÃO está neste mês: o print é a linha dela no mês anterior (arquivo do mês anterior, mesma pasta)
         for x in d.get("ausentes", [])[:3]:
             if x.get("pagina") and x.get("arquivo"):
+                por_posicao = _spec_linha_listagem(x, f"Lançamento de {_mes_br(x.get('mes'))} (último mês lido antes deste) que não aparece neste mês")
+                if por_posicao:
+                    specs.append({**por_posicao, "arquivo": x["arquivo"]})
+                    continue
                 specs.append({**_spec(x["pagina"], _trecho(x.get("descricao")) or re.escape(_br(x["mediana"])),
                                       f"Lançamento de {_mes_br(x.get('mes'))} (último mês lido antes deste) que não aparece neste mês"), "arquivo": x["arquivo"]})
     elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
@@ -110,7 +133,7 @@ def specs_para(a: Achado) -> list[dict]:
             # conta que NÃO recebeu rendimento: não há linha de rendimento para marcar — marca a linha da própria conta na tabela de contas
             specs.append(_spec(d["pagina"], re.escape(str(d["conta"]))[:40].replace(r"\ ", r"\s+"), "Conta " + str(d["conta"]) + " (sem rendimento no mês)"))
         specs.append({**_spec(d["pagina"], r"REND", "Rendimento creditado na conta " + (d.get("conta") or "")), "linha_inteira": True})
-    return [s for s in specs if s["buscar"]]
+    return [s for s in specs if s["buscar"] or s.get("bbox")]
 
 
 def texto_origem(a: Achado) -> Optional[str]:

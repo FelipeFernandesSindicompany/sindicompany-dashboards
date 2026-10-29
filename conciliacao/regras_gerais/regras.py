@@ -436,9 +436,27 @@ def regra_alerta_saldo_negativo(dados: DadosRegras, historico: list, cont: _Cont
 def regra_continuidade_saldos(dados: DadosRegras, anterior: Optional[DadosRegras], cont: _Contador, cfg: Optional[dict] = None) -> list[Achado]:
     """O saldo anterior de cada conta no mês tem de ser o saldo final dessa conta no mês anterior. Diferença = o mês anterior foi alterado
     depois de fechado, ou o arquivo não é continuação do anterior. Um achado por relatório, com todas as contas que não batem."""
-    if anterior is None or getattr(dados, "variante", None) != getattr(anterior, "variante", None):
+    if anterior is None:
         return []
     tol = float((cfg or {}).get("tolerancia", 0.02))
+    if getattr(dados, "variante", None) != getattr(anterior, "variante", None):
+        # Formatos diferentes nomeiam/agrupam as contas de outro jeito: só o TOTAL é comparável, e só quando o condomínio pede
+        # (regras.continuidade_saldos.total_entre_formatos). O total do arquivo é a soma das contas do Resumo Financeiro.
+        if not (cfg or {}).get("total_entre_formatos"):
+            return []
+        ini = round(sum(c.saldo_anterior for c in dados.contas if not c.nome.upper().startswith("CONSOLIDADO")), 2)
+        fim = round(sum(c.saldo_atual for c in anterior.contas if not c.nome.upper().startswith("CONSOLIDADO")), 2)
+        dif = round(ini - fim, 2)
+        if abs(dif) <= tol:
+            return []
+        pg = dados.contas[0].pagina if dados.contas else None
+        return [Achado(
+            id=cont.proximo(), tipo="continuidade_saldo", severidade_sugerida="atencao",
+            regra_aplicada="saldo_anterior_diferente_do_saldo_final_do_mes_anterior", linha_demonstrativo="Saldo total (todas as contas)",
+            valor_encontrado=dif,
+            detalhes={"mes": dados.mes, "mes_anterior": anterior.mes, "pagina": pg,
+                      "contas": [{"nome": "Saldo total (todas as contas)", "saldo_anterior": ini, "saldo_final_mes_anterior": fim,
+                                  "diferenca": dif, "pagina": pg}]})]
     quebras = []
     for c in dados.contas:
         if c.nome.upper().startswith("CONSOLIDADO"):

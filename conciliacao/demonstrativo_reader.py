@@ -251,8 +251,11 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
               for c in d.contas if not c.nome.upper().startswith("CONSOLIDADO")]
     soma_cat: dict = {}
     if d.lancamentos:
+        # extrator que sabe agrupar a categoria do arquivo nas categorias canônicas do condomínio (cat_map): mesma tabela dos outros meses
+        canonica = getattr(extrator, "categoria_canonica", None)
         for l in d.lancamentos:
-            soma_cat[l.categoria] = soma_cat.get(l.categoria, 0.0) + l.valor
+            cat = canonica(l.categoria) if canonica else l.categoria
+            soma_cat[cat] = soma_cat.get(cat, 0.0) + l.valor
     elif d.categorias:
         soma_cat = dict(d.categorias)
     # Movimentação entre contas (aplicação/resgate, transferências) está no débito das contas, mas NÃO é despesa:

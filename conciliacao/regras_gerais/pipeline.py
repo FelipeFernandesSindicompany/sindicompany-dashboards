@@ -73,6 +73,14 @@ def executar(condo: dict, mes: str, arquivo: Path, pasta_busca_anterior: Optiona
             historico_saldos.append(dados_k)
             if k == 0:
                 anterior = dados_k      # rendimento: nomes de conta são os mesmos em qualquer formato
+            # extrator que sabe reler o mês anterior (outro formato do mesmo condomínio) no MESMO nível de detalhe do mês atual
+            # (ex.: Club Park: prestação resumida x completa, ambas com a listagem "Despesas por categoria")
+            leitura_historico = getattr(extrator, "para_historico", None)
+            if leitura_historico is not None and getattr(dados_k, "variante", None) != getattr(dados, "variante", None):
+                try:
+                    dados_k = leitura_historico(arq_k, m_atual, dados_k, dados) or dados_k
+                except Exception:
+                    pass
             if (arq_k.suffix.lower() != arquivo.suffix.lower() or getattr(dados_k, "variante", None) != getattr(dados, "variante", None)) and not ((condo.get("regras") or {}).get("subcontas") or {}).get("comparar_entre_formatos"):
                 # Subcontas só se comparam entre meses do MESMO formato (a planilha Lello e o PDF do mesmo
                 # condomínio nomeiam as subcontas em níveis diferentes: comparar geraria alertas falsos).

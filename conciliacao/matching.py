@@ -1475,6 +1475,8 @@ def gerar_achados_gcont(
     # docstring acima), então descrição e texto do comprovante vêm do mesmo
     # objeto (ver achado_nota_fiscal_ausente).
     for despesa in despesas:
+        if (despesa.texto_bruto or "").startswith("[W078A]"):
+            continue          # linha da listagem "Despesas por categoria" (prestação resumida): não há anexo para procurar a nota fiscal
         achado_nf = achado_nota_fiscal_ausente(
             despesa.descricao, despesa.texto_bruto, despesa.valor, despesa.valor,
             despesa.categoria_demonstrativo, [chave_registro(despesa)], contador,

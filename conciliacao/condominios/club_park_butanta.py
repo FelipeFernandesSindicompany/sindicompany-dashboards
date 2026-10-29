@@ -320,10 +320,59 @@ def _extrair_dados_ocr(texto: str) -> dict:
     return {"valor": 0.0, "fornecedor": None, "vencimento": None, "pagamento": None, "autenticacao": None}
 
 
+def _margem(bbox):
+    """Recorte da linha da listagem com uma folga de 3 pt (ou None se a extração não registrou a posição)."""
+    if not bbox:
+        return None
+    x0, top, x1, bottom = bbox
+    return (max(0.0, x0 - 4), max(0.0, top - 1), x1 + 4, bottom + 1)
+
+
 class Conciliador(ConciliadorBase):
+    @staticmethod
+    def _registros_resumo(caminho: Path):
+        """Prestação de contas RESUMIDA (53 páginas, a partir de set/2026: previsto x realizado, inadimplência, livro caixa, saldo das contas e
+        "Despesas por categoria", sem as páginas de comprovante). Cada linha da listagem vira uma `despesa_listada` (fornecedor, vencimento,
+        liquidação, categoria, competência, valor): permite duplicidade e atraso de pagamento; comprovante e nota fiscal não existem no arquivo
+        (o relatório avisa o escopo). None se o arquivo não for a variante resumida."""
+        from conciliacao.regras_gerais.extratores.club_park_butanta import Extrator as _ExtResumo
+
+        try:
+            dados = _ExtResumo({}).extrair(caminho, "")
+        except Exception:
+            return None
+        if getattr(dados, "variante", None) != "resumo":
+            return None
+        registros = []
+        for n, l in enumerate(dados.lancamentos, start=1):
+            compl = getattr(l, "complemento", "") or ""
+            registros.append(RegistroComprovante(
+                pagina=l.pagina, tipo_documento="despesa_listada", codigo=f"L{n:03d}", descricao=l.descricao[:200], fornecedor=l.fornecedor,
+                vencimento=getattr(l, "vencimento", None), pagamento=l.data, valor=l.valor, competencia=getattr(l, "competencia", None),
+                categoria_demonstrativo=None,      # como nas demais prestações do condomínio (não há 'código da categoria' no arquivo)
+                # o complemento (nº de conta, instalação, "n de m") separa pagamentos de mesmo valor/dia que não são repetição
+                autenticacao=f"{getattr(l, 'vencimento', None) or ''} {compl}".strip() or None,
+                texto_bruto=f"[W078A] {l.fornecedor} {l.categoria} {compl} {l.valor:,.2f}",
+                bbox_crop=_margem(l.bbox),
+            ))
+        # lançamentos que se repetem (mesma chave da duplicidade): o print mostra todas as linhas da repetição, não só a primeira
+        grupos: dict = {}
+        for r in registros:
+            grupos.setdefault(((r.fornecedor or "").strip().upper(), r.autenticacao or r.vencimento, round(r.valor, 2)), []).append(r)
+        for g in grupos.values():
+            if len(g) >= 2 and len({r.pagina for r in g}) == 1 and all(r.bbox_crop for r in g):
+                uniao = (min(r.bbox_crop[0] for r in g), min(r.bbox_crop[1] for r in g), max(r.bbox_crop[2] for r in g), max(r.bbox_crop[3] for r in g))
+                for r in g:
+                    r.bbox_crop = uniao
+        return registros
+
     def extrair_comprovantes(self, caminho: Path) -> list:
         import fitz
         import pdfplumber
+
+        resumo = self._registros_resumo(caminho)
+        if resumo is not None:
+            return resumo
 
         registros: list[RegistroComprovante] = []
         # Só a 1ª página de cada "Parcela" tem dado útil (capa) — as

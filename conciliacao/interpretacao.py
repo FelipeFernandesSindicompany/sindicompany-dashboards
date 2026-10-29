@@ -174,14 +174,16 @@ def _texto_atraso_pagamento(achado: Achado, registro: RegistroComprovante | None
     venc = registro.vencimento if registro else None
     pago = registro.pagamento if registro else None
     titulo = f"Atraso de pagamento — {fornecedor}"
+    # linha da listagem "Despesas por categoria" (prestação resumida, sem comprovantes): a fonte é a listagem, não um comprovante
+    fonte = "A listagem de despesas do arquivo" if (registro and (registro.texto_bruto or "").startswith("[W078A]")) else "O comprovante de pagamento"
     if venc and pago:
         paragrafo = (
-            f"O comprovante de pagamento a {fornecedor} ({valor}) mostra vencimento em {venc} e pagamento "
+            f"{fonte} a {fornecedor} ({valor}) mostra vencimento em {venc} e pagamento "
             f"efetivado em {pago} — pagamento posterior ao vencimento (vencimento em fim de semana ou feriado já foi "
             f"considerado no próximo dia útil)."
         )
     else:
-        paragrafo = f"O comprovante de pagamento a {fornecedor} ({valor}) foi pago após o vencimento."
+        paragrafo = f"{fonte} a {fornecedor} ({valor}) foi pago após o vencimento."
     o_que_verificar = "Por que este pagamento foi feito após o vencimento? Houve cobrança de juros ou multa e, se sim, o valor pago já inclui esse acréscimo ou falta um lançamento complementar?"
     return titulo, paragrafo, o_que_verificar
 

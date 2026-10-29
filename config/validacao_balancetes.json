@@ -119,7 +119,9 @@
           "MANUTENÇÃO DE PISO ELEVADOR": "SERV. TERCEIRIZADOS",
           "MATS.-SERVS. PINTURA": "PINTURA/FACHADA",
           "CARTORIO": "ADMINISTRATIVO",
-          "SERVICOS MOTOBOY-UBER": "SERV. TERCEIRIZADOS"
+          "SERVICOS MOTOBOY-UBER": "SERV. TERCEIRIZADOS",
+          "UNIFORMES": "PESSOAL",
+          "FERIAS": "PESSOAL"
         }
       },
       "regras": {
@@ -131,7 +133,10 @@
             "Fundo de Reserva"
           ]
         },
-        "gestor": {}
+        "gestor": {},
+        "continuidade_saldos": {
+          "total_entre_formatos": true
+        }
       }
     },
     "fatto_morumbi": {
