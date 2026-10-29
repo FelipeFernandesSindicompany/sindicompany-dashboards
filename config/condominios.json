@@ -113,7 +113,7 @@
       "empresa_gestora": "lirba_pdf",
       "pasta_dados": "data/central_das_artes",
       "html_file": "Dashboard_Financeiro_CentralDasArtes.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#0369a1",
       "unidades": 27,
       "parser_config": {

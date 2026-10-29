@@ -119,33 +119,6 @@
       "tAnt": 461541.42
     }
   },
-  "Dashboard_Financeiro_CentralDasArtes.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 10705.73,
-      "tCred": 48254.89,
-      "tDeb": 74360.21,
-      "inad": 1883.97,
-      "tAnt": 36811.05
-    }
-  },
   "Dashboard_Financeiro_CinqueTerre.html": {
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
