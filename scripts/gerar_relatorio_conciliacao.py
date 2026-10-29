@@ -618,6 +618,41 @@ def _eh_fundo_de_reserva(nome) -> bool:
     return "FUNDODERESERVA" in n or "FUNDORESERVA" in n or "FRESERVA" in n
 
 
+def _pergunta_subconta_sem_categoria(condo: dict, achados: list, esqueleto: list) -> int:
+    """Subconta NOVA que não está em nenhuma das categorias de despesa do balancete (cat_map do condomínio): aparece na tabela "Despesas por
+    Categoria" com o próprio nome. A pergunta passa a pedir a categoria correta (decisão do dono, 29/10/2026 — só para quem liga
+    `regras.subcontas.perguntar_sem_categoria`)."""
+    import unicodedata
+
+    if not (((condo.get("regras") or {}).get("subcontas") or {}).get("perguntar_sem_categoria")):
+        return 0
+    mapa = (condo.get("parser_config") or {}).get("cat_map") or {}
+    if not mapa:
+        return 0
+
+    def n(t):
+        return re.sub(r"\s+", " ", "".join(c for c in unicodedata.normalize("NFD", str(t or "")) if unicodedata.category(c) != "Mn")).upper().strip()
+
+    conhecidas = {n(k) for k in mapa} | {n(v) for v in mapa.values()}
+    categorias = sorted({v for v in mapa.values()})
+    por_id = {a.id: a for a in achados}
+    feitos = 0
+    for item in esqueleto:
+        a = por_id.get(item["achado_id"])
+        if a is None or a.tipo != "subconta_atipica" or (a.detalhes or {}).get("reorganizacao") or item.get("severidade_final") == "informativo":
+            continue
+        cat = (a.detalhes or {}).get("categoria") or a.linha_demonstrativo
+        if not cat or n(cat) in conhecidas:
+            continue
+        item["paragrafo"] = (item.get("paragrafo") or "").rstrip() + (
+            f" Essa subconta não está classificada em nenhuma das categorias de despesa do balancete ({', '.join(categorias)}): aparece na tabela "
+            f"\"Despesas por Categoria\" com o próprio nome.")
+        item["o_que_verificar"] = (f"A subconta \"{cat}\" está sem categoria: em qual categoria de despesa do balancete ela deve ser classificada? "
+                                   f"Os lançamentos nela estão corretos e por que a subconta foi criada?")
+        feitos += 1
+    return feitos
+
+
 def _pergunta_fundo_de_reserva(achados: list, registros: list, esqueleto: list) -> int:
     """Despesa que sai do FUNDO DE RESERVA sempre leva a pergunta de aprovação (assembleia/previsão orçamentária) — em qualquer item que a cite,
     não só na observação própria de "paga direto do fundo" (decisão do dono, 28/10/2026)."""
@@ -777,6 +812,7 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     _pergunta_sem_fatura_ja_anexada(achados, registros, esqueleto)
     _pergunta_nf_ja_anexada(achados, registros, esqueleto)
     _pergunta_fundo_de_reserva(achados, registros, esqueleto)
+    _pergunta_subconta_sem_categoria(condo, achados, esqueleto)
     n_dispensas = _aplicar_dispensas(base_dir, mes, achados, esqueleto)
     if n_dispensas:
         print(f"[OK] {n_dispensas} observação(ões) de gestor retirada(s) do relatório por decisão do responsável (config/dispensas_validacao).")

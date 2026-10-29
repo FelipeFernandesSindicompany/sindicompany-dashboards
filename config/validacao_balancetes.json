@@ -138,7 +138,8 @@
           "total_entre_formatos": true
         },
         "subcontas": {
-          "nova_mesmo_com_troca": true
+          "nova_mesmo_com_troca": true,
+          "perguntar_sem_categoria": true
         }
       }
     },
