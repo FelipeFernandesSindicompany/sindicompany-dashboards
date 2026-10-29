@@ -26,15 +26,16 @@ def texto_receita_negativa(a: Achado) -> tuple[str, str, str]:
     desc = d.get("descricao") or "lançamento de receita"
     quando = f" em {d['data']}" if d.get("data") else ""
     n = d.get("quantidade", 1)
+    na_conta = f"nas {conta}" if conta.startswith("contas ") else f"na conta {conta}"
     if n > 1:
         titulo = f"Receita com valor negativo — {conta}: {desc} ({n} lançamentos, {_moeda(a.valor_encontrado)})"
-        paragrafo = (f"A receita \"{desc}\", na conta {conta}, aparece com valor negativo em {n} lançamentos "
+        paragrafo = (f"A receita \"{desc}\", {na_conta}, aparece com valor negativo em {n} lançamentos "
                      f"neste mês, somando {_moeda(a.valor_encontrado)}. Não existe receita negativa: um valor negativo é uma saída (débito, estorno ou "
                      f"devolução) e deve ser lançado como despesa/ajuste na conta correspondente, e não como receita com sinal negativo, que reduz "
                      f"a arrecadação do mês.")
     else:
         titulo = f"Receita com valor negativo — {conta} ({_moeda(a.valor_encontrado)})"
-        paragrafo = (f"A receita \"{desc}\"{quando}, na conta {conta}, aparece com valor negativo "
+        paragrafo = (f"A receita \"{desc}\"{quando}, {na_conta}, aparece com valor negativo "
                      f"({_moeda(a.valor_encontrado)}). Não existe receita negativa: um valor negativo é uma saída (débito, estorno ou devolução) "
                      f"e deve ser lançado como despesa/ajuste na conta correspondente, e não como receita com sinal negativo, que reduz a "
                      f"arrecadação do mês.")
