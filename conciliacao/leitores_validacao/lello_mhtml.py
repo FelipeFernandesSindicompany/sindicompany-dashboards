@@ -254,6 +254,9 @@ class AdapterLelloMHTML(AdapterBase):
         # ── DEMONSTRATIVO DE RECEITAS — receita_cotas (créditos ORDINÁRIA = real) ──
         self._processar_demonstrativo_receitas(tabelas, dados)
 
+        if (self.parser_config or {}).get("prev_real_fonte") == "resumo_emissao_todas_as_contas":
+            self._prev_real_resumo_emissao(tabelas, dados)
+
         # ── Localizar e processar DEMONSTRATIVO DE DESPESAS ──
         tab_desp = self._encontrar_tabela(tabelas, "DEMONSTRATIVO DE DESPESAS")
         if tab_desp is not None:
@@ -385,6 +388,28 @@ class AdapterLelloMHTML(AdapterBase):
         Tabela 2 (ORDINARIA — Resumo Emissão): não contém a emissão do período.
         prev/real são extraídos de _processar_demonstrativo_receitas. Mantida por compatibilidade.
         """
+
+    def _prev_real_resumo_emissao(self, tabelas, dados: DadosFinanceiros) -> None:
+        """Previsto x Realizado = soma, em TODAS as contas, da linha "Total Devedores" do bloco "Resumo emissão" de cada conta (previsto e
+        realizado) — o mesmo "total geral" do Resumo de Emissões do PDF da Lello. O leitor antigo pegava a "TOTAL EMISSÃO DO PERIODO" do
+        Demonstrativo de Receitas, e a última linha sem sufixo é a do Salão de Festas (R$ 3.894,00), não a da Ordinária."""
+        prev = real = 0.0
+        achou = 0
+        for t in tabelas:
+            if t.find("table") is not None:
+                continue                      # tabela que só contém outras tabelas: as linhas já vêm das internas
+            linhas = _linhas(t)
+            if not any(c.strip().lower().startswith("resumo emiss") for l in linhas[:3] for c in l):
+                continue
+            for linha in linhas:
+                cel = [c for c in linha if c.strip()]
+                if len(cel) >= 3 and cel[0].strip().lower() == "total devedores":
+                    prev += _f(cel[1])
+                    real += _f(cel[2])
+                    achou += 1
+        if achou:
+            dados.receita_prevista = round(prev, 2)
+            dados.receita_cotas = round(real, 2)
 
     def _processar_demonstrativo_receitas(self, tabelas, dados: DadosFinanceiros) -> None:
         """

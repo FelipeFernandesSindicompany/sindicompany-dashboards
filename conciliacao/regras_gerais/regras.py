@@ -494,11 +494,15 @@ def regra_movimento_entre_contas(dados: DadosRegras, cont: _Contador, cfg: Optio
         dif = round(c.saldo_anterior + c.creditos - c.debitos - c.saldo_atual, 2)
         if abs(dif) < max(minimo, _CENTAVO):
             continue
+        # créditos da conta que NÃO são receita (transferência recebida, resgate de aplicação): o arquivo os soma em "créditos"
+        entradas = [{"descricao": r.descricao.split("[")[0].strip(), "valor": round(r.valor, 2)} for r in dados.receitas
+                    if r.tipo == "transferencia" and _mesma_conta(r.conta, c.nome) and r.valor > 0]
         achados.append(Achado(
             id=cont.proximo(), tipo="movimento_entre_contas", severidade_sugerida="atencao",
             regra_aplicada="saldo_da_conta_varia_alem_de_creditos_e_debitos", linha_demonstrativo=c.nome,
             valor_encontrado=abs(dif),
-            detalhes={"conta": c.nome, "saida": dif > 0, "movimento": abs(dif), "saldo_anterior": round(c.saldo_anterior, 2),
+            detalhes={"conta": c.nome, "saida": dif > 0, "movimento": abs(dif), "entradas_nao_receita": entradas,
+                      "saldo_anterior": round(c.saldo_anterior, 2),
                       "creditos": round(c.creditos, 2), "debitos": round(c.debitos, 2), "saldo_atual": round(c.saldo_atual, 2),
                       "pagina": c.pagina}))
     return achados

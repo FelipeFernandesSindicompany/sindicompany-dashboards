@@ -23,7 +23,7 @@ def _fmt_r(v: float) -> str:
 
 
 def _fmt_pct(v: float) -> str:
-    return f"{v:,.1f}%".replace(".", ",")
+    return f"{v:,.1f}%".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _fmt_pct_arrecadacao(v: float) -> str:
@@ -33,7 +33,7 @@ def _fmt_pct_arrecadacao(v: float) -> str:
     ficar tão perto de 100% (ex.: 99,9516%) que 1 casa decimal arredonda pra
     "100,0%", escondendo que o previsto não foi batido.
     """
-    return f"{v:,.2f}%".replace(".", ",")
+    return f"{v:,.2f}%".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def montar_analise(bal_atual: dict, bal_anterior: dict | None, mes_titulo: str, aviso_previsto: str | None = None) -> dict:

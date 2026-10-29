@@ -524,6 +524,17 @@ def texto_movimento_entre_contas(a: Achado) -> tuple[str, str, str]:
     paragrafo = (f"Na conta {conta}, o saldo anterior ({_moeda(d.get('saldo_anterior'))}) mais os créditos ({_moeda(d.get('creditos'))}) menos as despesas "
                  f"({_moeda(d.get('debitos'))}) não resulta no saldo final ({_moeda(d.get('saldo_atual'))}): a diferença de {mov} {sentido} conta como "
                  f"movimento que não é despesa nem receita (transferência entre contas, aplicação ou resgate), conforme o próprio arquivo.")
+    entradas = d.get("entradas_nao_receita") or []
+    total_entradas = round(sum(e["valor"] for e in entradas), 2)
+    if d.get("saida") and entradas and abs(total_entradas - (d.get("movimento") or 0)) <= 1.0:
+        lista = "; ".join(f"{e['descricao']} {_moeda(e['valor'])}" for e in entradas)
+        paragrafo = (f"Na conta {conta}, o saldo anterior ({_moeda(d.get('saldo_anterior'))}) mais os créditos ({_moeda(d.get('creditos'))}) menos as "
+                     f"despesas ({_moeda(d.get('debitos'))}) não resulta no saldo final ({_moeda(d.get('saldo_atual'))}): a diferença de {mov} saiu da conta "
+                     f"como transferência/aplicação (débito). Os créditos da conta incluem {_moeda(total_entradas)} que não são receita ({lista}), de mesmo "
+                     f"valor: o movimento aparece nos dois lados (saída e entrada), conforme o próprio arquivo.")
+        verificar = (f"Para qual conta ou aplicação foi cada valor retirado da conta {conta} e de onde vieram as entradas de mesmo valor ({lista})? "
+                     f"Qual o motivo e a aprovação (assembleia/conselho) dessas movimentações, e onde estão os comprovantes?")
+        return titulo, paragrafo, verificar
     verificar = (f"{'Para' if d.get('saida') else 'De'} qual conta ou aplicação {'foi' if d.get('saida') else 'veio'} o valor de {mov} "
                  f"{'retirado da' if d.get('saida') else 'recebido na'} conta {conta}? Qual o motivo e a aprovação (assembleia/conselho) dessa movimentação, "
                  f"e onde está o comprovante?")
