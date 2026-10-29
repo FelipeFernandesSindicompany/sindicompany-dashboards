@@ -324,36 +324,6 @@
       "tAnt": 179465.36
     }
   },
-  "Dashboard_Financeiro_GoBarra_Funda.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 1265.23,
-      "tCred": 88676.56,
-      "tDeb": 88863.09,
-      "inad": 16043.82,
-      "tAnt": 1451.76
-    }
-  },
   "Dashboard_Financeiro_GoLiberdade.html": {
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
@@ -748,36 +718,6 @@
       "tAnt": 143553.08
     }
   },
-  "Dashboard_Financeiro_PalmBeach.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 332683.71,
-      "tCred": 81732.02,
-      "tDeb": 67156.18,
-      "inad": 124496.57,
-      "tAnt": 318107.87
-    }
-  },
   "Dashboard_Financeiro_Patricia.html": {
     "lastKey": "set26",
     "lastMonth": "Set/26",
@@ -867,36 +807,6 @@
       "tAnt": 274350.25
     }
   },
-  "Dashboard_Financeiro_ResidencialNapoleao.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 68287.61,
-      "tCred": 63397.26,
-      "tDeb": 60640.5,
-      "inad": 0,
-      "tAnt": 65530.85
-    }
-  },
   "Dashboard_Financeiro_SaintAfonso.html": {
     "lastKey": "jun26",
     "lastMonth": "Jun/26",
@@ -953,36 +863,6 @@
       "tDeb": 290700.18,
       "inad": 133036.39,
       "tAnt": 315561.47
-    }
-  },
-  "Dashboard_Financeiro_Sublime.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 162457.2,
-      "tCred": 169560.61,
-      "tDeb": 167000,
-      "inad": 318216.95,
-      "tAnt": 159896.59
     }
   },
   "Dashboard_Financeiro_TopNine.html": {
@@ -1088,36 +968,6 @@
       "tDeb": 132243.3,
       "inad": 2788.86,
       "tAnt": -14826.32
-    }
-  },
-  "Dashboard_Financeiro_Victoria.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26"
-    ],
-    "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 184879.02,
-      "tCred": 63468.75,
-      "tDeb": 61424.18,
-      "inad": 23078.9,
-      "tAnt": 182834.45
     }
   },
   "Dashboard_Financeiro_VillaPark_Osasco.html": {
