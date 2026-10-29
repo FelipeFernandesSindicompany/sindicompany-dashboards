@@ -549,7 +549,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # Só estes tipos podem ser dispensados pelo responsável — nunca saldo, soma, comprovante/NF. Receita negativa só por decisão EXPLÍCITA do dono,
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
-                       "saldo_negativo_persistente", "rendimento_desproporcional"}
+                       "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo"}
 
