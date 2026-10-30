@@ -694,8 +694,8 @@
     }
   },
   "Dashboard_Financeiro_PadreCarvalho.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
+    "lastKey": "ago26",
+    "lastMonth": "Ago/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -712,15 +712,16 @@
       "abr26",
       "mai26",
       "jun26",
-      "jul26"
+      "jul26",
+      "ago26"
     ],
     "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 140116.91,
-      "tCred": 88723.49,
-      "tDeb": 92159.66,
+      "tit": "Agosto / 2026",
+      "tAtual": 143240.94,
+      "tCred": 88151.78,
+      "tDeb": 85027.75,
       "inad": 0,
-      "tAnt": 143553.08
+      "tAnt": 140116.91
     }
   },
   "Dashboard_Financeiro_Patricia.html": {
