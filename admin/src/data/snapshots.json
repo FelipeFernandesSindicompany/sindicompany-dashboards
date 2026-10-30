@@ -756,8 +756,8 @@
     }
   },
   "Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -772,17 +772,15 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26",
-      "jul26",
-      "ago26"
+      "jun26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
+      "tit": "Junho / 2026",
+      "tAtual": 67811.92,
+      "tCred": 152194.86,
+      "tDeb": 135393.73,
       "inad": 0,
-      "tAnt": 0
+      "tAnt": 51010.79
     }
   },
   "Dashboard_Financeiro_PortSaintTropez.html": {
@@ -874,8 +872,8 @@
     }
   },
   "Dashboard_Financeiro_TopNine.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "jun26",
+    "lastMonth": "Jun/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -891,17 +889,15 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26",
-      "jul26",
-      "ago26"
+      "jun26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
+      "tit": "Junho / 2026",
+      "tAtual": 31899.18,
+      "tCred": 25903.07,
+      "tDeb": 26676.94,
       "inad": 0,
-      "tAnt": 0
+      "tAnt": 32673.05
     }
   },
   "Dashboard_Financeiro_UpperItaim.html": {
