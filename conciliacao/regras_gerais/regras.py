@@ -494,6 +494,12 @@ def regra_movimento_entre_contas(dados: DadosRegras, cont: _Contador, cfg: Optio
         dif = round(c.saldo_anterior + c.creditos - c.debitos - c.saldo_atual, 2)
         if abs(dif) < max(minimo, _CENTAVO):
             continue
+        # transferência entre contas do próprio condomínio, com a outra ponta no arquivo (a conta que recebe traz "Transferido da ..." do mesmo
+        # valor): movimento documentado nas duas contas, sem resíduo — só entra se o condomínio pedir (regras.movimento_entre_contas.ignorar_pareadas)
+        if cfg.get("ignorar_pareadas") and dif > 0 and any(
+                r.tipo == "transferencia" and r.valor > 0 and not _mesma_conta(r.conta, c.nome) and abs(r.valor - dif) <= 0.011
+                for r in dados.receitas):
+            continue
         # créditos da conta que NÃO são receita (transferência recebida, resgate de aplicação): o arquivo os soma em "créditos"
         entradas = [{"descricao": r.descricao.split("[")[0].strip(), "valor": round(r.valor, 2)} for r in dados.receitas
                     if r.tipo == "transferencia" and _mesma_conta(r.conta, c.nome) and r.valor > 0]
