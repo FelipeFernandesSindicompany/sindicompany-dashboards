@@ -574,6 +574,27 @@ def inserir_evidencias_vetoriais(destino_pdf: Path, achados: list[dict]) -> None
     temp_path.replace(destino_pdf)
 
 
+_PDF_BUSCA: dict = {}
+
+
+def _pdf_para_busca(pdf_origem) -> Path:
+    """PDF onde procurar o texto dos prints. Balancete escaneado (sem camada de texto) lido por OCR: o extrator grava, ao lado do cache do
+    OCR, uma cópia com texto invisível sobre as páginas lidas (extratores/cap_d_antibes.py); o print continua sendo recortado do original."""
+    chave = str(pdf_origem)
+    if chave not in _PDF_BUSCA:
+        achado = Path(pdf_origem)
+        try:
+            from conciliacao import ocr
+
+            alvo = ocr._CACHE_DIR / f"{ocr._impressao_arquivo(Path(pdf_origem))}.busca.pdf"
+            if alvo.exists():
+                achado = alvo
+        except Exception:
+            pass
+        _PDF_BUSCA[chave] = achado
+    return _PDF_BUSCA[chave]
+
+
 def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
     """
     Evidência ADICIONAL de um achado (um achado pode ter várias, cada uma
@@ -603,7 +624,7 @@ def preparar_evidencia_extra(pdf_origem: Path, spec: dict) -> dict | None:
     bbox = spec.get("bbox")
     try:
         if spec.get("buscar"):
-            with pdf_plumber_aberto(pdf_origem) as pdf:
+            with pdf_plumber_aberto(_pdf_para_busca(pdf_origem)) as pdf:
                 if not (1 <= pagina <= len(pdf.pages)):
                     return None
                 page = pdf.pages[pagina - 1]

@@ -237,7 +237,7 @@ def analisar(f, condos, por_nome, com_origem):
         for nome, ant, cre, deb, atu in contas:
             dif = round(ant + cre - deb - atu, 2)
             if abs(dif) > 0.011:
-                tem_mov = "fora das despesas e receitas" in texto
+                tem_mov = "fora das despesas e receitas" in " ".join(texto.split())      # o título do item quebra de linha no PDF
                 add("INFO" if tem_mov else "MÉDIA", "Fechamento",
                     f"conta {nome}: anterior+créditos−débitos ≠ atual (diferença {dif:,.2f})" + (" — já perguntado no relatório (movimento entre contas)" if tem_mov else " — sem a pergunta de movimento entre contas"))
         mcons = re.search(r"O saldo consolidado do condomínio encerrou [^\n]*?em (R\$ -?[\d.]+,\d{2})", texto.replace("\n", " "))

@@ -95,6 +95,17 @@ def _num(s: str) -> float:
         return 0.0
 
 
+def _num_s(s: str) -> float:
+    """Como _num, mas PRESERVA o sinal (saldo de conta pode ser negativo: '-14.078,69')."""
+    if not s:
+        return 0.0
+    s = re.sub(r"[^\d,.\-]", "", str(s).strip()).replace(".", "").replace(",", ".")
+    try:
+        return float(s)
+    except Exception:
+        return 0.0
+
+
 def _e_categoria(linha: str) -> str | None:
     """
     Retorna o nome canônico da categoria se a linha for um cabeçalho de
@@ -137,19 +148,19 @@ class AdapterDatadigitusPDF(AdapterBase):
         # Linha: "TOTAL GERAL  saldo_ant  creditos  debitos  saldo_atual"
         # Os débitos podem ser precedidos de "-" no texto; _num() aplica abs()
         m_total = re.search(
-            r"TOTAL\s+GERAL\s+([\d.,]+)\s+([\d.,]+)\s+-?([\d.,]+)\s+([\d.,]+)",
+            r"TOTAL\s+GERAL\s+(-?[\d.,]+)\s+([\d.,]+)\s+-?([\d.,]+)\s+(-?[\d.,]+)",
             texto_total, re.IGNORECASE
         )
         if m_total:
-            dados.saldo_anterior    = _num(m_total.group(1))
+            dados.saldo_anterior    = _num_s(m_total.group(1))
             dados.receita_realizada = _num(m_total.group(2))   # créditos totais
             dados.despesa_total     = _num(m_total.group(3))   # débitos totais
-            dados.saldo_atual       = _num(m_total.group(4))
+            dados.saldo_atual       = _num_s(m_total.group(4))
 
         # ── 2. Contas individuais do Resumo Financeiro ───────────────────────
         # "CONTA NOME...  saldo_ant  creditos  debitos  saldo_atual"
         for m in re.finditer(
-            r"^(CONTA\s+[^\n]+?)\s+([\d.,]+)\s+([\d.,]+)\s+-?([\d.,]+)\s+([\d.,]+)",
+            r"^(CONTA\s+[^\n]+?)\s+(-?[\d.,]+)\s+([\d.,]+)\s+-?([\d.,]+)\s+(-?[\d.,]+)",
             texto_total, re.MULTILINE
         ):
             nome_conta = m.group(1).strip()
@@ -158,10 +169,10 @@ class AdapterDatadigitusPDF(AdapterBase):
             dados.contas_detalhe.append({
                 "nome":       nome_conta,
                 "nome_curto": nome_curto,
-                "saldo_ant":  _num(m.group(2)),
+                "saldo_ant":  _num_s(m.group(2)),
                 "creditos":   _num(m.group(3)),
                 "debitos":    _num(m.group(4)),
-                "saldo_atual": _num(m.group(5)),
+                "saldo_atual": _num_s(m.group(5)),
             })
 
         # Classifica contas para banco_cc / banco_cdb / banco_priv

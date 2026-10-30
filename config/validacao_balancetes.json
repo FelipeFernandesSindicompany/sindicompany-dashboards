@@ -65,7 +65,10 @@
       }
     },
     "cap_d_antibes": {
-      "aviso_escopo": "O arquivo enviado não traz os anexos dos lançamentos (comprovantes e notas fiscais): é um resumo de poucas páginas. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
+      "aviso_escopo_por_extensao": {
+        ".pdf": "O arquivo enviado não traz os anexos dos lançamentos (comprovantes e notas fiscais): é um resumo de poucas páginas. Por isso esta validação não conferiu comprovantes nem notas fiscais, apenas os valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."
+      },
+      "aviso_escopo_pdf_escaneado": "O balancete foi enviado como PDF escaneado (impressão em imagem, sem texto). Os números do Resumo Financeiro, do Demonstrativo Financeiro e do Demonstrativo de Despesas foram lidos por OCR e conferidos pelas somas que o próprio balancete traz (subtotais por grupo, total por conta, total geral das despesas e saldos de cada conta); nesse layout os lançamentos não trazem data. Os comprovantes, as notas fiscais e os extratos anexados ao PDF não foram conferidos item a item por esta validação. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Cap D Antibes",
       "regras": {
         "movimento_entre_contas": {},

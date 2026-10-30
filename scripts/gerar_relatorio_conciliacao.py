@@ -843,6 +843,22 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     return version_dir
 
 
+def _pdf_sem_texto(pdf_origem) -> bool:
+    """O PDF do balancete é uma impressão em imagem (nenhuma das primeiras páginas tem texto)?"""
+    try:
+        if not pdf_origem or Path(pdf_origem).suffix.lower() != ".pdf":
+            return False
+        import fitz
+
+        doc = fitz.open(str(pdf_origem))
+        try:
+            return sum(len(doc[i].get_text().strip()) for i in range(min(len(doc), 12))) <= 200
+        finally:
+            doc.close()
+    except Exception:
+        return False
+
+
 def _aviso_escopo_sem_comprovantes(registros: list) -> str | None:
     """Regra geral (decisão do dono): se o arquivo lista despesas mas NENHUM comprovante veio anexado, o relatório sempre avisa que os
     comprovantes não foram validados porque a administradora não enviou o arquivo com eles."""
@@ -929,6 +945,16 @@ def etapa_render(condo: dict, mes: str) -> Path:
     # pasta do projeto onde ficam os arquivos dos meses (o arquivo "de origem" pode ser uma cópia em outra pasta): print do mês anterior sai daqui
     _pasta_meses = pasta_prestacao.pasta_do_condominio(condo) or (pdf_origem.parent if pdf_origem else Path("."))
 
+    def _arquivo_da_pasta(nome: str) -> Path:
+        """Arquivo de outro mês pelo nome: na raiz da pasta do condomínio ou, se os meses ficam em subpastas por ano (Cap D'Antibes: 2025/, 2026/), nelas."""
+        direto = _pasta_meses / nome
+        if direto.exists():
+            return direto
+        try:
+            return next(iter(sorted(_pasta_meses.rglob(nome))), direto)
+        except OSError:
+            return direto
+
     def _evidencias_planilha(achado, registro, origem=None) -> list[dict]:
         # Prestação em planilha: recorta as linhas do próprio arquivo (com nº da linha e letra da coluna). XLSX: planos(); XLS (Lello/Auxiliadora): planos_xls().
         # `origem`: outra planilha da pasta (ex.: o mês anterior em planilha quando o mês atual veio em PDF); por padrão, o arquivo de origem.
@@ -938,7 +964,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         planos = evidencia_planilha.planos_xls(origem, achado, registro, _pasta_meses) if eh_xls else evidencia_planilha.planos(origem, achado, registro)
         for k, plano in enumerate(planos, start=1):
             destino = version_dir / "evidencias_planilha" / f"{achado.id}_{k}.pdf"
-            arq_plano = (_pasta_meses / plano["arquivo"]) if plano.get("arquivo") else origem   # (mês anterior: outro arquivo da mesma pasta)
+            arq_plano = _arquivo_da_pasta(plano["arquivo"]) if plano.get("arquivo") else origem   # (mês anterior: outro arquivo da mesma pasta)
             if not arq_plano.exists():
                 continue
             if plano.get("dados") is not None:
@@ -1026,7 +1052,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         specs = _specs_extras.get(chave) or specs_auto or []
         def _prep(sp):
             if sp.get("arquivo"):                       # print de outro arquivo da mesma pasta (ex.: mês anterior)
-                alt = _pasta_meses / sp["arquivo"]
+                alt = _arquivo_da_pasta(sp["arquivo"])
                 return render.preparar_evidencia_extra(alt, {k: v for k, v in sp.items() if k != "arquivo"}) if alt.exists() else None
             return render.preparar_evidencia_extra(pdf_origem, sp)
         evs = [_prep(s) for s in specs]
@@ -1034,7 +1060,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         if not evs and achado is not None and (achado.detalhes or {}).get("verificacao") == "recorrente_ausente" and chave not in _specs_extras:
             # mês atual em PDF e o lançamento ausente é do mês anterior, que veio em PLANILHA (ex.: Patrícia ago/2026 .xls -> set/2026 .pdf)
             for nome_arq in sorted({x.get("arquivo") for x in ((achado.detalhes or {}).get("ausentes") or []) if x.get("arquivo")}):
-                prev = _pasta_meses / nome_arq
+                prev = _arquivo_da_pasta(nome_arq)
                 if prev.suffix.lower() in (".xlsx", ".xlsm", ".xls") and prev.exists():
                     try:
                         evs += _evidencias_planilha(achado, registro, prev)
@@ -1297,6 +1323,8 @@ def etapa_render(condo: dict, mes: str) -> Path:
         analise=analise,
         categorias_novas=categorias_novas_lista,
         aviso_escopo=(condo.get("aviso_escopo")
+                      # PDF escaneado (sem camada de texto): números lidos por OCR e conferidos pelas somas do próprio balancete
+                      or (condo.get("aviso_escopo_pdf_escaneado") if _pdf_sem_texto(pdf_origem) else None)
                       # aviso por extensão = "comprovantes não enviados": só vale quando NENHUM comprovante veio no arquivo (o PDF completo do Elo
                       # em jul/2026 traz 449 comprovantes; o resumo de 4 páginas de ago/2026 não)
                       or ((condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "")
