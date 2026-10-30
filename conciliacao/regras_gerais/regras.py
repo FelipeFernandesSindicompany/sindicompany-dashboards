@@ -562,7 +562,8 @@ def regra_rendimento(dados: DadosRegras, anterior: Optional[DadosRegras], cont: 
     def _ignorada(nome):
         return any(_mesma_conta(nome, n) for n in ignorar)
 
-    contas = [c for c in dados.contas if not _ignorada(c.nome)]
+    # conta cujo arquivo não discrimina o que entrou (ex.: "RECEBIMENTOS" numa linha só, no resumo escaneado): não dá para afirmar que não rendeu
+    contas = [c for c in dados.contas if not _ignorada(c.nome) and not getattr(c, "rendimento_nao_informado", False)]
     if anterior:
         obrigatorias += [c.nome for c in anterior.contas if c.rendimento > _CENTAVO and not _ignorada(c.nome)]
 

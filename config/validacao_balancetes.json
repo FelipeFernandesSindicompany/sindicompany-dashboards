@@ -92,6 +92,7 @@
       }
     },
     "cinque_terre_residenza": {
+      "aviso_escopo_pdf_escaneado": "O balancete de setembro/2026 foi enviado como PDF escaneado de 5 páginas (impressão em imagem, sem texto): Demonstrativo de Despesas, Posição Financeira por conta, Conciliação Bancária e Resumo Financeiro Contábil. Os números foram lidos por OCR e conferidos pelas somas que o próprio balancete traz (subtotais, total por conta, total das despesas, saldos e conciliação bancária). O arquivo não traz o Demonstrativo de Receitas por unidade, o Resumo de Emissão (previsto x realizado), a inadimplência, comprovantes nem notas fiscais, por isso esta validação não conferiu esses pontos. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Cinque Terre",
       "regras": {
         "rendimento": {
@@ -101,6 +102,9 @@
           ]
         },
         "movimento_entre_contas": {},
+        "subcontas": {
+          "comparar_entre_formatos": true
+        },
         "gestor": {}
       }
     },

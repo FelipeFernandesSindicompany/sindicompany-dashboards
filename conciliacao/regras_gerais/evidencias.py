@@ -38,7 +38,7 @@ def _spec_linha_listagem(i: dict, legenda: str) -> Optional[dict]:
     """Print da LINHA da listagem "Despesas por categoria" (prestação resumida do Club Park, local "W078A, página N"): a linha vem em várias
     colunas e quebras de linha, então não há texto corrido para buscar — o recorte e o destaque usam a posição registrada pelo extrator."""
     bbox = i.get("bbox")
-    if not (bbox and i.get("pagina") and str(i.get("local") or "").startswith("W078A")):
+    if not (bbox and i.get("pagina") and str(i.get("local") or "").startswith(("W078A", "OCR"))):      # OCR: balancete escaneado (posição lida do OCR)
         return None
     x0, top, x1, bottom = bbox
     return {"pagina": i["pagina"], "legenda": legenda, "buscar": "", "bbox": [max(0.0, x0 - 4), max(0.0, top - 1), x1 + 4, bottom + 1],
