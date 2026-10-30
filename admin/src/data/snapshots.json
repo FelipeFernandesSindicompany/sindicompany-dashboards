@@ -31,8 +31,8 @@
     }
   },
   "Dashboard_Financeiro_Baturite.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
+    "lastKey": "ago26",
+    "lastMonth": "Ago/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -49,15 +49,16 @@
       "abr26",
       "mai26",
       "jun26",
-      "jul26"
+      "jul26",
+      "ago26"
     ],
     "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 81397.91,
-      "tCred": 29430.53,
-      "tDeb": 24719.26,
-      "inad": 0,
-      "tAnt": 76686.64
+      "tit": "Agosto / 2026",
+      "tAtual": 76132.66,
+      "tCred": 20865.39,
+      "tDeb": 26130.64,
+      "inad": 2041.4,
+      "tAnt": 81397.91
     }
   },
   "Dashboard_Financeiro_BlueSky.html": {
