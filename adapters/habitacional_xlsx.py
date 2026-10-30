@@ -426,3 +426,333 @@ class AdapterHabitacionalXLSX(AdapterBase):
 
         wb.close()
         return dados
+
+    def ler_pdf(self, caminho: Path, mes_referencia: str) -> DadosFinanceiros:
+        """Lê balancete no formato ContasData PDF (administradoras GK/Habitacional)."""
+        import pdfplumber
+
+        dados = DadosFinanceiros(
+            condominio_id=self.config.get("id", ""),
+            mes_referencia=mes_referencia,
+        )
+
+        parser_cfg = self.config.get("parser_config", {})
+        cat_map_cfg = parser_cfg.get("cat_map", {})
+        banco_from_contas = parser_cfg.get("banco_from_contas", False)
+
+        _NUM = r"-?(?:\d{1,3}\.)*\d+,\d{2}"
+        _ROW4 = re.compile(
+            r"^(.+?)\s+(-?(?:\d{1,3}\.)*\d+,\d{2})\s+(-?(?:\d{1,3}\.)*\d+,\d{2})\s+"
+            r"(-?(?:\d{1,3}\.)*\d+,\d{2})\s+(-?(?:\d{1,3}\.)*\d+,\d{2})\s*$"
+        )
+
+        def _n(s):
+            s = re.sub(r"[^\d,\-]", "", str(s).strip()).replace(",", ".")
+            try: return float(s)
+            except: return 0.0
+
+        if "-" in mes_referencia:
+            ano_ref, mes_ref = mes_referencia[:4], mes_referencia[5:7]
+            fim_mes_pat = f"/{mes_ref}/{ano_ref}"
+            ano_i, mes_i = int(ano_ref), int(mes_ref)
+            prev_ano = ano_i - 1 if mes_i == 1 else ano_i
+            prev_mes = 12 if mes_i == 1 else mes_i - 1
+            prev_fim_pat = f"/{prev_mes:02d}/{prev_ano}"
+        else:
+            fim_mes_pat = prev_fim_pat = ""
+
+        with pdfplumber.open(str(caminho)) as pdf:
+            linhas_pdf = []
+            for page in pdf.pages[:25]:
+                t = page.extract_text() or ""
+                linhas_pdf.extend(t.split("\n"))
+
+        texto_total = "\n".join(linhas_pdf)
+
+        # ── 1. Resumo Financeiro Contábil ────────────────────────────────────────
+        contas_bal = []
+        total_row = {}
+        in_resumo = False
+
+        for line in linhas_pdf:
+            ls = line.strip()
+            if not ls:
+                continue
+            if re.search(r"RESUMO FINANCEIRO CONT", ls, re.IGNORECASE):
+                in_resumo = True
+                continue
+            if not in_resumo:
+                continue
+            # Algumas linhas da tabela terminam com "ContasData" (quebra de página)
+            # — remover o sufixo antes de tentar o match de 4 colunas.
+            ls_clean = re.sub(r"\s*ContasData\s*$", "", ls).strip()
+            m = _ROW4.match(ls_clean)
+            if m:
+                nome = m.group(1).strip()
+                ant, cred, deb, sal = (_n(m.group(i)) for i in range(2, 6))
+                if re.match(r"^TOTAL\b", nome, re.IGNORECASE):
+                    total_row = {"ant": ant, "cred": cred, "deb": deb, "sal": sal}
+                else:
+                    contas_bal.append({"nome": nome, "ant": ant, "cred": cred, "deb": deb, "sal": sal})
+            elif re.search(r"Voltar|ContasData|Panel|Doctos|^Relat", ls, re.IGNORECASE):
+                in_resumo = False
+
+        if total_row:
+            dados.saldo_anterior = total_row["ant"]
+            dados.receita_realizada = total_row["cred"]
+            dados.despesa_total = total_row["deb"]
+            dados.saldo_atual = total_row["sal"]
+
+        dados.contas_detalhe = [
+            {"nome": c["nome"], "saldo_ant": c["ant"], "creditos": c["cred"],
+             "debitos": c["deb"], "saldo_atual": c["sal"]}
+            for c in contas_bal
+        ]
+
+        # ── 2. Previsto / Realizado ORDINÁRIA ────────────────────────────────────
+        prev_val = real_val = 0.0
+
+        # Formato Geral (Splendor/GK com "Resumo de Emissões Geral")
+        m_geral = re.search(
+            r"Resumo de Emiss.{1,5}es Geral\s*Previsto\s*Realizado\s*\n(.+?)"
+            r"(?=Posi.{1,5}o de Devedores|ContasData|\Z)",
+            texto_total, re.IGNORECASE | re.DOTALL
+        )
+        if m_geral:
+            for line in m_geral.group(1).split("\n"):
+                ls = line.strip()
+                m_ord = re.search(
+                    r"ORDIN.{0,10}\s+EMISS.{0,20}\s+(" + _NUM + r")\s+(" + _NUM + r")",
+                    ls, re.IGNORECASE
+                )
+                if m_ord:
+                    prev_val = _n(m_ord.group(1))
+                    real_val = _n(m_ord.group(2))
+                    break
+
+        # Formato individual (seção por conta)
+        if prev_val == 0:
+            in_ord = in_em = False
+            for line in linhas_pdf:
+                ls = line.strip()
+                ls_u = ls.upper()
+                if not in_ord:
+                    if re.match(r"^ORDIN[AÁ]RIA\s*$", ls_u):
+                        in_ord = True
+                        in_em = False
+                    continue
+                if re.match(
+                    r"^(FUNDO|OBRAS|MELHORIAS|SAL[AÃ]O|CAIXINHA|F\.|SEGURAN|FACHADA|CONSUMO|APLIC|TARIFAS)",
+                    ls_u
+                ):
+                    in_ord = False
+                    continue
+                if re.search(r"Resumo de Emiss", ls, re.IGNORECASE):
+                    in_em = True
+                    continue
+                if not in_em:
+                    continue
+                ls_c = re.sub(r"\s*ContasData\s*$", "", ls).strip()
+                m2 = re.match(
+                    r"^(-?(?:\d{1,3}\.)*\d+,\d{2})\s+(-?(?:\d{1,3}\.)*\d+,\d{2})\s*$", ls_c
+                )
+                if m2:
+                    prev_val = _n(m2.group(1))
+                    real_val = _n(m2.group(2))
+                    break
+
+        dados.receita_prevista = prev_val
+        dados.receita_cotas = real_val
+
+        # ── 3+4. Inad e InadProc (apenas dentro de Resumo de Emissões) ───────────
+        inad = inadp = 0.0
+
+        if fim_mes_pat or prev_fim_pat:
+            in_em = after_tot = False
+            for line in linhas_pdf:
+                ls = line.strip()
+                if not ls or ls in ("ContasData", "Voltar ao Índice"):
+                    continue
+                if re.search(r"Resumo de Emiss", ls, re.IGNORECASE):
+                    in_em = True
+                    after_tot = False
+                    continue
+                if in_em and re.search(
+                    r"Posi[cç][aã]o\s+(Financeira|de\s+Devedor)", ls, re.IGNORECASE
+                ):
+                    in_em = False
+                    after_tot = False
+                    continue
+                if not in_em:
+                    continue
+                ls_c = re.sub(r"\s*ContasData\s*$", "", ls).strip()
+                m2 = re.match(
+                    r"^(-?(?:\d{1,3}\.)*\d+,\d{2})\s+(-?(?:\d{1,3}\.)*\d+,\d{2})\s*$", ls_c
+                )
+                if m2:
+                    after_tot = True
+                    continue
+                if after_tot:
+                    if fim_mes_pat and fim_mes_pat in ls:
+                        nums = re.findall(_NUM, ls)
+                        if len(nums) == 1:
+                            inad += _n(nums[0])
+                    after_tot = False
+                else:
+                    if prev_fim_pat and prev_fim_pat in ls:
+                        nums = re.findall(_NUM, ls)
+                        if len(nums) >= 2:
+                            inadp += _n(nums[1])
+
+        if inad == 0:
+            m_dev = re.search(r"Saldo atual\s*:\s*(" + _NUM + r")", texto_total, re.IGNORECASE)
+            if m_dev:
+                inad = _n(m_dev.group(1))
+        if inadp == 0:
+            m_rec = re.search(r"Total recebido\s*:?\s*(" + _NUM + r")", texto_total, re.IGNORECASE)
+            if m_rec:
+                inadp = _n(m_rec.group(1))
+
+        dados.inadimplencia_valor = inad
+        dados.inadimplencia_recebida = inadp
+
+        # ── 5. Banco ──────────────────────────────────────────────────────────────
+        banco_cc = banco_cdb = banco_priv = 0.0
+        banco_ok = False
+
+        _CDB_K = {"FUNDO DE RESERVA", "FUNDO RESERVA", "CDB", "POUPAN", "BENFEIT",
+                  "APLICACAO FR", "APLICACOES FINANCEIRAS", "RESERVA"}
+
+        if not banco_from_contas:
+            # Resumo Financeiro Bancário (GK Administração)
+            m_banc = re.search(
+                r"Resumo Financeiro Banc.{1,15}\n(.+?)(?=Resumo Financeiro Cont|\Z)",
+                texto_total, re.IGNORECASE | re.DOTALL
+            )
+            if m_banc:
+                for line in m_banc.group(1).split("\n"):
+                    ls = line.strip()
+                    m = _ROW4.match(ls)
+                    if not m:
+                        continue
+                    nome = m.group(1).strip().upper()
+                    sal = _n(m.group(5))
+                    if "TOTAL" in nome or sal == 0:
+                        continue
+                    if "C/C" in nome or ("CORRENTE" in nome and "PRIVILEGE" not in nome):
+                        banco_cc += sal
+                    elif "CDB" in nome:
+                        banco_cdb += sal
+                    else:
+                        banco_priv += sal
+                if banco_cc + banco_cdb + banco_priv != 0:
+                    banco_ok = True
+
+            # DEMONSTRATIVO CONCILIAÇÃO BANCÁRIA (Port Saint Tropez / Verti)
+            if not banco_ok:
+                m_conc = re.search(
+                    r"DEMONSTRATIVO CONCILIA.{1,10}O BANC.{1,5}RIA\n(.+?)(?=ContasData|\n\n|\Z)",
+                    texto_total, re.IGNORECASE | re.DOTALL
+                )
+                if m_conc:
+                    for line in m_conc.group(1).split("\n"):
+                        ls = line.strip()
+                        ls_u = ls.upper()
+                        if not ls:
+                            continue
+                        m_v = re.search(r"(" + _NUM + r")\s*$", ls)
+                        if not m_v:
+                            continue
+                        v = _n(m_v.group(1))
+                        if v <= 0 or "TOTAL" in ls_u or "VALOR TOTAL" in ls_u:
+                            continue
+                        if "CORRENTE" in ls_u and "PRIVILEGE" not in ls_u:
+                            banco_cc += v
+                        elif "PRIVILEGE" in ls_u:
+                            banco_priv += v
+                        elif "CDB" in ls_u:
+                            banco_cdb += v
+                        else:
+                            banco_priv += v
+                    if banco_cc + banco_cdb + banco_priv != 0:
+                        banco_ok = True
+
+        # Fallback: usa saldos contábeis das contas
+        if not banco_ok and contas_bal:
+            for c in contas_bal:
+                nome_u = c["nome"].upper()
+                if "ORDIN" in nome_u:
+                    banco_cc += c["sal"]
+                elif any(k in nome_u for k in _CDB_K):
+                    banco_cdb += c["sal"]
+                else:
+                    banco_priv += c["sal"]
+
+        dados.banco_cc = banco_cc
+        dados.banco_cdb = banco_cdb
+        dados.banco_priv = banco_priv
+
+        # ── 6. Categorias (Posição Financeira da conta ORDINÁRIA) ────────────────
+        _CREDIT_RE = re.compile(
+            r"COTAS\s+(DO|EM|ANTECIP|ABERTO)|COTA\s+DO\s+M[EÊ]S|"
+            r"RECEITA[S]?(\s+DIVERSA)?|RENDIMENTO|ACORDOS\s+RECEB|"
+            r"EMISS[AÃ]O\s+DO\s+PER[IÍ]ODO|ANTECIPA[CÇ][OÕ]ES|"
+            r"TRANSFER[EÊ]NCIA\s+RECEB|"
+            r"SALDO\s+(FINAL|INIC|ATUAL|ANTERIOR|CONSOLIDADO)|"
+            r"^TOTAL\s*(GERAL|DO\s*PERIOD|CREDITO|DEB|RECEITA)?",
+            re.IGNORECASE
+        )
+
+        in_ord2 = in_pos = False
+        cats_raw = {}
+
+        for line in linhas_pdf:
+            ls = line.strip()
+            if not ls:
+                continue
+
+            if not in_ord2:
+                if re.match(r"^ORDIN[AÁ]RIA\s*$", ls, re.IGNORECASE):
+                    in_ord2 = True
+                    in_pos = False
+                continue
+
+            if re.match(
+                r"^(FUNDO|OBRAS|MELHORIAS|SAL[AÃ]O|CAIXINHA|F\.|SEGURAN|FACHADA|CONSUMO|APLIC|TARIFAS)",
+                ls, re.IGNORECASE
+            ):
+                in_ord2 = False
+                in_pos = False
+                continue
+
+            if re.search(r"Posi[cç][aã]o\s+Financeira", ls, re.IGNORECASE):
+                in_pos = True
+                continue
+
+            if not in_pos:
+                continue
+
+            if re.search(r"Saldo\s+Final|Posi[cç][aã]o\s+de\s+Devedor", ls, re.IGNORECASE):
+                in_pos = False
+                continue
+
+            nums = re.findall(_NUM, ls)
+            if len(nums) != 1:
+                continue
+
+            if _CREDIT_RE.search(ls):
+                continue
+
+            v = _n(nums[0])
+            if v <= 0:
+                continue
+
+            cat_raw = re.sub(r"\s*" + _NUM + r"\s*$", "", ls).strip()
+            if not cat_raw or len(cat_raw) < 3:
+                continue
+
+            cat_norm = cat_map_cfg.get(cat_raw, cat_raw)
+            cats_raw[cat_norm] = cats_raw.get(cat_norm, 0.0) + v
+
+        dados.categorias_despesa = cats_raw
+        return dados

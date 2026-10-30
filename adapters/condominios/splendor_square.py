@@ -1,10 +1,10 @@
 """
 Adapter específico para Splendor Square.
-Empresa gestora: lello_xls
+Empresa gestora: habitacional_xlsx (PDF ContasData desde 2026)
 """
-from adapters.lello_mhtml import AdapterLelloMHTML
+from adapters.habitacional_xlsx import AdapterHabitacionalXLSX
 
 
-class Adapter(AdapterLelloMHTML):
+class Adapter(AdapterHabitacionalXLSX):
     """Adapter de Splendor Square — herda do genérico; override aqui quando necessário."""
     pass

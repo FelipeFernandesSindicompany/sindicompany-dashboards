@@ -911,7 +911,7 @@
     {
       "id": "splendor_square",
       "nome": "Splendor Square",
-      "empresa_gestora": "lello_xls",
+      "empresa_gestora": "habitacional_xlsx",
       "pasta_dados": "data/splendor_square",
       "html_file": "Dashboard_Financeiro_SplendorSquare.html",
       "ativo": true,

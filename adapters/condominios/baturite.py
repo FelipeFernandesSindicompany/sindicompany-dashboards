@@ -90,16 +90,17 @@ class Adapter(AdapterBase):
             })
 
         # ── 2. Classificação bancária ─────────────────────────────────────
-        # cc = ORDINÁRIA, cdb = FUNDO DE RESERVA, priv = todas as demais
-        # contas (Obras/Melhorias + Aplicações) — mesma convenção usada em
-        # outros condomínios ContasData (ex.: Padre Carvalho).
+        # cc = ORDINÁRIA, cdb = FUNDO DE RESERVA / APLICACAO FR / CDB,
+        # priv = demais contas.
+        _CDB_K = {"FUNDO DE RESERVA", "FUNDO RESERVA", "CDB", "POUPAN",
+                  "BENFEIT", "APLICACAO FR", "APLICACOES FINANCEIRAS", "RESERVA"}
         for conta in dados.contas_detalhe:
             n = conta["nome"].upper()
             sa = conta["saldo_atual"]
             if "ORDIN" in n:
                 dados.banco_cc = sa
-            elif "FUNDO DE RESERVA" in n:
-                dados.banco_cdb = sa
+            elif any(k in n for k in _CDB_K):
+                dados.banco_cdb += sa
             else:
                 dados.banco_priv += sa
 
