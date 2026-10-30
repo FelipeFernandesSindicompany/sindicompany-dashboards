@@ -240,10 +240,20 @@ def analisar(f, condos, por_nome, com_origem):
                 tem_mov = "fora das despesas e receitas" in " ".join(texto.split())      # o título do item quebra de linha no PDF
                 # condomínio que decidiu não apontar transferência entre as próprias contas quando a outra ponta está no arquivo
                 pareadas = bool(condo and (((config_validacao.aplicar(condo).get("regras") or {}).get("movimento_entre_contas")) or {}).get("ignorar_pareadas"))
-                add("INFO" if (tem_mov or pareadas) else "MÉDIA", "Fechamento",
+                # movimento entre contas que o responsável decidiu retirar do relatório deste mês (config/dispensas_validacao/<condomínio>/<AAAA-MM>.json)
+                retirado = False
+                try:
+                    arq_d = Path(__file__).resolve().parents[1] / "config" / "dispensas_validacao" / condo["id"] / f"{aaaa}-{mm:02d}.json"
+                    if arq_d.exists():
+                        retirado = any(d.get("tipo") == "movimento_entre_contas" and not d.get("reescrever") and not d.get("ajuste_texto")
+                                       and abs(d["valor_total"] - abs(dif)) <= 0.011 for d in json.load(open(arq_d, encoding="utf-8")))
+                except Exception:
+                    pass
+                add("INFO" if (tem_mov or pareadas or retirado) else "MÉDIA", "Fechamento",
                     f"conta {nome}: anterior+créditos−débitos ≠ atual (diferença {dif:,.2f})"
                     + (" — já perguntado no relatório (movimento entre contas)" if tem_mov else
                        " — transferência entre contas do condomínio com a outra ponta no arquivo (não apontada, por decisão)" if pareadas else
+                       " — movimento retirado do relatório por decisão do responsável" if retirado else
                        " — sem a pergunta de movimento entre contas"))
         mcons = re.search(r"O saldo consolidado do condomínio encerrou [^\n]*?em (R\$ -?[\d.]+,\d{2})", texto.replace("\n", " "))
         if mcons:

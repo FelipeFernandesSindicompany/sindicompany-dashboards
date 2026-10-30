@@ -16,10 +16,26 @@
   {
     "tipo": "movimento_entre_contas",
     "valor_total": 85480.49,
+    "motivo": "movimento de R$ 85.480,49 do FUNDO DE RESERVA (transferência para o FUNDO FACHADA) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  },
+  {
+    "verificacao": "uso_fundo",
+    "valor_total": 78229.37,
+    "motivo": "despesas pagas direto do FUNDO DE RESERVA (R$ 78.229,37) retiradas do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 74126.25,
     "reescrever": {
-      "o_que_verificar": "A retirada de R$ 85.480,49 dos recursos do Fundo de Reserva foi aprovada (assembleia/conselho)?"
+      "titulo": "Lançamento pago por outra conta que no mês anterior — COLORCRYL MANUTENCAO E CONSERVACAO PRESTACAO DE SERVICOS (R$ 74.126,25)",
+      "paragrafo": "O lançamento de \"COLORCRYL MANUTENCAO E CONSERVACAO PRESTACAO DE SERVICOS\" (R$ 74.126,25) foi pago neste mês pelo FUNDO DE RESERVA; no mês anterior (agosto/2026) esta despesa foi paga pelo FUNDO FACHADA.",
+      "o_que_verificar": "Por que a despesa passou a ser paga pelo Fundo de Reserva, e não mais pelo Fundo Fachada? A mudança foi aprovada (assembleia/conselho)?"
     },
-    "motivo": "pergunta ajustada por decisão do responsável: o que se quer saber é se a retirada dos recursos do Fundo de Reserva foi aprovada",
+    "motivo": "texto corrigido por decisão do responsável: em agosto a despesa saiu do Fundo Fachada e em setembro saiu do Fundo de Reserva (não é mudança de subconta dentro da mesma conta)",
     "decidido_por": "responsável pela validação",
     "data": "2026-10-30"
   }
