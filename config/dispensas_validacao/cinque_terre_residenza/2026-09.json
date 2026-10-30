@@ -1,0 +1,26 @@
+[
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -324.04,
+    "motivo": "receita negativa (RESSARCIMENTO, R$ -324,04) da ORDINARIA retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 149816.72,
+    "motivo": "despesas acima do histórico do fornecedor (11 lançamentos, R$ 149.816,72) retiradas do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  },
+  {
+    "tipo": "movimento_entre_contas",
+    "valor_total": 85480.49,
+    "reescrever": {
+      "o_que_verificar": "A retirada de R$ 85.480,49 dos recursos do Fundo de Reserva foi aprovada (assembleia/conselho)?"
+    },
+    "motivo": "pergunta ajustada por decisão do responsável: o que se quer saber é se a retirada dos recursos do Fundo de Reserva foi aprovada",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  }
+]

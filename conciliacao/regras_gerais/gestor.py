@@ -306,6 +306,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
         itens = [l for l in atuais if l.valor >= cfg["fornecedor_novo_min"] and chave(l) not in historico_chaves and not _eventual(l)
                  and not any(_parecido(chave(l), h) for h in historico_chaves)
                  and not _RE_FOLHA.search(_sem_acento(l.descricao or ""))       # funcionário (salário/folha) não é fornecedor
+                 and not any(re.search(pad, _sem_acento(l.descricao or "").upper()) for pad in (cfg.get("fornecedor_novo_ignorar") or []))
                  and not _presente_em(l, lancs_hist)]
         if itens:
             ids_novo = {id(l) for l in itens}
