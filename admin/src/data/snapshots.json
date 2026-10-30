@@ -871,11 +871,11 @@
     ],
     "data": {
       "tit": "Setembro / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
+      "tAtual": 246531.55,
+      "tCred": 288367.95,
+      "tDeb": 282710.69,
       "inad": 134032.04,
-      "tAnt": 0
+      "tAnt": 240874.29
     }
   },
   "Dashboard_Financeiro_TopNine.html": {
