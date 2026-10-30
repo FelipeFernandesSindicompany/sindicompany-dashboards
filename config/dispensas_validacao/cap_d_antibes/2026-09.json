@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 1034.74,
+    "motivo": "rendimento da CONTA APLICAÇÃO /CDB ORDINÁRIA (líquido de IR) fora da proporção retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 609.81,
+    "motivo": "rendimento da CONTA APLICAÇÃO /ITAU VEST - FUNDO DE RESERVA fora da proporção retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-10-30"
+  }
+]

@@ -238,8 +238,13 @@ def analisar(f, condos, por_nome, com_origem):
             dif = round(ant + cre - deb - atu, 2)
             if abs(dif) > 0.011:
                 tem_mov = "fora das despesas e receitas" in " ".join(texto.split())      # o título do item quebra de linha no PDF
-                add("INFO" if tem_mov else "MÉDIA", "Fechamento",
-                    f"conta {nome}: anterior+créditos−débitos ≠ atual (diferença {dif:,.2f})" + (" — já perguntado no relatório (movimento entre contas)" if tem_mov else " — sem a pergunta de movimento entre contas"))
+                # condomínio que decidiu não apontar transferência entre as próprias contas quando a outra ponta está no arquivo
+                pareadas = bool(condo and (((config_validacao.aplicar(condo).get("regras") or {}).get("movimento_entre_contas")) or {}).get("ignorar_pareadas"))
+                add("INFO" if (tem_mov or pareadas) else "MÉDIA", "Fechamento",
+                    f"conta {nome}: anterior+créditos−débitos ≠ atual (diferença {dif:,.2f})"
+                    + (" — já perguntado no relatório (movimento entre contas)" if tem_mov else
+                       " — transferência entre contas do condomínio com a outra ponta no arquivo (não apontada, por decisão)" if pareadas else
+                       " — sem a pergunta de movimento entre contas"))
         mcons = re.search(r"O saldo consolidado do condomínio encerrou [^\n]*?em (R\$ -?[\d.]+,\d{2})", texto.replace("\n", " "))
         if mcons:
             cons, soma = _v(mcons.group(1)), round(sum(c[4] for c in contas), 2)
