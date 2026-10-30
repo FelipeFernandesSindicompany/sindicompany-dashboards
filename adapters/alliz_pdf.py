@@ -177,8 +177,8 @@ class AdapterAllizPDF(AdapterBase):
             if re.search(r"Saldo Anterior", l, re.IGNORECASE) and re.search(r"bitos", l):
                 continue
 
-            # Linha "Total Geral  v1  v2  v3  v4"
-            if re.match(r"Total\s+Geral", l, re.IGNORECASE):
+            # Linha "Total Geral  v1  v2  v3  v4" (pode ter prefixo de traços)
+            if re.search(r"Total\s+Geral", l, re.IGNORECASE):
                 nums = re.findall(r"-?[\d.]+,\d{2}", l)
                 if len(nums) >= 4:
                     dados.saldo_anterior    = _num(nums[0])
@@ -223,6 +223,15 @@ class AdapterAllizPDF(AdapterBase):
             if re.match(r"\d{2}/\d{2}/\d{2}", l):
                 in_resumo = False
 
+        # Deduplica por nome (o mesmo RESUMO pode aparecer em múltiplas páginas)
+        contas_vistas: set = set()
+        contas_bal_dedup: list = []
+        for c in contas_bal:
+            if c["nome"] not in contas_vistas:
+                contas_vistas.add(c["nome"])
+                contas_bal_dedup.append(c)
+        contas_bal = contas_bal_dedup
+
         dados.contas_detalhe = [
             {
                 "nome":       c["nome"],
@@ -234,6 +243,16 @@ class AdapterAllizPDF(AdapterBase):
             }
             for c in contas_bal
         ]
+
+        # Recalcula banco a partir das contas deduplicadas
+        dados.banco_cc = dados.banco_cdb = dados.banco_priv = 0.0
+        for c in contas_bal:
+            n_norm = _normalize(c["nome"])
+            if "ORDINARIA" in n_norm:
+                dados.banco_cc = c["saldo_atual"]
+                dados.receita_cotas = c["creditos"]
+            else:
+                dados.banco_cdb = round(dados.banco_cdb + c["saldo_atual"], 2)
 
         # ── 2. FAC: Multas + Juros do 5.4 RESUMO FINANCEIRO ──────────────────
         fac_total = 0.0
@@ -332,6 +351,22 @@ class AdapterAllizPDF(AdapterBase):
         )
         if m_inad:
             dados.inadimplencia_valor = _num(m_inad.group(1))
+
+        # ── 4b. inadProc: soma de "De condôminos em atraso" no 5.4 RESUMO FINANCEIRO ──
+        # Extrai apenas da primeira seção (até "RESUMO DAS CONTAS DE BALANCETE")
+        # para evitar duplicatas quando o PDF repete as seções em páginas diferentes.
+        texto_primeiro_resumo = texto_total
+        m_corte = re.search(r"RESUMO DAS CONTAS DE BALANCETE", texto_total, re.IGNORECASE)
+        if m_corte:
+            texto_primeiro_resumo = texto_total[:m_corte.start()]
+        inad_proc_total = 0.0
+        for m in re.finditer(
+            r"De cond[^e\n]{0,10}minos em atraso\s+([\d.]+,\d{2})",
+            texto_primeiro_resumo, re.IGNORECASE
+        ):
+            inad_proc_total += _num(m.group(1))
+        if inad_proc_total > 0:
+            dados.inadimplencia_recebida = round(inad_proc_total, 2)
 
         ref_rec = dados.receita_cotas or dados.receita_realizada
         if ref_rec > 0 and dados.inadimplencia_valor > 0:

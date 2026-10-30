@@ -286,7 +286,10 @@ class AdapterLirbaPDF(AdapterBase):
                 break  # TOTAL encontrado — Resumo Financeiro completo
 
         # ── Banco: tenta "Conta Bancária" primeiro, fallback no Resumo Contábil ──
-        conta_banc = self._extrair_conta_bancaria(textos)
+        # banco_from_contas=true: pula Conta Bancária e usa sempre contas_detalhe
+        # (útil quando Conta Bancária só lista saldo real do banco, não o saldo contábil)
+        _banco_from_contas = self.parser_config.get("banco_from_contas", False)
+        conta_banc = None if _banco_from_contas else self._extrair_conta_bancaria(textos)
         if conta_banc:
             # "Conta Bancária" é a fonte mais precisa — saldos reais de banco.
             # Classifica por nome para evitar CC/CDB trocados quando a ordem no PDF varia.

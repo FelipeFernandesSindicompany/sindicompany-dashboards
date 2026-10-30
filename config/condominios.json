@@ -663,6 +663,7 @@
       "unidades": 0,
       "parser_config": {
         "extract_cats": "posicao_financeira",
+        "banco_from_contas": true,
         "contas_separadas": [
           "CONSUMO",
           "I.P.T.U."
