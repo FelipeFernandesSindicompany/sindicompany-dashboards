@@ -398,6 +398,8 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
             import pdfplumber
             with pdf_plumber_aberto(caminho_arquivo) as pdf:
                 texto_bruto = "\n".join(p.extract_text() or "" for p in pdf.pages).upper()
+            # "Fundo Inadimplência" é uma categoria de cobrança da HSA/GCONT (receita), não o relatório de inadimplência
+            texto_bruto = re.sub(r"FUNDO\s+INADIMPL\w*", "", texto_bruto)
             marcadores = ("COTAS EM ABERTO", "DEVEDOR", "INADIMPL")
             if not any(m in texto_bruto for m in marcadores):
                 bal["inad"] = None

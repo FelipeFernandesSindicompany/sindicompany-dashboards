@@ -200,11 +200,17 @@ class Extrator:
                     tot["saldo_anterior" if saldos == 0 else "saldo_atual"] = _num(mv[4])
                     saldos += 1
                 continue
+            # o cabeçalho "Receitas | Competência | Valor" / "Despesas | Liquidação | Documento | Valor" se repete no topo de cada folha: se o bloco já está
+            # nesse modo, a categoria/subcategoria em curso continuam na folha seguinte (resetar perdia a subconta do 1º lançamento da folha)
             if re.match(r"^Receitas\b", t) and "Compet" in t:
-                modo, topo, sub, ultimo = "rec", None, None, None
+                if modo != "rec":
+                    topo, sub, ultimo = None, None, None
+                modo = "rec"
                 continue
             if re.match(r"^Despesas\b", t) and "Liquida" in t:
-                modo, topo, sub, ultimo = "desp", None, None, None
+                if modo != "desp":
+                    topo, sub, ultimo = None, None, None
+                modo = "desp"
                 continue
             if re.match(r"^Total de RECEITAS\s+\(?-?\d", t, re.I):
                 tot["receitas"] = _num(mv[4]) if mv else None

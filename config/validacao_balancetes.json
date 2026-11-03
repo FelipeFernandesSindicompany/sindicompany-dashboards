@@ -317,6 +317,9 @@
       }
     },
     "i_gloo_alphaville": {
+      "aviso_escopo_por_extensao": {
+        ".pdf": "Os comprovantes e notas fiscais não foram validados, pois o arquivo com os comprovantes não foi enviado pela Administradora (o arquivo recebido traz os demonstrativos de receitas e despesas de cada conta e o resumo financeiro, sem os comprovantes anexados e sem o relatório de inadimplência). Por isso esta validação conferiu somente os valores e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."
+      },
       "pasta_prestacao": "Dashboard de Análise de Balancete I-Gloo",
       "regras": {
         "rendimento": {
