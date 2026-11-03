@@ -2033,7 +2033,7 @@ function buildTblPvr() {
 
 function buildTblBanco() {
 
-  var h = '<tr><th>Mês</th><th>Ordinária</th><th>Fundo de Reserva</th><th>Demais Contas</th></tr>';
+  var h = '<tr><th>Mês</th><th>Ordinária</th><th>Fundo de Reserva</th><th>Demais Contas</th><th>Total</th></tr>';
 
   MESES.forEach(function(k) {
 
@@ -2047,13 +2047,17 @@ function buildTblBanco() {
 
     var dem = m.contas.reduce(function(s,c){ return c.n.indexOf('ORDIN')<0 && c.n.indexOf('FUNDO DE RESERVA')<0 ? s+c.s : s; }, 0);
 
+    var tot = ord + res + dem;
+
     h += '<tr><td class="bd">' + lbl + '</td>';
 
     h += '<td class="nr">' + R(ord) + '</td>';
 
     h += '<td class="nr">' + R(res) + '</td>';
 
-    h += '<td class="nr bd">' + R(dem) + '</td></tr>';
+    h += '<td class="nr">' + R(dem) + '</td>';
+
+    h += '<td class="nr bd"><strong style="color:var(--p)">' + R(tot) + '</strong></td></tr>';
 
   });
 
