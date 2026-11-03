@@ -19,5 +19,12 @@
     "motivo": "saldo anterior do Fundo Reserva diferente do saldo final de agosto (R$ 2.317,75) retirado do relatório de setembro/2026 por decisão do responsável",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-03"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 17304.78,
+    "motivo": "despesas acima do histórico do fornecedor (R$ 17.304,78) retiradas do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-03"
   }
 ]
