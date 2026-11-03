@@ -346,6 +346,13 @@ def analisar(f, condos, por_nome, com_origem):
                         quebras = [(c.nome, c.saldo_anterior, ant_ind[k].saldo_atual) for k, c in comuns if abs(c.saldo_anterior - ant_ind[k].saldo_atual) > 0.011]
                         if quebras:
                             tem = "diferente do saldo final de" in texto
+                            # continuidade que o responsável decidiu retirar do relatório deste mês (config/dispensas_validacao/<condomínio>/<AAAA-MM>.json)
+                            try:
+                                arq_d = Path(__file__).resolve().parents[1] / "config" / "dispensas_validacao" / condo["id"] / f"{aaaa}-{mm:02d}.json"
+                                retirada = arq_d.exists() and any(d.get("tipo") == "continuidade_saldo" and not d.get("reescrever") for d in json.load(open(arq_d, encoding="utf-8")))
+                            except Exception:
+                                retirada = False
+                            tem = tem or retirada
                             g = "INFO" if tem else "ALTA"
                             todas = comuns and len(quebras) == len(comuns)
                             add(g, "Continuidade", f"{len(quebras)} de {len(comuns)} contas com saldo anterior ≠ saldo final do mês anterior (ex.: {quebras[:2]})"

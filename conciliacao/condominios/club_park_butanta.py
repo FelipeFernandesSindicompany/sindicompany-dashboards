@@ -327,7 +327,7 @@ def _norm_forn(texto: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", _norm(re.sub(r"\(\d+\)\s*$", "", texto or "")))
 
 
-def _anexar_comprovantes_do_portal(caminho: Path, dados, registros: list) -> None:
+def _anexar_comprovantes_do_portal(caminho: Path, dados, registros: list, linhas: list | None = None) -> None:
     """Cada despesa do livro caixa tem um link público para os documentos do pagamento no portal da GCONT (nota fiscal, boleto, comprovante
     bancário): baixa (conciliacao/portal_gcont.py), lê o comprovante bancário (valor, data, favorecido) e junta o texto de TODOS os documentos.
     Vira um `comprovante_anexado` por despesa — o resto segue a cadeia do formato Lirba (valor x listagem, NF, concessionária, atraso).
@@ -336,12 +336,20 @@ def _anexar_comprovantes_do_portal(caminho: Path, dados, registros: list) -> Non
     from conciliacao import gocontroledocumentos, portal_gcont
     from conciliacao.regras_gerais.extratores.club_park_butanta import Extrator as _ExtResumo
 
-    try:
-        linhas = _ExtResumo({}).livro_caixa_com_links(caminho)
-    except Exception:
-        return
+    if linhas is None:           # padrão: livro caixa do Club Park; outro condomínio (I-Gloo) passa as próprias linhas [{"data","desc","valor","uri"}]
+        try:
+            linhas = _ExtResumo({}).livro_caixa_com_links(caminho)
+        except Exception:
+            return
     if not any(l["uri"] for l in linhas):
         return
+    # baixa os documentos de todas as despesas em paralelo (cada página do portal leva de segundos a minutos); depois a leitura segue em ordem,
+    # já com tudo no cache de portal_gcont
+    from concurrent.futures import ThreadPoolExecutor
+
+    unicas = {portal_gcont.id_parcela(l["uri"]): l["uri"] for l in linhas if l["uri"]}
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        list(ex.map(portal_gcont.anexos_da_parcela, unicas.values()))
     livres = list(registros)
     novos: list = []
     sobras: list = []

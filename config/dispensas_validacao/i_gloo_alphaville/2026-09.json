@@ -1,0 +1,23 @@
+[
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -24.64,
+    "motivo": "receita negativa (Pagamento a Menor, R$ -24,64) da Ordinária retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-03"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -20114.35,
+    "motivo": "saldo negativo da conta Gás (R$ -20.114,35) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-03"
+  },
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": 2317.75,
+    "motivo": "saldo anterior do Fundo Reserva diferente do saldo final de agosto (R$ 2.317,75) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-03"
+  }
+]

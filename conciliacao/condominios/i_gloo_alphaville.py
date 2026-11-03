@@ -105,6 +105,54 @@ def _lancamentos_despesas_liquidadas(caminho: Path) -> list[RegistroComprovante]
     return saida
 
 
+def _registros_demonstrativo_analitico(caminho: Path, config: dict) -> tuple[list, list]:
+    """Arquivo reduzido da HSA de set/2026 (17 páginas: só os "Demonstrativo Analítico" de cada conta + Resumo Financeiro, sem as capas de comprovante
+    nem a listagem "Despesas liquidadas"): cada lançamento do Demonstrativo vira uma `despesa_listada` (fornecedor, data de liquidação, valor, documento)
+    e as linhas que trazem o link público do portal da HSA (Superlógica: ".../areadocondomino/publico/arquivos?...idParcela=...") para os documentos do
+    pagamento seguem para `_anexar_comprovantes_do_portal`. Devolve (registros, linhas com link)."""
+    import fitz
+
+    from conciliacao.condominios.club_park_butanta import _margem
+    from conciliacao.regras_gerais.extratores.i_gloo_alphaville import Extrator
+
+    dados = Extrator(config).extrair(caminho, "")
+    registros: list[RegistroComprovante] = []
+    linhas: list = []
+    with fitz.open(str(caminho)) as doc:
+        for n, l in enumerate(dados.lancamentos, start=1):
+            forn = re.sub(r"\s+(?:[A-Za-zçÇãÃ]+/\d{4}|Parc\.\s*\d+\s*de\s*\d+)\s*$", "", (l.descricao or "")).strip()
+            forn = re.sub(r"\s+NF-.*$", "", forn).strip() or (l.descricao or "")
+            reg = RegistroComprovante(
+                pagina=l.pagina, tipo_documento="despesa_listada", codigo=f"L{n:03d}", descricao=(l.descricao or "")[:200], fornecedor=forn,
+                vencimento=None, pagamento=l.data, valor=l.valor, autenticacao=l.codigo or None,
+                texto_bruto=f"[W020A] {l.descricao} {l.data} {l.valor:,.2f}", bbox_crop=_margem(l.bbox))
+            registros.append(reg)
+            uri = None
+            if l.bbox and l.pagina:
+                topo, base = l.bbox[1], l.bbox[3]
+                for lk in doc[l.pagina - 1].get_links():
+                    u = lk.get("uri") or ""
+                    if "idParcela=" in u and lk["from"][3] >= topo - 2 and lk["from"][1] <= base + 2:
+                        uri = u
+                        break
+            linhas.append({"data": l.data, "desc": forn, "valor": l.valor, "uri": uri, "pagina": l.pagina})
+    # um pagamento só (mesmo link do portal, mesmo fornecedor) que quita 2+ lançamentos do Demonstrativo (ex.: a transferência de R$ 472,35 à HSA que paga
+    # três despesas; o boleto de R$ 305,99 da Eletrocol que paga duas notas): uma linha por pagamento, com a SOMA — o anexador a reparte entre os lançamentos
+    from conciliacao import portal_gcont
+    from conciliacao.condominios.club_park_butanta import _norm_forn
+
+    grupos: dict = {}
+    for l in linhas:
+        if l["uri"]:
+            grupos.setdefault((portal_gcont.id_parcela(l["uri"]), _norm_forn(l["desc"])[:10]), []).append(l)
+    for g in grupos.values():
+        if len(g) >= 2:
+            g[0]["valor"] = round(sum(x["valor"] for x in g), 2)
+            for x in g[1:]:
+                linhas.remove(x)
+    return registros, linhas
+
+
 class Conciliador(ConciliadorGcontNativo):
     def extrair_comprovantes(self, caminho) -> list:
         registros = super().extrair_comprovantes(caminho)
@@ -113,6 +161,20 @@ class Conciliador(ConciliadorGcontNativo):
                 registros = registros + _lancamentos_despesas_liquidadas(Path(caminho))
             except Exception as exc:
                 print(f"[AVISO] não foi possível ler a listagem 'Despesas liquidadas': {exc}")
+            if not any(r.tipo_documento == "despesa_listada" for r in registros):
+                # variante reduzida de set/2026: Demonstrativo Analítico + links do portal com os comprovantes
+                try:
+                    regs, linhas = _registros_demonstrativo_analitico(Path(caminho), self.config)
+                    registros = registros + regs
+                    if any(l["uri"] for l in linhas):
+                        from conciliacao.condominios.club_park_butanta import _anexar_comprovantes_do_portal
+
+                        _anexar_comprovantes_do_portal(Path(caminho), None, registros, linhas=linhas)
+                        if any(r.tipo_documento == "comprovante_anexado" for r in registros):
+                            # tarifa debitada pelo banco não tem documento no portal: sai da conferência de comprovantes (como no Club Park)
+                            registros[:] = [r for r in registros if not (r.tipo_documento == "despesa_listada" and (r.fornecedor or "").strip().lower().startswith("banco "))]
+                except Exception as exc:
+                    print(f"[AVISO] não foi possível ler o Demonstrativo Analítico/links do portal: {exc}")
             return registros
         if any(r.tipo_documento == "total_declarado" for r in registros):
             return registros

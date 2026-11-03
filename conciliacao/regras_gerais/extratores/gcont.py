@@ -189,6 +189,9 @@ class Extrator:
         topo = sub = None
         ultimo = None
         saldos = 0
+        # Posição das colunas: o layout muda de um mês para o outro (ago/2026: margem 31, Liquidação 305, Documento 369; set/2026: margem 42,
+        # Liquidação 385, Documento 435). Lida do cabeçalho de cada folha; estes são os valores de ago/2026 (padrão).
+        ml, liq, doc_x, comp_x = 31.0, 305.0, 369.0, 352.0
         for l in linhas:
             t = l.texto.strip()
             if not t:
@@ -203,11 +206,16 @@ class Extrator:
             # o cabeçalho "Receitas | Competência | Valor" / "Despesas | Liquidação | Documento | Valor" se repete no topo de cada folha: se o bloco já está
             # nesse modo, a categoria/subcategoria em curso continuam na folha seguinte (resetar perdia a subconta do 1º lançamento da folha)
             if re.match(r"^Receitas\b", t) and "Compet" in t:
+                ml = l.pal[0][0]
+                comp_x = next((w[0] for w in l.pal if w[4].startswith("Compet")), comp_x)
                 if modo != "rec":
                     topo, sub, ultimo = None, None, None
                 modo = "rec"
                 continue
             if re.match(r"^Despesas\b", t) and "Liquida" in t:
+                ml = l.pal[0][0]
+                liq = next((w[0] for w in l.pal if w[4].startswith("Liquida")), liq)
+                doc_x = next((w[0] for w in l.pal if w[4].startswith("Documento")), doc_x)
                 if modo != "desp":
                     topo, sub, ultimo = None, None, None
                 modo = "desp"
@@ -223,23 +231,23 @@ class Extrator:
             if re.match(r"^(Mov\. L[íi]quido|Total de )", t) or modo is None:
                 continue
             if modo == "rec":
-                comp = next((w[4] for w in l.pal if 355 <= w[0] < 440 and (re.match(r"^\d{2}/\d{4}$", w[4]) or w[4] == "Acordo")), None)
-                if mv and (comp or l.x0 >= 44):
+                comp = next((w[4] for w in l.pal if comp_x - 5 <= w[0] < comp_x + 88 and (re.match(r"^\d{2}/\d{4}$", w[4]) or w[4] == "Acordo")), None)
+                if mv and (comp or l.x0 >= ml + 13):
                     desc = " ".join(w[4] for w in l.pal if w[2] < (comp and next(x[0] for x in l.pal if x[4] == comp) or mv[0]) - 0.5)
                     cat = sub or topo or ""
                     rec.append((cat, desc.strip(), _num(mv[4]), l.pg, l.bbox, comp))
                 elif not mv:
                     if _RE_PCT_CAT.search(t):
                         topo, sub = _RE_PCT_CAT.sub("", t).strip(), None
-                    elif l.x0 > 33:
+                    elif l.x0 > ml + 2:
                         sub = t
                 continue
             # despesas
             if mv and not t.startswith("Total"):
-                data = next((w[4] for w in l.pal if _RE_DATA.match(w[4]) and 296 <= w[0] < 360), None)
-                doc = " ".join(w[4] for w in l.pal if 362 <= w[0] < 466 and w[4] != data and not w[4].endswith("%"))
-                corte = min([w[0] for w in l.pal if w[4] == data] + [w[0] for w in l.pal if 362 <= w[0] < 466] + [mv[0]])
-                desc = " ".join(w[4] for w in l.pal if w[2] <= corte + 0.5 and w[0] < 296 and w is not mv)
+                data = next((w[4] for w in l.pal if _RE_DATA.match(w[4]) and liq - 9 <= w[0] < doc_x - 9), None)
+                doc = " ".join(w[4] for w in l.pal if doc_x - 7 <= w[0] < 475 and w[4] != data and not w[4].endswith("%"))
+                corte = min([w[0] for w in l.pal if w[4] == data] + [w[0] for w in l.pal if doc_x - 7 <= w[0] < 475] + [mv[0]])
+                desc = " ".join(w[4] for w in l.pal if w[2] <= corte + 0.5 and w[0] < liq - 9 and w is not mv)
                 x = {"desc": desc.strip(), "valor": _num(mv[4]), "data": data, "doc": doc.strip(), "pg": l.pg,
                      "bbox": l.bbox, "topo": topo, "sub": sub}
                 desp.append(x)
@@ -247,10 +255,10 @@ class Extrator:
             elif not mv:
                 if _RE_PCT_CAT.search(t):
                     topo, sub, ultimo = _RE_PCT_CAT.sub("", t).strip(), None, None
-                elif l.x0 <= 33 and ultimo is not None:                # continuação da descrição do lançamento
+                elif l.x0 <= ml + 2 and ultimo is not None:                # continuação da descrição do lançamento
                     ultimo["desc"] = (ultimo["desc"] + " " + t).strip()
                     ultimo["bbox"] = _unir_bbox(ultimo["bbox"], l.bbox)
-                elif l.x0 > 33:
+                elif l.x0 > ml + 2:
                     sub, ultimo = t, None
         return rec, desp, tot
 

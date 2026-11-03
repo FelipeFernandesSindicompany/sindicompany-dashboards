@@ -152,7 +152,8 @@ GERAR_ACHADOS_POR_CONDO = {
     # Mesmo formato GCONT/HSA do Club Park (comprovante em página de texto nativo,
     # "Parcela <código>") — ver conciliacao/condominios/{parque_saint_afonso,i_gloo_alphaville}.py.
     "parque_saint_afonso": gerar_achados_gcont,
-    "i_gloo_alphaville": gerar_achados_gcont,
+    # set/2026: Demonstrativo Analítico + comprovantes baixados dos links do portal da HSA (sem anexos cai no gcont comum)
+    "i_gloo_alphaville": gerar_achados_gcont_portal,
     # Top Nine: capas GCONT + anexos lidos por OCR no formato Lirba (conciliacao/condominios/top_nine.py) -> matching Lirba padrão
     "plano_estacao_campo_limpo": gerar_achados_gcont,
     # Planilhas Habitacional/LFC: mesmo matching de gerar_achados_planilha_com_links + isenção de "IR S/ APLICAÇÃO"
@@ -550,7 +551,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
                        "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria",
-                       "movimento_entre_contas"}
+                       "movimento_entre_contas", "continuidade_saldo"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo"}
 
@@ -716,6 +717,16 @@ def _aplicar_escopo_so_comprovantes(condo: dict, mes: str, achados: list, esquel
     return n
 
 
+def _valor_casa(a, valor_total: float) -> bool:
+    """O valor da dispensa casa com o valor do achado — ou com `detalhes.valor_chave`, o valor que o achado tinha antes de o título passar a mostrar
+    o que o print mostra (ex.: recorrente ausente: soma das medianas x soma do último mês)."""
+    cands = [a.valor_encontrado or 0.0]
+    vc = (a.detalhes or {}).get("valor_chave")
+    if vc is not None:
+        cands.append(vc)
+    return any(abs(c - valor_total) <= 0.01 for c in cands)
+
+
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
@@ -739,7 +750,7 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
     for item in esqueleto:
         a = por_id.get(item["achado_id"])
         for d in reescritas:
-            if a is None or item.get("severidade_final") == "informativo" or abs((a.valor_encontrado or 0.0) - d["valor_total"]) > 0.01:
+            if a is None or item.get("severidade_final") == "informativo" or not _valor_casa(a, d["valor_total"]):
                 continue
             casa = ((d.get("verificacao") and a.tipo == "observacao_gestor" and (a.detalhes or {}).get("verificacao") == d["verificacao"])
                     or (d.get("tipo") and a.tipo == d["tipo"] and (not d.get("regra") or a.regra_aplicada == d["regra"])))
@@ -747,7 +758,7 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
                 item.update({k: v for k, v in d["reescrever"].items() if k in ("titulo", "paragrafo", "o_que_verificar")},
                             revisado_por="humano:reescrita", revisado_em=agora)
         for d in ajustes:
-            if a is not None and d.get("tipo") == a.tipo and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01 and d.get("sem_comprovante"):
+            if a is not None and d.get("tipo") == a.tipo and _valor_casa(a, d["valor_total"]) and d.get("sem_comprovante"):
                 item["o_que_verificar"] = re.sub(r",?\s*e onde est[aá] o comprovante\?", "?", item.get("o_que_verificar") or "")
         if a is None or item.get("severidade_final") == "informativo" or (a.tipo not in _TIPOS_DISPENSAVEIS and a.regra_aplicada not in _REGRAS_DISPENSAVEIS):
             continue
@@ -756,7 +767,7 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
             casa = ((d.get("verificacao") and a.tipo == "observacao_gestor" and (a.detalhes or {}).get("verificacao") == d["verificacao"])
                     or (d.get("tipo") and a.tipo == d["tipo"] and (not d.get("regra") or a.regra_aplicada == d["regra"]))
                     or (d.get("regra") and not d.get("tipo") and not d.get("verificacao") and a.regra_aplicada == d["regra"]))
-            if casa and abs((a.valor_encontrado or 0.0) - d["valor_total"]) <= 0.01:
+            if casa and _valor_casa(a, d["valor_total"]):
                 item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
                             motivo_divergencia_da_sugestao=f"Retirado do relatório por decisão de {d['decidido_por']} em {d['data']}: {d['motivo']}")
                 n += 1

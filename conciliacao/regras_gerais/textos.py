@@ -377,9 +377,18 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
                        f"Em relação ao projeto ({nomes}): {pergunta_projeto}") + _ver_ordinaria(d)
     elif v == "recorrente_ausente":
         itens = d.get("ausentes") or []
-        lista = "; ".join(f"{i['descricao']} (mediana {_moeda(i['mediana'])})" for i in itens[:6])
+        def _mm_aaaa(m):
+            return f"{m[5:7]}/{m[:4]}" if re.fullmatch(r"\d{4}-\d{2}", str(m or "")) else str(m or "")
+
+        def _item_ausente(i):
+            # o valor da última aparição (é o que o print mostra) e a mediana dos meses comparados — o total do título soma só as medianas
+            if i.get("valor") is not None and not d.get("parcelas"):
+                return f"{i['descricao']} ({_moeda(i['valor'])} em {_mm_aaaa(i.get('mes'))}; mediana {_moeda(i['mediana'])})"
+            return f"{i['descricao']} (mediana {_moeda(i['mediana'])})"
+        lista = "; ".join(_item_ausente(i) for i in itens[:6])
         titulo = pre + (f"{n} série(s) de parcelas sem parcela neste mês ({total})" if d.get("parcelas")
-                        else f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} por mês)")
+                        else (f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} no mês anterior)" if all(i.get("valor") is not None for i in itens)
+                              else f"{n} despesa(s) recorrente(s) que não aparece(m) neste mês ({total} por mês)"))
         n_meses = len(d.get("meses_comparados") or [])
         if d.get("parcelas"):
             par = (f"Séries de parcelas em andamento no mês anterior em que nenhuma parcela aparece neste mês: {lista}. "

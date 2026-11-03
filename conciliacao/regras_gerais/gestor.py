@@ -341,9 +341,9 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
         if faltando:
             achados.append(Achado(
                 id=cont.proximo(), tipo="observacao_gestor", severidade_sugerida="atencao", regra_aplicada="gestor_recorrente_ausente",
-                linha_demonstrativo="Despesas recorrentes ausentes neste mês", valor_encontrado=round(sum(v for _, _, v in faltando), 2),
-                detalhes={"verificacao": "recorrente_ausente", "total_itens": len(faltando), "meses_comparados": [h.mes for h in ultimos],
-                          "ausentes": [{"descricao": l.descricao, "mediana": round(v, 2), "categoria": l.categoria, "local": l.local, "pagina": l.pagina, "bbox": l.bbox,
+                linha_demonstrativo="Despesas recorrentes ausentes neste mês", valor_encontrado=round(sum(l.valor for _, l, _ in faltando), 2),
+                detalhes={"verificacao": "recorrente_ausente", "total_itens": len(faltando), "valor_chave": round(sum(v for _, _, v in faltando), 2), "meses_comparados": [h.mes for h in ultimos],
+                          "ausentes": [{"descricao": l.descricao, "mediana": round(v, 2), "valor": round(l.valor, 2), "categoria": l.categoria, "local": l.local, "pagina": l.pagina, "bbox": l.bbox,
                                         "mes": ultimos[0].mes, "arquivo": ultimos[0].arquivo} for _, l, v in faltando[:MAX_ITENS]],
                           "lancamentos": []}))
 
