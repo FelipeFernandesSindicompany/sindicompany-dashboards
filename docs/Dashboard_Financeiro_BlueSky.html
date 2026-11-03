@@ -3231,7 +3231,7 @@ function buildCharts() {
 
   // ── 9. Posição bancária (barras empilhadas) ───────────────────────────────────
 
-  var bancoMeses = MESES.filter(function(k){ return BAL[k].banco.cc !== null; });
+  var bancoMeses = MESES.slice();
 
   var bancoML    = bancoMeses.map(function(k){ return BAL[k].tit.split(' ')[0] + '/' + BAL[k].tit.split(' ')[2]; });
 
@@ -3249,7 +3249,7 @@ function buildCharts() {
 
           label: 'C/C Itaú',
 
-          data: bancoMeses.map(function(k){ return BAL[k].banco.cc; }),
+          data: bancoMeses.map(function(k){ var c=BAL[k].contas; var o=c.find(function(x){return x.n==='ORDINÁRIA';}); return o?o.s:0; }),
 
           backgroundColor: 'rgba(23,27,46,0.82)',
 
@@ -3267,7 +3267,7 @@ function buildCharts() {
 
           label: 'Aplicação CDB / ITAUVEST',
 
-          data: bancoMeses.map(function(k){ return BAL[k].banco.cdb; }),
+          data: bancoMeses.map(function(k){ var c=BAL[k].contas; var r=c.find(function(x){return x.n==='FUNDO DE RESERVA';}); return r?r.s:0; }),
 
           backgroundColor: 'rgba(232,119,34,0.82)',
 
@@ -3285,7 +3285,7 @@ function buildCharts() {
 
           label: 'Privilege / ITAUVEST',
 
-          data: bancoMeses.map(function(k){ return BAL[k].banco.priv; }),
+          data: bancoMeses.map(function(k){ return BAL[k].contas.reduce(function(s,c){return (c.n!=='ORDINÁRIA'&&c.n!=='FUNDO DE RESERVA')?s+c.s:s;},0); }),
 
           backgroundColor: 'rgba(39,174,96,0.82)',
 
