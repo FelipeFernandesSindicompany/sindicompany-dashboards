@@ -16,6 +16,10 @@ interface AdminUser {
 }
 
 function lerUsuarios(): AdminUser[] {
+  // Vercel (e outros ambientes sem filesystem): usa variável de ambiente
+  if (process.env.ADMIN_USERS_JSON) {
+    try { return JSON.parse(process.env.ADMIN_USERS_JSON); } catch { return []; }
+  }
   try {
     return JSON.parse(fs.readFileSync(USERS_PATH, 'utf8'));
   } catch {
