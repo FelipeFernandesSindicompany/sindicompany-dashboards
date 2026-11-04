@@ -202,7 +202,7 @@
   {% if analise.nota_despesa_negativa %}
   <p class="nota">
     Nota: o total de despesas acima inclui {{ analise.nota_despesa_negativa.negativo }} de lançamento(s) com valor negativo (créditos lançados como
-    despesa — ver a divergência "Despesa lançada com valor negativo"). Não existe despesa negativa: sem esses lançamentos, as despesas do mês seriam
+    despesa{% if analise.nota_despesa_negativa.ver_divergencia is not defined or analise.nota_despesa_negativa.ver_divergencia %} — ver a divergência "Despesa lançada com valor negativo"{% endif %}). Não existe despesa negativa: sem esses lançamentos, as despesas do mês seriam
     {{ analise.nota_despesa_negativa.sem_negativo }}.
   </p>
   {% endif %}

@@ -562,9 +562,10 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
                        "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria",
-                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante"}
+                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "despesa_negativa"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
-_REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo"}
+_REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo", "valor_ocr_comprovante_diverge_valor_listagem",
+                        "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor"}
 
 
 _FRASE_PEDE_FATURA = " Podem enviar a conta (fatura) do mês?"
@@ -1225,7 +1226,10 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 _neg_tot = sum(i["valor"] for x in _bruto if x.tipo == "despesa_negativa" for i in (x.detalhes or {}).get("itens", []))
                 if _neg_tot < 0:
                     _tot_desp = sum(d["v"] for d in bal_atual.get("desp", []))
-                    analise["nota_despesa_negativa"] = {"negativo": analise_financeira._fmt_r(_neg_tot), "sem_negativo": analise_financeira._fmt_r(_tot_desp - _neg_tot)}
+                    _ids_neg = {x.id for x in _bruto if x.tipo == "despesa_negativa"}
+                    _item_neg_no_relatorio = any(r.achado_id in _ids_neg and r.severidade_final != "informativo" for r in revisados)   # item retirado: a nota não remete a ele
+                    analise["nota_despesa_negativa"] = {"negativo": analise_financeira._fmt_r(_neg_tot), "sem_negativo": analise_financeira._fmt_r(_tot_desp - _neg_tot),
+                                                        "ver_divergencia": _item_neg_no_relatorio}
             except Exception:
                 pass
             aviso_fechamento = checagens_leitura.verificar_fechamento_categorias(condo, bal_atual)

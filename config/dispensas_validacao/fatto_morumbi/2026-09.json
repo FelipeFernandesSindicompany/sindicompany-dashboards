@@ -1,0 +1,83 @@
+[
+  {
+    "tipo": "nota_fiscal_ausente",
+    "valor_total": 75.0,
+    "motivo": "Nota Fiscal da Claro (R$ 75,00) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "regra": "valor_ocr_comprovante_diverge_valor_listagem",
+    "valor_total": 273.25,
+    "texto_contem": "PAULO ROGERIO DE SOUZA",
+    "motivo": "INSS de autônomo (Paulo Rogerio de Souza, R$ 273,25) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "regra": "valor_ocr_comprovante_diverge_valor_listagem",
+    "valor_total": 25128.07,
+    "texto_contem": "PAULO ROGERIO DE SOUZA",
+    "motivo": "INSS de autônomo (Paulo Rogerio de Souza, R$ 273,25) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "regra": "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor",
+    "valor_total": 273.25,
+    "texto_contem": "EDSON VIEIRA DA SILVA",
+    "motivo": "INSS de autônomo (Edson Vieira da Silva, R$ 273,25) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -10.02,
+    "motivo": "receita negativa de R$ -10,02 (taxa a menor, bloco A unid. 156) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -12.02,
+    "motivo": "receita negativa de R$ -12,02 (taxa a menor, bloco B unid. 12) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -1.0,
+    "motivo": "receita negativa de R$ -1,00 (vaga extra de moto) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -69263.47,
+    "motivo": "saldo negativo persistente da conta ORDINARIA retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "verificacao": "apropriacao_despesa",
+    "valor_total": 0.0,
+    "texto_contem": "SERVS PINTURA",
+    "motivo": "estorno e relançamento de R$ 13.000,00 (pintura, A M Pereira) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 530.0,
+    "motivo": "subconta nova SERVICOS (R$ 530,00) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  },
+  {
+    "tipo": "despesa_negativa",
+    "valor_total": -13000.0,
+    "motivo": "despesa negativa de R$ -13.000,00 (estorno da pintura, cód. 2454) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-04"
+  }
+]
