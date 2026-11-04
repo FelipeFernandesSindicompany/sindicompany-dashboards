@@ -398,7 +398,11 @@ def _codigos_listados_no_pagamento(texto: str | None) -> list[str]:
     """Códigos de despesa (D1213 D1217 ...) listados na "identificação no extrato/do comprovante" de um
     comprovante de pagamento consolidado."""
     m = _RE_LISTA_CODIGOS_PAGAMENTO.search(texto or "")
-    return re.findall(r"D(\d{3,6})\b", m.group(1)) if m else []
+    if m:
+        return re.findall(r"D(\d{3,6})\b", m.group(1))
+    # o sistema grava "D" + o nome do fornecedor/conta + o código ("DDiversos 1273", "Ddiversas 1336"): o código é o número depois da palavra
+    m2 = re.search(r"identifica[çc][ãa]o\s+do\s+comprovante\s*:?\s*D[A-Za-zÀ-ÿ]+\s+(\d{3,6})\b", texto or "", re.IGNORECASE)
+    return [m2.group(1)] if m2 else []
 
 
 def _total_pago_no_texto(texto: str | None) -> float | None:
@@ -540,6 +544,12 @@ def gerar_achados(
                    if _imposto_da_descricao(d.descricao) == imposto
                    and _normalizar_texto(d.fornecedor or "") == forn
                    and d.vencimento == despesas_listadas[0].vencimento]
+        if not (len(piscina) > len(despesas_listadas) and _valores_batem(sum(d.valor for d in piscina), total)):
+            # a guia agrupa por PERÍODO DE APURAÇÃO, não pelo vencimento de cada retenção (PCC de 08/2026 com vencimentos 18/09 e 20/09 na mesma guia):
+            # tenta todas as retenções do mesmo imposto e fornecedor do mês — só vale se a soma fechar com o total da guia, ao centavo
+            piscina = [d for d in despesas_internas
+                       if _imposto_da_descricao(d.descricao) == imposto
+                       and _normalizar_texto(d.fornecedor or "") == forn]
         if len(piscina) > len(despesas_listadas) and _valores_batem(sum(d.valor for d in piscina), total):
             for d in piscina:
                 cobertas_por_lista.setdefault(d.codigo, (pagamento, total, piscina))

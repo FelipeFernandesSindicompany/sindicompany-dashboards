@@ -249,11 +249,15 @@ def analisar(f, condos, por_nome, com_origem):
                                        and abs(d["valor_total"] - abs(dif)) <= 0.011 for d in json.load(open(arq_d, encoding="utf-8")))
                 except Exception:
                     pass
-                add("INFO" if (tem_mov or pareadas or retirado) else "MÉDIA", "Fechamento",
+                # Addomus: o Demonstrativo traz uma coluna "Transferências" entre Créditos/Débitos e o saldo final de cada conta (rateio/aporte entre fundos);
+                # a diferença do quadro (que só mostra créditos e débitos) é essa coluna
+                addomus = bool(condo and condo.get("empresa_gestora") == "addomus_pdf")
+                add("INFO" if (tem_mov or pareadas or retirado or addomus) else "MÉDIA", "Fechamento",
                     f"conta {nome}: anterior+créditos−débitos ≠ atual (diferença {dif:,.2f})"
                     + (" — já perguntado no relatório (movimento entre contas)" if tem_mov else
                        " — transferência entre contas do condomínio com a outra ponta no arquivo (não apontada, por decisão)" if pareadas else
                        " — movimento retirado do relatório por decisão do responsável" if retirado else
+                       " — diferença = coluna 'Transferências' do Demonstrativo (Addomus), que o quadro não mostra" if addomus else
                        " — sem a pergunta de movimento entre contas"))
         mcons = re.search(r"O saldo consolidado do condomínio encerrou [^\n]*?em (R\$ -?[\d.]+,\d{2})", texto.replace("\n", " "))
         if mcons:

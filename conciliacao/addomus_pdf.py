@@ -91,7 +91,7 @@ _MARCADORES_TIPO = [
     # fazia a despesa sumir (Spazio 07/2026: 6 concessionárias viravam "comprovante sem lançamento" +
     # "CNPJ ausente" e a categoria Consumo ficava com soma 0). Só a tela interna tem "Composição da Despesa".
     ("despesa_interna", re.compile(r"Composi[çc][ãa]o\s+da\s+Despesa", re.IGNORECASE)),
-    ("pix", re.compile(r"Comprovante\s+de\s+Transfer[êe]ncia|PIX\s*-\s*pagamento\s+instant[âa]neo", re.IGNORECASE)),
+    ("pix", re.compile(r"Comprovante\s+de\s+Transfer[êe]ncia|PIX\s*-\s*pagamento\s+instant[âa]neo|Comprovante\s+de\s+pagamento\s+QR\s*Code|Pagamento\s+com\s+QR\s*Code|tipo\s+da\s+transa[çc][ãa]o\s*:\s*PIX", re.IGNORECASE)),
     ("darf", re.compile(r"Comprovante\s+de\s+pagamento\s*-?\s*DARF|c[óo]digo\s+de\s+barras", re.IGNORECASE)),
     ("boleto", re.compile(r"Comprovante\s+de\s+pagamento\s+de\s+boleto|Dados\s+da\s+conta\s+debitada\s*/\s*Pagador", re.IGNORECASE)),
     ("debito_automatico", re.compile(r"D[ée]bito\s+Autom[áa]tico", re.IGNORECASE)),
