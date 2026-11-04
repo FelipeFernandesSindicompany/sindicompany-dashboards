@@ -594,7 +594,11 @@
     "vera_cruz": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Vera Cruz",
       "regras": {
-        "gestor": {}
+        "gestor": {
+          "fornecedor_novo_ignorar": [
+            "MS SERVIC"
+          ]
+        }
       }
     },
     "victoria": {
