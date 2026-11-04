@@ -562,7 +562,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
                        "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria",
-                       "movimento_entre_contas", "continuidade_saldo"}
+                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo"}
 
@@ -732,6 +732,8 @@ def _valor_casa(a, valor_total: float) -> bool:
     """O valor da dispensa casa com o valor do achado — ou com `detalhes.valor_chave`, o valor que o achado tinha antes de o título passar a mostrar
     o que o print mostra (ex.: recorrente ausente: soma das medianas x soma do último mês)."""
     cands = [a.valor_encontrado or 0.0]
+    if a.valor_encontrado is None and a.valor_esperado is not None:      # achado sem valor "encontrado" (ex.: comprovante ausente): vale o valor da listagem
+        cands.append(a.valor_esperado)
     vc = (a.detalhes or {}).get("valor_chave")
     if vc is not None:
         cands.append(vc)
@@ -778,7 +780,8 @@ def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list)
             casa = ((d.get("verificacao") and a.tipo == "observacao_gestor" and (a.detalhes or {}).get("verificacao") == d["verificacao"])
                     or (d.get("tipo") and a.tipo == d["tipo"] and (not d.get("regra") or a.regra_aplicada == d["regra"]))
                     or (d.get("regra") and not d.get("tipo") and not d.get("verificacao") and a.regra_aplicada == d["regra"]))
-            if casa and _valor_casa(a, d["valor_total"]):
+            # "texto_contem": a dispensa vale só para o item cujo parágrafo cita esse trecho (ex.: o fornecedor) — vários itens com o mesmo valor não se confundem
+            if casa and _valor_casa(a, d["valor_total"]) and (not d.get("texto_contem") or d["texto_contem"] in (item.get("paragrafo") or "")):
                 item.update(severidade_final="informativo", revisado_por="humano:dispensa", revisado_em=agora,
                             motivo_divergencia_da_sugestao=f"Retirado do relatório por decisão de {d['decidido_por']} em {d['data']}: {d['motivo']}")
                 n += 1
