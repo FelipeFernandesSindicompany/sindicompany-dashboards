@@ -6,7 +6,8 @@
     "resumo": "INSS de autônomo (R$ 273,25): o anexo é um relatório da folha, não o comprovante de pagamento da guia",
     "documento": "anexo do lançamento 2440: 'Relatório Analítico de INSS - Agosto/2026'",
     "como": "O lançamento é 'AGO/2026 – INSS AUTONOMOS - DCTF-WEB – RFB - PAULO ROGERIO DE SOUZA' (R$ 273,25, 17/09/2026). Conferido visualmente no anexo: é o 'Relatório Analítico de INSS - Agosto/2026' do sistema da administradora (resumo da folha de agosto, com valor 'A recolher' de R$ 3.496,22 para o condomínio). Esse relatório é um demonstrativo de cálculo: não mostra o pagamento da guia (DARF/DCTF-Web) nem a data e o valor efetivamente pagos, e por isso não comprova o desembolso de R$ 273,25.",
-    "pergunta": "Podem anexar o comprovante de pagamento da guia do INSS de agosto/2026 (DARF/DCTF-Web) que mostre o valor de R$ 273,25 deste autônomo ou o valor total recolhido e como ele se divide entre os lançamentos?"
+    "pergunta": "Podem anexar o comprovante de pagamento da guia do INSS de agosto/2026 (DARF/DCTF-Web) que mostre o valor de R$ 273,25 deste autônomo ou o valor total recolhido e como ele se divide entre os lançamentos?",
+    "valor_exibido": 273.25
   },
   {
     "codigo": "2441",
@@ -15,6 +16,7 @@
     "resumo": "INSS de autônomo (R$ 273,25): o anexo é um relatório da folha, não o comprovante de pagamento da guia",
     "documento": "anexo do lançamento 2441: 'Relatório de Pagamentos - Autônomos - Agosto/2026'",
     "como": "O lançamento é 'AGO/2026 – INSS AUTONOMOS - DCTF-WEB – RFB - EDSON VIEIRA DA SILVA' (R$ 273,25, 17/09/2026). Conferido visualmente no anexo: é o 'Relatório de Pagamentos - Autônomos - Agosto/2026' (3 contratos, remuneração total de R$ 2.862,92), emitido em 21/09/2026. Nas duas primeiras linhas, o INSS do autônomo (R$ 96,96) somado ao INSS da empresa (R$ 176,29) dá R$ 273,25, igual ao valor listado; mas o documento é um relatório de pagamento de autônomos, não a guia nem o comprovante de pagamento do INSS (DARF/DCTF-Web), e portanto não comprova que o valor foi recolhido à Receita.",
-    "pergunta": "Podem anexar o comprovante de pagamento da guia do INSS de agosto/2026 (DARF/DCTF-Web) que mostre o valor de R$ 273,25 ou o total recolhido e como ele se divide entre os autônomos?"
+    "pergunta": "Podem anexar o comprovante de pagamento da guia do INSS de agosto/2026 (DARF/DCTF-Web) que mostre o valor de R$ 273,25 ou o total recolhido e como ele se divide entre os autônomos?",
+    "valor_exibido": 273.25
   }
 ]
