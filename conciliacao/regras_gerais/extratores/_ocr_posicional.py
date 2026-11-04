@@ -169,7 +169,7 @@ def valores_da_linha(l: dict, x_min: float = 0.0, folga: float = 5.0) -> list[tu
     return out
 
 
-def votar_valores(principal: list[dict], outras: list[list[dict]], x_min: float = 0.0, tol_x: float = 8.0):
+def votar_valores(principal: list[dict], outras: list[list[dict]], x_min: float = 0.0, tol_x: float = 8.0, sinal: str = "maioria"):
     """Cada linha da leitura principal recebe `l["_vs"]`: os números da linha, cada coluna com o valor MAIS COMUM entre as leituras
     (as colunas de uma mesma linha são reconhecidas pela posição do canto direito do número)."""
     from collections import Counter
@@ -193,7 +193,8 @@ def votar_valores(principal: list[dict], outras: list[list[dict]], x_min: float 
             topo = max(cont.values())
             melhor = next(round(abs(t[0]), 2) for t in g if cont[round(abs(t[0]), 2)] == topo)
             iguais = [t for t in g if round(abs(t[0]), 2) == melhor]
-            neg = sum(1 for t in iguais if t[0] < 0) * 2 > len(iguais)
+            # sinal: "maioria" (padrão) ou "qualquer" — em documento limpo o OCR às vezes PERDE o hífen do negativo em algumas resoluções e nunca inventa um
+            neg = (any(t[0] < 0 for t in iguais) if sinal == "qualquer" else sum(1 for t in iguais if t[0] < 0) * 2 > len(iguais))
             res.append((-melhor if neg else melhor, sum(t[1] for t in iguais) / len(iguais), iguais[0][2]))
         l["_vs"] = res
 
@@ -240,3 +241,63 @@ def gravar_pesquisavel(caminho: Path, paginas) -> None:
             out.close()
     except Exception:
         pass
+
+
+def escrever_pdf_pesquisavel(origem: Path, destino: Path, dpi: int = DPI) -> bool:
+    """PDF cujas páginas SEM texto (tabela desenhada como vetor/imagem, ex.: Balancete Mensal da Lello de set/2026) ganham uma camada de texto
+    invisível lida por OCR sobre a própria página; o que já tem texto fica como está. O leitor do balancete (que lê o texto do PDF) funciona então
+    como nos meses com texto. Os números são votados entre 5 resoluções (o hífen do negativo se perde em algumas) e depois conferidos pelas somas que o
+    próprio balancete traz (soma da seção x total, saldo anterior + créditos - débitos x saldo final): o leitor avisa quando não fecham.
+    Devolve False se o OCR não está disponível ou não leu nada."""
+    try:
+        import fitz
+
+        src = fitz.open(str(origem))
+        try:
+            sem_texto = [i for i in range(len(src)) if len(src[i].get_text().strip()) < 30]
+            if not sem_texto:
+                return False
+            principal = _ocr_palavras(origem, sem_texto, dpi)
+            if not principal:
+                return False
+            outras = [_ocr_palavras(origem, sem_texto, d) for d in (DPI_TRIAGEM,) + DPIS_VOTO + (500,)]
+            fmt = lambda v: f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")  # noqa: E731
+            out = fitz.open()
+            out.insert_pdf(src)
+            for i in sem_texto:
+                ls = _linhas(principal.get(i, []))
+                votar_valores(ls, [_linhas(o.get(i, [])) for o in outras], 0.0, sinal="qualquer")
+                p = out[i]
+                for l in ls:
+                    palavras = l["w"]
+                    if l.get("_vs"):
+                        x_ini = min(t[2][0] for t in l["_vs"]) - 0.5
+                        palavras = [w for w in palavras if w["x0"] < x_ini] + [
+                            {"t": fmt(t[0]), "x0": t[2][0], "top": t[2][1], "x1": t[2][2], "bottom": t[2][3]} for t in l["_vs"]]
+                    # mesma linha de base para todas as palavras da linha (a caixa do OCR de palavras com cedilha/til desce mais e o leitor as separaria em linhas)
+                    bases = sorted(w["bottom"] for w in palavras)
+                    alts = sorted(max(w["bottom"] - w["top"], 4.0) for w in palavras)
+                    base_l, alt_l = bases[len(bases) // 2], alts[len(alts) // 2]
+                    for k, w in enumerate(palavras):
+                        larg = max(w["x1"] - w["x0"], 1.0)
+                        tam = min(alt_l * 0.8, 11.0)
+                        comp = fitz.get_text_length(w["t"], fontname="helv", fontsize=tam)
+                        if comp <= 0:
+                            continue
+                        esc = larg / comp
+                        # a partir da 2ª palavra da linha, um espaço real ANTES dela (dentro do vão entre as palavras): sem ele o leitor cola as vizinhas
+                        # ("COMPOSIÇÃODE", "CONTACONDOMINIO")
+                        if k > 0:
+                            sp = fitz.get_text_length(" ", fontname="helv", fontsize=tam) * esc
+                            ponto = fitz.Point(w["x0"] - sp, base_l - alt_l * 0.2)
+                            p.insert_text(ponto, " " + w["t"], fontname="helv", fontsize=tam, render_mode=3, morph=(ponto, fitz.Matrix(esc, 1)))
+                        else:
+                            ponto = fitz.Point(w["x0"], base_l - alt_l * 0.2)
+                            p.insert_text(ponto, w["t"], fontname="helv", fontsize=tam, render_mode=3, morph=(ponto, fitz.Matrix(esc, 1)))
+            out.save(str(destino), garbage=3, deflate=True)
+            out.close()
+            return True
+        finally:
+            src.close()
+    except Exception:
+        return False

@@ -71,6 +71,9 @@ _DESP_MAP = [
     ('SINDICO PROFISSIONAL',            'Síndico Profissional'),
     ('CAIXA LOCAL',                     'Caixa Local'),
     ('DESCONTOS',                       'Descontos'),   # ago/2026: categoria impressa depois do TOTAL, mas incluída nele
+    ('SERVICO TERCERIZADO',             'Serv. Terceirizado'),   # set/2026: o arquivo imprime assim (sem o "I")
+    ('SERVICO TERCEIRIZADO',            'Serv. Terceirizado'),
+    ('SERVICOS TERCEIRIZADOS',          'Serv. Terceirizado'),
 ]
 
 
@@ -201,6 +204,13 @@ class Adapter(AdapterBase):
                     if val > 0:
                         cats[cat_canon] = cats.get(cat_canon, 0.0) + val
                     break
+            else:
+                # categoria que o mapa não conhece: entra com o nome impresso (a tabela de despesas nunca omite categoria; ver feedback_despesas_tabela_completa)
+                nome = re.sub(r'\s*-?[\d.]+,\d{2}.*$', '', linha).strip()
+                val = abs(_num(nums[0]))
+                if nome and val > 0:
+                    cats[nome.title()] = cats.get(nome.title(), 0.0) + val
+                    print(f"[AVISO] Jaú: categoria de despesa '{nome}' não está no mapa — mantida com o nome impresso")
         dados.categorias_despesa = cats
         soma = round(sum(cats.values()), 2)
         if total_impresso and abs(soma - total_impresso) > 0.02:

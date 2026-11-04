@@ -45,17 +45,17 @@ _RE_FIM_VALOR = re.compile(rf"^(?P<nome>.+?)\s+(?P<val>{_NUM})\s*$")
 _RE_QUATRO = re.compile(rf"^(?P<nome>.+?)\s+(?P<a>{_NUM})\s+(?P<b>{_NUM})\s+(?P<c>{_NUM})\s+(?P<d>{_NUM})\s*$")
 _RE_PERIODO = re.compile(r"Per[ií]odo\s+(\d{2})/(\d{2})/(\d{4})\s+at[eé]\s+(\d{2})/(\d{2})/(\d{4})", re.IGNORECASE)
 
-# cabeçalhos de seção (texto sem acento, maiúsculo) -> chave
+# cabeçalhos de seção (texto sem acento, maiúsculo) -> chave; o espaço entre as palavras é opcional (PDF lido por OCR pode colar "COMPOSIÇÃODE")
 _SECOES = [
-    (re.compile(r"^COMPOSICAO DE ARRECADACAO"), "arrecadacao"),
-    (re.compile(r"^RESUMO DE ACORDOS"), "acordos"),
-    (re.compile(r"^COMPOSICAO RECEITAS? ORDINARIAS?"), "rec_ord"),
-    (re.compile(r"^COMPOSICAO DESPESAS? ORDINARIAS?"), "desp_ord"),
-    (re.compile(r"^RECEBIMENTO DE CONTAS EXTRAORDINARIAS?"), "rec_ext"),
-    (re.compile(r"^DESPESAS? DE CONTAS EXTRAORDINARIAS?"), "desp_ext"),
-    (re.compile(r"^RESUMO DE INADIMPLENCIA"), "inad"),
-    (re.compile(r"^RESUMO FINANCEIRO"), "resumo"),
-    (re.compile(r"^SALDO CAIXA LOCAL"), "caixa"),
+    (re.compile(r"^COMPOSICAO\s*DE\s*ARRECADACAO"), "arrecadacao"),
+    (re.compile(r"^RESUMO\s*DE\s*ACORDOS"), "acordos"),
+    (re.compile(r"^COMPOSICAO\s*RECEITAS?\s*ORDINARIAS?"), "rec_ord"),
+    (re.compile(r"^COMPOSICAO\s*DESPESAS?\s*ORDINARIAS?"), "desp_ord"),
+    (re.compile(r"^RECEBIMENTO\s*DE\s*CONTAS\s*EXTRAORDINARIAS?"), "rec_ext"),
+    (re.compile(r"^DESPESAS?\s*DE\s*CONTAS\s*EXTRAORDINARIAS?"), "desp_ext"),
+    (re.compile(r"^RESUMO\s*DE\s*INADIMPLENCIA"), "inad"),
+    (re.compile(r"^RESUMO\s*FINANCEIRO"), "resumo"),
+    (re.compile(r"^SALDO\s*CAIXA\s*LOCAL"), "caixa"),
 ]
 _TITULOS = {
     "arrecadacao": "COMPOSIÇÃO DE ARRECADAÇÃO", "acordos": "RESUMO DE ACORDOS",

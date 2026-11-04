@@ -371,6 +371,17 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     storage.write_status(version_dir, "extrair")
 
     entrada = storage.copy_input_file(version_dir, arquivo, arquivo.name)
+    if condo.get("ocr_pdf_sem_texto") and entrada.suffix.lower() == ".pdf" and _pdf_sem_texto(entrada):
+        # PDF sem camada de texto (tabela desenhada como vetor/imagem): a cópia de trabalho (version_dir/input, que o leitor, as regras e os prints
+        # usam) ganha uma camada de texto lida por OCR; o arquivo original na pasta do projeto não é alterado
+        from conciliacao.regras_gerais.extratores._ocr_posicional import escrever_pdf_pesquisavel
+
+        tmp = entrada.with_name(entrada.stem + "__ocr.pdf")
+        if escrever_pdf_pesquisavel(entrada, tmp):
+            tmp.replace(entrada)
+            print("[AVISO] o PDF enviado não tem camada de texto: lido por OCR (os números são conferidos pelas somas do próprio balancete).")
+        else:
+            print("[AVISO] o PDF enviado não tem camada de texto e o OCR não está disponível/não leu nada.")
     aviso_periodo = checagens_leitura.verificar_periodo(entrada, mes)
     if aviso_periodo:
         print(f"[AVISO] {aviso_periodo}")
