@@ -245,7 +245,7 @@
       }
     },
     "giardino_d_italia": {
-      "aviso_escopo": "O balancete completo (com os lançamentos individuais, comprovantes e notas fiscais) não foi enviado. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento, nem comprovantes e notas fiscais. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
+      "aviso_escopo": "Os comprovantes e as notas fiscais não foram conferidos, pois o arquivo com os comprovantes (balancete completo, com os lançamentos individuais) não foi enviado para a validação. Esta validação utilizou a prestação de contas disponível no portal da Administradora, que não permite conferir lançamento a lançamento. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite.",
       "pasta_prestacao": "Dashboard de Análise de Balancete Giardino D'Itália",
       "regras": {
         "gestor": {}
