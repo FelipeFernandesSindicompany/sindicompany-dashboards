@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -54279.88,
+    "motivo": "saldo negativo (CAIXA ORDINARIO e CONSUMOS) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-05"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 9521.15,
+    "motivo": "conta CAIXA ORDINARIO pagou R$ 9.521,15 a mais do que recebeu no mês: ponto de atenção retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-05"
+  }
+]
