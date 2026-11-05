@@ -114,8 +114,9 @@ def _num_signed(s) -> float:
         return 0.0
     if isinstance(s, (int, float)):
         return float(s)
-    negativo = str(s).strip().startswith('-')
-    s = re.sub(r"[^\d,.\-]", "", str(s).strip())
+    s_stripped = str(s).strip()
+    negativo = s_stripped.startswith('-') or s_stripped.startswith('(')
+    s = re.sub(r"[^\d,.\-]", "", s_stripped)
     if not s:
         return 0.0
     s = s.replace(".", "").replace(",", ".")
@@ -129,8 +130,12 @@ def _num_signed(s) -> float:
 
 
 def _e_pagina_dados(txt: str) -> bool:
-    """Retorna True se a página tem dados reais (não é o índice)."""
-    return bool(re.search(r"Per[íi]odo:\s*\d{2}/\d{2}/\d{4}", txt))
+    """Retorna True se a página tem dados reais (não é o índice).
+    Aceita 'Período: dd/mm/YYYY' (Lirba padrão) ou 'De dd/mm/YYYY até' (W016B)."""
+    return bool(
+        re.search(r"Per[íi]odo:\s*\d{2}/\d{2}/\d{4}", txt)
+        or re.search(r"De\s+\d{2}/\d{2}/\d{4}\s+at[eé]", txt)
+    )
 
 
 def _e_webware(textos: list) -> bool:
@@ -155,6 +160,13 @@ def _e_gcont(textos: list) -> bool:
         if "gcont.net.br" in t.lower() or "ADMINISTRADORA GCONT" in t:
             return True
     return False
+
+
+def _e_w015d(textos: list) -> bool:
+    """Detecta Pasta Digital Conister (W015D + W018L): não tem W016B Resumo Financeiro."""
+    tem_w015d = any("W015D" in t for t in textos)
+    tem_resumo_fin = any("Resumo Financeiro" in t for t in textos)
+    return tem_w015d and not tem_resumo_fin
 
 
 class AdapterLirbaPDF(AdapterBase):
@@ -187,6 +199,8 @@ class AdapterLirbaPDF(AdapterBase):
             self._parsear_hsa_balancete(textos, texto_completo, dados)
         elif _e_webware(textos):
             self._parsear_webware(textos, texto_completo, dados)
+        elif _e_w015d(textos):
+            self._parsear_w015d(textos, texto_completo, dados)
         else:
             self._parsear_lirba(textos, texto_completo, dados)
 
@@ -221,14 +235,20 @@ class AdapterLirbaPDF(AdapterBase):
             in_resumo = False
             for linha in linhas:
                 l = linha.strip()
-                if "Resumo Financeiro" in l and "Saldo" in l:
+                # Trigger padrão Lirba: "Resumo Financeiro Contábil Saldo anterior ..."
+                # Trigger W016B:       "Resumo Financeiro" sozinho na linha (sem números)
+                if "Resumo Financeiro" in l and (
+                    "Saldo" in l or not l.replace("Resumo Financeiro", "").strip()
+                ):
                     in_resumo = True
                     continue
                 if not in_resumo:
                     continue
 
                 # Busca 4 números consecutivos na linha (podem ter sinal negativo)
-                nums_raw = re.findall(r"-?[\d.,]{1,}[\d]", l)
+                # W016B usa notação contábil (1.234,56) para negativos — normaliza antes
+                l_norm = re.sub(r'\(([\d.,]+)\)', r'-\1', l)
+                nums_raw = re.findall(r"-?[\d.,]{1,}[\d]", l_norm)
                 nums_f = []
                 for n in nums_raw:
                     try:
@@ -240,7 +260,7 @@ class AdapterLirbaPDF(AdapterBase):
                 if len(nums_f) < 4:
                     continue
 
-                nome = re.sub(r"[\s\d.,\-]+$", "", l).strip().upper()
+                nome = re.sub(r"[\s\d.,\-]+$", "", l_norm).strip().upper()
                 if not nome:
                     continue
                 # Exclui carimbos de emissão que têm data/hora no nome
@@ -253,7 +273,7 @@ class AdapterLirbaPDF(AdapterBase):
                 cr, db = nums_f[1], nums_f[2]
                 sal = _num_signed(nums_raw[3]) if len(nums_raw) >= 4 else nums_f[3]
 
-                if nome.startswith("TOTAL"):
+                if nome.startswith("TOTAL") or nome.upper().startswith("SALDO FINAL"):
                     dados.saldo_anterior    = sa
                     dados.receita_realizada = cr
                     dados.despesa_total     = db
@@ -1665,6 +1685,104 @@ class AdapterLirbaPDF(AdapterBase):
                         # Pega o primeiro número (valor individual, não acumulado)
                         total += br_to_float(nums[0])
         return round(total, 2)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # SUB-FORMATO E — W015D Pasta Digital Conister (W018L + W015D, sem W016B)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _parsear_w015d(self, textos: list, texto_completo: str, dados: DadosFinanceiros):
+        """
+        Extrai dados do formato 'Pasta Digital' Conister (W018L + W015D sem W016B).
+        A página W015D contém Demonstrativo de Despesas + Resumo com totais do mês.
+        Não há breakdown por conta bancária neste formato.
+        """
+        pcfg         = self.parser_config
+        cat_map_extra = pcfg.get("cat_map", {})
+
+        for txt in textos:
+            if "W015D" not in txt:
+                continue
+
+            lines = txt.split("\n")
+
+            # ── Resumo: saldo anterior, receitas, despesas, saldo final ─────────
+            # Padrão:
+            #   Resumo
+            #   Saldo em DD/MM/YYYY  31.899,18     ← saldo anterior
+            #   Receitas             25.909,50
+            #   Despesas             24.762,62
+            #   Saldo em DD/MM/YYYY  33.046,06     ← saldo final
+            in_resumo = False
+            saldo_count = 0
+            for l in lines:
+                l = l.strip()
+                if re.match(r"^Resumo\s*$", l):
+                    in_resumo = True
+                    continue
+                if not in_resumo:
+                    continue
+                nums = re.findall(r"[\d.]+,\d{2}", l)
+                if not nums:
+                    continue
+                val = _num(nums[-1])
+                if re.match(r"Saldo em", l, re.IGNORECASE):
+                    saldo_count += 1
+                    if saldo_count == 1:
+                        dados.saldo_anterior = val
+                    else:
+                        dados.saldo_atual = val
+                elif re.match(r"Receitas", l, re.IGNORECASE):
+                    dados.receita_realizada = val
+                elif re.match(r"Despesas", l, re.IGNORECASE):
+                    dados.despesa_total = val
+
+            if dados.saldo_atual == 0 and dados.receita_realizada > 0:
+                dados.saldo_atual = round(
+                    dados.saldo_anterior + dados.receita_realizada - dados.despesa_total, 2
+                )
+
+            # ── Despesas por categoria (linhas "Total de X Y% Z") ───────────────
+            cat_totais: dict = {}
+            for l in lines:
+                l = l.strip()
+                m = re.match(
+                    r"Total de\s+(.+?)\s+([\d]+[,.][\d]+%)\s+([\d.,]+)\s*$",
+                    l, re.IGNORECASE
+                )
+                if m:
+                    cat_raw = m.group(1).strip()
+                    val     = _num(m.group(3))
+                    if val > 0:
+                        # Aplica cat_map se configurado
+                        cat_name = cat_map_extra.get(cat_raw, cat_map_extra.get(cat_raw.upper(), cat_raw))
+                        cat_totais[cat_name] = cat_totais.get(cat_name, 0) + val
+
+            # Preenche categorias_despesa (exclui linhas que somam "Total de Despesas")
+            if cat_totais:
+                for c, v in cat_totais.items():
+                    if not re.match(r"^Despesas$", c, re.IGNORECASE):
+                        dados.categorias_despesa[c] = dados.categorias_despesa.get(c, 0) + v
+
+            break  # primeira página W015D é suficiente
+
+        # Banco: sem breakdown — usa saldo_atual como cc (conta única)
+        if dados.banco_cc == 0:
+            dados.banco_cc = dados.saldo_atual
+
+        # prev = receita realizada (sem orçamento neste formato)
+        if dados.receita_prevista == 0:
+            dados.receita_prevista = dados.receita_realizada
+
+        # Inadimplência via W002C
+        for txt in textos:
+            if "W002C" not in txt:
+                continue
+            m = re.search(r"Total\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)", txt)
+            if m:
+                total_val = _num(m.group(1))
+                if total_val > 0:
+                    dados.inadimplencia_valor = total_val
+            break
 
     # ──────────────────────────────────────────────────────────────────────────
     # ler_xlsx — redireciona para ler_pdf
