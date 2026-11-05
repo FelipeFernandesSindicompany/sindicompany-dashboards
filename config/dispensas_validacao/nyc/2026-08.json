@@ -1,0 +1,9 @@
+[
+  {
+    "tipo": "atraso_pagamento",
+    "valor_total": 767.72,
+    "motivo": "conferido visualmente na imagem do comprovante (Bradesco Pag-For, boleto da Vila Velha Serviços, cód. 0008): vencimento 16/08/2026 (domingo) e pagamento 17/08/2026 (segunda-feira) — sem atraso; a leitura automática havia lido o mês 06 no lugar de 08",
+    "decidido_por": "conferência visual do comprovante",
+    "data": "2026-11-05"
+  }
+]

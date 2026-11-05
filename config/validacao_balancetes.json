@@ -372,6 +372,7 @@
     },
     "nyc": {
       "pasta_prestacao": "Dashboard de Análise de Balancete NYC Berrini",
+      "aviso_escopo_por_extensao": {".pdf": "Os comprovantes e as notas fiscais não foram conferidos, pois o arquivo com os comprovantes não foi enviado para a validação (o arquivo recebido traz apenas o demonstrativo de contas e o demonstrativo de despesas, sem os comprovantes anexados). Por isso esta validação conferiu somente os saldos, as categorias e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."},
       "regras": {
         "receita_negativa": {
           "estruturais": [

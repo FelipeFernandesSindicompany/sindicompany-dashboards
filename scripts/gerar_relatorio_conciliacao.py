@@ -164,7 +164,8 @@ GERAR_ACHADOS_POR_CONDO = {
     # NYC (webware) não tem "Demonstrativo de Despesas" separado nem
     # total confiável pra checar soma — só duplicidade (a mesma função
     # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
-    "nyc": gerar_achados_datadigitus,
+    "nyc": lambda registros, *a, **kw: (gerar_achados_lirba if any(r.tipo_documento == "comprovante_anexado" for r in registros)
+                                        else gerar_achados_datadigitus)(registros, *a, **kw),   # Pasta Digital (com comprovantes) x impressão do Webware / resumo
     # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
     # (PDF) em 2026 — mesma regra de matching do Lirba.
     "baturite": gerar_achados_planilha_com_links,
@@ -562,7 +563,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
                        "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria",
-                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "despesa_negativa"}
+                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "despesa_negativa", "atraso_pagamento"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo", "valor_ocr_comprovante_diverge_valor_listagem",
                         "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor"}
@@ -880,6 +881,19 @@ def _pdf_sem_texto(pdf_origem) -> bool:
         doc = fitz.open(str(pdf_origem))
         try:
             return sum(len(doc[i].get_text().strip()) for i in range(min(len(doc), 12))) <= 200
+        finally:
+            doc.close()
+    except Exception:
+        return False
+
+
+def _arquivo_da_convicta(pdf_origem) -> bool:
+    """O PDF é da Convicta Imóveis (o cabeçalho da 1ª página traz o e-mail/site da administradora)."""
+    try:
+        import fitz
+        doc = fitz.open(str(pdf_origem))
+        try:
+            return "convicta" in (doc[0].get_text() or "").lower()
         finally:
             doc.close()
     except Exception:
@@ -1334,6 +1348,8 @@ def etapa_render(condo: dict, mes: str) -> Path:
         "serra_da_mantiqueira": "FL Condomínios",
         "palm_beach": "Group Condomínios",
     }
+    if condo["id"] == "nyc" and pdf_origem is not None and _arquivo_da_convicta(pdf_origem):
+        ADMINISTRADORA_LABEL_POR_CONDO["nyc"] = "Convicta Imóveis"      # set/2026: a administradora mudou (Manager ADM até ago/2026)
     administradora_label = ADMINISTRADORA_LABEL_POR_CONDO.get(
         condo["id"], ADMINISTRADORA_LABEL.get(condo["empresa_gestora"], condo["empresa_gestora"])
     )
