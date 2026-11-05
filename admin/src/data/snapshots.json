@@ -761,8 +761,8 @@
     }
   },
   "Dashboard_Financeiro_PlanoEstacaoCampoLimpo.html": {
-    "lastKey": "jun26",
-    "lastMonth": "Jun/26",
+    "lastKey": "jul26",
+    "lastMonth": "Jul/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -777,15 +777,16 @@
       "mar26",
       "abr26",
       "mai26",
-      "jun26"
+      "jun26",
+      "jul26"
     ],
     "data": {
-      "tit": "Junho / 2026",
-      "tAtual": 67811.92,
-      "tCred": 152194.86,
-      "tDeb": 135393.73,
+      "tit": "Julho / 2026",
+      "tAtual": 0,
+      "tCred": 0,
+      "tDeb": 0,
       "inad": 0,
-      "tAnt": 51010.79
+      "tAnt": 0
     }
   },
   "Dashboard_Financeiro_PortSaintTropez.html": {
