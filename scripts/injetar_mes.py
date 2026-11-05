@@ -515,9 +515,13 @@ def bal_para_js(bloco: dict, chave: str,
         return "'" + str(s).replace("\\", "\\\\").replace("'", "\\'") + "'"
 
     # ── partes reutilizáveis ──────────────────────────────────────────────────
+    _JS_IDENT = re.compile(r'^[a-zA-Z_$À-ʯḀ-ỿ][a-zA-Z0-9_$À-ʯḀ-ỿ]*$')
     b = bloco["banco"]
-    # Serializa todos os campos do banco (cc/cdb/priv + extras como itauvest)
-    banco_js = "{" + ",".join(f"{k}:{_n(v)}" for k, v in b.items()) + "}"
+    # Serializa todos os campos do banco — cita chaves que não são identificadores JS válidos
+    banco_js = "{" + ",".join(
+        f"{k if _JS_IDENT.match(k) else _q(k)}:{_n(v)}"
+        for k, v in b.items()
+    ) + "}"
 
     inad_rec_val = _n(bloco.get("inadRec", 0))
 
