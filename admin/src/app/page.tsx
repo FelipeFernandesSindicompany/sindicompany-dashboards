@@ -58,9 +58,13 @@ function buildStatuses(): CondominioStatus[] {
         // "Em dia" se o dashboard tem dados do mês esperado OU mais recente
         status = monthKeyToNum(bal.lastKey) >= expectedNum ? 'current' : 'pending';
       }
-      // Só mostra erro se o dashboard NÃO está em dia — se já tem o mês esperado,
-      // uma tentativa de upload com erro é irrelevante (dados já estão lá)
-      if (status !== 'current' && lastImport?.status === 'error') status = 'error';
+      // Só mostra erro se o dashboard NÃO está em dia E a falha foi para o mês
+      // esperado (ou mais recente). Falha em mês antigo = condo apenas pendente.
+      if (status !== 'current' && lastImport?.status === 'error') {
+        const [fy, fm] = (lastImport.mes ?? '').split('-').map(Number);
+        const failedNum = (fy - 2000) * 12 + (fm - 1);
+        if (failedNum >= expectedNum) status = 'error';
+      }
 
       return {
         condominio: condo,
