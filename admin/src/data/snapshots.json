@@ -906,11 +906,11 @@
     ],
     "data": {
       "tit": "Agosto / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
+      "tAtual": 36781.36,
+      "tCred": 25901.67,
+      "tDeb": 22166.37,
       "inad": 0,
-      "tAnt": 0
+      "tAnt": 33046.06
     }
   },
   "Dashboard_Financeiro_UpperItaim.html": {
