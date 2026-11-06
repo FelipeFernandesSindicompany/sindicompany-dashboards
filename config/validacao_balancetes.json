@@ -3,6 +3,7 @@
   "condominios": {
     "alvorada": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Alvorada",
+      "leitor_financeiro": "regras_gerais",
       "regras": {
         "rendimento": {
           "base": "atual",
