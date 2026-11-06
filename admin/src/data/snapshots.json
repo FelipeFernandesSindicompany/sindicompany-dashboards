@@ -441,21 +441,22 @@
     }
   },
   "Dashboard_Financeiro_Jau.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 34359.43,
-      "tCred": 84089.48,
-      "tDeb": 62063.14,
+      "tit": "Setembro / 2026",
+      "tAtual": 57395.68,
+      "tCred": 143693.54,
+      "tDeb": 120657.29,
       "inad": 91637.41,
-      "tAnt": 12333.09
+      "tAnt": 34359.43
     }
   },
   "Dashboard_Financeiro_IGloo.html": {
