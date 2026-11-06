@@ -826,8 +826,8 @@
     }
   },
   "Dashboard_Financeiro_SaintAfonso.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "jun25",
       "jul25",
@@ -843,15 +843,16 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 54771.48,
-      "tCred": 138457.98,
-      "tDeb": 194953.23,
+      "tit": "Setembro / 2026",
+      "tAtual": 37052.83,
+      "tCred": 97121.14,
+      "tDeb": 114839.79,
       "inad": 0,
-      "tAnt": 111266.73
+      "tAnt": 54771.48
     }
   },
   "Dashboard_Financeiro_SplendorSquare.html": {
