@@ -31,9 +31,9 @@
     "tipo": "rendimento_desproporcional",
     "valor_total": 195.21,
     "reescrever": {
-      "titulo": "Rendimento do mês (R$ 1.250,48) não distribuído de acordo com o saldo das contas",
-      "paragrafo": "O extrato bancário registra os rendimentos do mês em um único crédito de R$ 1.250,48 (\"CRED DISPONIVEL C/C\", em 30/09/2026), valor igual à soma dos rendimentos lançados no Demonstrativo de Contas: ORDINARIA R$ 195,21 (0,33% do saldo), MELHORIAS R$ 54,71 (0,46%), FUNDO DE RESERVA R$ 268,11 (0,35%), PROVISAO P/ 13o.SALARIO/FERIAS R$ 522,06 (0,40%) e FUNDO CLT R$ 210,39 (0,67%). Se o rendimento fosse distribuído de acordo com o saldo de cada conta (cerca de 0,40% sobre o saldo), o esperado seria: ORDINARIA R$ 237,57, MELHORIAS R$ 48,09, FUNDO DE RESERVA R$ 310,29, PROVISAO P/ 13o.SALARIO/FERIAS R$ 527,41 e FUNDO CLT R$ 127,12.",
-      "o_que_verificar": "Por que os rendimentos não foram distribuídos entre as contas de acordo com o saldo de cada uma? Qual foi o critério do rateio? Podem corrigir ou justificar?"
+      "titulo": "Rendimento da conta ORDINARIA (R$ 195,21) menor que o proporcional ao saldo — rendimento total do mês foi R$ 1.250,48",
+      "paragrafo": "Na conta ORDINARIA foi lançado rendimento de R$ 195,21 (0,33% do saldo), mas o extrato bancário mostra que o banco creditou, em 30/09/2026, um único valor de R$ 1.250,48 (\"CRED DISPONIVEL C/C\") de rendimentos, que corresponde à soma dos rendimentos lançados no Demonstrativo de Contas em todas as contas: ORDINARIA R$ 195,21, MELHORIAS R$ 54,71 (0,46% do saldo), FUNDO DE RESERVA R$ 268,11 (0,35%), PROVISAO P/ 13o.SALARIO/FERIAS R$ 522,06 (0,40%) e FUNDO CLT R$ 210,39 (0,67%). Como o rendimento deveria ser distribuído entre as contas de acordo com o saldo de cada uma (cerca de 0,40% sobre o saldo), o esperado seria: ORDINARIA R$ 237,57, MELHORIAS R$ 48,09, FUNDO DE RESERVA R$ 310,29, PROVISAO P/ 13o.SALARIO/FERIAS R$ 527,41 e FUNDO CLT R$ 127,12. Ou seja, a ORDINARIA recebeu R$ 42,36 a menos e o FUNDO CLT R$ 83,27 a mais do que o proporcional.",
+      "o_que_verificar": "Por que o rendimento de R$ 1.250,48 não foi distribuído entre as contas de acordo com o saldo de cada uma? Qual foi o critério do rateio? Podem corrigir ou justificar?"
     },
     "motivo": "texto reescrito por decisão do responsável: um único item sobre a distribuição do rendimento entre as contas, em vez de um item por conta",
     "decidido_por": "responsável pela validação",
