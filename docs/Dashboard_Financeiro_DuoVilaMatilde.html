@@ -752,7 +752,7 @@ window.onload=function(){
 
   var anosMeses={};MESES.forEach(function(k){var ano='20'+k.slice(-2);if(!anosMeses[ano])anosMeses[ano]=[];anosMeses[ano].push(k);});var anosDisp=Object.keys(anosMeses).sort();var anoAtivoBal=anosDisp[anosDisp.length-1];var selAno=document.getElementById('bal-sel-ano');var selMesEl=document.getElementById('bal-sel-mes');function popularMeses(ano){selMesEl.innerHTML='';var lista=anosMeses[ano]||[];lista.forEach(function(k){var opt=document.createElement('option');opt.value=k;opt.textContent=BAL[k].tit.split(' / ')[0];selMesEl.appendChild(opt);});if(lista.length)selMesEl.value=lista[lista.length-1];return lista;}anosDisp.forEach(function(a){var opt=document.createElement('option');opt.value=a;opt.textContent=a;selAno.appendChild(opt);});selAno.value=anoAtivoBal;selAno.addEventListener('change',function(){anoAtivoBal=selAno.value;var lista=popularMeses(anoAtivoBal);if(lista.length)selectMes(lista[lista.length-1]);});selMesEl.addEventListener('change',function(){selectMes(selMesEl.value);});var listaMeses=popularMeses(anoAtivoBal);selectMes(listaMeses[listaMeses.length-1]);
 
-  buildOrc();buildDespTbl();buildPvr();buildInad();buildBanco();buildCharts();
+  buildDespTbl();buildInad();buildBanco();buildCharts();
 
 };
 
