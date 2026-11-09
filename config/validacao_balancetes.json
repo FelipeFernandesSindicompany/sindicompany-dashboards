@@ -660,6 +660,12 @@
         "gestor": {}
       }
     },
+    "duo_vila_matilde": {
+      "pasta_prestacao": "Dashboard de Análise de Balancete Duo Vila Matilde",
+      "regras": {
+        "gestor": {}
+      }
+    },
     "gardens_living_club": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Gardens Living Club",
       "leitor_financeiro": "regras_gerais",

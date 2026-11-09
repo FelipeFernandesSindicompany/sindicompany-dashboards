@@ -1234,6 +1234,19 @@
         "orcamento_mensal": 0,
         "cat_map": {}
       }
+    },
+    {
+      "id": "duo_vila_matilde",
+      "nome": "Duo Vila Matilde",
+      "empresa_gestora": "ucondo_pdf",
+      "pasta_dados": "data/duo_vila_matilde",
+      "html_file": "Dashboard_Financeiro_DuoVilaMatilde.html",
+      "ativo": false,
+      "cor": "#7c3aed",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
     }
   ],
   "empresas": {

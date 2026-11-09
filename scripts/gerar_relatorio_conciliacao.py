@@ -1347,6 +1347,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         "plano_estacao_campo_limpo": "Foccus",
         "serra_da_mantiqueira": "FL Condomínios",
         "palm_beach": "Group Condomínios",
+        "duo_vila_matilde": "Danilo Porto Padua",     # mesmo sistema (uCondo) do Saint Simon, mas a administradora do PDF é a Danilo Porto Padua
     }
     if condo["id"] == "nyc" and pdf_origem is not None and _arquivo_da_convicta(pdf_origem):
         ADMINISTRADORA_LABEL_POR_CONDO["nyc"] = "Convicta Imóveis"      # set/2026: a administradora mudou (Manager ADM até ago/2026)
