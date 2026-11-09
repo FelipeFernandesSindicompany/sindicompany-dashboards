@@ -724,7 +724,9 @@ window.onload=function(){
 
   var tR=0,tD=0;
 
-  MESES.forEach(function(k){if(k!==MESES[0]){tR+=BAL[k].tCred;tD+=BAL[k].tDeb;}});
+  MESES.forEach(function(k){if(MESES.length===1||k!==MESES[0]){tR+=BAL[k].tCred;tD+=BAL[k].tDeb;}});
+
+  var recLabel=MESES.length===1?'Receitas ('+ab(ul.tit)+')':'Receitas (excl. '+ab(pr.tit)+')';
 
   document.getElementById('geral-kpis').innerHTML=
 
@@ -732,7 +734,7 @@ window.onload=function(){
 
     kpi('F. Reserva ('+ab(ul.tit)+')',R(ul.banco.cdb),'o','Fundo de Reserva acumulado')+
 
-    kpi('Receitas (excl. '+ab(pr.tit)+')',R(tR),'g','Total do período')+
+    kpi(recLabel,R(tR),'g','Total do período')+
 
     kpi('Despesas Acumuladas',R(tD),'y','Total do período');
 
