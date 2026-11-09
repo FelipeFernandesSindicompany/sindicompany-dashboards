@@ -1331,9 +1331,9 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'001 - Conta Corrente',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('Corrente')!==-1;});return c?c.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1.5,borderRadius:3,borderSkipped:false},
+    {label:'001 - Conta Banco Cora',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('Cora')!==-1||x.n.indexOf('001')!==-1;});return c?c.s:0;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1.5,borderRadius:3,borderSkipped:false},
 
-    {label:'002 - Banco Inter',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('Inter')!==-1;});return c?c.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1.5,borderRadius:3,borderSkipped:false}]},
+    {label:'002 - Conta pool (Bradesco)',data:MESES.map(function(k){var c=BAL[k].contas.find(function(x){return x.n.indexOf('Bradesco')!==-1||x.n.indexOf('pool')!==-1||x.n.indexOf('002')!==-1;});return c?c.s:0;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1.5,borderRadius:3,borderSkipped:false}]},
 
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  '+c.dataset.label+': '+fR(c.raw);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
