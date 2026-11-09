@@ -1079,6 +1079,21 @@
       "tAnt": 50960.11
     }
   },
+  "Dashboard_Financeiro_DuoVilaMatilde.html": {
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
+    "allKeys": [
+      "set26"
+    ],
+    "data": {
+      "tit": "Setembro / 2026",
+      "tAtual": 190638.49,
+      "tCred": 247324.92,
+      "tDeb": 213087.59,
+      "inad": 0,
+      "tAnt": 156401.16
+    }
+  },
   "Dashboard_Financeiro_SaintSimon.html": {
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
