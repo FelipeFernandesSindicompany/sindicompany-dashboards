@@ -427,7 +427,7 @@ def ocr_paginas(caminho_pdf: Path, indices_0based, dpi: int = 150, lang: str = "
         faltam = []
         for i in indices:
             t = cache.get(_chave(i))
-            if t is None:
+            if t is None or (nativa and _texto_pobre(t)):     # leitura pobre guardada antes da correção acima: refaz
                 faltam.append(i)
             else:
                 resultado[i] = t
@@ -469,6 +469,17 @@ def ocr_paginas(caminho_pdf: Path, indices_0based, dpi: int = 150, lang: str = "
                         resultado[i] = novo
                 except Exception:
                     pass
+        # `nativa` escolhe a maior imagem por PIXELS; se o logo da administradora for maior que o recibo do banco (ex.: logo uCondo 625x372 x
+        # recibo Cora 292x573), a leitura sai só com o logo. Leitura pobre -> relê a página renderizada inteira.
+        if nativa:
+            for i in faltam:
+                if 0 <= i < len(doc) and _texto_pobre(resultado.get(i, "")):
+                    try:
+                        novo = _ocr_imagem_pil_esparso(_renderizar(doc[i], dpi, mascarar[i], limiar), lang)
+                        if len(novo.strip()) > len(resultado.get(i, "").strip()):
+                            resultado[i] = novo
+                    except Exception:
+                        pass
         if impressao:
             for i in faltam:
                 if i in resultado and _chave(i) not in _cache_mem.get(impressao, {}):
