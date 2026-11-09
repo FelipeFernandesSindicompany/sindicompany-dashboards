@@ -186,8 +186,8 @@
     }
   },
   "Dashboard_Financeiro_ClubParkButanta.html": {
-    "lastKey": "set26",
-    "lastMonth": "Set/26",
+    "lastKey": "ago26",
+    "lastMonth": "Ago/26",
     "allKeys": [
       "mai25",
       "jun25",
@@ -204,16 +204,15 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26",
-      "set26"
+      "ago26"
     ],
     "data": {
-      "tit": "Setembro / 2026",
-      "tAtual": 0,
-      "tCred": 0,
-      "tDeb": 0,
-      "inad": 0,
-      "tAnt": 0
+      "tit": "Agosto / 2026",
+      "tAtual": 2021111.97,
+      "tCred": 984008.65,
+      "tDeb": 922969.63,
+      "inad": 40928.61,
+      "tAnt": 1960072.95
     }
   },
   "Dashboard_Financeiro_FattoMorumbi.html": {
@@ -705,8 +704,8 @@
     }
   },
   "Dashboard_Financeiro_PadreCarvalho.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -724,15 +723,16 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 143240.94,
-      "tCred": 88151.78,
-      "tDeb": 85027.75,
+      "tit": "Setembro / 2026",
+      "tAtual": 151277.17,
+      "tCred": 91315.85,
+      "tDeb": 83279.62,
       "inad": 0,
-      "tAnt": 140116.91
+      "tAnt": 143240.94
     }
   },
   "Dashboard_Financeiro_Patricia.html": {
