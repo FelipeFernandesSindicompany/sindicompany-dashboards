@@ -1034,17 +1034,17 @@ function buildInad(){
 
 function buildBanco(){
 
-  function sCor(m){var c=m.contas.find(function(x){return x.n.indexOf('Corrente')!==-1;});return c?c.s:0;}
+  function sCora(m){var c=m.contas.find(function(x){return x.n.indexOf('Cora')!==-1||x.n.indexOf('001')!==-1;});return c?c.s:0;}
 
-  function sInt(m){var c=m.contas.find(function(x){return x.n.indexOf('Inter')!==-1;});return c?c.s:0;}
+  function sBrad(m){var c=m.contas.find(function(x){return x.n.indexOf('Bradesco')!==-1||x.n.indexOf('pool')!==-1||x.n.indexOf('002')!==-1;});return c?c.s:0;}
 
   function fmtS(v){if(v===0)return '<span style="color:var(--muted)">—</span>';var cl=v<0?'color:var(--r)':'';return '<span style="'+cl+'">'+R(v)+'</span>';}
 
-  var h='<tr><th>Mês</th><th class="nr">001 - Conta Corrente</th><th class="nr">002 - Banco Inter</th><th class="nr">Total</th></tr>';
+  var h='<tr><th>Mês</th><th class="nr">001 - Conta Banco Cora</th><th class="nr">002 - Conta pool (Bradesco)</th><th class="nr">Total</th></tr>';
 
   MESES.forEach(function(k){
 
-    var m=BAL[k],sc=sCor(m),si=sInt(m);
+    var m=BAL[k],sc=sCora(m),si=sBrad(m);
 
     var tcls=m.tAtual<0?' style="color:var(--r)"':'';
 
@@ -1108,9 +1108,9 @@ function buildCharts(){
 
   mkC('cContas',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Conta Condomínio',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'001 - Conta Banco Cora',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
 
-    {label:'F. Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'002 - Conta pool (Bradesco)',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
 
     {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
