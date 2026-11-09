@@ -1159,7 +1159,7 @@
       "empresa_gestora": "consvicta_pdf",
       "pasta_dados": "data/gardens_living_club",
       "html_file": "Dashboard_Financeiro_GardensLivingClub.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#15803d",
       "unidades": 400,
       "parser_config": {
