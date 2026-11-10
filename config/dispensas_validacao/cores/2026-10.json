@@ -5,5 +5,47 @@
     "motivo": "retirado do relatório de outubro/2026: o anexo do lançamento (BBZ - NF 58480, R$ 72,00) é a autorização de despesa AE 58.480 da própria BBZ — pagamento excepcional de atividade externa (reunião de conselho de 23/09/2026) — com o valor de R$ 72,00 igual ao pago",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-10"
+  },
+  {
+    "tipo": "nota_fiscal_ausente",
+    "valor_total": 97.33,
+    "motivo": "NF da Vila Velha (R$ 97,33) retirada do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "inadimplencia_arrecadacao",
+    "valor_total": 53206.1,
+    "motivo": "alerta de arrecadação/inadimplência retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -51307.34,
+    "motivo": "saldo negativo da conta ORDINARIA retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -3640.71,
+    "motivo": "saldo negativo da conta OBRAS/MELHORIAS retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 14.7,
+    "motivo": "rendimento creditado na ORDINARIA retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 20461.63,
+    "motivo": "contas de concessionária acima da mediana (Comgás) retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
   }
 ]
