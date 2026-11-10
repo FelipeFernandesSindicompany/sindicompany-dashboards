@@ -166,6 +166,10 @@ GERAR_ACHADOS_POR_CONDO = {
     # do DataDigitus cobre isso, mesmo sem total_conta_declarado).
     "nyc": lambda registros, *a, **kw: (gerar_achados_lirba if any(r.tipo_documento == "comprovante_anexado" for r in registros)
                                         else gerar_achados_datadigitus)(registros, *a, **kw),   # Pasta Digital (com comprovantes) x impressão do Webware / resumo
+    # Patrícia (Auxiliadora): planilha .xls / PDF sem comprovantes -> regras da Auxiliadora; PDF com links do portal de documentos (out/2026 em
+    # diante, comprovantes baixados) -> matching Lirba, igual ao Upper Itaim (ver conciliacao/condominios/patricia.py)
+    "patricia": lambda registros, *a, **kw: (gerar_achados_lirba if any(r.tipo_documento == "comprovante_anexado" for r in registros)
+                                             else gerar_achados_auxiliadora)(registros, *a, **kw),
     # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
     # (PDF) em 2026 — mesma regra de matching do Lirba.
     "baturite": gerar_achados_planilha_com_links,
@@ -742,6 +746,19 @@ def _valor_casa(a, valor_total: float) -> bool:
     return any(abs(c - valor_total) <= 0.01 for c in cands)
 
 
+def _achados_manuais(base_dir: Path, mes: str) -> list:
+    """Pontos que o RESPONSÁVEL pela validação pediu para incluir no relatório de um mês específico, em
+    config/achados_manuais/<condomínio>/<AAAA-MM>.json (versionado; só vale para aquele condomínio e mês — nenhum outro relatório muda):
+        [{"id": "MAN-0001", "titulo": "...", "paragrafo": "...", "o_que_verificar": "...", "valor": 102635.0, "linha": "DIVERSOS",
+          "severidade": "atencao", "decidido_por": "...", "data": "AAAA-MM-DD",
+          "evidencias": [{"pagina": 5, "buscar": "regex da linha", "legenda": "...", "linhas_contexto": 2, "arquivo": "outro.pdf (opcional)"}]}]
+    "evidencias" são os prints (mesmo formato de evidencias_extra.json). Sem o arquivo, nada é incluído."""
+    arq = ROOT / "config" / "achados_manuais" / base_dir.parent.parent.name / f"{mes}.json"
+    if not arq.exists():
+        return []
+    return json.load(open(arq, encoding="utf-8"))
+
+
 def _aplicar_dispensas(base_dir: Path, mes: str, achados: list, esqueleto: list) -> int:
     """Observação de gestor que o RESPONSÁVEL pela validação decidiu retirar do relatório de um mês específico, registrada em
     config/dispensas_validacao/<condomínio>/<AAAA-MM>.json (versionada, com quem decidiu e por quê):
@@ -845,8 +862,21 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
         achados = [a for a in achados if not (a.tipo not in ("ok_verificado",) and a.registros_relacionados
                                               and any(re.search(rf"_cod{re.escape(str(c))}$", k) for k in a.registros_relacionados for c in _cod_neg))]
         achados.append(_neg)
+    # pontos incluídos à mão pelo responsável (config/achados_manuais) — idempotente: sempre refeitos a partir do arquivo de configuração
+    achados = [a for a in achados if a.tipo != "achado_manual"]
+    _manuais = _achados_manuais(base_dir, mes)
+    for m in _manuais:
+        achados.append(Achado(id=m["id"], tipo="achado_manual", severidade_sugerida=m.get("severidade", "atencao"),
+                              regra_aplicada="inclusao_manual_do_responsavel", linha_demonstrativo=m.get("linha"),
+                              valor_encontrado=m.get("valor"),
+                              detalhes={"decidido_por": m.get("decidido_por"), "data": m.get("data")}))
     storage.write_dataclass_list(version_dir / "achados_brutos.json", achados)
     esqueleto = interpretacao.gerar_esqueleto(achados, registros)
+    for item in esqueleto:
+        m = next((x for x in _manuais if x["id"] == item["achado_id"]), None)
+        if m:
+            item.update(titulo=m["titulo"], paragrafo=m["paragrafo"], o_que_verificar=m["o_que_verificar"],
+                        revisado_por="humano:inclusao_manual", revisado_em=datetime.now(timezone.utc).isoformat())
     n_visuais = _aplicar_conferencia_visual(base_dir, mes, achados, esqueleto)
     _pergunta_sem_fatura_ja_anexada(achados, registros, esqueleto)
     _pergunta_nf_ja_anexada(achados, registros, esqueleto)
@@ -982,6 +1012,9 @@ def etapa_render(condo: dict, mes: str) -> Path:
         _specs_extras = json.loads((version_dir / "evidencias_extra.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         _specs_extras = {}
+    for _m in _achados_manuais(base_dir, mes):          # prints dos pontos incluídos à mão (config/achados_manuais)
+        if _m.get("evidencias") and _m["id"] not in _specs_extras:
+            _specs_extras[_m["id"]] = _m["evidencias"]
 
     # pasta do projeto onde ficam os arquivos dos meses (o arquivo "de origem" pode ser uma cópia em outra pasta): print do mês anterior sai daqui
     _pasta_meses = pasta_prestacao.pasta_do_condominio(condo) or (pdf_origem.parent if pdf_origem else Path("."))

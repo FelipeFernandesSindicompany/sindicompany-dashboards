@@ -1,0 +1,86 @@
+[
+  {
+    "id": "MAN-0001",
+    "severidade": "atencao",
+    "valor": 102635.0,
+    "linha": "DIVERSOS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Receita DIVERSOS de R$ 102.635,00 (PIX TRANSF VORTX) sem origem identificada — ORDINARIA",
+    "paragrafo": "Em 26/10/2026 a conta ORDINARIA recebeu R$ 102.635,00 no grupo de receitas DIVERSOS, com o histórico \"PIX TRANSF VORTX S26/10\" (lançamento 04977060). É 68% dos créditos da Ordinária no mês (R$ 153.676,27) e 1,8 vez a arrecadação do mês (R$ 57.650,06). O histórico não identifica quem pagou nem a que se refere o valor.",
+    "o_que_verificar": "O que é o pagamento da VORTX (PIX TRANSF VORTX S26/10, R$ 102.635,00)? Quem é o pagador, a que se refere e por que foi lançado como receita DIVERSOS na Ordinária? Podem enviar o documento que originou esse crédito?",
+    "evidencias": [
+      {
+        "pagina": 5,
+        "buscar": "PIX\\s+TRANSF\\s+VORTX",
+        "legenda": "Receitas — DIVERSOS: PIX TRANSF VORTX S26/10 (R$ 102.635,00)",
+        "linhas_contexto": 2
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "severidade": "atencao",
+    "valor": 1598.0,
+    "linha": "DIVERSOS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Mudança de descrição da receita DIVERSOS de R$ 1.598,00 (SISPAG CENTRAL INVEST I) — ORDINARIA",
+    "paragrafo": "Em 14/10/2026 foi lançada receita DIVERSOS de R$ 1.598,00 com o histórico \"SISPAG CENTRAL INVEST I\" (lançamento 04962707). Em setembro/2026 o mesmo valor (R$ 1.598,00, em 15/09/2026, lançamento 04932994) estava descrito como \"ALUGUEL APARTAMENTO DO ZELADOR\". O valor se repete, mas a descrição mudou e deixou de indicar a origem da receita.",
+    "o_que_verificar": "A receita de R$ 1.598,00 continua sendo o aluguel do apartamento do zelador? Por que o histórico passou a \"SISPAG CENTRAL INVEST I\" e quem é o pagador?",
+    "evidencias": [
+      {
+        "pagina": 5,
+        "buscar": "SISPAG\\s+CENTRAL\\s+INVEST",
+        "legenda": "Outubro/2026 — SISPAG CENTRAL INVEST I (R$ 1.598,00)",
+        "linhas_contexto": 2
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 5,
+        "buscar": "ALUGUEL\\s+APARTAMENTO\\s+DO\\s+ZELADOR",
+        "legenda": "Setembro/2026 — ALUGUEL APARTAMENTO DO ZELADOR (R$ 1.598,00)",
+        "linhas_contexto": 2
+      }
+    ]
+  },
+  {
+    "id": "MAN-0003",
+    "severidade": "atencao",
+    "valor": 235.29,
+    "linha": "DIVERSOS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Receita DIVERSOS de R$ 235,29 (TED 001.1897.SECRETARIA) sem identificação — ORDINARIA",
+    "paragrafo": "Em 06/10/2026 foi lançada receita DIVERSOS de R$ 235,29 com o histórico \"TED 001.1897.SECRETARIA\" (lançamento 04955670). O histórico traz só a indicação do TED, sem informar quem enviou o valor nem a que se refere.",
+    "o_que_verificar": "Do que se trata o TED 001.1897.SECRETARIA de R$ 235,29? Quem enviou e a que se refere?",
+    "evidencias": [
+      {
+        "pagina": 5,
+        "buscar": "TED\\s+001\\.1897",
+        "legenda": "Receitas — DIVERSOS: TED 001.1897.SECRETARIA (R$ 235,29)",
+        "linhas_contexto": 2
+      }
+    ]
+  },
+  {
+    "id": "MAN-0004",
+    "severidade": "atencao",
+    "valor": 4003.03,
+    "linha": "CONSUMOS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Fatura de água não debitada por falta de saldo e paga com atraso — ÁGUA/ESGOTO (R$ 4.003,03)",
+    "paragrafo": "O e-mail da Pagadoria anexado ao lançamento 04953524 (28/09/2026) informa que a fatura da Sabesp de R$ 4.003,03 não foi debitada em 25/09 por falta de saldo na conta, e que nem a Pagadoria nem o condomínio tinham a fatura (só o código de barras, enviado em 05/10). O pagamento foi feito em 05/10/2026, cerca de 10 dias depois. A fatura seguinte (R$ 3.996,64, vencimento 25/10) já traz R$ 18,01 de juros de mora e R$ 0,62 de atualização monetária. A fatura de R$ 4.003,03 não está anexada.",
+    "o_que_verificar": "Por que a conta não tinha saldo em 25/09 para o débito automático da Sabesp? Quem arcará com os juros de mora (R$ 18,01) e a atualização (R$ 0,62) cobrados na fatura seguinte? Podem enviar a fatura de R$ 4.003,03?",
+    "evidencias": [
+      {
+        "pagina": 3,
+        "buscar": "ÁGUA/ESGOTO\\s+-\\s+OUT/2026.{0,40}SABESP",
+        "buscar_alt": "OUT/2026\\s+-\\s+-\\s+RGI",
+        "legenda": "Despesas — ÁGUA/ESGOTO: lançamento 04953524 (R$ 4.003,03)",
+        "linhas_contexto": 2
+      }
+    ]
+  }
+]

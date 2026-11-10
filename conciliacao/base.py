@@ -91,6 +91,7 @@ TIPOS_ACHADO = {
     "variacao_categoria",        # categoria de despesa variou muito em relação ao mês anterior (só condomínios que pedem)
     "observacao_gestor",         # ponto que um gestor condominial questionaria, sem regra própria (só condomínios que pedem; sempre atenção, nunca "verificado")
     "compensacao_nao_fecha",     # entrada e saída de um mesmo grupo (ex.: estacionamento) não se anulam no mês
+    "achado_manual",             # ponto incluído à mão pelo responsável pela validação (config/achados_manuais/<condomínio>/<AAAA-MM>.json)
 }
 
 SEVERIDADES = {"critico", "alto", "atencao", "informativo"}

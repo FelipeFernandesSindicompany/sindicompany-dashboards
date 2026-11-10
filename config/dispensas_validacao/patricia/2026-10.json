@@ -1,0 +1,41 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -52765.8,
+    "motivo": "saldo negativo da ORDINARIA (R$ -52.765,80) retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 0.0,
+    "texto_contem": "A conta FUNDO DE OBRAS",
+    "motivo": "rendimento não creditado no FUNDO DE OBRAS retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "atraso_pagamento",
+    "valor_total": 999.78,
+    "reescrever": {
+      "titulo": "Atraso de pagamento com multa e juros — DESPESAS INTERNAS (R$ 1.020,11)",
+      "paragrafo": "O boleto de R$ 999,78 (J R INFOSEG, NF 192, material hidráulico) venceu em 22/09/2026 e foi pago em 23/09/2026, com R$ 20,33 de encargos (multa de R$ 19,99 e juros de R$ 0,34); o total pago foi R$ 1.020,11, que é o valor lançado.",
+      "o_que_verificar": "Por que o boleto foi pago após o vencimento? Quem arcará com os R$ 20,33 de multa e juros?"
+    },
+    "motivo": "texto ajustado com o valor realmente pago (R$ 1.020,11) e os encargos, conforme o comprovante do link do portal",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "conta_concessionaria_nao_anexada",
+    "valor_total": 3145.25,
+    "reescrever": {
+      "titulo": "Faturas de energia de setembro pagas com 15 dias de atraso — ENERGIA ELÉTRICA (R$ 113,57 e R$ 1.347,00)",
+      "paragrafo": "As faturas da Enel referentes a 09/2026 (instalação 203685962, R$ 113,57, e instalação 200011370, R$ 1.347,00) vencem em 23/09/2026 e foram pagas em 08/10/2026, 15 dias depois (lançamentos 04957317 e 04957318). O comprovante mostra o mesmo valor da fatura, sem multa ou juros. As duas faturas de outubro (R$ 1.571,60 e R$ 113,08) foram pagas no vencimento, em 23/10/2026. As faturas estão anexadas aos lançamentos.",
+      "o_que_verificar": "Por que as faturas de energia de setembro só foram pagas em 08/10, com vencimento em 23/09? A Enel cobrou multa e juros pelo atraso (podem aparecer na fatura seguinte) e quem arcará com esse custo?"
+    },
+    "motivo": "texto reescrito após conferir os documentos do link do portal: as faturas estão anexadas (o sistema não as leu por OCR); o ponto real é o atraso das faturas de setembro",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  }
+]
