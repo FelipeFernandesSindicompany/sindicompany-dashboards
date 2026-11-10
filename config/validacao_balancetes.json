@@ -229,6 +229,7 @@
       "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o demonstrativo de receitas) não foi enviado. Esta validação utilizou o Resumo Financeiro e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes, notas fiscais, receitas nem rendimentos. Também não foi possível comparar fornecedores e valores com o histórico dos meses anteriores (fornecedor novo ou valor acima do histórico), porque o arquivo deste mês veio em formato diferente do dos meses anteriores. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
       "pasta_prestacao": "Dashboard de Análise de Balancete Elo & Elo",
       "leitor_financeiro": "regras_gerais",
+      "emissao_pdf": "resumo_emissoes_ordinaria",
       "regras": {
         "rendimento": {
           "ignorar_contas": [
