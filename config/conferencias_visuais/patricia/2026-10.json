@@ -6,20 +6,17 @@
     "valor_exibido": 31251.37,
     "severidade": "atencao",
     "documento": "anexos do lançamento 04978824 no portal da Auxiliadora (NF 418, e-mail da Actual de 27/10/2026, guias e folha)",
-    "resumo": "Pagamento com cerca de 75 dias de atraso e sem comprovante da transferência — SERV. TERCEIRIZADOS (R$ 31.251,37)",
-    "como": "O lançamento de 28/10/2026 (ACTUAL - NF. 418 TERCEIRIZAÇÃO, R$ 31.251,37) refere-se a serviços de 01/07 a 31/07/2026 (NF emitida em 11/08/2026, valor total a receber de R$ 29.906,25 após as retenções). O e-mail da Actual anexado ao lançamento (27/10/2026) informa que o boleto em aberto venceu em 14/08, que a cobrança já havia sido enviada em 01/10 sem retorno e que o valor atualizado para pagamento em 28/10 é de R$ 31.251,37 — R$ 1.345,12 a mais que o valor da NF. Entre os documentos anexados (NF, e-mail, guias de FGTS e folha da Actual) não há o comprovante da transferência de R$ 31.251,37.",
-    "pergunta": "Por que o pagamento da NF 418, com boleto vencido em 14/08, só foi feito em 28/10? Os R$ 1.345,12 de diferença são multa e juros — quem arcará com esse custo? Podem enviar o comprovante da transferência de R$ 31.251,37?"
+    "resumo": "Comprovante da transferência não anexado — SERV. TERCEIRIZADOS (R$ 31.251,37)",
+    "como": "O lançamento de 28/10/2026 (ACTUAL - NF. 418 TERCEIRIZAÇÃO, R$ 31.251,37) tem como anexos a NF 418, o e-mail da Actual de 27/10/2026 (que explica o valor: boleto vencido em 14/08 e valor atualizado de R$ 31.251,37 para pagamento em 28/10), guias de FGTS e folha da Actual. Entre os documentos anexados não há o comprovante da transferência de R$ 31.251,37 feita pelo condomínio.",
+    "pergunta": "Podem anexar o comprovante da transferência de R$ 31.251,37 feita à Actual em 28/10?"
   },
   {
     "codigo": "04960065",
     "valor_listagem": 857.02,
-    "divergencia_real": true,
     "valor_exibido": 857.02,
-    "severidade": "atencao",
     "documento": "anexos do lançamento 04960065 no portal da Auxiliadora (boleto, NF, e-mail da Pagadoria de 25/09/2026 e comprovante de pagamento)",
-    "resumo": "Boleto pago com atraso e com multa/juros por falta de saldo — MANUT/CONSERV. CONTRAT. (R$ 857,02)",
-    "como": "O lançamento de R$ 857,02 (J R - NF. 214/936, substituição de peças) corresponde a um boleto de R$ 836,00 com vencimento em 24/09/2026. O e-mail da Pagadoria anexado (25/09/2026) informa que o pagamento não foi realizado por falta de saldo, e o comprovante mostra o pagamento em 09/10/2026 com R$ 21,02 de juros/multa (R$ 836,00 + R$ 21,02 = R$ 857,02). O valor do lançamento confere com o pago; a diferença para o boleto é o encargo por atraso.",
-    "pergunta": "Podem esclarecer o motivo de o boleto de 24/09 ter sido pago apenas em 09/10 e como será tratado o encargo de R$ 21,02 (multa e juros) pago a mais pelo condomínio?"
+    "resumo": "J R - NF. 214/936 (R$ 857,02): boleto de R$ 836,00 + R$ 21,02 de multa e juros",
+    "como": "Explicado nos anexos do lançamento: o e-mail da Pagadoria (25/09/2026) informa que o pagamento de 24/09 não foi realizado por falta de saldo, e o comprovante mostra o pagamento em 09/10/2026 de R$ 857,02 (boleto de R$ 836,00 + R$ 21,02 de juros/multa)."
   },
   {
     "codigo": "04955013",

@@ -45,5 +45,12 @@
     "motivo": "rendimento não creditado no SALÃO DE FESTAS/ CHURRASQUEIRA (cerca de R$ 0,24 de R$ 2,02) retirado do relatório de outubro/2026 por decisão do responsável",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-10"
+  },
+  {
+    "tipo": "parcelas_mesmo_mes",
+    "valor_total": 7151.24,
+    "motivo": "duas parcelas da Nexxus no mês (R$ 7.151,24) retirado do relatório de outubro/2026: os anexos explicam — a NF 32403 (parcela 12/24) foi emitida em 02/09/2026 (competência 08/2026) e paga em 16/10; a NF 32569 (parcela 13/24) foi emitida em 23/09 com vencimento em 19/10",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
   }
 ]

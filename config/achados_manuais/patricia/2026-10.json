@@ -62,25 +62,5 @@
         "linhas_contexto": 2
       }
     ]
-  },
-  {
-    "id": "MAN-0004",
-    "severidade": "atencao",
-    "valor": 4003.03,
-    "linha": "CONSUMOS",
-    "decidido_por": "responsável pela validação",
-    "data": "2026-11-10",
-    "titulo": "Fatura de água paga com atraso — ÁGUA/ESGOTO (R$ 4.003,03)",
-    "paragrafo": "A fatura da Sabesp de R$ 4.003,03 (lançamento 04953524) não foi debitada em 25/09/2026 e o pagamento foi feito em 05/10/2026, cerca de 10 dias depois. O e-mail da Pagadoria anexado ao lançamento (28/09/2026) menciona falta de saldo em 25/09 e informa que nem a Pagadoria nem o condomínio tinham a fatura (só o código de barras, enviado em 05/10). A fatura seguinte (R$ 3.996,64, vencimento 25/10) já traz R$ 18,01 de juros de mora e R$ 0,62 de atualização monetária. A fatura de R$ 4.003,03 não está anexada.",
-    "o_que_verificar": "O débito de 25/09 não foi realizado por falta de saldo na conta? Como serão tratados os juros de mora (R$ 18,01) e a atualização monetária (R$ 0,62) cobrados na fatura seguinte? Podem enviar a fatura de R$ 4.003,03?",
-    "evidencias": [
-      {
-        "pagina": 3,
-        "buscar": "ÁGUA/ESGOTO\\s+-\\s+OUT/2026.{0,40}SABESP",
-        "buscar_alt": "OUT/2026\\s+-\\s+-\\s+RGI",
-        "legenda": "Despesas — ÁGUA/ESGOTO: lançamento 04953524 (R$ 4.003,03)",
-        "linhas_contexto": 2
-      }
-    ]
   }
 ]
