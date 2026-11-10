@@ -1015,6 +1015,12 @@ def etapa_render(condo: dict, mes: str) -> Path:
     for _m in _achados_manuais(base_dir, mes):          # prints dos pontos incluídos à mão (config/achados_manuais)
         if _m.get("evidencias") and _m["id"] not in _specs_extras:
             _specs_extras[_m["id"]] = _m["evidencias"]
+    # prints que o responsável pediu para trocar num item automático, daquele condomínio/mês (config/ajustes_evidencias/<condomínio>/<AAAA-MM>.json):
+    #   [{"tipo": "conta_concessionaria_nao_anexada", "valor": 3145.25, "evidencias": [{"pagina": 3, "buscar": "...", "legenda": "..."}]}]
+    try:
+        _ajustes_evid = json.loads((ROOT / "config" / "ajustes_evidencias" / base_dir.parent.parent.name / f"{mes}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        _ajustes_evid = []
 
     # pasta do projeto onde ficam os arquivos dos meses (o arquivo "de origem" pode ser uma cópia em outra pasta): print do mês anterior sai daqui
     _pasta_meses = pasta_prestacao.pasta_do_condominio(condo) or (pdf_origem.parent if pdf_origem else Path("."))
@@ -1115,6 +1121,10 @@ def etapa_render(condo: dict, mes: str) -> Path:
         # valem os automáticos da família (conciliacao/evidencias.py).
         if not pdf_origem:
             return []
+        if achado is not None and chave not in _specs_extras:
+            for _aj in _ajustes_evid:
+                if achado.tipo == _aj.get("tipo") and abs((achado.valor_encontrado or 0.0) - _aj.get("valor", 0.0)) <= 0.01:
+                    _specs_extras[chave] = _aj["evidencias"]
         if pdf_origem.suffix.lower() in (".xlsx", ".xlsm", ".xls") and achado is not None and chave not in _specs_extras:
             try:
                 return _evidencias_planilha(achado, registro)

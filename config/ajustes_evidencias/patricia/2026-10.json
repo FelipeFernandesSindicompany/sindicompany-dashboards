@@ -1,0 +1,44 @@
+[
+  {
+    "tipo": "conta_concessionaria_nao_anexada",
+    "valor": 3145.25,
+    "evidencias": [
+      {
+        "pagina": 3,
+        "bbox": [
+          30,
+          331.0,
+          570,
+          342.0
+        ],
+        "destaques": [
+          [
+            60,
+            331.0,
+            430,
+            342.0
+          ]
+        ],
+        "legenda": "Lançamento de energia em atraso — instalação 203685962 (R$ 113,57)"
+      },
+      {
+        "pagina": 3,
+        "bbox": [
+          30,
+          341.4,
+          570,
+          352.2
+        ],
+        "destaques": [
+          [
+            60,
+            341.4,
+            430,
+            352.2
+          ]
+        ],
+        "legenda": "Lançamento de energia em atraso — instalação 200011370 (R$ 1.347,00)"
+      }
+    ]
+  }
+]
