@@ -37,5 +37,13 @@
     "motivo": "texto reescrito após conferir os documentos do link do portal: as faturas estão anexadas (o sistema não as leu por OCR); o ponto real é o atraso das faturas de setembro",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-10"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 0.0,
+    "texto_contem": "A conta SALÃO DE FESTAS",
+    "motivo": "rendimento não creditado no SALÃO DE FESTAS/ CHURRASQUEIRA (cerca de R$ 0,24 de R$ 2,02) retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
   }
 ]

@@ -40,6 +40,28 @@ def _documento_da_evidencia(caminho: Path) -> dict:
         return {}
 
 
+_RE_CPF = r"\d{3}\.\d{3}\.\d{3}-\d{2}"
+
+
+def ocultar_cpf(dados_pdf: bytes) -> bytes:
+    """Tarja o CPF (NNN.NNN.NNN-NN) de pessoa física em todas as páginas de um PDF baixado — o print do relatório vai para a administradora/síndico e
+    não deve expor o CPF de terceiros. CNPJ (NN.NNN.NNN/NNNN-NN) não é alterado. Nunca lança: sem conseguir tarjar, devolve o PDF como veio."""
+    try:
+        import fitz
+        with fitz.open(stream=dados_pdf, filetype="pdf") as doc:
+            mexeu = False
+            for pg in doc:
+                for m in re.finditer(_RE_CPF, pg.get_text() or ""):
+                    for r in pg.search_for(m.group(0)):
+                        pg.add_redact_annot(r, fill=(0, 0, 0))
+                        mexeu = True
+                if mexeu:
+                    pg.apply_redactions()
+            return doc.tobytes() if mexeu else dados_pdf
+    except Exception:
+        return dados_pdf
+
+
 def _links_de_despesa(caminho: Path) -> bool:
     """True quando alguma página "Demonstrativo de Despesas" do PDF tem link para o portal de documentos."""
     import fitz
@@ -144,6 +166,8 @@ class Conciliador(ConciliadorAuxiliadoraXLS):
                 if idx_ev is not None:
                     dados_evidencia, tipo_evidencia = documentos[idx_ev]
             comp.fornecedor = None            # o campo vinha de OCR de NF/boleto ("Número da Nota Código de Verificação"); o fornecedor está na listagem
+            if dados_evidencia is not None and tipo_evidencia == "pdf":
+                dados_evidencia = ocultar_cpf(dados_evidencia)
             if dados_evidencia is not None:
                 comp.arquivo_evidencia_externa = gocontroledocumentos.salvar_evidencia_externa(caminho, codigo, dados_evidencia, tipo_evidencia)
             registros.append(comp)
