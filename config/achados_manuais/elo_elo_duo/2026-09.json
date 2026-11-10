@@ -59,5 +59,33 @@
         "linha_inteira": true
       }
     ]
+  },
+  {
+    "id": "MAN-0004",
+    "severidade": "atencao",
+    "valor": 35.34,
+    "linha": "BENFEITORIAS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Despesa do Condomínio AI lançada indevidamente em BENFEITORIAS — CSLL/COFINS/PIS da NF 449 (R$ 35,34)",
+    "paragrafo": "Em 18/09/2026 foi lançado na conta BENFEITORIAS o CSLL/COFINS/PIS (R$ 35,34) da NF 449 do Condomínio AI Serviços; no próprio comprovante a conta contábil é \"1302 - INFORMATICA/SOFTWARE\". A NF 449 é a licença de uso de sistema e hospedagem em nuvem (R$ 724,66), lançada em 17/08/2026 na CAIXA ORDINARIO (MANUT. CONTRATADA), assim como as retenções das demais notas desse fornecedor (NF 395, 402 e 435 em agosto; NF 486 em setembro). Uma despesa de software não é benfeitoria: a retenção desta nota deveria estar na conta ordinária. As outras duas despesas de BENFEITORIAS em setembro são da SACT (manutenção do sistema de CFTV, 2 × R$ 5.069,55).",
+    "o_que_verificar": "Por que o CSLL/COFINS/PIS da NF 449 foi lançado em BENFEITORIAS? Podem transferir os R$ 35,34 para a CAIXA ORDINARIO (MANUT. CONTRATADA) e corrigir o lançamento? Essa correção explica a diferença de R$ 35,34 entre os saldos de agosto e setembro?",
+    "evidencias": [
+      {
+        "pagina": 6,
+        "buscar": "NF\\.:\\s+449\\s+-\\s+CONDOMINIO",
+        "legenda": "Setembro/2026 — BENFEITORIAS: CSLL/COFINS/PIS - NF 449 - CONDOMINIO AI SERVICOS (R$ 35,34)",
+        "linhas_contexto": 3,
+        "linha_inteira": true
+      },
+      {
+        "arquivo": "Prestação de Contas 08.2026.pdf",
+        "pagina": 4,
+        "buscar": "CONDOMINIO\\s+IA\\s+-\\s+NF\\.\\s+449",
+        "legenda": "Agosto/2026 — a NF 449 (licença de uso de sistema) lançada em CAIXA ORDINARIO / MANUT. CONTRATADA (R$ 724,66)",
+        "linhas_contexto": 2,
+        "linha_inteira": true
+      }
+    ]
   }
 ]
