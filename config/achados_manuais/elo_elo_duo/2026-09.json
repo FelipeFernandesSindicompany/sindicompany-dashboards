@@ -1,0 +1,60 @@
+[
+  {
+    "id": "MAN-0001",
+    "severidade": "atencao",
+    "valor": 1200.0,
+    "linha": "MANUT. CONTRATADA",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Manutenção mensal da ELIFORT MONITORAMENTO (R$ 1.200,00) sem lançamento em setembro — MANUT. CONTRATADA",
+    "paragrafo": "A ELIFORT MONITORAMENTO (manutenção de CFTV, interfones, alarmes e redes) foi lançada com R$ 1.200,00 em junho (NF 308, 22/06), julho (NF 331, 24/07) e agosto/2026 (NF 357, 20/08). Em setembro/2026 não há nenhum lançamento desse fornecedor.",
+    "o_que_verificar": "A manutenção de setembro da ELIFORT (R$ 1.200,00) ainda não foi paga ou foi lançada em outro mês? O contrato continua vigente?",
+    "evidencias": [
+      {
+        "arquivo": "Prestação de Contas 08.2026.pdf",
+        "pagina": 4,
+        "buscar": "ELIFORT\\s+MONITORAMENTO",
+        "legenda": "Agosto/2026 — ELIFORT MONITORAMENTO (R$ 1.200,00), último lançamento do fornecedor",
+        "linhas_contexto": 2
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "severidade": "atencao",
+    "valor": 16953.96,
+    "linha": "DESPESAS COMPARTILHADAS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Nova despesa do condomínio Central em setembro — DESPESAS COMPARTILHADAS (R$ 16.953,96)",
+    "paragrafo": "Em 16/09/2026 foi lançada, na nova categoria DESPESAS COMPARTILHADAS, a despesa \"BBZ ADM CONDOMINIO LTDA - ORÇAMENTO MENSAL CENTRAL\" de R$ 16.953,96, 5,6% das despesas do mês (R$ 301.030,39). Em agosto/2026 não havia lançamento nessa categoria. O comprovante mostra o pagamento ao Elo Caminhos da Lapa (Central) de um boleto \"Cota condominial set/2026\" de R$ 16.146,62 mais R$ 807,34 de fundo de reserva, com o histórico bancário \"REPASSE MENSAL PROJETADO\" (na listagem o histórico é \"ORÇAMENTO MENSAL\").",
+    "o_que_verificar": "Essa cobrança do condomínio Central começou em setembro? Qual a base (assembleia ou orçamento) e qual o valor esperado nos próximos meses? A taxa associativa (R$ 5.431,86 em setembro) continua sendo cobrada além dela?",
+    "evidencias": [
+      {
+        "pagina": 6,
+        "buscar": "BBZ\\s+ADM",
+        "legenda": "Setembro/2026 — DESPESAS COMPARTILHADAS: BBZ ADM CONDOMINIO LTDA (R$ 16.953,96)",
+        "linhas_contexto": 2
+      }
+    ]
+  },
+  {
+    "id": "MAN-0003",
+    "severidade": "atencao",
+    "valor": 268.92,
+    "linha": "CONSUMOS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10",
+    "titulo": "Fatura de energia de agosto paga com 39 dias de atraso — CONSUMOS (R$ 268,92)",
+    "paragrafo": "O lançamento de 21/09/2026 (ENEL - AGO/26 - 240 KWH - BI MED TRO 1 - INST 204472749, R$ 268,92) é uma segunda via da fatura de agosto/2026 com vencimento em 13/08/2026, paga somente em 21/09/2026 (há uma anotação manual \"Pagar 21/09\" na própria fatura). O valor pago é igual ao da fatura, sem multa e juros, e a fatura avisa que os encargos por atraso serão cobrados na próxima fatura. A fatura de setembro do mesmo medidor e do mesmo consumo (240 kWh), paga no mesmo dia, foi de R$ 402,43 — R$ 133,51 a mais, e não está anexada (ver item de contas de concessionária). A fatura de agosto está em nome de TGSP-36 Empreendimentos Imobiliários S.A., e não do condomínio.",
+    "o_que_verificar": "Por que a fatura de agosto só foi paga em 21/09, com vencimento em 13/08? Os R$ 133,51 a mais na fatura de setembro incluem multa e juros do atraso? Existe previsão de transferir a titularidade dessa conta para o condomínio?",
+    "evidencias": [
+      {
+        "pagina": 5,
+        "buscar": "ENEL\\s+-\\s+AGO/26",
+        "legenda": "Setembro/2026 — ENEL - AGO/26 (R$ 268,92) e ENEL - SET/26 (R$ 402,43), medidor Torre 1",
+        "linhas_contexto": 2
+      }
+    ]
+  }
+]

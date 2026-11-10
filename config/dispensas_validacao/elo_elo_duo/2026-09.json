@@ -1,0 +1,32 @@
+[
+  {
+    "tipo": "nota_fiscal_ausente",
+    "valor_total": 2303.0,
+    "reescrever": {
+      "titulo": "Nota Fiscal não anexada — MATERIAIS (R$ 2.303,00)",
+      "paragrafo": "O lançamento de 28/09/2026 (MULTITINTAS TINTAS - NF 3857, aquisição de tintas, R$ 2.303,00) tem como anexos o comprovante do pagamento, a solicitação de pagamento (que traz a observação \"NF após o pagamento\"), o e-mail de aprovação do pedido e o orçamento nº 3857 da Multitintas (emitido em 24/09/2026), que está impresso como \"sem validade fiscal\". O valor confere com o pago, mas o único documento com o número 3857 é o orçamento — a Nota Fiscal em si não está entre os anexos.",
+      "o_que_verificar": "Podem anexar a Nota Fiscal da compra de tintas (NF 3857), já que o documento anexado é apenas o orçamento, sem validade fiscal?"
+    },
+    "motivo": "texto ajustado após ler todos os anexos do lançamento no portal: o documento com o nº 3857 é um orçamento sem validade fiscal",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": 35.34,
+    "reescrever": {
+      "paragrafo": "O saldo anterior de uma conta deve ser igual ao saldo final do mês anterior. Neste arquivo isso não ocorre em 2 contas: CAIXA ORDINARIO: saldo anterior de setembro/2026 R$ 180.524,35, saldo final de agosto/2026 R$ 180.489,01 (diferença de R$ 35,34); BENFEITORIAS: saldo anterior de setembro/2026 R$ 37.343,38, saldo final de agosto/2026 R$ 37.378,72 (diferença de -R$ 35,34). As duas diferenças têm o mesmo valor e sinais opostos, ou seja, R$ 35,34 saíram de BENFEITORIAS e entraram em CAIXA ORDINARIO entre o fechamento de agosto e a abertura de setembro. O mesmo valor (R$ 35,34) aparece no lançamento de CSLL/COFINS/PIS da NF 449 (Condomínio AI Serviços), lançado em setembro na conta BENFEITORIAS.",
+      "o_que_verificar": "Houve um ajuste de R$ 35,34 entre BENFEITORIAS e CAIXA ORDINARIO depois do fechamento de agosto? Podem informar o motivo e enviar o balancete de agosto corrigido, se for o caso?"
+    },
+    "motivo": "texto complementado com a comparação entre agosto e setembro (mesmo valor, sinais opostos nas duas contas)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "regra": "codigo_tem_comprovante_com_valor_confirmado_por_ocr",
+    "valor_total": 55.0,
+    "motivo": "retirado do relatório de setembro/2026: o apontamento de \"fatura de cartão de crédito\" foi falso — o lançamento (PERSONAL SERVICE - RECIBO 1235, R$ 55,00) é pago por Pix e comprovado pelo recibo de motoboy; o texto \"VISA - CRÉDITO\" lido nos anexos é de um recibo do cartório (cancelamento de protesto) que acompanha o lançamento, não de fatura de cartão",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  }
+]

@@ -570,7 +570,8 @@ _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_o
                        "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "despesa_negativa", "atraso_pagamento"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo", "valor_ocr_comprovante_diverge_valor_listagem",
-                        "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor"}
+                        "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor",
+                        "codigo_tem_comprovante_com_valor_confirmado_por_ocr"}     # só retira item pendente (o ok_verificado informativo é ignorado) e só com valor+regra no JSON do condomínio/mês
 
 
 _FRASE_PEDE_FATURA = " Podem enviar a conta (fatura) do mês?"
