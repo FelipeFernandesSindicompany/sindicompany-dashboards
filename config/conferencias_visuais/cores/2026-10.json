@@ -1,0 +1,23 @@
+[
+  {
+    "codigo": "12554784",
+    "valor_listagem": 20142.39,
+    "resumo": "3C Security - NF 320, serviço de portaria (R$ 20.142,39)",
+    "documento": "anexos do lançamento 12554784 no portal (comprovante, ordem de pagamento e NFS-e 320)",
+    "como": "Conferido visualmente nos anexos: o comprovante do Itaú mostra \"Valor do lançamento R$ 20.142,39\" (pagamento consolidado de R$ 36.244,00 com a NF 319, R$ 16.101,61, também listada). O R$ 21.775,56 lido pelo OCR é o valor bruto da NFS-e 320: descontados o ISS retido (R$ 435,51, listado à parte) e o INSS retido (R$ 1.197,66), o líquido é R$ 20.142,39 — igual ao listado."
+  },
+  {
+    "codigo": "12565796",
+    "valor_listagem": 969.8,
+    "resumo": "Vida Limpa - NF 8527, material de limpeza de piscina (R$ 969,80)",
+    "documento": "anexos do lançamento 12565796 no portal (comprovante, ordem de pagamento e DANFEs 8527 e 8528)",
+    "como": "Conferido visualmente nos anexos: o comprovante do Itaú mostra \"Valor do lançamento R$ 969,80\" e \"Valor pago R$ 969,80\". O R$ 9.569,80 foi erro de leitura do OCR. Os anexos trazem as DANFEs 8527 (R$ 280,00) e 8528 (R$ 689,80), que somam R$ 969,80."
+  },
+  {
+    "codigo": "12641201",
+    "valor_listagem": 469.5,
+    "resumo": "Casa Blanca - NF 4737, material de construção (R$ 469,50)",
+    "documento": "anexos do lançamento 12641201 no portal (comprovante e boleto)",
+    "como": "Conferido visualmente nos anexos: o comprovante do Itaú mostra \"Valor do lançamento R$ 469,50\" e \"Valor pago R$ 469,50\" (o código de barras do boleto também traz 469,50). O R$ 459,50 foi erro de leitura do OCR."
+  }
+]
