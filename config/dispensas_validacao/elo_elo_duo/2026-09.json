@@ -28,5 +28,19 @@
     "motivo": "retirado do relatório de setembro/2026: o apontamento de \"fatura de cartão de crédito\" foi falso — o lançamento (PERSONAL SERVICE - RECIBO 1235, R$ 55,00) é pago por Pix e comprovado pelo recibo de motoboy; o texto \"VISA - CRÉDITO\" lido nos anexos é de um recibo do cartório (cancelamento de protesto) que acompanha o lançamento, não de fatura de cartão",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-10"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -58.88,
+    "motivo": "receita negativa DESCONTOS (-R$ 58,88) retirada do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 20182.73,
+    "motivo": "ponto de atenção de gestor (Ordinária pagou R$ 20.182,73 a mais do que recebeu) retirado do relatório de setembro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-10"
   }
 ]
