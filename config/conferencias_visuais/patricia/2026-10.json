@@ -28,8 +28,8 @@
     "valor_exibido": 1020.11,
     "severidade": "atencao",
     "documento": "anexos do lançamento 04955013 no portal da Auxiliadora (DANFE da NF 192, comprovante de pagamento e conversa de reembolso)",
-    "resumo": "Boleto pago por uma pessoa física, fora da conta do condomínio — DESPESAS INTERNAS (R$ 1.020,11)",
-    "como": "O lançamento de 06/10/2026 (J R - NF. 192 material hidráulico, R$ 1.020,11) tem como comprovante o pagamento de um boleto de R$ 999,78, feito em 23/09/2026 por Rosemere de Souza Brandão (pagador efetivo), em conta que não é a do condomínio (a conta do condomínio é a Itaú 0367 / 99797-0); o total pago foi R$ 1.020,11 (R$ 999,78 + R$ 20,33 de multa e juros). A conversa anexada ao lançamento sugere que o valor foi adiantado por essa pessoa e depois reembolsado (\"me passa seus dados bancários pra eu fazer o reembolso\", com os dados da Exclusiva Síndico Ltda). O valor do lançamento confere com o total pago.",
-    "pergunta": "Por que este boleto não foi pago pela conta do condomínio? Quem adiantou o valor, a que título, e em que conta e data foi feito o reembolso dos R$ 1.020,11?"
+    "resumo": "Boleto adiantado pela responsável pelo pagamento (Rosemere de Souza Brandão) e reembolsado — DESPESAS INTERNAS (R$ 1.020,11)",
+    "como": "O comprovante anexado ao lançamento de 06/10/2026 (J R - NF. 192 material hidráulico, R$ 1.020,11) mostra o boleto de R$ 999,78 com o condomínio como pagador (CNPJ 59.482.182/0001-27), pago em 23/09/2026 por Rosemere de Souza Brandão como pagador efetivo, com R$ 20,33 de multa e juros (total de R$ 1.020,11, que é o valor lançado). A conversa anexada ao lançamento indica que o valor foi adiantado por ela e depois reembolsado (\"me passa seus dados bancários pra eu fazer o reembolso\", com os dados da Exclusiva Síndico Ltda). Entre os documentos anexados não há o comprovante do reembolso.",
+    "pergunta": "Podem anexar o comprovante do reembolso dos R$ 1.020,11 e informar a data e a conta em que foi feito?"
   }
 ]
