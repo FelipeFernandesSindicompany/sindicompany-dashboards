@@ -15,7 +15,8 @@
         "pagina": 4,
         "buscar": "ELIFORT\\s+MONITORAMENTO",
         "legenda": "Agosto/2026 — ELIFORT MONITORAMENTO (R$ 1.200,00), último lançamento do fornecedor",
-        "linhas_contexto": 2
+        "linhas_contexto": 2,
+        "linha_inteira": true
       }
     ]
   },
@@ -34,7 +35,8 @@
         "pagina": 6,
         "buscar": "BBZ\\s+ADM",
         "legenda": "Setembro/2026 — DESPESAS COMPARTILHADAS: BBZ ADM CONDOMINIO LTDA (R$ 16.953,96)",
-        "linhas_contexto": 2
+        "linhas_contexto": 2,
+        "linha_inteira": true
       }
     ]
   },
@@ -53,7 +55,8 @@
         "pagina": 5,
         "buscar": "ENEL\\s+-\\s+AGO/26",
         "legenda": "Setembro/2026 — ENEL - AGO/26 (R$ 268,92) e ENEL - SET/26 (R$ 402,43), medidor Torre 1",
-        "linhas_contexto": 2
+        "linhas_contexto": 2,
+        "linha_inteira": true
       }
     ]
   }
