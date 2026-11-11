@@ -276,6 +276,12 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
             prev, real, inad = extra["prev"], extra["real"], extra["inad"]
             if inad is not None:
                 inad_proc = 0.0
+    if caminho_arquivo.suffix.lower() == ".pdf" and condo.get("emissao_pdf") == "lello_so_inadimplencia":
+        # PDF da Lello em que o "Resumo de Emissões Geral" é só o resumo de COTAS EM ABERTO (anterior x recebido no mês), sem o previsto x realizado
+        # da emissão: lê só a inadimplência (total no fim do mês e o recebido de atrasados no mês); previsto/realizado ficam de fora.
+        extra = _emissao_e_devedores_lello_pdf(caminho_arquivo)
+        if extra and extra["inad"] is not None:
+            inad, inad_proc = extra["inad"], extra["real"]
     return {
         "tit": mes_titulo, "per": periodo,
         "tAnt": sum(c["a"] for c in contas), "tCred": sum(c["c"] for c in contas),

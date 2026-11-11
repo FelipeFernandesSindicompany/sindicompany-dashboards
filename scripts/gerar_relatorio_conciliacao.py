@@ -170,6 +170,10 @@ GERAR_ACHADOS_POR_CONDO = {
     # diante, comprovantes baixados) -> matching Lirba, igual ao Upper Itaim (ver conciliacao/condominios/patricia.py)
     "patricia": lambda registros, *a, **kw: (gerar_achados_lirba if any(r.tipo_documento == "comprovante_anexado" for r in registros)
                                              else gerar_achados_auxiliadora)(registros, *a, **kw),
+    # Villa Park Osasco (Lello): PDF resumido com links do portal de documentos (out/2026 em diante, comprovantes baixados) -> mesmo matching do
+    # Elo; planilha .xls e PDF sem comprovantes baixados seguem como antes (listagem, DataDigitus). Ver conciliacao/condominios/residencial_villa_park_osasco.py
+    "residencial_villa_park_osasco": lambda registros, *a, **kw: (
+        _gerar_achados_planilha_refinado if any(getattr(r, "arquivo_evidencia_externa", None) for r in registros) else gerar_achados_datadigitus)(registros, *a, **kw),
     # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
     # (PDF) em 2026 — mesma regra de matching do Lirba.
     "baturite": gerar_achados_planilha_com_links,
@@ -401,7 +405,8 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
     # Condomínios Lello (Hub, Splendor, Villa Park) mandam planilha (.xls) E, às vezes, o "Demonstrativo de
     # Contas" em PDF (estilo ContasData, só demonstrativos): o PDF é lido pelo conciliador de listagem.
     lello_em_pdf = condo["empresa_gestora"] == "lello_xls" and entrada.suffix.lower() == ".pdf"
-    if lello_em_pdf:
+    if lello_em_pdf and type(conciliador).__module__ == "conciliacao.lello_xls":
+        # (condomínio Lello com conciliador próprio em conciliacao/condominios/, ex.: Villa Park Osasco, decide sozinho como ler o PDF)
         from conciliacao.lirba_pdf import ConciliadorLirbaPDF
         conciliador = ConciliadorLirbaPDF(condo)
     registros: list[RegistroComprovante] = conciliador.extrair_comprovantes(entrada)

@@ -1,0 +1,62 @@
+[
+  {
+    "codigo": "L005",
+    "valor_listagem": 43.63,
+    "resumo": "PIS sobre a folha - SET/2026 (R$ 43,63)",
+    "documento": "anexos do lançamento (relatório analítico do DARF de PIS e guia consolidada)",
+    "como": "Conferido visualmente nos anexos: o relatório analítico do DARF de PIS (competência 09/2026) mostra valor base de R$ 4.363,59 e PIS de R$ 43,63 (1%) para o único funcionário. O R$ 4.363,59 lido pelo OCR é a base de cálculo, não o valor pago; o PIS de R$ 43,63 é igual ao listado."
+  },
+  {
+    "codigo": "L010",
+    "valor_listagem": 494.09,
+    "resumo": "Vila Velha - normas regulamentadoras (R$ 494,09)",
+    "documento": "anexos do lançamento (NFS-e, espelho de lançamento e comprovante)",
+    "como": "Conferido visualmente nos anexos: a NFS-e (RPS 1601161) tem valor total de R$ 518,19, com PIS/COFINS/CSLL retidos de R$ 24,09, que constam à parte na listagem (PIS/COFINS/CSLL da Vila Velha, R$ 24,09). O espelho de lançamento mostra valor bruto de R$ 518,18, retenções de R$ 24,09 e valor líquido de R$ 494,09, igual ao listado. O R$ 518,19 lido pelo OCR é o valor bruto da nota."
+  },
+  {
+    "codigo": "L023",
+    "valor_listagem": 59196.45,
+    "resumo": "HSERV - portaria/ronda, NF 613 (R$ 59.196,45)",
+    "documento": "anexos do lançamento (boleto, NFS-e e espelho de lançamento)",
+    "como": "Conferido visualmente nos anexos: o boleto é de R$ 59.196,45 e a NFS-e informa \"valor líquido a ser pago R$ 59.196,45\" (valor bruto de R$ 69.766,00 menos retenções de INSS R$ 3.837,13, ISS R$ 3.488,30, CSLL R$ 697,66, COFINS R$ 2.092,98 e PIS R$ 453,48). O R$ 66.521,88 lido pelo OCR não é o valor pago; o valor listado é igual ao do boleto e ao líquido da nota."
+  },
+  {
+    "codigo": "L032",
+    "valor_listagem": 3145.8,
+    "resumo": "SJ - manutenção de jardim, NF 89 (R$ 3.145,80)",
+    "documento": "anexos do lançamento (boleto, NFS-e e espelho de lançamento)",
+    "como": "Conferido visualmente nos anexos: a NFS-e 89 tem valor total de R$ 3.745,00 e retenções de R$ 599,20 (ISS R$ 187,25 e INSS R$ 411,95, ambos listados à parte), com valor líquido de R$ 3.145,80; o boleto e o espelho de lançamento também mostram R$ 3.145,80, igual ao listado. O R$ 3.745,00 lido pelo OCR é o valor bruto da nota."
+  },
+  {
+    "codigo": "L034",
+    "valor_listagem": 1322.87,
+    "resumo": "Plurisev - manutenção do portão de veículos, NF 432 (R$ 1.322,87)",
+    "documento": "anexos do lançamento (NFS-e, espelho de lançamento e ordem de pagamento)",
+    "como": "Conferido visualmente nos anexos: a NFS-e tem valor total de R$ 1.350,00, ISS retido de R$ 27,13 (listado à parte) e valor líquido de R$ 1.322,87, igual ao listado e ao do espelho de lançamento. O R$ 1.350,00 lido pelo OCR é o valor bruto da nota."
+  },
+  {
+    "codigo": "L048",
+    "valor_listagem": 1175.88,
+    "resumo": "Plurisev - solda do portão da lixeira, NF 438 (R$ 1.175,88)",
+    "documento": "anexos do lançamento (NFS-e e espelho de lançamento)",
+    "como": "Conferido visualmente nos anexos: a NFS-e tem valor total de R$ 1.200,00, ISS retido de R$ 24,12 e valor líquido de R$ 1.175,88, igual ao listado e ao do espelho de lançamento. O R$ 1.200,00 lido pelo OCR é o valor bruto da nota."
+  },
+  {
+    "codigo": "L049",
+    "valor_listagem": 4445.0,
+    "resumo": "Plurisev - troca de 3 faciais da portaria, NF 439, parcela 01/02 (R$ 4.445,00)",
+    "documento": "anexos do lançamento (NFS-e, orçamento aprovado e comprovante do Pix)",
+    "como": "Conferido visualmente nos anexos: a NFS-e 439 é de R$ 8.890,00 em duas parcelas sem juros (1º ato e 30 dias depois), e o comprovante do Pix de 26/10/2026 é de R$ 4.445,00 — a primeira parcela, que é o valor listado (\"01/02\"). O R$ 8.890,00 lido pelo OCR é o valor total da nota."
+  },
+  {
+    "codigo": "L042",
+    "valor_listagem": 7560.0,
+    "divergencia_real": true,
+    "valor_exibido": 7560.0,
+    "severidade": "atencao",
+    "documento": "anexos do lançamento (boleto da Fitness Technology e comprovante de pagamento)",
+    "resumo": "Nota Fiscal não anexada — MANUTENÇÃO - CONTRATOS (R$ 7.560,00)",
+    "como": "O lançamento de 20/10/2026 (LOCAÇÃO EQUIPTOS ACADEMIA NF 440 FITNESS, R$ 7.560,00) tem como anexos o boleto da Fitness Technology Aparelhos de Ginástica (fatura 440, vencimento 20/10/2026) e o comprovante do pagamento, com o mesmo valor. A listagem cita a NF 440, mas não há nota fiscal entre os anexos.",
+    "pergunta": "Podem anexar a Nota Fiscal 440 da Fitness Technology (locação de equipamentos de academia)?"
+  }
+]

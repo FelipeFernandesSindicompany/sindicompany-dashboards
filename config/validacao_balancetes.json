@@ -619,6 +619,7 @@
     },
     "residencial_villa_park_osasco": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Villa Park Osasco",
+      "emissao_pdf": "lello_so_inadimplencia",
       "parser_config": {
         "fechamento_categorias_ignorar": "desp[] = Total ORDINARIA do Demonstrativo; o débito da conta no Resumo inclui APLICAÇÃO/RESGATE e IR/IOF (jul/2026: 39.002,38 + 615,17), que não são despesa"
       },

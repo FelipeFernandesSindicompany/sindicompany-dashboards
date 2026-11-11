@@ -24,8 +24,8 @@ from conciliacao.lirba_pdf import preencher_de_texto as _preencher_via_cadeia_co
 _PAGINAS_PASTA_DIGITAL = 30        # acima disso o PDF é a Pasta Digital com comprovantes; o resumo mensal tem 4-6 páginas
 
 # "21/09/2026 CONDOMED ASSESSORIA - NF. 211757 - GESTAO DE 335,63 352,00" (o 2º valor é o total da subconta, só na última linha do grupo)
-_RE_LINHA = re.compile(r"^(\d{2}/\d{2}/\d{4})\s+(.*?)\s+(-?[\d.]+,\d{2})(?:\s+-?[\d.]+,\d{2})?\s*$")
-_RE_TOTAL_CONTA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}\s*$", re.IGNORECASE)
+_RE_LINHA = re.compile(r"^(\d{2}/\d{2}/\d{4})\s+(.*?)\s+(-?[\d.]+,\d{2})(?:\s+-?[\d.]+,\d{2})?(?:\s+-?[\d,]+%)?\s*$")
+_RE_TOTAL_CONTA = re.compile(r"^TOTAL\s+DA\s+CONTA\s+(.+?)\s+[\d.]+,\d{2}(?:\s+-?[\d,]+%)?\s*$", re.IGNORECASE)
 _RE_TOTAL_GERAL = re.compile(r"^TOTAL\s+DAS\s+DESPESAS", re.IGNORECASE)
 _X_MAX_PAGINA = 700                # marcadores do sistema ("ContasData", "Doctos", "Panel53") ficam fora da página
 
