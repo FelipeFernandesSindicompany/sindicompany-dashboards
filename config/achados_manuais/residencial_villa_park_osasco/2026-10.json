@@ -1,0 +1,30 @@
+[
+  {
+    "id": "MAN-0001",
+    "severidade": "atencao",
+    "valor": 3271.74,
+    "linha": "TARIFAS CONCESSIONÁRIAS",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-11",
+    "titulo": "Conta da Comgás de R$ 3.271,74, muito acima do histórico, com serviços parcelados — TARIFAS CONCESSIONÁRIAS",
+    "paragrafo": "O lançamento de 29/10/2026 (COMGAS 60499206 OUT/2026, R$ 3.271,74) é cerca de 80 vezes o de setembro (R$ 41,08, em 30/09) e está muito acima do histórico das planilhas (de R$ 27 a R$ 53 por mês, de novembro/2025 a agosto/2026). A fatura anexada mostra que o gás consumido foi de apenas R$ 41,24 (2,927 m³); os outros R$ 3.230,50 são itens \"Serviço Nota … Parcela 1 de 2\" (o maior, de R$ 2.328,00), ou seja, serviços cobrados em duas parcelas, com a segunda ainda por vir.",
+    "o_que_verificar": "Que serviços da Comgás são esses (R$ 3.230,50 em \"parcela 1 de 2\"), quem os contratou e foram aprovados? Qual o valor da segunda parcela e quando será cobrada?",
+    "evidencias": [
+      {
+        "pagina": 4,
+        "buscar": "COMGAS\\s+60499206",
+        "legenda": "Outubro/2026 — COMGAS 60499206 OUT/2026 (R$ 3.271,74)",
+        "linhas_contexto": 2,
+        "linha_inteira": true
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.PDF",
+        "pagina": 39,
+        "buscar": "COMGAS\\s+60499206",
+        "legenda": "Setembro/2026 — COMGAS 60499206 SET/2026 (R$ 41,08)",
+        "linhas_contexto": 2,
+        "linha_inteira": true
+      }
+    ]
+  }
+]
