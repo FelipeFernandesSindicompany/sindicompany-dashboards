@@ -1,0 +1,37 @@
+[
+  {
+    "regra": "codigo_tem_comprovante_com_valor_confirmado_por_ocr",
+    "valor_total": 7560.0,
+    "motivo": "NF 440 da Fitness (R$ 7.560,00) retirada do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-11"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -3795.13,
+    "motivo": "receita negativa (rendimento da ORDINARIA, -R$ 3.795,13) retirada do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-11"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -9.72,
+    "motivo": "receita negativa (atualização monetária do FUNDO DE RESERVA, -R$ 9,72) retirada do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-11"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -4984.11,
+    "motivo": "saldo negativo de CONSUMO DE ENERGIA retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-11"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 15420.12,
+    "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-11"
+  }
+]
