@@ -1,0 +1,38 @@
+[
+  {
+    "codigo": "0026",
+    "valor_listagem": 620.26,
+    "resumo": "Plantec - manutenção do gerador, NF 212798 (R$ 620,26)",
+    "documento": "anexos do lançamento 07965108 no portal (comprovante do Itaú, boleto e NF)",
+    "como": "Conferido visualmente nos anexos: o comprovante de pagamento eletrônico do Itaú mostra \"Valor do pagamento R$ 620,26\", pago em 02/10/2026, fornecedor Plantec Dist Prod Tel, histórico \"Ref. manut. gerador NF 212798\" — igual ao listado. A leitura automática não conseguiu ler essa imagem."
+  },
+  {
+    "codigo": "0047",
+    "valor_listagem": 783.0,
+    "resumo": "Pinots Segurança Eletrônica - controlador de acesso/câmera/fonte, parcela 01/03, NF 257 (R$ 783,00)",
+    "documento": "anexos do lançamento 07968697 no portal (comprovante do Itaú, boleto e NF)",
+    "como": "Conferido visualmente nos anexos: o comprovante de pagamento eletrônico do Itaú mostra \"Valor do pagamento R$ 783,00\", pago em 05/10/2026, fornecedor Pinots Segurança Eletrônica, histórico \"Ref. 01/03 controlador acesso/câmera/fonte chaveada NF 257\" — igual ao listado. A leitura automática não conseguiu ler essa imagem."
+  },
+  {
+    "codigo": "0017",
+    "valor_listagem": 134.9,
+    "divergencia_real": true,
+    "valor_exibido": 134.9,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 07995109 no portal (linha do extrato bancário)",
+    "resumo": "Conta (fatura) da Claro não anexada — TARIFAS CONCESSIONÁRIAS (R$ 134,90)",
+    "como": "O lançamento de 15/10/2026 (CLARO COD 304396708 OUT/2026, R$ 134,90) tem como único anexo a linha do extrato bancário do débito automático (\"15/out DA CLARO S.A. 043967081 -134,90\"), que confirma o valor debitado. A conta (fatura) da Claro, com o consumo e o vencimento, não está anexada.",
+    "pergunta": "Podem enviar a conta (fatura) da Claro de outubro/2026?"
+  },
+  {
+    "codigo": "0018",
+    "valor_listagem": 195.71,
+    "divergencia_real": true,
+    "valor_exibido": 195.71,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 08001986 no portal (linha do extrato bancário)",
+    "resumo": "Conta (fatura) da Vivo não anexada — TARIFAS CONCESSIONÁRIAS (R$ 195,71)",
+    "como": "O lançamento de 19/10/2026 (VIVO 8999 5547 4144 OUT/2026, R$ 195,71) tem como único anexo a linha do extrato bancário do débito automático (\"19/out DA VIVO FIXO 9554741440 -195,71\"), que confirma o valor debitado. A conta (fatura) da Vivo, com o consumo e o vencimento, não está anexada.",
+    "pergunta": "Podem enviar a conta (fatura) da Vivo de outubro/2026?"
+  }
+]
