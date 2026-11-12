@@ -929,8 +929,8 @@
     }
   },
   "Dashboard_Financeiro_UpperItaim.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -948,15 +948,16 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 148714.96,
-      "tCred": 231844.24,
-      "tDeb": 237828.04,
-      "inad": 16278.37,
-      "tAnt": 154698.76
+      "tit": "Setembro / 2026",
+      "tAtual": 148680.66,
+      "tCred": 110790.69,
+      "tDeb": 110824.99,
+      "inad": 0,
+      "tAnt": 148714.96
     }
   },
   "Dashboard_Financeiro_VibraButanta.html": {
