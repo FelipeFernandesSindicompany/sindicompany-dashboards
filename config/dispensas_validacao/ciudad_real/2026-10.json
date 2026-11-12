@@ -1,0 +1,14 @@
+[
+  {
+    "tipo": "nota_fiscal_ausente",
+    "valor_total": 128.2,
+    "reescrever": {
+      "titulo": "Nota Fiscal aguardando anexo — EVENTUAIS - EXTRAS (R$ 128,20)",
+      "paragrafo": "Compra em marketplace (Magalu): o valor deste lançamento (R$ 128,20) confere, mas o comprovante anexado é só a confirmação do pagamento — não traz a Nota Fiscal da compra. A administradora informou que a nota fiscal estava faltando e que aguarda o anexo dela no lançamento.",
+      "o_que_verificar": "Aguardando o anexo da nota fiscal no lançamento, conforme informado pela administradora. Podem confirmar quando ela for anexada?"
+    },
+    "motivo": "texto ajustado a pedido do responsável: a administradora informou que a nota fiscal estava faltando e que aguarda o anexo no lançamento",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-12"
+  }
+]
