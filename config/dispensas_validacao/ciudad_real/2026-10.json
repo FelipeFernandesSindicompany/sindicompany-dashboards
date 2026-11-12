@@ -10,5 +10,26 @@
     "motivo": "texto ajustado a pedido do responsável: a administradora informou que a nota fiscal estava faltando e que aguarda o anexo no lançamento",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-12"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -800.0,
+    "motivo": "receita negativa (RECEB. MULTA REG. INTERNO, -R$ 800,00) retirada do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-12"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 11698.03,
+    "motivo": "fornecedor novo (seguro predial HDI) retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-12"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 49191.76,
+    "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-12"
   }
 ]
