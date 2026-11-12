@@ -19,10 +19,10 @@
     "divergencia_real": true,
     "valor_exibido": 134.9,
     "severidade": "atencao",
-    "documento": "anexo do lançamento 07995109 no portal (linha do extrato bancário)",
-    "resumo": "Conta (fatura) da Claro não anexada — TARIFAS CONCESSIONÁRIAS (R$ 134,90)",
-    "como": "O lançamento de 15/10/2026 (CLARO COD 304396708 OUT/2026, R$ 134,90) tem como único anexo a linha do extrato bancário do débito automático (\"15/out DA CLARO S.A. 043967081 -134,90\"), que confirma o valor debitado. A conta (fatura) da Claro, com o consumo e o vencimento, não está anexada.",
-    "pergunta": "Podem enviar a conta (fatura) da Claro de outubro/2026?"
+    "documento": "anexo do lançamento 07995109 no portal (recorte de linha do extrato bancário)",
+    "resumo": "Conta (fatura) e comprovante de pagamento da Claro não anexados — TARIFAS CONCESSIONÁRIAS (R$ 134,90)",
+    "como": "O lançamento de 15/10/2026 (CLARO COD 304396708 OUT/2026, R$ 134,90) tem como único anexo um recorte de uma linha do extrato bancário (\"15/out DA CLARO S.A. 043967081 -134,90\"). Isso não é a conta (fatura) da Claro, com o consumo e o vencimento, nem o comprovante de pagamento: nenhum dos dois está anexado.",
+    "pergunta": "Podem anexar a conta (fatura) da Claro de outubro/2026 e o comprovante de pagamento deste lançamento?"
   },
   {
     "codigo": "0018",
@@ -30,9 +30,9 @@
     "divergencia_real": true,
     "valor_exibido": 195.71,
     "severidade": "atencao",
-    "documento": "anexo do lançamento 08001986 no portal (linha do extrato bancário)",
-    "resumo": "Conta (fatura) da Vivo não anexada — TARIFAS CONCESSIONÁRIAS (R$ 195,71)",
-    "como": "O lançamento de 19/10/2026 (VIVO 8999 5547 4144 OUT/2026, R$ 195,71) tem como único anexo a linha do extrato bancário do débito automático (\"19/out DA VIVO FIXO 9554741440 -195,71\"), que confirma o valor debitado. A conta (fatura) da Vivo, com o consumo e o vencimento, não está anexada.",
-    "pergunta": "Podem enviar a conta (fatura) da Vivo de outubro/2026?"
+    "documento": "anexo do lançamento 08001986 no portal (recorte de linha do extrato bancário)",
+    "resumo": "Conta (fatura) e comprovante de pagamento da Vivo não anexados — TARIFAS CONCESSIONÁRIAS (R$ 195,71)",
+    "como": "O lançamento de 19/10/2026 (VIVO 8999 5547 4144 OUT/2026, R$ 195,71) tem como único anexo um recorte de uma linha do extrato bancário (\"19/out DA VIVO FIXO 9554741440 -195,71\"). Isso não é a conta (fatura) da Vivo, com o consumo e o vencimento, nem o comprovante de pagamento: nenhum dos dois está anexado.",
+    "pergunta": "Podem anexar a conta (fatura) da Vivo de outubro/2026 e o comprovante de pagamento deste lançamento?"
   }
 ]
