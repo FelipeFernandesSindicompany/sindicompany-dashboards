@@ -957,8 +957,8 @@
     }
   },
   "Dashboard_Financeiro_VibraButanta.html": {
-    "lastKey": "jul26",
-    "lastMonth": "Jul/26",
+    "lastKey": "ago26",
+    "lastMonth": "Ago/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -975,15 +975,16 @@
       "abr26",
       "mai26",
       "jun26",
-      "jul26"
+      "jul26",
+      "ago26"
     ],
     "data": {
-      "tit": "Julho / 2026",
-      "tAtual": 165398.06,
-      "tCred": 176499.86,
-      "tDeb": 197736.13,
-      "inad": 84190.79,
-      "tAnt": 186634.33
+      "tit": "Agosto / 2026",
+      "tAtual": 252847.51,
+      "tCred": 173023.04,
+      "tDeb": 85573.59,
+      "inad": 0,
+      "tAnt": 165398.06
     }
   },
   "Dashboard_Financeiro_VeraCruz.html": {
