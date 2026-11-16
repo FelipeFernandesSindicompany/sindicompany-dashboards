@@ -36,5 +36,15 @@
     "motivo": "pergunta reduzida a pedido do responsável: só se a retirada dos recursos do fundo foi aprovada",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-16"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 25538.0,
+    "reescrever": {
+      "o_que_verificar": "Foi contratado um novo fornecedor?"
+    },
+    "motivo": "pergunta reduzida a pedido do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
   }
 ]
