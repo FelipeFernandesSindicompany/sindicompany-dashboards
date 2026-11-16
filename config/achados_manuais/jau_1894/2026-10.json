@@ -1,0 +1,52 @@
+[
+  {
+    "id": "MAN-0001",
+    "severidade": "atencao",
+    "valor": 91637.41,
+    "linha": "INADIMPLÊNCIA",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16",
+    "titulo": "Inadimplência total idêntica à dos dois meses anteriores — INADIMPLÊNCIA (R$ 91.637,41)",
+    "paragrafo": "O total geral de devedores do Resumo de Inadimplência é de R$ 91.637,41 em outubro/2026, o mesmo valor de setembro e de agosto. Em outubro e em setembro os componentes também são iguais: R$ 89.954,93 na Conta Condomínio e R$ 1.682,48 no Fundo de Reserva. No mesmo mês o balancete registra R$ 1.493,60 de acordos recebidos e a composição da arrecadação mostra R$ 0,00 de condôminos em atraso.",
+    "o_que_verificar": "O valor de devedores foi atualizado em outubro? Podem enviar a relação de devedores atualizada?",
+    "evidencias": [
+      {
+        "pagina": 2,
+        "bbox": [
+          28,
+          52,
+          572,
+          90
+        ],
+        "destaques": [
+          [
+            28,
+            69,
+            572,
+            85
+          ]
+        ],
+        "legenda": "Outubro/2026 — Resumo de Inadimplência: total geral de devedores R$ 91.637,41"
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 2,
+        "bbox": [
+          28,
+          100,
+          572,
+          168
+        ],
+        "destaques": [
+          [
+            28,
+            150,
+            572,
+            166
+          ]
+        ],
+        "legenda": "Setembro/2026 — Resumo de Inadimplência: total geral de devedores R$ 91.637,41 (R$ 89.954,93 + R$ 1.682,48)"
+      }
+    ]
+  }
+]
