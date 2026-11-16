@@ -1,0 +1,16 @@
+[
+  {
+    "verificacao": "recorrente_ausente",
+    "valor_total": 3891.11,
+    "motivo": "retirado do relatório de outubro/2026: as duas despesas não estão ausentes — o serviço da Verti (R$ 2.863,36) foi lançado em outubro como \"Serviço de Administração Imobiliária - Outubro/2026\" (NFS-e anexada, R$ 2.863,36, em 13/10) e os adiantamentos salariais de outubro foram lançados como \"ADIANTAMENTO SALARIAL OUT/2026\" (5 lançamentos, R$ 6.069,17); mudou só a descrição",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 1478.77,
+    "motivo": "retirado do relatório de outubro/2026: o anexo do lançamento (ALLIANZ - PC 01/06 Seguros Gerais, R$ 1.478,77) é a cobrança da parcela 1 da apólice Allianz, com vencimento em 15/10/2026 — ou seja, o seguro é o que explica a subconta nova",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  }
+]
