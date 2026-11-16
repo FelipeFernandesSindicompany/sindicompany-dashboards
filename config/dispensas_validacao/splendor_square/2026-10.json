@@ -12,5 +12,29 @@
     "motivo": "retirado do relatório de outubro/2026: o apontamento de \"fatura de cartão de crédito\" foi falso — o lançamento (REF. CAFE ASSEMBLEIA, R$ 128,04) é reembolso à síndica por Pix, com o cupom fiscal anexado; o \"cartão de crédito\" é a forma de pagamento impressa no cupom",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-16"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -38448.74,
+    "motivo": "saldos negativos de ORDINARIA, TARIFAS CONCESSIONÁRIAS e SEGURANÇA retirados do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 52081.02,
+    "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "verificacao": "uso_fundo",
+    "valor_total": 58012.65,
+    "reescrever": {
+      "o_que_verificar": "A retirada de recursos do Fundo de Reserva para pagar essas despesas foi aprovada?"
+    },
+    "motivo": "pergunta reduzida a pedido do responsável: só se a retirada dos recursos do fundo foi aprovada",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
   }
 ]
