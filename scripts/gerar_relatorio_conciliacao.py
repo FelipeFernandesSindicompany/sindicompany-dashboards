@@ -174,6 +174,10 @@ GERAR_ACHADOS_POR_CONDO = {
     # Elo; planilha .xls e PDF sem comprovantes baixados seguem como antes (listagem, DataDigitus). Ver conciliacao/condominios/residencial_villa_park_osasco.py
     "residencial_villa_park_osasco": lambda registros, *a, **kw: (
         _gerar_achados_planilha_refinado if any(getattr(r, "arquivo_evidencia_externa", None) for r in registros) else gerar_achados_datadigitus)(registros, *a, **kw),
+    # Splendor Square (Lello, cadastrado como habitacional_xlsx): PDF resumido com links do portal de documentos (out/2026 em diante, comprovantes
+    # baixados) -> mesmo matching do Elo/Villa Park; planilha .xls e Pasta Digital seguem como antes (ver conciliacao/condominios/splendor_square.py)
+    "splendor_square": lambda registros, *a, **kw: (
+        _gerar_achados_planilha_refinado if any(getattr(r, "arquivo_evidencia_externa", None) for r in registros) else gerar_achados_planilha_com_links)(registros, *a, **kw),
     # Baturité migrou de habitacional_xlsx (planilha) pra ContasData
     # (PDF) em 2026 — mesma regra de matching do Lirba.
     "baturite": gerar_achados_planilha_com_links,

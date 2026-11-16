@@ -1,0 +1,63 @@
+[
+  {
+    "codigo": "07971909",
+    "valor_listagem": 5000.0,
+    "resumo": "Honorários da síndica Ana Paula, NF 72 (R$ 5.000,00)",
+    "documento": "anexos do lançamento (NFS-e 72 e comprovante do Itaú)",
+    "como": "Conferido visualmente nos anexos: o comprovante de pagamento eletrônico do Itaú mostra \"Valor do pagamento R$ 5.000,00\" por Pix a Ana Paula Silvestre de Queiroz, pago em 06/10/2026, e a NFS-e 72 tem valor total de R$ 5.000,00 — igual ao listado. A leitura automática não conseguiu ler essas imagens."
+  },
+  {
+    "codigo": "08006503",
+    "valor_listagem": 29.94,
+    "resumo": "CSLL/COFINS/PIS - NF 393901 CBE (R$ 29,94)",
+    "documento": "anexos do lançamento (comprovante do Itaú e guia DARF)",
+    "como": "Conferido visualmente nos anexos: o comprovante do Itaú é de um pagamento consolidado de DCTFWeb de R$ 24.031,60 (guia da Receita Federal, competência setembro/2026), e traz \"Valor do lançamento R$ 29,94\" — igual ao listado. O R$ 24.031,60 lido pelo OCR é o total da guia, que reúne vários tributos."
+  },
+  {
+    "codigo": "07993469",
+    "valor_listagem": 128.04,
+    "resumo": "Café da assembleia, reembolso à síndica (R$ 128,04)",
+    "documento": "anexos do lançamento (ordem de pagamento, foto do cupom fiscal e comprovante do Itaú)",
+    "como": "Conferido visualmente nos anexos: a ordem de pagamento (\"café assembleia\") e o comprovante do Itaú mostram Pix de R$ 128,04 a Ana Paula Silvestre de Queiroz, e o cupom fiscal anexado (NFC-e de 13/10/2026) tem total de R$ 128,04. O \"cartão de crédito\" lido no texto é a forma de pagamento do cupom, não uma fatura de cartão do condomínio."
+  },
+  {
+    "codigo": "08024966",
+    "valor_listagem": 113.94,
+    "resumo": "Reembolso de enfeites do Dia das Bruxas à síndica (R$ 113,94)",
+    "documento": "anexos do lançamento (ordem de pagamento, DANFE e comprovante do Itaú)",
+    "como": "Conferido visualmente nos anexos: o comprovante do Itaú mostra Pix de R$ 113,94 a Ana Paula Silvestre de Queiroz, e o DANFE anexado (NF-e 358.683, 26/10/2026) tem valor total de R$ 113,94. O R$ 84,08 lido pelo OCR é o valor aproximado dos tributos impresso na nota."
+  },
+  {
+    "codigo": "07994742",
+    "valor_listagem": 624.58,
+    "divergencia_real": true,
+    "valor_exibido": 624.58,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento no portal (recorte de linha do extrato bancário)",
+    "resumo": "Conta (fatura) e comprovante de pagamento da Vivo não anexados — TARIFAS CONCESSIONÁRIAS (R$ 624,58)",
+    "como": "O único anexo do lançamento (VIVO, R$ 624,58) é um recorte de uma linha do extrato bancário do débito automático da Vivo (\"DA VIVO FIXO 9267936532\"). Isso não é a conta (fatura) da Vivo, com o consumo e o vencimento, nem o comprovante de pagamento: nenhum dos dois está anexado.",
+    "pergunta": "Podem anexar a conta (fatura) da Vivo de outubro/2026 e o comprovante de pagamento deste lançamento?"
+  },
+  {
+    "codigo": "07995175",
+    "valor_listagem": 89.99,
+    "divergencia_real": true,
+    "valor_exibido": 89.99,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento no portal (recorte de linha do extrato bancário)",
+    "resumo": "Conta (fatura) e comprovante de pagamento da Vivo não anexados — TARIFAS CONCESSIONÁRIAS (R$ 89,99)",
+    "como": "O único anexo do lançamento (VIVO, R$ 89,99) é um recorte de uma linha do extrato bancário do débito automático da Vivo (\"DA VIVO FIXO 9257429433\"). Isso não é a conta (fatura) da Vivo, com o consumo e o vencimento, nem o comprovante de pagamento: nenhum dos dois está anexado.",
+    "pergunta": "Podem anexar a conta (fatura) da Vivo de outubro/2026 e o comprovante de pagamento deste lançamento?"
+  },
+  {
+    "codigo": "07995176",
+    "valor_listagem": 89.99,
+    "divergencia_real": true,
+    "valor_exibido": 89.99,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento no portal (recorte de linha do extrato bancário)",
+    "resumo": "Conta (fatura) e comprovante de pagamento da Vivo não anexados — TARIFAS CONCESSIONÁRIAS (R$ 89,99)",
+    "como": "O único anexo do lançamento (VIVO, R$ 89,99) é um recorte de uma linha do extrato bancário do débito automático da Vivo (\"DA VIVO FIXO 9257429581\"). Isso não é a conta (fatura) da Vivo, com o consumo e o vencimento, nem o comprovante de pagamento: nenhum dos dois está anexado.",
+    "pergunta": "Podem anexar a conta (fatura) da Vivo de outubro/2026 e o comprovante de pagamento deste lançamento?"
+  }
+]

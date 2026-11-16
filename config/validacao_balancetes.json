@@ -542,6 +542,7 @@
     },
     "splendor_square": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Splendor",
+      "leitor_financeiro": "regras_gerais",
       "parser_config": {
         "fechamento_categorias_ignorar": "desp[] = Total ORDINARIA do Demonstrativo; o débito da conta no Resumo inclui TRANSFERÊNCIAS e APLICAÇÃO/RESGATE (jul/2026: 6.758,64 + 29.001,86), que não são despesa",
         "regras_gerais": {

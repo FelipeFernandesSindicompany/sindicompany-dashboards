@@ -1,0 +1,16 @@
+[
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 821.0,
+    "motivo": "retirado do relatório de outubro/2026: o anexo do lançamento (REF. REEMBOLSO ROSANGELA, R$ 821,00) é o e-mail de 24/10/2026 que encaminha a reclamação sobre a falha na entrega de um medicamento no apto 41 e pede o reembolso, o que explica a subconta \"Ressarcimento a proprietários\"",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "regra": "codigo_tem_comprovante_com_valor_confirmado_por_ocr",
+    "valor_total": 128.04,
+    "motivo": "retirado do relatório de outubro/2026: o apontamento de \"fatura de cartão de crédito\" foi falso — o lançamento (REF. CAFE ASSEMBLEIA, R$ 128,04) é reembolso à síndica por Pix, com o cupom fiscal anexado; o \"cartão de crédito\" é a forma de pagamento impressa no cupom",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  }
+]
