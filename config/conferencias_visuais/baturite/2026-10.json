@@ -1,0 +1,13 @@
+[
+  {
+    "codigo": "L021",
+    "valor_listagem": 71.31,
+    "divergencia_real": true,
+    "valor_exibido": 71.31,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 00096779 no portal (comprovante de pagamento do Itaú)",
+    "resumo": "Pagamento da Claro feito a uma pessoa física e conta (fatura) não anexada — CONSUMOS (R$ 71,31)",
+    "como": "O comprovante do Itaú do lançamento de 20/10/2026 (CLARO - TELEFONE - CLIENTE 147264260, R$ 71,31) mostra um crédito em conta corrente para REGINALDO MACHADO DE SOUSA, pessoa física (o mesmo nome do salário e do adiantamento lançados na folha do condomínio), e não um pagamento à Claro S.A. A conta (fatura) da Claro, com o consumo e o vencimento, não está anexada.",
+    "pergunta": "Podem esclarecer por que o pagamento da Claro foi feito ao Sr. Reginaldo Machado de Sousa e não à Claro, e anexar a conta (fatura) da Claro?"
+  }
+]

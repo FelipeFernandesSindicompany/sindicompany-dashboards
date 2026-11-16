@@ -58,7 +58,7 @@ class Adapter(AdapterBase):
             # A mesma frase aparece no Índice (com só o nº da página depois,
             # ex.: "RESUMO FINANCEIRO CONTABIL 6") — só considera o início
             # de verdade quando vem seguida do cabeçalho da tabela.
-            if re.match(r'^RESUMO FINANCEIRO CONTABIL\s+Saldo\b', l, re.IGNORECASE):
+            if re.match(r'^RESUMO FINANCEIRO CONT[ÁA]BIL\s+Saldo\b', l, re.IGNORECASE):
                 dentro_resumo = True
                 continue
             if not dentro_resumo:
