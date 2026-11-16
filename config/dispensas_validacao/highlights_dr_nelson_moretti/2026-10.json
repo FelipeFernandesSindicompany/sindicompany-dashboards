@@ -10,5 +10,19 @@
     "motivo": "texto ajustado conforme a observação da administradora no próprio lançamento (NF gerada após o pagamento do boleto)",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-16"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -28588.8,
+    "motivo": "saldos negativos das contas de consumo retirados do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 52855.83,
+    "motivo": "contas de concessionária acima da mediana retiradas do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
   }
 ]
