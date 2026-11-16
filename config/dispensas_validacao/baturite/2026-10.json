@@ -1,0 +1,30 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -587.29,
+    "motivo": "saldo negativo de OBRAS/MELHORIAS retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 6763.57,
+    "motivo": "conta ORDINÁRIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 5.89,
+    "motivo": "Uniproof em outra subconta retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  },
+  {
+    "regra": "concessionaria_sem_a_conta_anexada_so_comprovante_de_pagamento",
+    "valor_total": 71.31,
+    "motivo": "pagamento da Claro (R$ 71,31) retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  }
+]
