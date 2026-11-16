@@ -40,10 +40,7 @@
   {
     "verificacao": "fornecedor_novo",
     "valor_total": 25538.0,
-    "reescrever": {
-      "o_que_verificar": "Foi contratado um novo fornecedor?"
-    },
-    "motivo": "pergunta reduzida a pedido do responsável",
+    "motivo": "fornecedor novo (Verssat, limpeza, R$ 25.538,00) retirado do relatório de outubro/2026 por decisão do responsável",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-16"
   }
