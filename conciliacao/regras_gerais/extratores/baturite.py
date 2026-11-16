@@ -31,7 +31,7 @@ def _extrator_pdf_resumido(condo: dict):
                 return super()._reconhecer(paginas)
             except ValueError:
                 inicio = "\n".join(p.texto for p in paginas[:40])
-                if not (re.search(r"Demonstrativo de Contas", inicio) and re.search(r"Condom[ií]nio:\s*\d+\s*-", inicio)):
+                if not (re.search(r"Demonstra(?:tivo|[çc][ãa]o) de Contas|Demonstrativo de Despesas", inicio) and re.search(r"Condom[ií]nio:\s*\d+\s*-", inicio)):
                     raise
                 todo = "\n".join(p.texto for p in paginas if p.tipo != "outro")
                 return bool(re.search(r"Resumo Financeiro Cont[áa]bil", todo, re.I) and re.search(r"TOTAL DA CONTA", todo, re.I)

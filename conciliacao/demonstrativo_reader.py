@@ -282,6 +282,23 @@ def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_refere
         extra = _emissao_e_devedores_lello_pdf(caminho_arquivo)
         if extra and extra["inad"] is not None:
             inad, inad_proc = extra["inad"], extra["real"]
+    if caminho_arquivo.suffix.lower() == ".pdf" and condo.get("emissao_pdf") == "resumo_emissoes_ordinaria":
+        # PDF resumido do Highlights (out/2026): o adaptador não o lê; previsto x realizado = total do "Resumo de Emissões" da ORDINÁRIA e inadimplência =
+        # "Total geral" da "Relação de Cotas em Aberto" (mesmas fontes dos meses em Pasta Digital)
+        pr = _previsto_realizado_resumo_emissoes(caminho_arquivo, mes_referencia)
+        if pr:
+            real, prev = pr
+        if inad is None:
+            try:
+                with pdf_plumber_aberto(caminho_arquivo) as _pdf:
+                    _txt = "\n".join((pg.extract_text() or "") for pg in _pdf.pages)
+                _m = re.search(r"Total geral:\s*([\d.]+,\d{2})", _txt)
+                if _m:
+                    inad = _brl_para_float(_m.group(1))
+                    if inad_proc is None:
+                        inad_proc = 0.0
+            except Exception:
+                pass
     return {
         "tit": mes_titulo, "per": periodo,
         "tAnt": sum(c["a"] for c in contas), "tCred": sum(c["c"] for c in contas),
@@ -302,7 +319,8 @@ def _previsto_realizado_resumo_emissoes(caminho: Path, mes: str):
 
     ano, m = int(mes[:4]), int(mes[5:7])
     fim = f"{calendar.monthrange(ano, m)[1]:02d}/{m:02d}/{ano}"
-    rx = re.compile(rf"^(?:COTAS|COND[ÔO]MINOS)\s+EM\s+ATRASO\s+EM\s+{re.escape(fim)}$", re.IGNORECASE)
+    # (o período de alguns arquivos termina antes do último dia do mês — ex.: "01/10/2026 a 30/10/2026": aceita qualquer dia do mês de referência)
+    rx = re.compile(rf"^(?:COTAS|COND[ÔO]MINOS)\s+EM\s+ATRASO\s+EM\s+(?:{re.escape(fim)}|\d{{2}}/{m:02d}/{ano})$", re.IGNORECASE)
     with fitz.open(str(caminho)) as doc:
         for i in range(min(len(doc), 40)):
             t = doc[i].get_text()

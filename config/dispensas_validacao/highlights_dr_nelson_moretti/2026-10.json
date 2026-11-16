@@ -1,0 +1,14 @@
+[
+  {
+    "tipo": "nota_fiscal_ausente",
+    "valor_total": 46.45,
+    "reescrever": {
+      "titulo": "Nota Fiscal aguardando anexo — PATRIMONIO (R$ 46,45)",
+      "paragrafo": "Compra em marketplace (Mercado Livre — pneu/câmara de ar para carro de carga): o valor deste lançamento (R$ 46,45) confere com o boleto anexado, mas a Nota Fiscal da compra não está anexada. A observação da administradora no lançamento informa que o boleto saiu em nome da síndica e que, por ser compra online, a NF será gerada após o pagamento do boleto.",
+      "o_que_verificar": "Podem anexar a nota fiscal da compra assim que ela for gerada?"
+    },
+    "motivo": "texto ajustado conforme a observação da administradora no próprio lançamento (NF gerada após o pagamento do boleto)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-16"
+  }
+]
