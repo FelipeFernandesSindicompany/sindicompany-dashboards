@@ -1384,28 +1384,72 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 ),
             })
 
-    # Rótulo por condomínio específico tem prioridade (ex.: Club Park Butantã
-    # é "lirba_pdf" no cadastro, mas o PDF real é do sistema GCONT). Central
-    # das Artes também é "lirba_pdf" no cadastro, mas a administradora real
-    # é a Hausy (sistema Robotton/GoControleDocumentos — ver
-    # conciliacao/condominios/central_das_artes.py).
+    # O cabeçalho do PDF mostra o nome REAL da administradora (empresa), nunca o nome interno do formato/sistema
+    # ("Lirba" = ContasData, "Habitacional" = planilha, "DataDigitus"/"Iello" = softwares). Por isso cada condomínio
+    # tem o seu nome aqui; o rótulo por empresa_gestora (ADMINISTRADORA_LABEL) é só reserva e avisa quando é usado.
+    # Fontes: cabeçalho/rodapé dos PDFs da prestação e a barra lateral dos dashboards (docs/).
     ADMINISTRADORA_LABEL_POR_CONDO = {
-        "club_park_butanta": "GCONT",
-        "nyc": "Manager ADM",
+        "alvorada": "Habitacional",
+        "baturite": "Baseline",
+        "plano_cambuci": "BBZ Administração",
+        "residencial_blue_sky": "Robotton",
+        "cap_d_antibes": "Angélica Imóveis",
         "central_das_artes": "Hausy",
-        # Cadastrados como lirba_pdf, mas o PDF é de outra administradora/sistema (lido no próprio arquivo):
-        "i_gloo_alphaville": "GCONT",
-        "parque_saint_afonso": "GCONT",
-        "top_nine": "Conister",
-        "maison_du_rhone": "Predial Ruggiero",     # DataDigitus é só o software; o PDF traz "PREDIAL RUGGIERO LTDA"
+        "cinque_terre_residenza": "Light",
+        "ciudad_real": "GK ADM",
+        "club_park_butanta": "GCONT",
+        "fatto_morumbi": "Manager ADM",
+        "cores": "BBZ",
+        "elo_elo_duo": "Graiche",
+        "giardino_d_italia": "Lello Condomínios",
+        "go_barra_funda": "BBZ",
+        "go_liberdade": "BBZ",
+        "guaratambe": "LFC",
+        "highlights_dr_nelson_moretti": "Habita",
+        "hub_home_club_tatuape": "GK",
+        "jau_1894": "Lello Condomínios",
+        "i_gloo_alphaville": "HSA Condomínios",
+        "living_for_consolacao": "Desti",
+        "maison_du_rhone": "Predial Ruggiero",
+        "monte_tabor": "Alliz",
+        "nyc": "Manager ADM",
+        "onze_22": "Graiche",
+        "organy_residencial": "Robotton",
+        "organy_studio": "Robotton",
+        "730_padre_carvalho": "Loan",
+        "palm_beach": "Habitat",
+        "patricia": "Auxiliadora Predial",
         "plano_estacao_campo_limpo": "Foccus",
-        "upper_itaim": "Loan",                        # Loan Imóveis (portal loanimoveis.dyndns.org); "Lirba" é só o nome interno do formato ContasData
+        "plano_mooca_praca_lion_iii": "Sell",
+        "plano_rio_bonito": "Verti",
+        "platinum_building_berrini": "Auxiliadora Predial",
+        "port_saint_tropez": "Verti",
+        "reserva_verde": "SK Condomínios",
+        "residencial_napoleao": "Mario Dal Maso",
+        "parque_saint_afonso": "GCONT",
         "serra_da_mantiqueira": "FL Condomínios",
-        "palm_beach": "Group Condomínios",
-        "duo_vila_matilde": "Danilo Porto Padua",     # mesmo sistema (uCondo) do Saint Simon, mas a administradora do PDF é a Danilo Porto Padua
+        "splendor_square": "GK Premium",
+        "sublime": "BBZ",
+        "top_nine": "Conister",
+        "upper_itaim": "Loan",
+        "vibra_butanta": "Oma",
+        "vera_cruz": "Convivium",
+        "victoria": "Orion",
+        "residencial_villa_park_osasco": "GK Premium",
+        "res_villa_sardenha": "Oma",
+        "vita_parque": "Lello Condomínios",
+        "dueto_morumbi": "Manager ADM",
+        "duo_vila_matilde": "Danilo Porto Padua",
+        "saint_simon": "Conviver MRV",
+        "gardens_living_club": "Consvicta",
+        "spazio_jardins_da_orla": "Addomus",
+        "the_gardens": "Lello Condomínios",
     }
     if condo["id"] == "nyc" and pdf_origem is not None and _arquivo_da_convicta(pdf_origem):
         ADMINISTRADORA_LABEL_POR_CONDO["nyc"] = "Convicta Imóveis"      # set/2026: a administradora mudou (Manager ADM até ago/2026)
+    if condo["id"] not in ADMINISTRADORA_LABEL_POR_CONDO:
+        print(f"[AVISO] administradora de {condo['id']} não cadastrada em ADMINISTRADORA_LABEL_POR_CONDO — o cabeçalho usaria o nome do formato "
+              f"({ADMINISTRADORA_LABEL.get(condo['empresa_gestora'], condo['empresa_gestora'])}), que não é o nome da empresa. Cadastre o nome real.")
     administradora_label = ADMINISTRADORA_LABEL_POR_CONDO.get(
         condo["id"], ADMINISTRADORA_LABEL.get(condo["empresa_gestora"], condo["empresa_gestora"])
     )
