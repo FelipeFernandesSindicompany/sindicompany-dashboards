@@ -1,0 +1,34 @@
+[
+  {
+    "codigo": "0029",
+    "valor_listagem": 9993.04,
+    "resumo": "Sabesp - conta de água e esgoto, fornecimento 65518403002 (R$ 9.993,04)",
+    "documento": "anexo do lançamento 0029 (foto da conta Sabesp)",
+    "como": "Conferido visualmente no anexo: a conta mensal de água e esgoto da Sabesp (fornecimento 65518403002, emissão 07/10/2026) mostra total de R$ 9.993,04 e vencimento em 16/10/2026, com débito automático — igual ao listado. A leitura automática não conseguiu ler essa imagem."
+  },
+  {
+    "codigo": "0030",
+    "valor_listagem": 255.74,
+    "resumo": "Claro - internet, conta de setembro/2026 (R$ 255,74)",
+    "documento": "anexo do lançamento 0030 (conta Claro, 4 páginas)",
+    "como": "Conferido visualmente no anexo: a conta da Claro (código 003/386221153, referência setembro/2026) mostra valor de R$ 255,74, vencimento em 05/10/2026, débito automático — igual ao listado. A leitura automática não conseguiu ler o anexo, que é um PDF de imagem."
+  },
+  {
+    "codigo": "0031",
+    "valor_listagem": 330.65,
+    "resumo": "Claro - internet e telefone fixo, conta de setembro/2026 (R$ 330,65)",
+    "documento": "anexo do lançamento 0031 (conta Claro, 5 páginas)",
+    "como": "Conferido visualmente no anexo: a conta da Claro (código 003/380821574, referência setembro/2026) mostra valor de R$ 330,65 (internet R$ 249,66 + telefone fixo R$ 80,99), vencimento em 08/10/2026, débito automático — igual ao listado. A leitura automática não conseguiu ler o anexo, que é um PDF de imagem."
+  },
+  {
+    "codigo": "0043",
+    "valor_listagem": 148.18,
+    "divergencia_real": true,
+    "valor_exibido": 148.18,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 0043 (boleto Asset Fund — Microsoft 365, R$ 140,80, vencimento 22/09/2026)",
+    "resumo": "Boleto pago após o vencimento, com valor maior que o do boleto — SERVIÇOS PRESTADOS (R$ 148,18)",
+    "como": "O anexo do lançamento 0043 (DEB. C/C ASSET FUND MICROSFT, debitado em 05/10/2026 por R$ 148,18) é o boleto da Asset Fund Br Consultoria (Microsoft 365 Pro) de R$ 140,80 com vencimento em 22/09/2026. O débito ocorreu 13 dias depois do vencimento e R$ 7,38 acima do valor do boleto; o próprio boleto prevê multa de 1,00% e juros de mora de 10,00% ao mês após o vencimento.",
+    "pergunta": "O valor de R$ 148,18 inclui multa e juros por pagamento após o vencimento de 22/09/2026? Por que o boleto não foi pago no prazo?"
+  }
+]
