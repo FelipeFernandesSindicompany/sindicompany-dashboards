@@ -9,5 +9,12 @@
     "motivo": "texto complementado com a relação entre a diferença de R$ 1.800,00 e o débito do Fundo Reserva em setembro",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-17"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 5349.11,
+    "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-17"
   }
 ]

@@ -1,0 +1,32 @@
+[
+  {
+    "tipo": "continuidade_saldo",
+    "valor": -1800.0,
+    "evidencias": [
+      {
+        "pagina": 2,
+        "bbox": [
+          80,
+          398,
+          452,
+          439.6
+        ],
+        "destaques": [
+          [
+            88,
+            413.3,
+            442,
+            426.3
+          ],
+          [
+            88,
+            426.0,
+            442,
+            438.9
+          ]
+        ],
+        "legenda": "Outubro/2026 — Resumo das contas de balancete: saldo anterior da Ordinária (R$ 20.888,48) e do Fundo Reserva (R$ 12.932,47)"
+      }
+    ]
+  }
+]
