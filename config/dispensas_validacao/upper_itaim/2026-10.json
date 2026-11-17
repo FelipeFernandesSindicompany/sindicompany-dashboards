@@ -1,0 +1,12 @@
+[
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 1500.0,
+    "reescrever": {
+      "o_que_verificar": "Qual foi o motivo de pagar as 3 competências (agosto, setembro e outubro/2026) da INOVA TECNOLOGIA no mesmo mês, todas em 30/10/2026?"
+    },
+    "motivo": "pergunta reescrita a pedido do responsável: perguntar o motivo do pagamento das 3 competências no mesmo mês",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-17"
+  }
+]
