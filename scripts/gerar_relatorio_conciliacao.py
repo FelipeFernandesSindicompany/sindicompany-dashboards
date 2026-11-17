@@ -1400,6 +1400,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         "maison_du_rhone": "Predial Ruggiero",     # DataDigitus é só o software; o PDF traz "PREDIAL RUGGIERO LTDA"
         "plano_estacao_campo_limpo": "Foccus",
         "upper_itaim": "Loan",                        # Loan Imóveis (portal loanimoveis.dyndns.org); "Lirba" é só o nome interno do formato ContasData
+        "730_padre_carvalho": "Loan",                 # mesma administradora do Upper Itaim (e-mail loancondominios.com.br no PDF)
         "serra_da_mantiqueira": "FL Condomínios",
         "palm_beach": "Group Condomínios",
         "duo_vila_matilde": "Danilo Porto Padua",     # mesmo sistema (uCondo) do Saint Simon, mas a administradora do PDF é a Danilo Porto Padua
