@@ -1044,8 +1044,8 @@
     }
   },
   "Dashboard_Financeiro_VitaParque.html": {
-    "lastKey": "set26",
-    "lastMonth": "Set/26",
+    "lastKey": "out26",
+    "lastMonth": "Out/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -1064,15 +1064,16 @@
       "jun26",
       "jul26",
       "ago26",
-      "set26"
+      "set26",
+      "out26"
     ],
     "data": {
-      "tit": "Setembro / 2026",
-      "tAtual": 107734.39,
-      "tCred": 254429.74,
-      "tDeb": 273465.91,
-      "inad": 273627.23,
-      "tAnt": 126770.56
+      "tit": "Outubro / 2026",
+      "tAtual": 63596.34,
+      "tCred": 255449.51,
+      "tDeb": 299587.56,
+      "inad": 301575.4,
+      "tAnt": 107734.39
     }
   },
   "Dashboard_Financeiro_DuetoMorumbi.html": {
