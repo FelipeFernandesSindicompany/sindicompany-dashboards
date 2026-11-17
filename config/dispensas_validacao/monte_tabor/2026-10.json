@@ -1,0 +1,13 @@
+[
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": -1800.0,
+    "reescrever": {
+      "paragrafo": "O saldo anterior de uma conta deve ser igual ao saldo final do mês anterior. Neste arquivo isso não ocorre em 2 contas: ORDINARIA: saldo anterior de outubro/2026 R$ 20.888,48, saldo final de setembro/2026 R$ 22.688,48 (diferença de -R$ 1.800,00); FUNDO RESERVA: saldo anterior de outubro/2026 R$ 12.932,47, saldo final de setembro/2026 R$ 11.132,47 (diferença de R$ 1.800,00). Os R$ 1.800,00 saíram da Ordinária e entraram no Fundo Reserva entre o fechamento de setembro e a abertura de outubro, sem aparecer como movimentação de outubro; o valor é o mesmo que foi pago direto do Fundo Reserva em setembro (R$ 1.800,00 de débito no fundo).",
+      "o_que_verificar": "Os R$ 1.800,00 pagos direto do Fundo Reserva em setembro foram devolvidos ao fundo, com saída da Ordinária? Por que essa devolução aparece no saldo anterior de outubro e não como movimentação do mês?"
+    },
+    "motivo": "texto complementado com a relação entre a diferença de R$ 1.800,00 e o débito do Fundo Reserva em setembro",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-17"
+  }
+]
