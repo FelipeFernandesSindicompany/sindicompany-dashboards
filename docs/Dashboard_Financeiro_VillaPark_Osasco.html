@@ -688,9 +688,9 @@ tr:nth-child(even) td{background:#FAFAFA;}
 
 <div id="pg-banco" class="pg">
 
-  <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Posi&ccedil;&atilde;o nas contas e aplica&ccedil;&otilde;es financeiras</p></div>
+  <div class="ph"><h1>Saldo Banc&aacute;rio</h1><p>Banco Ita&uacute; Ag: 1577 C/C: 98927-8</p></div>
 
-  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127981; Evolu&ccedil;&atilde;o Saldo por Tipo de Conta</h3><select onchange="window._filterBanco(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cBanco"></canvas></div></div>
+  <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">&#127981; Evolu&ccedil;&atilde;o do Saldo Banc&aacute;rio</h3><select onchange="window._filterBanco(+this.value)" style="padding:7px 14px;border-radius:20px;border:2px solid var(--p);background:transparent;color:var(--p);font-size:13px;font-weight:600;cursor:pointer;outline:none;"><option value="6">&#218;ltimos 6 meses</option><option value="12" selected>&#218;ltimos 12 meses</option><option value="18">&#218;ltimos 18 meses</option><option value="0">Todos os meses</option></select></div><div class="cw"><canvas id="cBanco"></canvas></div></div>
 
   <div class="cc"><h3>&#128203; Saldo Banc&aacute;rio por M&ecirc;s</h3><div class="tw"><table id="tblBanco"></table></div></div>
 
@@ -1114,23 +1114,21 @@ function buildInad(){
 
 function buildBanco(){
 
-  var h='<tr><th>M\u00eas</th><th>Conta Ordin\u00e1ria</th><th>Fundo de Reserva</th><th>Demais Fundos</th><th>Total</th></tr>';
+  var h='<tr><th>M\u00eas</th><th>Conta Banc\u00e1ria</th><th>Saldo Anterior</th><th>Cr\u00e9ditos</th><th>D\u00e9bitos</th><th>Saldo Atual</th></tr>';
 
   MESES.forEach(function(k){
 
     var m=BAL[k];
 
-    var ccCls=m.banco.cc<0?' style="color:var(--r)"':'';
-
-    var pvCls=m.banco.priv<0?' style="color:var(--r)"':'';
-
     h+='<tr><td class="bd">'+ab(m.tit)+'</td>';
 
-    h+='<td class="nr"'+ccCls+'>'+R(m.banco.cc)+'</td>';
+    h+='<td>Banco Ita\u00fa Ag: 1577 C/C: 98927-8</td>';
 
-    h+='<td class="nr">'+R(m.banco.cdb)+'</td>';
+    h+='<td class="nr">'+R(m.tAnt)+'</td>';
 
-    h+='<td class="nr"'+pvCls+'>'+R(m.banco.priv)+'</td>';
+    h+='<td class="nr">'+R(m.tCred)+'</td>';
+
+    h+='<td class="nr">'+R(m.tDeb)+'</td>';
 
     h+='<td class="nr bd">'+R(m.tAtual)+'</td></tr>';
 
@@ -1410,13 +1408,9 @@ return d?d.v:0;}),backgroundColor:bc+'CC',borderColor:bc,borderWidth:1,borderRad
 
   mkC('cBanco',{type:'bar',data:{labels:ML,datasets:[
 
-    {label:'Ordinária',data:MESES.map(function(k){return BAL[k].banco.cc;}),backgroundColor:'rgba(23,27,46,.82)',borderColor:'#171B2E',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Saldo Bancário',data:MESES.map(function(k){return BAL[k].tAtual;}),backgroundColor:'rgba(23,120,210,.82)',borderColor:'#1565C0',borderWidth:1,borderRadius:3,borderSkipped:false}]},
 
-    {label:'Fundo de Reserva',data:MESES.map(function(k){return BAL[k].banco.cdb;}),backgroundColor:'rgba(232,119,34,.82)',borderColor:'#C05A10',borderWidth:1,borderRadius:3,borderSkipped:false},
-
-    {label:'Demais Fundos',data:MESES.map(function(k){return BAL[k].banco.priv;}),backgroundColor:'rgba(39,174,96,.82)',borderColor:'#1A6B3C',borderWidth:1,borderRadius:3,borderSkipped:false}]},
-
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){var v=c.raw;return '  '+c.dataset.label+': '+(v<0?'-':'')+fR(v);}}})},scales:{x:{stacked:true,ticks:TK,grid:GX},y:{stacked:true,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:LG},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return '  Saldo: '+fR(c.raw);}}})},scales:{x:{stacked:false,ticks:TK,grid:GX},y:{stacked:false,ticks:Object.assign({callback:fK},TK),grid:GY}}}});
 
 // ── Filtro de período: Saldo Bancário ─────────────────────────────────────────
 (function(){
