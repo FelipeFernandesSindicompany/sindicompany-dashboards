@@ -23,6 +23,18 @@ from conciliacao.regras_gerais.modelo import ContaMes, LancamentoDespesa, LinhaR
 
 _RE_SECAO = re.compile(r"^(\d)\.(\d)\s+([A-ZÀ-Ú].+)$")
 _RE_CONTA_HDR = re.compile(r"^(\d{3})\s*-\s*(.+?)$")
+# Nome de cada conta pelo CÓDIGO (como no layout com texto): o OCR da pasta escaneada lê "PROV.13O" como "PROY 130" e separa letras ("APLICA ÇÃ O")
+_NOMES_POR_CODIGO = {
+    "001": "CONTA ORDINARIA", "002": "CONTA FUNDO DE RESERVA", "006": "PROV.13O SAL/FERIAS", "070": "CONTA SEGURANÇA",
+    "077": "APLICACAO-PROV 13O SAL", "081": "APLICACAO-C/ORDINARIA", "083": "APLICACAO-F/RESERVA", "122": "CONTA INDENIZAÇÃO TRABALHISTA",
+    "966": "APLICAÇÃO CONTA SEGURANÇA", "993": "APLICAÇÃO INDENIZAÇÃO TRABALHISTA",
+}
+
+
+def _nome_conta(m) -> str:
+    return _NOMES_POR_CODIGO.get(m.group(1), m.group(2).strip())
+
+
 _COL_VALOR = 470            # x0 mínimo de um valor na coluna da direita (retrato 595 pt; os valores terminam em x ≈ 550)
 
 
@@ -49,8 +61,16 @@ def eh_ruggiero(paginas) -> bool:
 
 def _ruido(l: dict) -> bool:
     t = l["texto"].strip()
-    return bool(not t or t.startswith("PREDIAL RUGGIERO") or re.match(r"^\d{4}\s*-\s*COND", t) or _RE_SECAO.match(t)
+    return bool(not t or len(t) <= 2 or t.startswith("PREDIAL RUGGIERO") or re.match(r"^\d{4}\s*-\s*COND", t) or _RE_SECAO.match(t)
                 or set(t) <= set("¯_—+-|= ") or "Software DataDigitus" in t or re.match(r"^\d{2}/\d{2}/\d{2}\s+\d{2}:\d{2}", t))
+
+
+def _y_titulo(linhas: list) -> float:
+    """yc do título da seção ("2.1 DEMONSTRATIVO..."): o que está acima dele é cabeçalho da folha (logotipo, nome da administradora)."""
+    for l in linhas[:14]:
+        if _RE_SECAO.match(l["texto"].strip()):
+            return l["yc"]
+    return -1.0
 
 
 def _secao(linhas: list) -> str | None:
@@ -65,7 +85,7 @@ def _split(l: dict, so_direita: bool = True):
     """(texto, [valores com bbox]) de uma linha: valores = palavras numéricas (na coluna da direita, se so_direita)."""
     _norm, _num = _ajudantes()
     vals = [w for w in l["w"] if _num(w[4]) is not None and (not so_direita or w[0] >= _COL_VALOR)]
-    texto = " ".join(w[4] for w in l["w"] if w not in vals).strip().strip("|").strip()
+    texto = " ".join(w[4] for w in l["w"] if w not in vals and not re.fullmatch(r"[\d.,]*%|[·.|]+", w[4])).strip().strip("|").strip()
     return texto, vals
 
 
@@ -87,15 +107,16 @@ def ler(paginas) -> dict:
     for pag, W, linhas in paginas:
         if _secao(linhas) != "2.1":
             continue
+        y_tit = _y_titulo(linhas)
         for l in linhas:
-            if _ruido(l):
+            if _ruido(l) or l["yc"] <= y_tit:
                 continue
             texto, vals = _split(l)
             tn = _norm(texto)
             m = _RE_CONTA_HDR.match(texto)
             if m and not vals and not pend:
-                if conta != m.group(2).strip():
-                    conta, grupo, soma_conta = m.group(2).strip(), None, 0.0
+                if conta != _nome_conta(m):
+                    conta, grupo, soma_conta = _nome_conta(m), None, 0.0
                 continue
             if tn.startswith("TOTAL DA CONTA") and vals:
                 decl = _num(vals[-1][4])
@@ -130,14 +151,15 @@ def ler(paginas) -> dict:
     for pag, W, linhas in paginas:
         if _secao(linhas) != "4.1":
             continue
+        y_tit = _y_titulo(linhas)
         for l in linhas:
-            if _ruido(l):
+            if _ruido(l) or l["yc"] <= y_tit:
                 continue
             texto, vals = _split(l)
             tn = _norm(texto)
             m = _RE_CONTA_HDR.match(texto)
             if m and not vals:
-                conta, em_pos = m.group(2).strip(), False
+                conta, em_pos = _nome_conta(m), False
                 continue
             if tn.startswith("POSICAO FINANCEIRA"):
                 em_pos = True
@@ -161,28 +183,42 @@ def ler(paginas) -> dict:
 
     # ── 5.4 Resumo Financeiro: quadros por conta ─────────────────────────────
     cur = None
+    rec54: list = []                 # receitas lidas do próprio 5.4 (usadas só quando o arquivo não traz o 4.1 — pasta contábil escaneada)
+    outras_sem_valor = False         # "Outras Receitas" sem número na linha: o valor vem nas linhas "LUCRO APLICAÇÃO ..." seguintes
     for pag, W, linhas in paginas:
         if _secao(linhas) != "5.4":
             continue
+        y_tit = _y_titulo(linhas)
         for l in linhas:
-            if _ruido(l):
+            if _ruido(l) or l["yc"] <= y_tit:
                 continue
             texto, vals = _split(l, so_direita=False)
             tn = _norm(texto)
             nums = [_num(w[4]) for w in vals]
             m = _RE_CONTA_HDR.match(texto)
             if m and not vals:
-                cur = {"nome": m.group(2).strip(), "ant": 0.0, "cred": 0.0, "desp": 0.0, "pag": pag}
+                cur = {"nome": _nome_conta(m), "ant": 0.0, "cred": 0.0, "desp": 0.0, "pag": pag}
+                outras_sem_valor = False
+                continue
+            if cur is not None and not nums and tn.startswith("OUTRAS RECEITAS"):
+                outras_sem_valor = True
                 continue
             if tn.startswith("SALDO ATUAL") and cur is None and nums:       # "SALDO ATUAL  406.678,49" (total geral, fora dos quadros)
                 out["saldo_total"] = nums[-1]
+                continue
+            if tn.startswith("TOTAL GERAL") and len(nums) >= 4 and out["saldo_total"] is None:   # quadro "RESUMO DAS CONTAS DE BALANCETE" (pasta escaneada)
+                out["saldo_total"] = nums[3]
+                cur = None
                 continue
             if cur is None or not nums:
                 continue
             if tn.startswith("SALDO ANTERIOR"):
                 cur["ant"] = nums[0]
-            elif tn.startswith(("DA EMISSAO", "DE CONDOMINOS", "ANTECIPACO", "MULTA", "JUROS", "OUTRAS RECEITAS")):
+            elif tn.startswith(("DA EMISSAO", "DE CONDOMINOS", "ANTECIPACO", "MULTA", "JUROS", "OUTRAS RECEITAS")) or (outras_sem_valor and tn.startswith(("LUCRO", "RENDIMENTO", "DEDUCAO", "JUROS"))):
                 cur["cred"] += nums[0]
+                tipo = ("cota" if tn.startswith(("DA EMISSAO", "DE CONDOMINOS", "ANTECIPACO")) else "multa_juros" if tn.startswith("MULTA")
+                        else "rendimento" if "APLICA" in _norm(cur["nome"]) else "outra")
+                rec54.append(LinhaReceita(conta=cur["nome"], descricao=texto, valor=nums[0], tipo=tipo, pagina=pag, bbox=tuple(round(x, 1) for x in l["bbox"])))
             elif tn.startswith("DESPESAS DO PERIODO"):
                 cur["desp"] = abs(nums[0])
             elif tn.startswith("SALDO ATUAL"):
@@ -193,6 +229,8 @@ def ler(paginas) -> dict:
                                          f"= {br(esperado)}, mas o saldo atual impresso é {br(c.saldo_atual)}")
                 out["contas"].append(c)
                 cur = None
+    if not out["receitas"] and rec54:
+        out["receitas"] = rec54
     if out["saldo_total"] is not None and out["contas"]:
         soma = round(sum(c.saldo_atual for c in out["contas"]), 2)
         if abs(soma - out["saldo_total"]) > 0.011:

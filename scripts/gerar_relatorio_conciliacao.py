@@ -390,8 +390,9 @@ def etapa_extrair(condo: dict, mes: str, arquivo: Path) -> Path:
         from conciliacao.regras_gerais.extratores._ocr_posicional import escrever_pdf_pesquisavel
 
         tmp = entrada.with_name(entrada.stem + "__ocr.pdf")
-        if escrever_pdf_pesquisavel(entrada, tmp):
+        if escrever_pdf_pesquisavel(entrada, tmp, max_paginas=condo.get("ocr_pdf_sem_texto_paginas")):
             tmp.replace(entrada)
+            (version_dir / "ocr_pdf_sem_texto.flag").write_text("1", encoding="utf-8")     # o render usa para mostrar o aviso de PDF escaneado
             print("[AVISO] o PDF enviado não tem camada de texto: lido por OCR (os números são conferidos pelas somas do próprio balancete).")
         else:
             print("[AVISO] o PDF enviado não tem camada de texto e o OCR não está disponível/não leu nada.")
@@ -1427,7 +1428,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         categorias_novas=categorias_novas_lista,
         aviso_escopo=(condo.get("aviso_escopo")
                       # PDF escaneado (sem camada de texto): números lidos por OCR e conferidos pelas somas do próprio balancete
-                      or (condo.get("aviso_escopo_pdf_escaneado") if _pdf_sem_texto(pdf_origem) else None)
+                      or (condo.get("aviso_escopo_pdf_escaneado") if (_pdf_sem_texto(pdf_origem) or (version_dir / "ocr_pdf_sem_texto.flag").exists()) else None)
                       # aviso por extensão = "comprovantes não enviados": só vale quando NENHUM comprovante veio no arquivo (o PDF completo do Elo
                       # em jul/2026 traz 449 comprovantes; o resumo de 4 páginas de ago/2026 não)
                       or ((condo.get("aviso_escopo_por_extensao") or {}).get(pdf_origem.suffix.lower() if pdf_origem else "")

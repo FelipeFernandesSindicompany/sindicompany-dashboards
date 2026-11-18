@@ -1,0 +1,105 @@
+[
+  {
+    "tipo": "continuidade_saldo",
+    "valor": 14702.68,
+    "evidencias": [
+      {
+        "pagina": 17,
+        "bbox": [
+          98,
+          576.0,
+          460,
+          638.0
+        ],
+        "destaques": [
+          [
+            100,
+            590.5,
+            458,
+            602.0
+          ],
+          [
+            100,
+            626.0,
+            458,
+            637.5
+          ]
+        ],
+        "legenda": "Outubro/2026 — Resumo das contas de balancete: saldo anterior da Conta Ordinária (R$ 20.057,42) e da Conta Segurança (R$ 6.799,62)"
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 20,
+        "bbox": [
+          96,
+          197.0,
+          456,
+          260.0
+        ],
+        "destaques": [
+          [
+            98,
+            210.8,
+            454,
+            222.4
+          ],
+          [
+            98,
+            246.8,
+            454,
+            258.4
+          ]
+        ],
+        "legenda": "Setembro/2026 — Resumo das contas de balancete: saldo final da Conta Ordinária (R$ 5.354,74) e da Conta Segurança (R$ 21.502,30)"
+      }
+    ]
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor": 1396.69,
+    "evidencias": [
+      {
+        "pagina": 17,
+        "bbox": [
+          96,
+          247.0,
+          462,
+          294.0
+        ],
+        "destaques": [
+          [
+            100,
+            249.0,
+            460,
+            292.0
+          ]
+        ],
+        "legenda": "Outubro/2026 — Resumo Financeiro: Aplicação F/Reserva (saldo R$ 114.896,85) sem nenhuma linha de rendimento (\"Outras Receitas\")"
+      },
+      {
+        "pagina": 17,
+        "bbox": [
+          96,
+          367.0,
+          462,
+          448.0
+        ],
+        "destaques": [
+          [
+            108,
+            410.5,
+            458,
+            423.0
+          ],
+          [
+            108,
+            422.0,
+            458,
+            435.0
+          ]
+        ],
+        "legenda": "Outubro/2026 — Resumo Financeiro: Aplicação Conta Segurança com duas linhas \"LUCRO APLICAÇÃO OUT/2026\" (R$ 1.173,32 e R$ 223,37)"
+      }
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 1396.69,
+    "reescrever": {
+      "titulo": "Rendimento da Aplicação F/Reserva sem crédito e valor correspondente creditado na Aplicação Conta Segurança (R$ 1.173,32)",
+      "paragrafo": "A APLICAÇÃO F/RESERVA (saldo de R$ 114.896,85) não recebeu nenhum rendimento em outubro/2026, enquanto em setembro rendeu R$ 1.171,99. Já a APLICAÇÃO CONTA SEGURANÇA (saldo de R$ 21.874,14) recebeu duas linhas \"LUCRO APLICAÇÃO OUT/2026\": R$ 223,37, que equivale a 1,02% do próprio saldo (a mesma taxa das demais aplicações), e R$ 1.173,32, que equivale a 1,02% do saldo da APLICAÇÃO F/RESERVA. Com isso a conta Segurança rendeu R$ 1.396,69 (6,4% do saldo), contra cerca de 1,02% nas outras.",
+      "o_que_verificar": "A linha de R$ 1.173,32 refere-se ao rendimento da Aplicação F/Reserva? Se sim, por que foi creditada na Aplicação Conta Segurança?"
+    },
+    "motivo": "texto reescrito pela leitura do Resumo Financeiro: o rendimento que faltou na F/Reserva aparece na conta Segurança",
+    "decidido_por": "validação (conferido na imagem da p. 17)",
+    "data": "2026-11-18"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 0.0,
+    "motivo": "mesmo fato do item anterior (rendimento da Aplicação F/Reserva): fica em um só item",
+    "decidido_por": "validação",
+    "data": "2026-11-18"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 9177.58,
+    "motivo": "falso alerta: o grupo TERCEIRIZACAO de setembro foi lido por OCR como \"TERCEIRIZACÃAO\" (erro de leitura, não mudança de subconta)",
+    "decidido_por": "validação",
+    "data": "2026-11-18"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 5341.72,
+    "motivo": "falso alerta: o grupo TERCEIRIZACAO de setembro foi lido por OCR como \"TERCEIRIZACÃAO\" (erro de leitura, não mudança de subconta)",
+    "decidido_por": "validação",
+    "data": "2026-11-18"
+  }
+]

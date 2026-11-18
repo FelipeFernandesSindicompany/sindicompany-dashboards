@@ -354,6 +354,9 @@
     },
     "maison_du_rhone": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Maison Du Rhone",
+      "ocr_pdf_sem_texto": true,
+      "ocr_pdf_sem_texto_paginas": 34,
+      "aviso_escopo_pdf_escaneado": "O balancete foi enviado como PDF escaneado (impressão em imagem, sem texto). Os números do Demonstrativo de Despesas, do Resumo Financeiro e das receitas foram lidos por OCR (só nas páginas do balancete, no início do arquivo) e conferidos pelas somas que o próprio balancete traz (subtotais por grupo, total por conta e saldos de cada conta). Os comprovantes, as notas fiscais e os extratos anexados ao PDF não foram conferidos item a item por esta validação. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "leitor_financeiro": "regras_gerais",
       "regras": {
         "rendimento": {

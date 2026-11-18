@@ -243,18 +243,19 @@ def gravar_pesquisavel(caminho: Path, paginas) -> None:
         pass
 
 
-def escrever_pdf_pesquisavel(origem: Path, destino: Path, dpi: int = DPI) -> bool:
+def escrever_pdf_pesquisavel(origem: Path, destino: Path, dpi: int = DPI, max_paginas: int | None = None) -> bool:
     """PDF cujas páginas SEM texto (tabela desenhada como vetor/imagem, ex.: Balancete Mensal da Lello de set/2026) ganham uma camada de texto
     invisível lida por OCR sobre a própria página; o que já tem texto fica como está. O leitor do balancete (que lê o texto do PDF) funciona então
     como nos meses com texto. Os números são votados entre 5 resoluções (o hífen do negativo se perde em algumas) e depois conferidos pelas somas que o
     próprio balancete traz (soma da seção x total, saldo anterior + créditos - débitos x saldo final): o leitor avisa quando não fecham.
+    `max_paginas`: só as N primeiras páginas são lidas (pasta contábil escaneada de ~200 páginas: o balancete fica no começo e o resto são comprovantes).
     Devolve False se o OCR não está disponível ou não leu nada."""
     try:
         import fitz
 
         src = fitz.open(str(origem))
         try:
-            sem_texto = [i for i in range(len(src)) if len(src[i].get_text().strip()) < 30]
+            sem_texto = [i for i in range(len(src) if not max_paginas else min(len(src), int(max_paginas))) if len(src[i].get_text().strip()) < 30]
             if not sem_texto:
                 return False
             principal = _ocr_palavras(origem, sem_texto, dpi)
