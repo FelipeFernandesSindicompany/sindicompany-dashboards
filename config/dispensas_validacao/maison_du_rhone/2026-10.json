@@ -38,5 +38,15 @@
     "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-18"
+  },
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": 14702.68,
+    "reescrever": {
+      "o_que_verificar": "Houve transferência de recursos de uma conta para outra entre o fechamento de setembro/2026 e a abertura de outubro/2026 (R$ 14.702,68 a menos na Conta Segurança e a mais na Conta Ordinária)? Se sim, isso foi sinalizado na pasta?"
+    },
+    "motivo": "pergunta reescrita a pedido do responsável: perguntar se houve transferência entre as contas e se foi sinalizada na pasta",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-18"
   }
 ]
