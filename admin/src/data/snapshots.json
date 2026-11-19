@@ -804,38 +804,6 @@
       "tAnt": 78827.28
     }
   },
-  "Dashboard_Financeiro_PortSaintTropez.html": {
-    "lastKey": "set26",
-    "lastMonth": "Set/26",
-    "allKeys": [
-      "abr25",
-      "mai25",
-      "jun25",
-      "jul25",
-      "ago25",
-      "set25",
-      "out25",
-      "nov25",
-      "dez25",
-      "jan26",
-      "fev26",
-      "mar26",
-      "abr26",
-      "mai26",
-      "jun26",
-      "jul26",
-      "ago26",
-      "set26"
-    ],
-    "data": {
-      "tit": "Setembro / 2026",
-      "tAtual": 593246.63,
-      "tCred": 354451.09,
-      "tDeb": 83512.91,
-      "inad": 0,
-      "tAnt": 322308.45
-    }
-  },
   "Dashboard_Financeiro_SaintAfonso.html": {
     "lastKey": "set26",
     "lastMonth": "Set/26",

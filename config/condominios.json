@@ -826,7 +826,7 @@
       "empresa_gestora": "habitacional_xlsx",
       "pasta_dados": "data/port_saint_tropez",
       "html_file": "Dashboard_Financeiro_PortSaintTropez.html",
-      "ativo": true,
+      "ativo": false,
       "cor": "#db2777",
       "unidades": 0,
       "parser_config": {
