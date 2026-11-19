@@ -448,6 +448,18 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
             )
             o_que_verificar = (f"Podem enviar a conta (fatura) de cada um desses {len(itens)} lançamento(s) de concessionária, "
                                f"para conferirmos o consumo, o vencimento e o valor cobrado?")
+            _sem_anexo = [i for i in itens if i.get("sem_anexo")]
+            if _sem_anexo:
+                _com = [i for i in itens if not i.get("sem_anexo")]
+                _l_com = "; ".join(f"cód. {i['codigo']} — {i['descricao'].strip()} ({_fmt_moeda(i['valor'])})" for i in _com)
+                _l_sem = "; ".join(f"cód. {i['codigo']} — {i['descricao'].strip()} ({_fmt_moeda(i['valor'])})" for i in _sem_anexo)
+                paragrafo = (
+                    f"Em {len(itens)} lançamento(s) de concessionárias (energia, água, gás, telefone/internet; total {_fmt_moeda(achado.valor_encontrado)}) "
+                    f"a conta (fatura) com o consumo e o vencimento não está anexada. Em {len(_com)} deles o anexo é apenas a confirmação do pagamento: {_l_com}. "
+                    f"Em {len(_sem_anexo)} não há nenhum anexo (nem o comprovante de pagamento): {_l_sem}."
+                )
+                o_que_verificar = (f"Podem enviar a conta (fatura) de cada um desses {len(itens)} lançamento(s) de concessionária, para conferirmos o consumo, "
+                                   f"o vencimento e o valor cobrado, e também o comprovante de pagamento do(s) lançamento(s) sem anexo?")
             base["confianca_ia"] = 1.0
             base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "holerite_nao_anexado":

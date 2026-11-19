@@ -863,9 +863,13 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     # conta (fatura) de concessionária: regra geral, calculada aqui a partir dos registros já lidos (idempotente)
     achados = [a for a in achados if a.tipo != "conta_concessionaria_nao_anexada"]
     _prox = max([int(a.id.split("-")[1]) for a in achados if re.match(r"ACH-[0-9]+$", a.id)] + [0]) + 1
-    _conta = matching.achado_conta_concessionaria_nao_anexada(registros, achados, _prox)
+    _conta = matching.achado_conta_concessionaria_nao_anexada(registros, achados, _prox, incluir_sem_anexo=bool(condo.get("concessionaria_inclui_sem_anexo")))
     if _conta is not None:
         achados.append(_conta)
+        # lançamento de concessionária sem nenhum anexo que entrou neste item: sai o "comprovante sem anexo" avulso dele
+        _chaves_sem = {i["chave"] for i in (_conta.detalhes or {}).get("itens", []) if i.get("sem_anexo")}
+        if _chaves_sem:
+            achados = [a for a in achados if not (a.tipo == "sem_comprovante" and set(a.registros_relacionados) & _chaves_sem)]
     # holerite: regra ligada por condomínio (exigir_holerite) — lançamento de salário com anexo só de comprovante bancário
     achados = [a for a in achados if a.tipo != "holerite_nao_anexado"]
     if condo.get("exigir_holerite"):

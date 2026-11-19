@@ -43,7 +43,7 @@
   },
   {
     "tipo": "conta_concessionaria_nao_anexada",
-    "valor": 1147.56,
+    "valor": 1257.02,
     "evidencias": [
       {
         "pagina": 2,
@@ -92,12 +92,18 @@
           ],
           [
             62,
-            190.5,
+            173.4,
+            500,
+            190.6
+          ],
+          [
+            62,
+            190.8,
             500,
             200.3
           ]
         ],
-        "legenda": "Os 7 lançamentos de concessionária (Vivo) sem a conta (fatura) anexada"
+        "legenda": "Os 8 lançamentos de concessionária (Vivo) sem a conta (fatura) anexada (o de R$ 109,46 também sem comprovante)"
       }
     ]
   },

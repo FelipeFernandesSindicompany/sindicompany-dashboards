@@ -2065,7 +2065,7 @@ def _situacao_conta_no_anexo(comps: list, valor) -> str:
     return "so_pagamento" if pagamento_ou_extrato else "desconhecida"
 
 
-def achado_conta_concessionaria_nao_anexada(registros: list, achados_existentes: list, proximo_numero: int):
+def achado_conta_concessionaria_nao_anexada(registros: list, achados_existentes: list, proximo_numero: int, incluir_sem_anexo: bool = False):
     comp_por_cod: dict = {}
     for r in registros:
         if r.tipo_documento == "comprovante_anexado":
@@ -2080,6 +2080,15 @@ def achado_conta_concessionaria_nao_anexada(registros: list, achados_existentes:
         if d.tipo_documento != "despesa_listada" or not _eh_concessionaria(d):
             continue
         comps = comp_por_cod.get(d.codigo)
+        if not comps and incluir_sem_anexo and (d.valor or 0) > 0:
+            # opção por condomínio (`concessionaria_inclui_sem_anexo`): o lançamento de concessionária SEM NENHUM anexo entra no mesmo item das
+            # contas não anexadas (em vez de um "comprovante sem anexo" à parte)
+            desc = re.sub(r"^(?:\d{6,}\s+)?\d{2}/\d{2}/\d{4}\s+", "", d.descricao or "")
+            desc = re.sub(r"(\s+\d{1,3}(?:\.\d{3})*,\d{2})+(\s+\d{1,5})?\s*$", "", desc).strip()
+            itens.append({"codigo": d.codigo, "descricao": desc[:60], "valor": round(d.valor or 0.0, 2), "pagina": d.pagina,
+                          "sem_anexo": True, "chave": chave_registro(d)})
+            relacionados.append(chave_registro(d))
+            continue
         if not comps or any(chave_registro(c) in ja_tem_achado for c in comps) or chave_registro(d) in ja_tem_achado:
             continue
         if tem_doc_original and any("não foi enviado para a administradora" in (c.texto_bruto or "").lower() for c in comps):
