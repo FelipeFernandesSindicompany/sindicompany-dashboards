@@ -15,5 +15,26 @@
     "motivo": "pergunta no mesmo formato pedido para a Inova (Upper Itaim): perguntar o motivo do pagamento das competências no mesmo mês",
     "decidido_por": "validação",
     "data": "2026-11-19"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -48978.69,
+    "motivo": "alerta de saldo negativo da conta CONSUMO retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
+  },
+  {
+    "tipo": "parcelas_mesmo_mes",
+    "valor_total": 17691.78,
+    "motivo": "duas parcelas da OTIS pagas no mesmo mês retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 108109.63,
+    "motivo": "conta ORDINARIA pagou mais do que recebeu retirado do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
   }
 ]
