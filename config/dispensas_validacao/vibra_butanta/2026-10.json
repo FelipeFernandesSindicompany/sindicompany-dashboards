@@ -1,0 +1,19 @@
+[
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 8485.68,
+    "motivo": "falso alerta: a OTIS é fornecedor recorrente do condomínio (manutenção e reparo de elevadores em agosto e setembro); só a redação do histórico mudou (\"REPARO EM EQUIP DE TRANSP VERTICAL\" em vez de \"REPARO ELEVADOR\")",
+    "decidido_por": "validação",
+    "data": "2026-11-19"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 1131.0,
+    "reescrever": {
+      "o_que_verificar": "Qual foi o motivo de pagar as 3 competências (maio, agosto e setembro/2026) da HUNTER SECURITY no mesmo mês, em 13/10 e 22/10/2026?"
+    },
+    "motivo": "pergunta no mesmo formato pedido para a Inova (Upper Itaim): perguntar o motivo do pagamento das competências no mesmo mês",
+    "decidido_por": "validação",
+    "data": "2026-11-19"
+  }
+]

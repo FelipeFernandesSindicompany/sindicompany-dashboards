@@ -228,6 +228,50 @@ def _emissao_e_devedores_lello_pdf(caminho: Path) -> dict | None:
     return None
 
 
+_RE_DOIS_NUMEROS_FIM = re.compile(r"(-?[\d.]+,\d{2})(?:\s+(-?[\d.]+,\d{2}))?\s*$")
+
+
+def _emissao_gk_pdf(caminho: Path) -> dict | None:
+    """"Resumo de Emissões" da ORDINÁRIA no PDF da GK/Oma (Vibra Butantã), com os blocos "Receita Prevista", "Receita Realizada" e "Receita de Devedores
+    Prevista" (mesma leitura do dashboard): previsto = valor de RECEBIMENTO DO PERIODO em "Receita Prevista"; realizado = valor de RECEBIMENTO DO PERIODO em
+    "Receita Realizada"; inadProc = CONDOMINOS EM ATRASO recebido no mês; inad = "CONDOMINOS EM ATRASO EM <último dia>" de "Receita de Devedores Prevista".
+    Devolve {"prev","real","inad","inadProc"} ou None se o arquivo não tem esse bloco."""
+    try:
+        with pdf_plumber_aberto(caminho) as pdf:
+            linhas = chr(10).join((p.extract_text() or "") for p in pdf.pages[:40]).splitlines()
+    except Exception:
+        return None
+    out: dict = {}
+    bloco = None
+    ini = next((i for i, l in enumerate(linhas) if re.match(r"\s*Resumo de Emiss", l)), None)
+    if ini is None:
+        return None
+    for l in linhas[ini + 1: ini + 40]:
+        t = l.strip()
+        tu = t.upper()
+        if tu.startswith("RECEITA PREVISTA"):
+            bloco = "prev"
+        elif tu.startswith("RECEITA REALIZADA"):
+            bloco = "real"
+        elif tu.startswith("RECEITA DE DEVEDORES"):
+            bloco = "dev"
+        elif tu.startswith("POSI") and "FINANCEIRA" in tu:
+            break
+        elif bloco and tu.startswith("RECEBIMENTO DO PERIODO"):
+            m = _RE_DOIS_NUMEROS_FIM.search(t)
+            if m and m.group(2) and bloco in ("prev", "real"):
+                out[bloco] = _brl_para_float(m.group(1))
+        elif bloco == "real" and tu.startswith("CONDOMINOS EM ATRASO"):
+            m = _RE_DOIS_NUMEROS_FIM.search(t)
+            if m:
+                out["inadProc"] = _brl_para_float(m.group(1))
+        elif bloco == "dev" and re.match(r"CONDOMINOS EM ATRASO EM \d{2}/\d{2}/\d{4}", tu):
+            m = _RE_DOIS_NUMEROS_FIM.search(t)
+            if m:
+                out["inad"] = _brl_para_float(m.group(1))
+    return out if {"prev", "real", "inad"} <= set(out) else None
+
+
 def _bal_pelo_extrator_das_regras(condo: dict, caminho_arquivo: Path, mes_referencia: str,
                                   mes_titulo: str, periodo: str) -> dict | None:
     """Monta o mesmo dict `bal` a partir do EXTRATOR das regras gerais, para formatos em que o adapter
@@ -379,6 +423,11 @@ def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
         pr = _previsto_realizado_resumo_emissoes(caminho_arquivo, mes_referencia)
         if pr:
             bal["real"], bal["prev"] = pr
+    if condo.get("emissao_pdf") == "gk_resumo_emissoes" and caminho_arquivo.suffix.lower() == ".pdf":
+        # (o adaptador antigo devolve realizado = total de créditos de TODAS as contas e inadimplência 0,00)
+        gk = _emissao_gk_pdf(caminho_arquivo)
+        if gk:
+            bal["prev"], bal["real"], bal["inad"], bal["inadProc"] = gk["prev"], gk["real"], gk["inad"], gk.get("inadProc", 0.0)
     if condo.get("inadimplencia_validacao") == "total_atrasados":
         # Decisão do dono (Patrícia, 22/10/2026): inadimplência = "Total atrasados" da Posição de Devedores. A planilha não tem esse bloco, e o
         # adaptador antigo lia outro conceito (REC COTAS EM ATRASO da Ordinária): nos meses em planilha o relatório fica sem esse número.

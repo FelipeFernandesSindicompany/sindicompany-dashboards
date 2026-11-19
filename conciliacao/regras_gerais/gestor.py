@@ -441,7 +441,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                     itens += ls
                     representantes.append(_item(max(ls, key=lambda x: x.valor)))
                     medianas.append({"descricao": k, "valor": round(v, 2), "mediana": None, "acumulo": True, "sem_comparacao": True, "n": len(ls),
-                                     "valor_unitario": round(sum(valores0) / len(valores0), 2), "competencias": [r for _, r in comps0], "datas": datas0})
+                                     "valor_unitario": round(sum(valores0) / len(valores0), 2), "valores": [round(x, 2) for x in valores0], "competencias": [r for _, r in comps0], "datas": datas0})
                 continue
             m = statistics.median(vs)
             # Concessionária (energia, água, gás, telefone) e fatura de cartão: o valor varia todo mês, então a trava é mais curta — mais de 10% acima
@@ -465,7 +465,7 @@ def regra_gestor(dados: DadosRegras, anterior: Optional[DadosRegras], historico:
                 anteriores = [rotulo for (ym, rotulo) in comps if ym < mes_atual_num]
                 if len(ls) >= 2 and len(comps) >= 2 and (max(valores) - min(valores)) <= 0.15 * (sum(valores) / len(valores)):
                     unit = sum(valores) / len(valores)
-                    item.update(acumulo=True, n=len(ls), valor_unitario=round(unit, 2),
+                    item.update(acumulo=True, n=len(ls), valor_unitario=round(unit, 2), valores=[round(x, 2) for x in valores],
                                 competencias=[r for _, r in comps], datas=datas,
                                 sem_comparacao=abs(unit - m) > 0.15 * m)     # só diz "valor mensal de sempre" quando a mediana confirma
                 elif len(anteriores) >= 2:

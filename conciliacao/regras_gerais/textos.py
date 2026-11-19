@@ -404,17 +404,25 @@ def texto_observacao_gestor(a: Achado) -> tuple[str, str, str]:
         acumulos = [i for i in itens if i.get("acumulo")]
         outros = [i for i in itens if not i.get("acumulo")]
         partes_par, partes_ver = [], []
+
+        def _cada(i):
+            """"cada um de R$ X" só quando os lançamentos têm o mesmo valor; senão lista os valores (a média não é o valor de nenhum deles)."""
+            vals = i.get("valores") or []
+            if len(vals) >= 2 and max(vals) - min(vals) > 0.005:
+                lista = [_moeda(x) for x in vals]
+                return "nos valores de " + ", ".join(lista[:-1]) + " e " + lista[-1]
+            return f"cada um de {_moeda(i['valor_unitario'])}"
         for i in acumulos:
             comps = ", ".join(i.get("competencias") or [])
             datas = "; ".join(f"{q} em {dt}" for dt, q in (i.get("datas") or {}).items())
             if i.get("sem_comparacao") or i.get("mediana") is None:
                 partes_par.append(
-                    f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, cada um de {_moeda(i['valor_unitario'])}, totalizando {_moeda(i['valor'])}"
+                    f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, {_cada(i)}, totalizando {_moeda(i['valor'])}"
                     + (f", referentes às competências {comps}" if comps else "") + (f" e pagos nas datas: {datas}" if datas else "")
                     + ". Há mais de uma competência paga no mesmo mês, incluindo meses anteriores.")
             else:
                 partes_par.append(
-                    f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, cada um de {_moeda(i['valor_unitario'])} (o valor mensal de sempre; mediana dos "
+                    f"{i['descricao']}: foram pagos {i['n']} lançamentos no mês, {_cada(i)} (o valor mensal de sempre; mediana dos "
                     f"meses anteriores {_moeda(i['mediana'])}), totalizando {_moeda(i['valor'])}" + (f", referentes às competências {comps}" if comps else "")
                     + (f" e pagos nas datas: {datas}" if datas else "")
                     + ". Não é aumento de valor: são pagamentos de meses anteriores feitos juntos neste mês.")

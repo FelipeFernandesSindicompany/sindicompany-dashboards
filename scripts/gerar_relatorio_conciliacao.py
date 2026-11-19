@@ -1402,6 +1402,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         "plano_estacao_campo_limpo": "Foccus",
         "upper_itaim": "Loan",                        # Loan Imóveis (portal loanimoveis.dyndns.org); "Lirba" é só o nome interno do formato ContasData
         "730_padre_carvalho": "Loan",                 # mesma administradora do Upper Itaim (e-mail loancondominios.com.br no PDF)
+        "vibra_butanta": "Oma",                       # Oma Administração de Imóveis e Corretagem (sistema GK/ContasData)
         "serra_da_mantiqueira": "FL Condomínios",
         "palm_beach": "Group Condomínios",
         "duo_vila_matilde": "Danilo Porto Padua",     # mesmo sistema (uCondo) do Saint Simon, mas a administradora do PDF é a Danilo Porto Padua

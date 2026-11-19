@@ -1,0 +1,14 @@
+[
+  {
+    "tipo": "observacao_gestor",
+    "valor": 1131.0,
+    "evidencias": [
+      {
+        "pagina": 4,
+        "bbox": [58, 399.0, 500, 436.5],
+        "destaques": [[60, 399.6, 498, 409.8], [60, 409.9, 498, 426.4], [60, 426.5, 498, 435.8]],
+        "legenda": "Três licenças mensais da HUNTER SECURITY (competências ago/2026, mai/2026 e set/2026), pagas em 13/10 e 22/10/2026"
+      }
+    ]
+  }
+]
