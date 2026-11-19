@@ -21,6 +21,13 @@
     "como": "Conferido visualmente no anexo: são 3 notas fiscais da CR Mendes Importação e Comércio, de R$ 191,38 cada (3 cadeiras de escritório), que somam R$ 574,14 — igual ao valor listado. A leitura automática havia pegado outro número do anexo (R$ 72,30)."
   },
   {
+    "codigo": "01640245",
+    "valor_listagem": 122.73,
+    "resumo": "LCG COMERCIO ELETRO - NF 237497, garrafa térmica (R$ 122,73)",
+    "documento": "anexo do lançamento 01640245 (NF-e 237497 e tela do carrinho de compras)",
+    "como": "Retirado do relatório por decisão do responsável (19/11/2026). Conferido no anexo: a NF-e 237497 da LCG Comércio Eletro (2 garrafas térmicas) tem valor total de R$ 133,40 e a tela do carrinho mostra R$ 122,72 \"no Pix\" (8% de desconto); o lançamento é de R$ 122,73."
+  },
+  {
     "codigo": "01646781",
     "valor_listagem": 739.14,
     "divergencia_real": true,
@@ -29,18 +36,7 @@
     "documento": "anexo do lançamento 01646781 (boleto, NFS-e 2916, NFTS e comprovante de pagamento do boleto)",
     "resumo": "Boleto pago após o vencimento, com multa e juros — PREMIER FILTROS E SERVICOS (R$ 739,14)",
     "como": "O anexo mostra o boleto da Premier Filtros e Serviços de R$ 660,00 com vencimento em 13/10/2026 (NFS-e 2916, mesmo valor), e o comprovante do Itaú indica pagamento em 19/10/2026, 6 dias depois do vencimento, com multa de R$ 66,00 e mora de R$ 13,14: valor pago de R$ 739,14, igual ao listado.",
-    "pergunta": "Por que o boleto de R$ 660,00, com vencimento em 13/10/2026, foi pago só em 19/10/2026? Os R$ 79,14 de multa (R$ 66,00) e juros (R$ 13,14) deveriam ter sido evitados?"
-  },
-  {
-    "codigo": "01640245",
-    "valor_listagem": 122.73,
-    "divergencia_real": true,
-    "valor_exibido": 122.73,
-    "severidade": "atencao",
-    "documento": "anexo do lançamento 01640245 (NF-e 237497 e tela do carrinho de compras)",
-    "resumo": "Valor da nota fiscal diferente do valor lançado — LCG COMERCIO ELETRO, garrafa térmica (R$ 122,73)",
-    "como": "A NF-e 237497 da LCG Comércio Eletro (2 garrafas térmicas) tem valor total de R$ 133,40, e a tela do carrinho mostra R$ 122,72 \"no Pix\" (R$ 133,40 com 8% de desconto). O lançamento é de R$ 122,73. O anexo não traz o comprovante do pagamento.",
-    "pergunta": "O valor pago foi R$ 122,73 (Pix, com desconto de 8%) ou R$ 133,40 (valor da nota fiscal)? Podem enviar o comprovante do pagamento? A tela do carrinho mostra R$ 122,72, um centavo a menos que o lançamento."
+    "pergunta": "Por que o boleto de R$ 660,00, com vencimento em 13/10/2026, foi pago só em 19/10/2026? Os R$ 79,14 de multa (R$ 66,00) e juros (R$ 13,14) foram retirados do condomínio?"
   },
   {
     "codigo": "01654170",

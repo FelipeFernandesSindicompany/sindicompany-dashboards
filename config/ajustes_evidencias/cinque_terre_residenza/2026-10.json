@@ -1,0 +1,146 @@
+[
+  {
+    "tipo": "holerite_nao_anexado",
+    "valor": 9381.48,
+    "evidencias": [
+      {
+        "pagina": 1,
+        "bbox": [
+          55,
+          124,
+          545,
+          189.6
+        ],
+        "destaques": [
+          [
+            62,
+            148.0,
+            500,
+            158.0
+          ],
+          [
+            62,
+            158.0,
+            500,
+            168.0
+          ],
+          [
+            62,
+            168.0,
+            500,
+            178.0
+          ],
+          [
+            62,
+            178.0,
+            500,
+            188.0
+          ]
+        ],
+        "legenda": "Os 4 lançamentos de salário (SALÁRIO SET/2026) sem holerite anexado"
+      }
+    ]
+  },
+  {
+    "tipo": "conta_concessionaria_nao_anexada",
+    "valor": 1147.56,
+    "evidencias": [
+      {
+        "pagina": 2,
+        "bbox": [
+          55,
+          94,
+          545,
+          201.8
+        ],
+        "destaques": [
+          [
+            62,
+            113.7,
+            500,
+            123.5
+          ],
+          [
+            62,
+            123.6,
+            500,
+            133.4
+          ],
+          [
+            62,
+            133.6,
+            500,
+            143.3
+          ],
+          [
+            62,
+            143.5,
+            500,
+            153.2
+          ],
+          [
+            62,
+            153.4,
+            500,
+            163.1
+          ],
+          [
+            62,
+            163.3,
+            500,
+            173.1
+          ],
+          [
+            62,
+            190.5,
+            500,
+            200.3
+          ]
+        ],
+        "legenda": "Os 7 lançamentos de concessionária (Vivo) sem a conta (fatura) anexada"
+      }
+    ]
+  },
+  {
+    "tipo": "continuidade_saldo",
+    "valor": -83478.98,
+    "evidencias": [
+      {
+        "pagina": 5,
+        "bbox": [
+          55,
+          86,
+          588,
+          172
+        ],
+        "destaques": [
+          [
+            62,
+            111.0,
+            586,
+            120.4
+          ],
+          [
+            62,
+            120.6,
+            586,
+            130.1
+          ],
+          [
+            62,
+            140.0,
+            586,
+            149.3
+          ],
+          [
+            62,
+            149.6,
+            586,
+            159.0
+          ]
+        ],
+        "legenda": "Saldo anterior (outubro/2026) das 4 contas que não fecham com o saldo final de setembro/2026: Fundo de Reserva, Fundo Área Comum, Fundo Fachada e Mercadinho"
+      }
+    ]
+  }
+]

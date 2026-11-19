@@ -1209,6 +1209,11 @@ def etapa_render(condo: dict, mes: str) -> Path:
             else None
         )
 
+        # Itens que listam VÁRIOS lançamentos (concessionária / holerite não anexado) com print curado (config/ajustes_evidencias): o print é um só,
+        # com todos os lançamentos marcados — sem o comprovante de UM deles na frente
+        if primeiro_registro is not None and achado.tipo in ("conta_concessionaria_nao_anexada", "holerite_nao_anexado") and any(
+                achado.tipo == _aj.get("tipo") and abs((achado.valor_encontrado or 0.0) - _aj.get("valor", 0.0)) <= 0.01 for _aj in _ajustes_evid):
+            primeiro_registro = None
         evidencia_vetorial = None
         if primeiro_registro and getattr(primeiro_registro, "arquivo_evidencia_externa", None):
             # Evidência baixada de um sistema externo (ver

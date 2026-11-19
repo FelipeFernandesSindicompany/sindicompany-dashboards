@@ -1,0 +1,39 @@
+[
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -55.2,
+    "motivo": "receita negativa (SEGURO RESIDENCIAL, R$ -55,20) da ORDINARIA retirada do relatório de outubro/2026 por decisão do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
+  },
+  {
+    "tipo": "receita_negativa",
+    "valor_total": -952.2,
+    "reescrever": {
+      "o_que_verificar": "A que se refere este ressarcimento de R$ 952,20?"
+    },
+    "motivo": "pergunta reescrita a pedido do responsável: apenas perguntar a que se refere o ressarcimento",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
+  },
+  {
+    "tipo": "movimento_entre_contas",
+    "valor_total": 85700.0,
+    "reescrever": {
+      "o_que_verificar": "Para onde foi o valor de R$ 85.700,00 retirado da conta FUNDO DE RESERVA e por quem foi aprovado?"
+    },
+    "motivo": "pergunta reescrita a pedido do responsável: perguntar para onde foi e por quem foi aprovado, sem citar comprovante",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
+  },
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": -83478.98,
+    "reescrever": {
+      "paragrafo": "O saldo anterior de uma conta deve ser igual ao saldo final do mês anterior. Neste arquivo isso não ocorre em 4 contas (saldo final de setembro/2026 → saldo anterior de outubro/2026):\n• FUNDO FACHADA: R$ 83.478,98 → R$ 0,00 (diferença de −R$ 83.478,98)\n• FUNDO DE RESERVA: R$ 1.054.028,35 → R$ 1.137.503,35 (diferença de +R$ 83.475,00)\n• MERCADINHO: R$ 63.572,75 → R$ 63.574,75 (diferença de +R$ 2,00)\n• FUNDO AREA COMUM: R$ 27.436,92 → R$ 27.438,90 (diferença de +R$ 1,98)"
+    },
+    "motivo": "texto reorganizado a pedido do responsável: valores de cada conta em linhas separadas (saldo final de setembro → saldo anterior de outubro)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-19"
+  }
+]
