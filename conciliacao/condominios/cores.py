@@ -17,7 +17,7 @@ from pathlib import Path
 
 from conciliacao import gocontroledocumentos, ocr
 from conciliacao.base import RegistroComprovante
-from conciliacao.condominios.patricia import _documento_da_evidencia, _links_de_despesa, ocultar_cpf
+from conciliacao.condominios.patricia import _documento_da_evidencia, _links_de_despesa, ocultar_cpf, ocultar_cpf_imagem
 from conciliacao.habitacional_xlsx import ConciliadorHabitacionalXLSX
 from conciliacao.lirba_pdf import ConciliadorLirbaPDF, _num
 from conciliacao.lirba_pdf import preencher_de_texto as _preencher_via_cadeia_compartilhada
@@ -180,6 +180,8 @@ class Conciliador(ConciliadorLirbaPDF):
             comp.fornecedor = None            # o fornecedor está na listagem; o campo do OCR de NF/boleto não é confiável
             if dados_evidencia is not None and tipo_evidencia == "pdf":
                 dados_evidencia = ocultar_cpf(dados_evidencia)
+            elif dados_evidencia is not None and tipo_evidencia == "jpeg":
+                dados_evidencia = ocultar_cpf_imagem(dados_evidencia)
             if dados_evidencia is not None:
                 comp.arquivo_evidencia_externa = gocontroledocumentos.salvar_evidencia_externa(caminho, codigo, dados_evidencia, tipo_evidencia)
             registros.append(comp)

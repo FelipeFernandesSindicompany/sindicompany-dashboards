@@ -577,7 +577,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
                        "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria",
-                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "despesa_negativa", "atraso_pagamento"}
+                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "holerite_nao_anexado", "despesa_negativa", "atraso_pagamento"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo", "valor_ocr_comprovante_diverge_valor_listagem",
                         "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor",
@@ -718,7 +718,7 @@ def _pergunta_fundo_de_reserva(achados: list, registros: list, esqueleto: list) 
 
 
 # (nota fiscal sem anexar também entra — decisão do dono, 28/10/2026: "se estiver sem nota fiscal tem que aparecer")
-_TIPOS_FALTA_DE_COMPROVANTE = {"sem_comprovante", "divergencia_valor", "conteudo_nao_verificavel", "conta_concessionaria_nao_anexada", "nota_fiscal_ausente"}
+_TIPOS_FALTA_DE_COMPROVANTE = {"sem_comprovante", "divergencia_valor", "conteudo_nao_verificavel", "conta_concessionaria_nao_anexada", "nota_fiscal_ausente", "holerite_nao_anexado"}
 
 
 def _aplicar_escopo_so_comprovantes(condo: dict, mes: str, achados: list, esqueleto: list) -> int:
@@ -866,6 +866,13 @@ def etapa_interpretar(condo: dict, mes: str) -> Path:
     _conta = matching.achado_conta_concessionaria_nao_anexada(registros, achados, _prox)
     if _conta is not None:
         achados.append(_conta)
+    # holerite: regra ligada por condomínio (exigir_holerite) — lançamento de salário com anexo só de comprovante bancário
+    achados = [a for a in achados if a.tipo != "holerite_nao_anexado"]
+    if condo.get("exigir_holerite"):
+        _prox_h = max([int(a.id.split("-")[1]) for a in achados if re.match(r"ACH-[0-9]+$", a.id)] + [0]) + 1
+        _hol = matching.achado_holerite_nao_anexado(registros, achados, _prox_h)
+        if _hol is not None:
+            achados.append(_hol)
     # princípio básico: não existe despesa negativa — o lançamento negativo é crédito; vira UM item e sai dos pedidos de comprovante/NF
     achados = [a for a in achados if a.tipo != "despesa_negativa"]
     _prox_neg = max([int(a.id.split("-")[1]) for a in achados if re.match(r"ACH-[0-9]+$", a.id)] + [0]) + 1
@@ -1245,7 +1252,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
                 rev.achado_id,
                 evidencias.evidencias_agregadas(achado, registros_por_pagina, pdf_origem)
                 if achado.regra_aplicada in _REGRAS_AGREGADAS and pdf_origem and pdf_origem.suffix.lower() == ".pdf" else (
-                    regras_gerais_evidencias.specs_para(achado) if ((achado.id or "").startswith("RG-") or achado.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa")) else None),
+                    regras_gerais_evidencias.specs_para(achado) if ((achado.id or "").startswith("RG-") or achado.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa", "holerite_nao_anexado")) else None),
                 achado, registros_por_pagina.get(achado.registros_relacionados[0]) if achado.registros_relacionados else None,
             ),
             "evidencia_texto": regras_gerais_evidencias.texto_origem(achado),

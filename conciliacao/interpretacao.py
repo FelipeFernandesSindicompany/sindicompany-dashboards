@@ -450,6 +450,19 @@ def gerar_esqueleto(achados: list[Achado], registros: list[RegistroComprovante] 
                                f"para conferirmos o consumo, o vencimento e o valor cobrado?")
             base["confianca_ia"] = 1.0
             base["revisado_por"] = "sistema:regra_deterministica"
+        elif achado.tipo == "holerite_nao_anexado":
+            itens = (achado.detalhes or {}).get("itens") or []
+            lista = "; ".join(f"cód. {i['codigo']} — {i['descricao'].strip()} ({_fmt_moeda(i['valor'])})" for i in itens)
+            titulo = f"Holerite não anexado — {len(itens)} lançamento(s) de salário ({_fmt_moeda(achado.valor_encontrado)})"
+            paragrafo = (
+                f"Em {len(itens)} lançamento(s) de salário (total {_fmt_moeda(achado.valor_encontrado)}) o anexo é apenas o comprovante de pagamento "
+                f"bancário — o holerite (demonstrativo de pagamento) do funcionário não está anexado, então não é possível conferir proventos, descontos "
+                f"e valor líquido. Lançamentos: {lista}."
+            )
+            o_que_verificar = (f"Podem enviar o holerite (demonstrativo de pagamento) de cada um desses {len(itens)} lançamento(s) de salário, "
+                               f"para conferirmos o valor líquido pago?")
+            base["confianca_ia"] = 1.0
+            base["revisado_por"] = "sistema:regra_deterministica"
         elif achado.tipo == "sem_comprovante":
             titulo, paragrafo, o_que_verificar = _texto_sem_comprovante(achado, registro)
         elif achado.tipo == "divergencia_valor":

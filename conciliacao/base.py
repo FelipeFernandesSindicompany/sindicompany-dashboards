@@ -74,6 +74,7 @@ TIPOS_ACHADO = {
     "documento_original_nao_enviado",  # vários lançamentos com "Demonstrativo de Pagamento" no lugar do documento original (só quem pede)
     "despesa_negativa",          # despesa lançada com valor negativo: é crédito/recebimento, não existe despesa negativa
     "conta_concessionaria_nao_anexada",  # lançamentos de concessionária (Vivo/Claro/Sabesp/Enel/Comgás) só com comprovante de pagamento, sem a conta
+    "holerite_nao_anexado",     # lançamento de salário só com o comprovante de pagamento, sem o holerite (demonstrativo de pagamento) do funcionário
     "nota_fiscal_ausente",      # despesa cita nº de NF na própria descrição, mas o comprovante anexado não traz NF nenhuma
     "lancamento_removido_mes_anterior",  # despesa recorrente presente no mês anterior, ausente neste mês
     # — regras gerais (conciliacao/regras_gerais), dados lidos do próprio arquivo do mês —

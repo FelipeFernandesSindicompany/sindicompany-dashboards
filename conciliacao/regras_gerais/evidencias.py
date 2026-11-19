@@ -112,10 +112,11 @@ def specs_para(a: Achado) -> list[dict]:
                     continue
                 specs.append({**_spec(x["pagina"], _trecho(x.get("descricao")) or re.escape(_br(x["mediana"])),
                                       f"Lançamento de {_mes_br(x.get('mes'))} (último mês lido antes deste) que não aparece neste mês"), "arquivo": x["arquivo"]})
-    elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa"):
+    elif a.tipo in ("conta_concessionaria_nao_anexada", "despesa_negativa", "holerite_nao_anexado"):
         vistos_c: dict = {}
-        for i in d.get("itens", [])[:3]:
-            sp = _spec_lancamento(i, "Lançamento de concessionária" if a.tipo == "conta_concessionaria_nao_anexada" else "Lançamento com valor negativo", vistos_c)
+        _leg = {"conta_concessionaria_nao_anexada": "Lançamento de concessionária", "holerite_nao_anexado": "Lançamento de salário sem holerite anexado"}
+        for i in d.get("itens", [])[:4]:
+            sp = _spec_lancamento(i, _leg.get(a.tipo, "Lançamento com valor negativo"), vistos_c)
             if sp:
                 specs.append(sp)
     elif a.tipo == "observacao_gestor":

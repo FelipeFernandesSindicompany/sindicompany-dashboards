@@ -2100,6 +2100,51 @@ def achado_conta_concessionaria_nao_anexada(registros: list, achados_existentes:
         detalhes={"itens": itens})
 
 
+# ── Holerite: o lançamento de salário deve trazer o demonstrativo de pagamento do funcionário ─────────────────────────
+# Regra ligada por condomínio (`exigir_holerite: true` em config/validacao_balancetes.json). Só dispara quando o anexo foi LIDO e traz apenas a
+# confirmação bancária — "não achamos o holerite" nunca é afirmado sobre anexo ilegível ou ausente (esse caso já é "sem comprovante").
+_RE_LANCAMENTO_SALARIO = re.compile(r"\bSALARIO\b(?!\s+FAMILIA)|ADIANT\w*\s+(?:DE\s+)?SALARI|\bFERIAS\b|\b13\s*[º°O]?\s*SALARIO|DECIMO\s+TERCEIRO")
+_RE_HOLERITE_MARCADOR = re.compile(
+    r"DEMONSTRATIVO\s+DE\s+PAGAMENTO|HOLERITE|CONTRA\s*-?\s*CHEQUE|RECIBO\s+DE\s+(?:PAGAMENTO|SALARIO|FERIAS)|FOLHA\s+DE\s+PAGAMENTO\s+APELIDO")
+
+
+def achado_holerite_nao_anexado(registros: list, achados_existentes: list, proximo_numero: int):
+    comp_por_cod: dict = {}
+    for r in registros:
+        if r.tipo_documento == "comprovante_anexado":
+            comp_por_cod.setdefault(r.codigo, []).append(r)
+    ja_tem_achado = set()
+    for a in achados_existentes:
+        if a.tipo in ("conteudo_nao_verificavel", "sem_comprovante"):
+            ja_tem_achado.update(a.registros_relacionados)
+    itens, relacionados = [], []
+    for d in registros:
+        if d.tipo_documento != "despesa_listada" or (d.valor or 0) <= 0:
+            continue
+        if not _RE_LANCAMENTO_SALARIO.search(_normalizar_texto(d.descricao or "")):
+            continue
+        comps = comp_por_cod.get(d.codigo)
+        if not comps or chave_registro(d) in ja_tem_achado or any(chave_registro(c) in ja_tem_achado for c in comps):
+            continue
+        textos = [c.texto_bruto or "" for c in comps]
+        if any(len(t.strip()) < 30 for t in textos):
+            continue                                  # anexo ilegível: não dá para afirmar que o holerite não está lá
+        if any(_RE_HOLERITE_MARCADOR.search(_normalizar_texto(t)) for t in textos):
+            continue
+        desc = re.sub(r"^(?:\d{6,}\s+)?\d{2}/\d{2}/\d{4}\s+", "", d.descricao or "")
+        desc = re.sub(r"(\s+\d{1,3}(?:\.\d{3})*,\d{2})+(\s+\d{1,5})?\s*$", "", desc).strip()
+        itens.append({"codigo": d.codigo, "descricao": desc[:70], "valor": round(d.valor or 0.0, 2), "pagina": d.pagina})
+        relacionados.append(chave_registro(comps[0]))
+    if not itens:
+        return None
+    total = round(sum(i["valor"] for i in itens), 2)
+    return Achado(
+        id=f"ACH-{proximo_numero:04d}", tipo="holerite_nao_anexado", severidade_sugerida="atencao",
+        regra_aplicada="lancamento_de_salario_so_com_comprovante_de_pagamento_sem_holerite", registros_relacionados=relacionados[:1],
+        linha_demonstrativo="Salários", valor_esperado=total, valor_encontrado=total, confianca_deterministica=1.0,
+        detalhes={"itens": itens})
+
+
 # ── Princípio básico: não existe despesa negativa (nem receita negativa) ─────────────────────────────────────────────
 # Lançamento de DESPESA com valor negativo é um crédito/recebimento (reembolso, estorno, ressarcimento): não pode constar como despesa
 # nem pedir "comprovante de pagamento" — deve ser lançado como receita. Um item consolidado por relatório (decisão do dono).

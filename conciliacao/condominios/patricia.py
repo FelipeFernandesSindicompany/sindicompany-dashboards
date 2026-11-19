@@ -62,6 +62,43 @@ def ocultar_cpf(dados_pdf: bytes) -> bytes:
         return dados_pdf
 
 
+def ocultar_cpf_imagem(dados_jpeg: bytes) -> bytes:
+    """Mesma tarja do `ocultar_cpf`, para o comprovante bancário em IMAGEM (JPEG): acha o CPF (NNN.NNN.NNN-NN, pessoa física) por OCR posicional e o
+    pinta de preto. Palavras do OCR são juntadas quando coladas (o OCR pode partir o número em pedaços). CNPJ não é alterado. Nunca lança: sem
+    conseguir (OCR indisponível, imagem ilegível), devolve a imagem como veio."""
+    try:
+        import io
+
+        import pytesseract
+        from PIL import Image, ImageDraw
+
+        from conciliacao import ocr as _ocr
+
+        if not _ocr.tesseract_disponivel():
+            return dados_jpeg
+        img = Image.open(io.BytesIO(dados_jpeg)).convert("RGB")
+        d = pytesseract.image_to_data(img, lang="por", config="--oem 1 --psm 6", output_type=pytesseract.Output.DICT)
+        palavras = [(d["text"][k].strip(), d["left"][k], d["top"][k], d["width"][k], d["height"][k]) for k in range(len(d["text"])) if d["text"][k].strip()]
+        desenho, mexeu = ImageDraw.Draw(img), False
+        rx = re.compile(r"\d{3}[.,]?\d{3}[.,]?\d{3}\s*[-—–]\s*\d{2}")
+        for i, (t, x, y, w, h) in enumerate(palavras):
+            for j in range(i, min(i + 4, len(palavras))):
+                junto = "".join(p[0] for p in palavras[i:j + 1])
+                if rx.fullmatch(junto) and not re.search(r"/", junto):
+                    x1 = max(p[1] + p[3] for p in palavras[i:j + 1])
+                    y1 = max(p[2] + p[4] for p in palavras[i:j + 1])
+                    desenho.rectangle([x - 3, min(p[2] for p in palavras[i:j + 1]) - 3, x1 + 3, y1 + 3], fill=(0, 0, 0))
+                    mexeu = True
+                    break
+        if not mexeu:
+            return dados_jpeg
+        saida = io.BytesIO()
+        img.save(saida, format="JPEG", quality=92)
+        return saida.getvalue()
+    except Exception:
+        return dados_jpeg
+
+
 def _links_de_despesa(caminho: Path) -> bool:
     """True quando alguma página "Demonstrativo de Despesas" do PDF tem link para o portal de documentos."""
     import fitz

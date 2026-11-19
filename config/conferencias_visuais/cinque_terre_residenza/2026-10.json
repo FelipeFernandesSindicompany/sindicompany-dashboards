@@ -1,0 +1,56 @@
+[
+  {
+    "codigo": "01637446",
+    "valor_listagem": 446.48,
+    "resumo": "GMA SOLUCOES - NF 793628, adaptador de placa wifi (R$ 446,48)",
+    "documento": "anexo do lançamento 01637446 (3 notas fiscais e a tela do carrinho de compras)",
+    "como": "Conferido visualmente no anexo: o pagamento foi um carrinho de compras com 3 produtos de vendedores diferentes, cada um com sua nota fiscal — NF 33721 (ventilador de parede, R$ 297,50), NF de 21.300.945 Giovanni Pereira Lopes (cabo de rede Cat6, R$ 109,99) e NF 793628 da GMA Soluções (adaptador wifi, R$ 38,99). A soma das três notas é R$ 446,48, igual ao valor listado. A leitura automática havia pegado só o valor de uma das notas."
+  },
+  {
+    "codigo": "01646816",
+    "valor_listagem": 185.95,
+    "resumo": "PIPICAO - NF 49649, placa informativa (R$ 185,95)",
+    "documento": "anexo do lançamento 01646816 (NF-e 49649 e tela do carrinho de compras)",
+    "como": "Conferido visualmente no anexo: a NF-e 49649 (Pipicao Produtos Pets, emitida em 20/10/2026) tem valor total de R$ 185,95 (kit de saquinhos higiênicos R$ 184,95 + placa informativa R$ 1,00) e a tela do carrinho também mostra R$ 185,95 — igual ao listado. A leitura automática havia pegado o valor aproximado dos tributos (R$ 36,29)."
+  },
+  {
+    "codigo": "01649792",
+    "valor_listagem": 574.14,
+    "resumo": "CR MENDES - NF 62415, cadeiras de escritório (R$ 574,14)",
+    "documento": "anexo do lançamento 01649792 (3 notas fiscais e telas do pedido)",
+    "como": "Conferido visualmente no anexo: são 3 notas fiscais da CR Mendes Importação e Comércio, de R$ 191,38 cada (3 cadeiras de escritório), que somam R$ 574,14 — igual ao valor listado. A leitura automática havia pegado outro número do anexo (R$ 72,30)."
+  },
+  {
+    "codigo": "01646781",
+    "valor_listagem": 739.14,
+    "divergencia_real": true,
+    "valor_exibido": 739.14,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 01646781 (boleto, NFS-e 2916, NFTS e comprovante de pagamento do boleto)",
+    "resumo": "Boleto pago após o vencimento, com multa e juros — PREMIER FILTROS E SERVICOS (R$ 739,14)",
+    "como": "O anexo mostra o boleto da Premier Filtros e Serviços de R$ 660,00 com vencimento em 13/10/2026 (NFS-e 2916, mesmo valor), e o comprovante do Itaú indica pagamento em 19/10/2026, 6 dias depois do vencimento, com multa de R$ 66,00 e mora de R$ 13,14: valor pago de R$ 739,14, igual ao listado.",
+    "pergunta": "Por que o boleto de R$ 660,00, com vencimento em 13/10/2026, foi pago só em 19/10/2026? Os R$ 79,14 de multa (R$ 66,00) e juros (R$ 13,14) deveriam ter sido evitados?"
+  },
+  {
+    "codigo": "01640245",
+    "valor_listagem": 122.73,
+    "divergencia_real": true,
+    "valor_exibido": 122.73,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 01640245 (NF-e 237497 e tela do carrinho de compras)",
+    "resumo": "Valor da nota fiscal diferente do valor lançado — LCG COMERCIO ELETRO, garrafa térmica (R$ 122,73)",
+    "como": "A NF-e 237497 da LCG Comércio Eletro (2 garrafas térmicas) tem valor total de R$ 133,40, e a tela do carrinho mostra R$ 122,72 \"no Pix\" (R$ 133,40 com 8% de desconto). O lançamento é de R$ 122,73. O anexo não traz o comprovante do pagamento.",
+    "pergunta": "O valor pago foi R$ 122,73 (Pix, com desconto de 8%) ou R$ 133,40 (valor da nota fiscal)? Podem enviar o comprovante do pagamento? A tela do carrinho mostra R$ 122,72, um centavo a menos que o lançamento."
+  },
+  {
+    "codigo": "01654170",
+    "valor_listagem": 1429.61,
+    "divergencia_real": true,
+    "valor_exibido": 1429.61,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 01654170 (NF-e 281544, NF-e 8658 e um terceiro documento que não abre)",
+    "resumo": "Soma das notas fiscais diferente do valor lançado — JORGE ZALONCINI, câmeras (R$ 1.429,61)",
+    "como": "O anexo traz a NF-e 281544 de Jorge Zaloncini Junior (2 câmeras, R$ 620,24) e a NF-e 8658 da Rayder Shop (1 câmera, R$ 890,00), que somam R$ 1.510,24; o lançamento é de R$ 1.429,61 (diferença de R$ 80,63 a menos). O anexo tem ainda um terceiro documento que está vazio no sistema e não pôde ser aberto.",
+    "pergunta": "Qual a explicação para a diferença de R$ 80,63 entre as notas fiscais (R$ 1.510,24) e o valor lançado (R$ 1.429,61) — desconto no pagamento? O terceiro documento do anexo não abre: podem reenviá-lo (comprovante do pagamento)?"
+  }
+]

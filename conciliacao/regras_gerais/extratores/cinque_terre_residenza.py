@@ -55,8 +55,34 @@ class Extrator(_hab.Extrator):
             finally:
                 doc.close()
             if sem_texto:
+                self._nativo = False
+                return self._extrair_ocr(caminho, mes, n)
+            if self._tem_demonstrativo(caminho):
+                self._nativo = True                      # PDF com camada de texto (out/2026): palavras exatas, sem OCR
                 return self._extrair_ocr(caminho, mes, n)
         return super().extrair(caminho, mes)
+
+    @staticmethod
+    def _tem_demonstrativo(caminho: Path) -> bool:
+        import fitz
+
+        doc = fitz.open(str(caminho))
+        try:
+            return "DEMONSTRATIVO DE DESPESAS" in _norm(doc[0].get_text()[:400]) if len(doc) else False
+        finally:
+            doc.close()
+
+    @staticmethod
+    def _palavras_texto(caminho: Path, indices: list[int]) -> dict[int, list[dict]]:
+        """Mesmo formato de `_ocr_palavras`, mas lido da camada de texto do PDF (sem OCR)."""
+        import fitz
+
+        doc = fitz.open(str(caminho))
+        try:
+            return {i: [{"t": w[4].strip(), "x0": round(w[0], 1), "top": round(w[1], 1), "x1": round(w[2], 1), "bottom": round(w[3], 1)}
+                        for w in doc[i].get_text("words") if w[4].strip()] for i in indices}
+        finally:
+            doc.close()
 
     # ── PDF escaneado ────────────────────────────────────────────────────────────────────────────────────────
     def _extrair_ocr(self, caminho: Path, mes: str, n_paginas: int) -> DadosRegras:
@@ -65,11 +91,12 @@ class Extrator(_hab.Extrator):
         dados = DadosRegras(mes=mes, arquivo=caminho.name)
         indices = list(range(min(n_paginas, MAX_PAGINAS)))
         nao = {k: "OCR indisponível nesta máquina (tesseract/idioma 'por') — o PDF é uma impressão em imagem" for k in ("receitas", "rendimentos", "lancamentos")}
-        principal = _ocr_palavras(caminho, indices, DPI)
+        nativo = getattr(self, "_nativo", False)
+        principal = self._palavras_texto(caminho, indices) if nativo else _ocr_palavras(caminho, indices, DPI)
         if not principal:
             dados.motivos_nao_cobertos = nao
             return dados
-        outras = [_ocr_palavras(caminho, indices, d) for d in (DPI_TRIAGEM,) + DPIS_VOTO]
+        outras = [] if nativo else [_ocr_palavras(caminho, indices, d) for d in (DPI_TRIAGEM,) + DPIS_VOTO]
         d_ = fitz.open(str(caminho))
         try:
             larguras = {i: float(d_[i].rect.width) for i in indices}
@@ -90,7 +117,8 @@ class Extrator(_hab.Extrator):
         pos = self._ler_posicao(paginas)
         banco = self._ler_conciliacao(paginas)
         self._montar(dados, resumo, lanc, totais, grupos_por_conta, pos, banco)
-        gravar_pesquisavel(caminho, paginas)
+        if not nativo:
+            gravar_pesquisavel(caminho, paginas)
         return dados
 
     @staticmethod
@@ -241,6 +269,8 @@ class Extrator(_hab.Extrator):
                 if tn.startswith(("CONCILIACAO BANCARIA", "RESUMO FINANCEIRO")):
                     conta = None
                     continue
+                if tn.startswith("DEMONSTRATIVO DE DESPESAS"):       # título repetido no topo de cada página
+                    continue
                 v = l.get("_vs", [])
                 if not v and l["x0"] > 200 and not re.search(r"\d", tn) and not tn.startswith(("POSICAO", "SALDO")):
                     if l["texto"].strip() == conta:               # o bloco da conta atravessa a página: o cabeçalho se repete no topo da seguinte
@@ -290,8 +320,12 @@ class Extrator(_hab.Extrator):
     # junta tudo no modelo, conferindo as somas
     def _montar(self, dados: DadosRegras, resumo: dict, grupos: dict, totais: dict, grupos_por_conta: dict, pos: dict, banco: dict):
         av = dados.avisos
-        av.append("PDF escaneado (impressão em imagem) de 5 páginas: números lidos por OCR e conferidos pelas somas do próprio arquivo; "
-                  "não traz o Demonstrativo de Receitas por unidade, o Resumo de Emissão (previsto x realizado), a inadimplência nem comprovantes")
+        if getattr(self, "_nativo", False):
+            av.append("PDF resumido de 5 páginas (com texto): números lidos da camada de texto e conferidos pelas somas do próprio arquivo; "
+                      "não traz o Demonstrativo de Receitas por unidade, o Resumo de Emissão (previsto x realizado), a inadimplência nem comprovantes")
+        else:
+            av.append("PDF escaneado (impressão em imagem) de 5 páginas: números lidos por OCR e conferidos pelas somas do próprio arquivo; "
+                      "não traz o Demonstrativo de Receitas por unidade, o Resumo de Emissão (previsto x realizado), a inadimplência nem comprovantes")
         av.extend(totais["avisos"])
         nomes = [c[0] for c in resumo["contas"]]
 
