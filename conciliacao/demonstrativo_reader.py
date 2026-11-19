@@ -377,8 +377,32 @@ def _previsto_realizado_resumo_emissoes(caminho: Path, mes: str):
     return None
 
 
+def _aplicar_indicadores_manuais(condo: dict, bal: dict | None, mes_referencia: str) -> dict | None:
+    """Previsto x realizado e inadimplência que o RESPONSÁVEL forneceu de outro documento da administradora (ex.: Demonstrativo do Realizado), para um
+    mês em que o arquivo de prestação de contas não traz o Resumo de Emissão: config/indicadores_validacao/<condomínio>/<AAAA-MM>.json
+    ({"prev", "real", "inad", "inadProc", "fonte", "decidido_por", "data"}). Só vale para aquele condomínio e mês."""
+    if not bal:
+        return bal
+    try:
+        import json
+        arq = Path(__file__).resolve().parents[1] / "config" / "indicadores_validacao" / condo["id"] / f"{mes_referencia}.json"
+        if arq.exists():
+            ind = json.loads(arq.read_text(encoding="utf-8"))
+            for k in ("prev", "real", "inad", "inadProc"):
+                if ind.get(k) is not None:
+                    bal[k] = ind[k]
+    except Exception as exc:
+        print(f"[AVISO] indicadores manuais não aplicados: {exc}")
+    return bal
+
+
 def ler_dados_arquivo(condo: dict, caminho_arquivo: Path, mes_referencia: str,
-                       mes_titulo: str = "", periodo: str = "") -> dict | None:
+                      mes_titulo: str = "", periodo: str = "") -> dict | None:
+    return _aplicar_indicadores_manuais(condo, _ler_dados_arquivo_base(condo, caminho_arquivo, mes_referencia, mes_titulo, periodo), mes_referencia)
+
+
+def _ler_dados_arquivo_base(condo: dict, caminho_arquivo: Path, mes_referencia: str,
+                            mes_titulo: str = "", periodo: str = "") -> dict | None:
     """
     Lê os dados financeiros de UM arquivo de prestação de contas (PDF ou
     XLSX), via o adapter já usado pra injeção mensal do condomínio
