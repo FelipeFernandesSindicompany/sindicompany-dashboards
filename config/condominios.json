@@ -1121,6 +1121,19 @@
       }
     },
     {
+      "id": "duo_interlagos",
+      "nome": "Duo Interlagos",
+      "empresa_gestora": "villa_nova_assessoria",
+      "pasta_dados": "data/duo_interlagos",
+      "html_file": "Dashboard_Financeiro_DuoInterlagos.html",
+      "ativo": true,
+      "cor": "#0ea5e9",
+      "unidades": 0,
+      "parser_config": {
+        "cat_map": {}
+      }
+    },
+    {
       "id": "dueto_morumbi",
       "nome": "Dueto Morumbi",
       "empresa_gestora": "manager_adm_pdf",

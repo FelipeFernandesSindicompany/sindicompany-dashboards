@@ -1045,6 +1045,32 @@
       "tAnt": 107734.39
     }
   },
+  "Dashboard_Financeiro_DuoInterlagos.html": {
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
+    "allKeys": [
+      "out25",
+      "nov25",
+      "dez25",
+      "jan26",
+      "fev26",
+      "mar26",
+      "abr26",
+      "mai26",
+      "jun26",
+      "jul26",
+      "ago26",
+      "set26"
+    ],
+    "data": {
+      "tit": "Setembro / 2026",
+      "tAtual": 81392.53,
+      "tCred": 68158.54,
+      "tDeb": -82517.04,
+      "inad": 15817.69,
+      "tAnt": 95751.03
+    }
+  },
   "Dashboard_Financeiro_DuetoMorumbi.html": {
     "lastKey": "jul26",
     "lastMonth": "Jul/26",
