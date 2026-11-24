@@ -3,59 +3,72 @@
     "tipo": "nota_fiscal_ausente",
     "valor_total": 194.17,
     "motivo": "o anexo do lançamento traz a Fatura nº 803 da Genske Advogados (reembolso de despesa: recibo de Uber do comparecimento em assembleia, R$ 194,17) e o boleto do mesmo valor — o documento que a listagem cita (NF-803) é essa fatura",
-    "decidido_por": "conferência dos anexos do portal",
+    "decidido_por": "responsável pela validação",
     "data": "2026-11-24"
   },
   {
     "tipo": "duplicidade",
     "valor_total": 470.45,
-    "motivo": "os 3 lançamentos de R$ 470,45 da Comgás são débitos automáticos distintos: cada um tem o seu comprovante, com instalações e controles diferentes (37885430, 37885340 e 37885383)",
-    "decidido_por": "conferência dos anexos do portal",
-    "data": "2026-11-24"
-  },
-  {
-    "tipo": "lancamento_em_outra_subconta",
-    "valor_total": 5092.26,
-    "motivo": "falso positivo: em setembro/2026 a Enel também estava lançada em DESPESAS COM CONSUMO > Energia Elétrica; a comparação havia tomado só as linhas da Energia Solar (OBRAS E MELHORIAS)",
-    "decidido_por": "conferência dos anexos do portal",
-    "data": "2026-11-24"
-  },
-  {
-    "verificacao": "duplicidade_no_mes",
-    "valor_total": 342.9,
-    "motivo": "mesma ocorrência do item de duplicidade da NF-6174 (R$ 171,45), mantido com a impressão das duas linhas",
-    "decidido_por": "conferência dos anexos do portal",
-    "data": "2026-11-24"
-  },
-  {
-    "verificacao": "duplicidade_no_mes",
-    "valor_total": 1223.64,
-    "motivo": "mesma ocorrência do item de duplicidade da NF-14501 (R$ 611,82), mantido com a impressão das duas linhas",
-    "decidido_por": "conferência dos anexos do portal",
+    "motivo": "os 3 lançamentos de R$ 470,45 da Comgás são débitos automáticos distintos: cada um tem o seu comprovante, com instalações e controles diferentes (37885430, 37885340 e 37885383); a pergunta sobre valores iguais está no item das concessionárias",
+    "decidido_por": "responsável pela validação",
     "data": "2026-11-24"
   },
   {
     "tipo": "duplicidade",
     "valor_total": 171.45,
-    "reescrever": {
-      "titulo": "NF-6174 da Intelligenz Brasil paga duas vezes — Conserto Submersível (R$ 171,45)",
-      "paragrafo": "A NF-6174 (Conserto Submersível, R$ 171,45) da Intelligenz Brasil Comércio e Reparação está lançada duas vezes no mês: em 06/10/2026 e em 27/10/2026. Cada lançamento tem o seu comprovante de pagamento (são dois pagamentos) e o mesmo documento anexado (NF/boleto da NF-6174).",
-      "o_que_verificar": "A NF-6174 (R$ 171,45) foi paga duas vezes (06/10/2026 e 27/10/2026)? Em caso de pagamento em duplicidade, haverá estorno?"
-    },
-    "motivo": "texto ajustado: os anexos já estão no portal; a pergunta é só sobre o pagamento repetido",
-    "decidido_por": "conferência dos anexos do portal",
+    "motivo": "NF-6174 é parcelada (parcelas de 06/10 e 27/10): incorporada ao item único dos lançamentos da Intelligenz",
+    "decidido_por": "responsável pela validação",
     "data": "2026-11-24"
   },
   {
     "tipo": "duplicidade",
     "valor_total": 611.82,
+    "motivo": "NF-14501 é parcelada (parcelas de 06/10 e 27/10): incorporada ao item único dos lançamentos da Intelligenz",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "verificacao": "duplicidade_no_mes",
+    "valor_total": 1223.64,
+    "motivo": "incorporada ao item único dos lançamentos da Intelligenz",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "verificacao": "duplicidade_no_mes",
+    "valor_total": 342.9,
     "reescrever": {
-      "titulo": "NF-14501 da Intelligenz Brasil paga duas vezes — conserto do equipamento Submersível (R$ 611,82)",
-      "paragrafo": "A NF-14501 (conserto do equipamento Submersível, R$ 611,82) da Intelligenz Brasil Comércio e Reparação está lançada duas vezes no mês: em 06/10/2026 e em 27/10/2026. Cada lançamento tem o seu comprovante de pagamento (são dois pagamentos) e a mesma nota fiscal anexada.",
-      "o_que_verificar": "A NF-14501 (R$ 611,82) foi paga duas vezes (06/10/2026 e 27/10/2026)? Em caso de pagamento em duplicidade, haverá estorno?"
+      "titulo": "Lançamentos da Intelligenz em subcontas diferentes e parcelas pagas no mesmo mês (9 lançamentos, R$ 3.630,01)",
+      "paragrafo": "Em outubro/2026 há 9 lançamentos relacionados à Intelligenz (bombas, esgoto e submersíveis; total R$ 3.630,01), distribuídos em 3 subcontas:\n• Contratos Mensais > Manutenção de Bombas - Mensal: NF-3128, R$ 607,67 (listada como MAESA DO BRASIL; a nota e o comprovante são da Intelligenz Service Ltda).\n• Despesas com Manutenção > Manutenção de Bombas - Peças e Serviços: NF-14545, R$ 871,53, e NF-14546, R$ 120,77 (ambas em 22/10).\n• Despesas com Manutenção > Materiais e Serviços para Reparos e Conservação: NF-6174, R$ 171,45 (06/10 e 27/10); NF-14501, R$ 611,82 (06/10 e 27/10); NF-6231, R$ 334,96 (22/10); NF-6232, R$ 128,54 (22/10).\nPelos anexos, as NF-6174, NF-14501, NF-6231 e NF-6232 foram parceladas (a NF-6174 e a NF-14501 em 3 parcelas: 06/10, 27/10 e 24/11/2026), por isso duas parcelas de cada uma saíram em outubro. A NF-14545 (serviço) e a NF-6231 (mercadoria) descrevem o mesmo equipamento (\"Conserto Rob 500 [Poço Esgoto]\"), mas estão em subcontas diferentes.",
+      "o_que_verificar": "1) Por que os lançamentos da Intelligenz (bombas e esgoto) estão em subcontas diferentes (Manutenção de Bombas - Mensal, Manutenção de Bombas - Peças e Serviços e Materiais e Serviços para Reparos e Conservação)? Qual é a classificação correta de cada um?\n2) Algum desses lançamentos se refere ao pagamento mensal do contrato de manutenção de bombas? Se sim, por que foram pagos dois meses em outubro (NF-6174 e NF-14501, em 06/10 e 27/10)?\n3) A NF-3128 está na listagem em nome de MAESA DO BRASIL, mas a nota e o pagamento são da Intelligenz Service Ltda. Qual o motivo da diferença de nome?",
+      "valor_exibido": 3630.01
     },
-    "motivo": "texto ajustado: os anexos já estão no portal; a pergunta é só sobre o pagamento repetido",
-    "decidido_por": "conferência dos anexos do portal",
+    "motivo": "item único com todos os lançamentos da Intelligenz (pedido do responsável em 24/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 5092.26,
+    "reescrever": {
+      "titulo": "Lançamentos da Enel sem nº de fatura em subconta diferente do mês anterior (R$ 5.092,26)",
+      "paragrafo": "Em outubro, 5 lançamentos da Enel sem número de fatura (R$ 5.092,26: R$ 112,21 em 19/10; R$ 4.574,31, R$ 180,66, R$ 123,58 e R$ 101,50 em 22/10) estão em Despesas com Consumo > Energia Elétrica. Em setembro, os lançamentos da Enel sem número de fatura (15 lançamentos de 08/09, R$ 4.765,07) estavam em Obras e Melhorias > Energia Solar, e as faturas com número (7, R$ 5.190,35) em Energia Elétrica. Em outubro não há lançamento na subconta Energia Solar.",
+      "o_que_verificar": "Por que os lançamentos da Enel sem número de fatura mudaram de Energia Solar (Obras e Melhorias) para Energia Elétrica (Despesas com Consumo)? Eles se referem a energia solar? A nova classificação está correta?"
+    },
+    "motivo": "o responsável pediu que o item permaneça no relatório; texto com a comparação correta com setembro",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "conta_concessionaria_nao_anexada",
+    "valor_total": 8957.25,
+    "reescrever": {
+      "titulo": "Conta (fatura) não anexada — Sabesp e Comgás, 14 pagamentos por débito automático (R$ 8.957,25)",
+      "paragrafo": "Em 14 pagamentos de concessionárias (R$ 8.957,25) o anexo é só o comprovante do débito automático: a conta (fatura) com o consumo e o vencimento não está anexada.\nSabesp (água):\n• Conta 0854719687 — R$ 4.146,22 (cód. L008)\nComgás (gás), por instalação (débitos de 06/10/2026):\n• Instalação 37885430 — R$ 470,45 (cód. L015)\n• Instalação 37885340 — R$ 470,45 (cód. L016)\n• Instalação 37885383 — R$ 470,45 (cód. L017)\n• Instalação 37884883 — R$ 443,82 (cód. L018)\n• Instalação 37885456 — R$ 417,19 (cód. L019)\n• Instalação 37884646 — R$ 408,32 (cód. L020)\n• Instalação 37885332 — R$ 381,69 (cód. L021)\n• Instalação 37884727 — R$ 363,93 (cód. L022)\n• Instalação 37884735 — R$ 337,31 (cód. L023)\n• Instalação 37883364 — R$ 301,80 (cód. L024)\n• Instalação 37884654 — R$ 292,93 (cód. L025)\n• Instalação 37883682 — R$ 257,41 (cód. L026)\n• Instalação 37885324 — R$ 195,28 (cód. L028)\nAs demais instalações da Comgás (37885286, 37885421, 39511456, 37883151, 37885448, 37885405 e 37884948) têm a fatura anexada.",
+      "o_que_verificar": "1) Podem enviar a conta (fatura) da Sabesp e das 13 instalações da Comgás acima, para conferirmos o consumo, o vencimento e o valor cobrado?\n2) Por que as instalações (relógios) 37885430, 37885340 e 37885383 têm exatamente o mesmo valor, R$ 470,45?\n3) Por que as instalações (relógios) 37885405 (fatura anexada) e 37883682 também têm o mesmo valor, R$ 257,41?"
+    },
+    "motivo": "disposição do texto e das perguntas reorganizada (pedido do responsável em 24/11/2026)",
+    "decidido_por": "responsável pela validação",
     "data": "2026-11-24"
   }
 ]

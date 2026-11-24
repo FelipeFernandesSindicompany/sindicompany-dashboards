@@ -577,7 +577,7 @@ def _aplicar_conferencia_visual(base_dir: Path, mes: str, achados: list, esquele
 # registrada com o valor exato (config/dispensas_validacao); despesa negativa e os demais ficam sempre no relatório.
 _TIPOS_DISPENSAVEIS = {"observacao_gestor", "subconta_atipica", "lancamento_em_outra_subconta", "parcelas_mesmo_mes", "receita_negativa",
                        "saldo_negativo_persistente", "rendimento_desproporcional", "inadimplencia_arrecadacao", "variacao_categoria",
-                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "holerite_nao_anexado", "despesa_negativa", "atraso_pagamento"}
+                       "movimento_entre_contas", "continuidade_saldo", "sem_comprovante", "nota_fiscal_ausente", "holerite_nao_anexado", "despesa_negativa", "atraso_pagamento", "duplicidade"}
 # achados de tipo genérico (ex.: divergencia_valor) só podem ser dispensados por REGRA específica, informada no JSON em "regra"
 _REGRAS_DISPENSAVEIS = {"demonstrativo_de_despesas_repetido_no_arquivo", "valor_ocr_comprovante_diverge_valor_listagem",
                         "pagina_comprovante_existe_mas_ocr_nao_confirmou_valor",
@@ -1245,6 +1245,17 @@ def etapa_render(condo: dict, mes: str) -> Path:
                     _ocr_gasto[0] += time.monotonic() - _t0
 
         valor = achado.valor_encontrado if achado.valor_encontrado is not None else achado.valor_esperado
+        # item reescrito pelo responsável que reúne vários lançamentos (config/dispensas_validacao, "reescrever" + "valor_exibido"): o cartão mostra o total do item
+        try:
+            _arq_disp = ROOT / "config" / "dispensas_validacao" / base_dir.parent.parent.name / f"{mes}.json"
+            for _d in (json.loads(_arq_disp.read_text(encoding="utf-8")) if _arq_disp.exists() else []):
+                _r = _d.get("reescrever") or {}
+                if _r.get("valor_exibido") is not None and _valor_casa(achado, _d["valor_total"]) and (
+                        (_d.get("verificacao") and achado.tipo == "observacao_gestor" and (achado.detalhes or {}).get("verificacao") == _d["verificacao"])
+                        or (_d.get("tipo") and achado.tipo == _d["tipo"])):
+                    valor = _r["valor_exibido"]
+        except Exception:
+            pass
         achados_render.append({
             "numero": numero,
             "titulo": rev.titulo,

@@ -1,65 +1,5 @@
 [
   {
-    "tipo": "duplicidade",
-    "valor": 171.45,
-    "evidencias": [
-      {
-        "pagina": 3,
-        "bbox": [
-          38,
-          596,
-          590,
-          668
-        ],
-        "destaques": [
-          [
-            40,
-            600.5,
-            590,
-            610.8
-          ],
-          [
-            40,
-            635.0,
-            590,
-            645.3
-          ]
-        ],
-        "legenda": "Os 2 lançamentos da NF-6174 da Intelligenz (R$ 171,45): 06/10/2026 e 27/10/2026"
-      }
-    ]
-  },
-  {
-    "tipo": "duplicidade",
-    "valor": 611.82,
-    "evidencias": [
-      {
-        "pagina": 3,
-        "bbox": [
-          38,
-          596,
-          590,
-          668
-        ],
-        "destaques": [
-          [
-            40,
-            614.0,
-            590,
-            632.0
-          ],
-          [
-            40,
-            648.0,
-            590,
-            666.0
-          ]
-        ],
-        "legenda": "Os 2 lançamentos da NF-14501 da Intelligenz (R$ 611,82): 06/10/2026 e 27/10/2026"
-      }
-    ]
-  },
-  {
     "tipo": "conta_concessionaria_nao_anexada",
     "valor": 8957.25,
     "evidencias": [
@@ -158,6 +98,157 @@
           ]
         ],
         "legenda": "Os 14 lançamentos de concessionária (Sabesp e Comgás, débito automático) sem a conta (fatura) anexada"
+      }
+    ]
+  },
+  {
+    "tipo": "observacao_gestor",
+    "valor": 342.9,
+    "evidencias": [
+      {
+        "pagina": 2,
+        "bbox": [
+          38,
+          692,
+          590,
+          730
+        ],
+        "destaques": [
+          [
+            40,
+            710.0,
+            590,
+            727.0
+          ]
+        ],
+        "legenda": "Manutenção de Bombas - Mensal: NF-3128 (R$ 607,67), listada como MAESA DO BRASIL"
+      },
+      {
+        "pagina": 3,
+        "bbox": [
+          38,
+          410,
+          590,
+          730
+        ],
+        "destaques": [
+          [
+            40,
+            427.3,
+            590,
+            436.3
+          ],
+          [
+            40,
+            440.8,
+            590,
+            449.8
+          ],
+          [
+            40,
+            601.3,
+            590,
+            610.3
+          ],
+          [
+            40,
+            614.8,
+            590,
+            632.5
+          ],
+          [
+            40,
+            635.8,
+            590,
+            644.8
+          ],
+          [
+            40,
+            648.5,
+            590,
+            666.5
+          ],
+          [
+            40,
+            695.8,
+            590,
+            713.5
+          ],
+          [
+            40,
+            716.8,
+            590,
+            725.8
+          ]
+        ],
+        "legenda": "Os 8 lançamentos da Intelligenz em Manutenção de Bombas - Peças e Serviços (NF-14545 e NF-14546) e em Materiais e Serviços para Reparos e Conservação (NF-6174, NF-14501, NF-6231 e NF-6232)"
+      }
+    ]
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor": 5092.26,
+    "evidencias": [
+      {
+        "pagina": 2,
+        "bbox": [
+          38,
+          32,
+          590,
+          170
+        ],
+        "destaques": [
+          [
+            40,
+            92.0,
+            590,
+            100.9
+          ],
+          [
+            40,
+            104.8,
+            590,
+            113.7
+          ],
+          [
+            40,
+            118.3,
+            590,
+            127.2
+          ],
+          [
+            40,
+            131.0,
+            590,
+            139.9
+          ],
+          [
+            40,
+            144.5,
+            590,
+            153.4
+          ]
+        ],
+        "legenda": "Outubro/2026 — Energia Elétrica: os 5 lançamentos da Enel sem número de fatura"
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 13,
+        "bbox": [
+          28,
+          410,
+          590,
+          680
+        ],
+        "destaques": [
+          [
+            30,
+            484.0,
+            590,
+            654.0
+          ]
+        ],
+        "legenda": "Setembro/2026 — Obras e Melhorias > Energia Solar: 15 lançamentos da Enel sem número de fatura (R$ 4.765,07)"
       }
     ]
   }
