@@ -19,5 +19,19 @@
     "motivo": "ponto de atenção de gestor (CAIXA ORDINARIO pagou a mais do que recebeu): mesma decisão já tomada para setembro/2026 (retirado do relatório)",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-24"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 3.7,
+    "motivo": "rendimento de R$ 3,70 creditado na CAIXA ORDINARIO (saldo negativo) retirado do relatório a pedido do responsável (24/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 5745.66,
+    "motivo": "fornecedor novo Tokio Marine (PC 01/06, renovação do seguro) retirado do relatório a pedido do responsável (24/11/2026); apólice anexada",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
   }
 ]
