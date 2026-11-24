@@ -381,6 +381,8 @@
     },
     "nyc": {
       "pasta_prestacao": "Dashboard de Análise de Balancete NYC Berrini",
+      "ocr_pdf_sem_texto": true,
+      "aviso_escopo_pdf_escaneado": "Os comprovantes de pagamento e as notas fiscais NÃO foram conferidos, pois o arquivo enviado não possui os anexos: o balancete de outubro/2026 veio como PDF escaneado de 16 páginas (impressão em imagem, sem texto), com o resumo contábil e financeiro, o Demonstrativo de Contas, o Demonstrativo de Despesas e o Demonstrativo de Receitas. Os números foram lidos por OCR e conferidos pelas somas que o próprio balancete traz (subtotais, totais por grupo, saldos e conciliação bancária). A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto.",
       "aviso_escopo_por_extensao": {".pdf": "Os comprovantes e as notas fiscais não foram conferidos, pois o arquivo com os comprovantes não foi enviado para a validação (o arquivo recebido traz apenas o demonstrativo de contas e o demonstrativo de despesas, sem os comprovantes anexados). Por isso esta validação conferiu somente os saldos, as categorias e as regras que o arquivo permite. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."},
       "regras": {
         "receita_negativa": {

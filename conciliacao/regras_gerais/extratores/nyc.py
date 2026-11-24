@@ -33,6 +33,7 @@ from conciliacao.regras_gerais.extratores.top_nine import aplicar_config_receita
 from conciliacao.regras_gerais.modelo import ContaMes, DadosRegras, LancamentoDespesa, LinhaReceita
 
 _CENT = 0.011
+_OCR_TROCAS = str.maketrans("105", "IOS")        # o OCR confunde I/1, O/0, S/5 nos nomes de subconta ("I.S.S." x "1.S.S.")
 _RE_DATA = re.compile(r"^\d{2}/\d{2}/\d{4}$")
 _RE_NUM = re.compile(r"^\(?-?\d{1,3}(?:\.\d{3})*,\d{2}\)?-?$|^\(?-?\d+,\d{2}\)?-?$")
 
@@ -119,6 +120,48 @@ class Extrator:
     def __init__(self, condo: dict):
         self.condo = condo
 
+    @staticmethod
+    def categoria_canonica(cat: str) -> str:
+        """Categoria do relatório = o GRUPO do plano de contas ("PESSOAL > SALÁRIOS" -> "Pessoal"), como nos meses em texto da Convicta."""
+        return (cat or "").split(" > ")[0].strip().title() or "Sem categoria"
+
+    @staticmethod
+    def _indicadores_emissao(doc, mes: str):
+        """Previsto x realizado da linha CONDOMINIO e inadimplência ("COTAS REC. DE COBRANÇA EM <último dia do mês>") do "Resumo de Emissões
+        Colunado" do Demonstrativo de Contas (mesma leitura dos meses em texto). As colunas Previsto/Realizado vêm pela posição do cabeçalho."""
+        for pi in range(min(len(doc), 6)):
+            if "Emissões Colunado" not in doc[pi].get_text() and "Emissoes Colunado" not in _sem_acento(doc[pi].get_text()):
+                continue
+            linhas = _linhas(doc[pi])
+            ini = next((k for k, (yc, ws) in enumerate(linhas) if "COLUNADO" in _norm(_texto(ws))), None)
+            if ini is None:
+                continue
+            xprev = xreal = None
+            prev = real = inad = None
+            for yc, ws in linhas[ini:ini + 40]:
+                tn = _norm(_texto(ws))
+                for w in ws:
+                    if _norm(w[4]) == "PREVISTO":
+                        xprev = (w[0] + w[2]) / 2
+                    if _norm(w[4]) == "REALIZADO":
+                        xreal = (w[0] + w[2]) / 2
+                nums = [w for w in ws if _num(w[4]) is not None]
+                if tn.startswith("CONDOMINIO") and len(nums) >= 2 and xprev is not None and xreal is not None and prev is None:
+                    for w in nums:
+                        c = (w[0] + w[2]) / 2
+                        if abs(c - xprev) < abs(c - xreal):
+                            prev = _num(w[4])
+                        else:
+                            real = _num(w[4])
+                m = re.search(r"EM (\d{2}) (\d{2}) (\d{4})", tn)
+                if m and len(nums) == 1 and f"{m.group(3)}-{m.group(2)}" == mes and "COTAS REC" in tn:
+                    inad = _num(nums[0][4])
+                if tn.startswith("POSICAO FINANCEIRA"):
+                    break
+            if prev is not None and real is not None:
+                return {"prev": prev, "real": real, "inad": inad, "inadProc": 0.0}
+        return None
+
     # ── leitura ──────────────────────────────────────────────────────────────
     def extrair(self, caminho: Path, mes: str) -> DadosRegras:
         import fitz
@@ -128,8 +171,11 @@ class Extrator:
         totais: dict = {}
         contas: list[ContaMes] = []
         try:
-            pasta_digital = any("Voltar ao índice" in doc[i].get_text() for i in range(min(len(doc), 4)))
+            # (a impressão escaneada da Convicta — out/2026, lida por OCR — tem o mesmo layout do "Pasta Digital" sem o link "Voltar ao índice")
+            pasta_digital = any("Voltar ao índice" in doc[i].get_text() or "CONVICTA" in doc[i].get_text().upper() for i in range(min(len(doc), 6)))
             self._ler(doc, pasta_digital, dados, contas, totais)
+            if pasta_digital and not any("Voltar ao índice" in doc[i].get_text() for i in range(min(len(doc), 6))):
+                dados.indicadores = self._indicadores_emissao(doc, mes)       # impressão escaneada: o adaptador antigo não lê previsto/realizado
         finally:
             doc.close()
         dados.contas = contas
@@ -170,9 +216,15 @@ class Extrator:
         # Histórico que quebra em 2-3 linhas fica a ~6,7 pt (Webware, linhas a 18-22 pt) ou ~7,9 pt (Pasta Digital, linhas a
         # ~10 pt) da linha-âncora; um cabeçalho de subconta ocupa uma linha inteira. Medido nos dois layouts, todos os meses.
         gap_max = 8.5 if pasta_digital else 12.0
+        # Impressão ESCANEADA da Convicta (out/2026, lida por OCR): o espaçamento das linhas é irregular e o cabeçalho de subconta fica na mesma
+        # coluna do histórico que quebrou — não dá para separar "cabeçalho" de "histórico quebrado" por distância. Os nomes de grupo/subconta
+        # vêm da "Posição Financeira" do Demonstrativo de Contas (mesmos nomes): linha sem número com um desses nomes é cabeçalho; qualquer
+        # outra linha sem número, logo abaixo de um lançamento, é continuação do histórico dele.
+        ocr_convicta = pasta_digital and not any("Voltar ao índice" in doc[i].get_text() for i in range(min(len(doc), 6)))
+        nomes_hdr = self._nomes_cabecalho(doc) if ocr_convicta else set()
         for pi in range(len(doc)):
             texto_pag = doc[pi].get_text()
-            if pasta_digital and not re.search(r"Demonstrativo de (?:Receitas|Despesas)|Resumo Financeiro Cont[áa]bil", texto_pag):
+            if pasta_digital and not re.search(r"Demonstrativo\s+de\s+(?:Receitas|Despesas)|Resumo\s+Financeiro\s+Cont[áa]bil", texto_pag):
                 modo = None
                 continue
             linhas = []
@@ -186,12 +238,47 @@ class Extrator:
             # blocos: linhas consecutivas a <= gap_max formam UM item (âncora + histórico quebrado) ou um cabeçalho de duas linhas
             blocos: list[list] = []
             for ln in linhas:
+                if ocr_convicta:
+                    tx = _texto(ln[1])
+                    tn_ = _norm(tx)
+                    tem_num = any(_num(w[4]) is not None for w in ln[1])
+                    ancora = any(_RE_DATA.match(w[4]) for w in ln[1][:2]) and tem_num
+                    cabecalho = (not tem_num and tn_.translate(_OCR_TROCAS) in nomes_hdr) or tn_.startswith(("TOTAL", "DEMONSTRATIVO", "N LANCTO", "DATA ", "PAGINA", "PERIODO", "RESUMO"))
+                    cont = (blocos and not ancora and not cabecalho and not tem_num and ln[0] - blocos[-1][-1][0] <= 12.0
+                            and any(_RE_DATA.match(w[4]) for w in blocos[-1][0][1][:2]) and not blocos[-1][0][1][0][4].startswith("TOTAL"))
+                    if cont:
+                        blocos[-1].append(ln)
+                    else:
+                        blocos.append([ln])
+                    continue
                 if blocos and ln[0] - blocos[-1][-1][0] <= gap_max:
                     blocos[-1].append(ln)
                 else:
                     blocos.append([ln])
             for bloco in blocos:
                 modo = self._bloco(bloco, modo, cab, st, nomes_contas, dados, contas, totais, pi + 1)
+
+    @staticmethod
+    def _nomes_cabecalho(doc) -> set:
+        """Nomes de grupo/subconta da "Posição Financeira" do Demonstrativo de Contas (linhas só com rótulo ou rótulo + valores, sem data)."""
+        nomes: set = set()
+        for pi in range(min(len(doc), 6)):
+            if not re.search(r"Posi[cç][aã]o\s+Financeira", doc[pi].get_text()):
+                continue
+            dentro = False
+            for yc, ws in _linhas(doc[pi]):
+                tn = _norm(_texto(ws))
+                if tn.startswith("POSICAO FINANCEIRA"):
+                    dentro = True
+                    continue
+                if tn.startswith(("TOTAIS", "SALDO DEVEDOR", "APURACAO", "RESUMO")):
+                    dentro = False if tn.startswith(("TOTAIS", "APURACAO", "RESUMO")) else dentro
+                    continue
+                if dentro:
+                    rotulo = _norm(" ".join(w[4] for w in ws if _num(w[4]) is None))
+                    if rotulo:
+                        nomes.add(rotulo.translate(_OCR_TROCAS))
+        return nomes
 
     def _bloco(self, bloco, modo, cab, st, nomes_contas, dados, contas, totais, pagina):
         textos = [_texto(ws) for _, ws in bloco]
@@ -230,7 +317,8 @@ class Extrator:
             return modo
         # cabeçalho de colunas
         if "HISTORICO" in tn and tn.startswith(("DATA", "N LANCTO")):
-            cab["rec" if modo == "receitas" else "desp"] = {w[4]: w for w in bloco[0][1]}
+            # (o OCR da impressão escaneada lê "Valor" como "valor": a chave é normalizada)
+            cab["rec" if modo == "receitas" else "desp"] = {("Valor" if w[4].strip().lower() == "valor" else w[4]): w for w in bloco[0][1]}
             return modo
         if tn.startswith("TOTAL") and not any(_RE_DATA.match(w[4]) for _, ws in bloco for w in ws[:2]):
             self._total(modo, bloco[0][1], st, nomes_contas, totais)

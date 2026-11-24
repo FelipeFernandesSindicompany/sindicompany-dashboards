@@ -946,7 +946,8 @@ def _arquivo_da_convicta(pdf_origem) -> bool:
         import fitz
         doc = fitz.open(str(pdf_origem))
         try:
-            return "convicta" in (doc[0].get_text() or "").lower()
+            # (na impressão escaneada o logo "CONVICTA" só sai no OCR de algumas páginas: olha as 3 primeiras)
+            return any("convicta" in (doc[i].get_text() or "").lower() for i in range(min(len(doc), 3)))
         finally:
             doc.close()
     except Exception:
