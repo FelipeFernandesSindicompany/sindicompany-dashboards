@@ -47,5 +47,12 @@
     "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-24"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 26822.88,
+    "motivo": "ponto de atenção de gestor (Comgás acima da mediana, R$ 26.822,88) retirado do relatório a pedido do responsável (24/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
   }
 ]
