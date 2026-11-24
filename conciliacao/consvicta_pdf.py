@@ -67,11 +67,19 @@ class ConciliadorConsvictaPDF(ConciliadorBase):
                 texto = page.extract_text() or ""
                 page.flush_cache()
                 indice_pagina = 0
+                ultimo_lanc = None
 
                 for linha in texto.split("\n"):
                     l = linha.strip()
                     if not l:
                         continue
+                    # out/2026: o nº do documento quebra em duas linhas ("Fatura-" na linha do lançamento e "0201857645" na de baixo)
+                    if dentro_despesas and ultimo_lanc is not None and re.fullmatch(r"\d{5,}", l) and (ultimo_lanc.autenticacao or "").endswith("-"):
+                        ultimo_lanc.autenticacao = f"{ultimo_lanc.autenticacao}{l}"
+                        ultimo_lanc.texto_bruto = f"{ultimo_lanc.texto_bruto} {l}"
+                        ultimo_lanc = None
+                        continue
+                    ultimo_lanc = None
 
                     if not dentro_despesas:
                         if re.match(r'^Despesas\s+Liquida', l, re.IGNORECASE):
@@ -105,7 +113,7 @@ class ConciliadorConsvictaPDF(ConciliadorBase):
                     if m_lanc and categoria_atual:
                         fornecedor, liquidacao, documento, valor_str = m_lanc.groups()
                         indice_pagina += 1
-                        registros.append(RegistroComprovante(
+                        ultimo_lanc = RegistroComprovante(
                             pagina=pagina_num,
                             # Índice sequencial na página — só pra manter
                             # chave_registro() única quando várias despesas
@@ -122,7 +130,8 @@ class ConciliadorConsvictaPDF(ConciliadorBase):
                             # páginas de comprovante — não há vínculo entre os dois).
                             autenticacao=documento,
                             texto_bruto=l,
-                        ))
+                        )
+                        registros.append(ultimo_lanc)
                         continue
                     # Linhas sem match (rótulo de subcategoria sem número,
                     # continuação de fornecedor/competência quebrada em 2

@@ -1,0 +1,20 @@
+[
+  {
+    "codigo": "0004",
+    "valor_listagem": 530.65,
+    "resumo": "Rb Serviços Empresariais (Ticket) - vale refeição, NF-68481 (R$ 530,65)",
+    "documento": "anexo da parcela 14197 (boleto da Ticket, comprovante de pagamento do boleto, relatório \"Funcionário Detalhado\" e NFS-e 68481)",
+    "como": "Conferido visualmente no anexo: o boleto da Ticket Serviços (pedido 5287566) é de R$ 1.137,93 e foi pago em 21/10/2026; o relatório do pedido traz ticket alimentação R$ 607,28 e ticket refeição R$ 492,25, e a NFS-e 68481 cobra R$ 38,40 de taxa de serviço. O lançamento de vale refeição de R$ 530,65 é o ticket refeição (R$ 492,25) mais a taxa (R$ 38,40), e junto com o vale alimentação (R$ 607,28) fecha o boleto de R$ 1.137,93. A leitura automática havia pegado só o valor do ticket refeição."
+  },
+  {
+    "codigo": "0040",
+    "valor_listagem": 2101.6,
+    "divergencia_real": true,
+    "valor_exibido": 2101.6,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento 0040 (NF-e 4333 da Amperwatts e comprovante do PIX)",
+    "resumo": "Nota fiscal paga após o vencimento e sem detalhamento dos produtos — Amperwatts Comércio de Materiais Elétricos (R$ 2.101,60)",
+    "como": "A NF-e 4333 da Amperwatts foi emitida em 01/09/2026, com valor de R$ 2.101,60 e vencimento em 10/09/2026 (\"conforme acordado verbalmente\", com os dados para transferência bancária nos dados adicionais). O comprovante mostra o PIX de R$ 2.101,60 feito somente em 16/10/2026, 36 dias depois do vencimento. A nota traz um único item, \"PC DIVERSOS\", sem detalhar o que foi comprado; o valor é 2,9 vezes a mediana dos meses anteriores do fornecedor (R$ 731,65).",
+    "pergunta": "Por que a nota de R$ 2.101,60, com vencimento em 10/09/2026, foi paga só em 16/10/2026? Quais materiais elétricos (\"PC DIVERSOS\") foram comprados e onde foram aplicados?"
+  }
+]

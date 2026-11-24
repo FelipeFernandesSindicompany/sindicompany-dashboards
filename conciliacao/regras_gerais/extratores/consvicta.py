@@ -161,11 +161,12 @@ class Extrator:
         ultimo = None                    # último lançamento/receita lido (para continuação de texto)
         docs: dict[int, str] = {}
         pend_saldo = None                # "ini" | "fim": linhas "Conta valor" que se seguem a "Saldo em dd/mm/aaaa"
+        x_n1 = 37.9                      # margem esquerda dos cabeçalhos de nível 1 ("Nome (xx,xx%)"); atualizada a cada cabeçalho lido
         for pag, linhas in paginas:
             for l in linhas:
                 t = l["texto"].strip()
                 tn = _norm(t)
-                if l["bbox"][1] > 770 or re.fullmatch(r"\d+ DE \d+", tn):
+                if l["bbox"][1] > 800 or re.fullmatch(r"\d+ DE \d+", tn) or ("CONSVICTA" in tn and _valor_direita(l) is None):     # rodapé (a partir de out/2026 o conteúdo desce até ~y 785)
                     continue
                 if tn.startswith(("W020A", "DEMONSTRATIVO DE RECEITAS", "ENTRE ")):
                     continue
@@ -192,11 +193,15 @@ class Extrator:
                         continue
                     if tn.startswith("RECEITAS") or tn.startswith("MOV LIQUIDO"):
                         pend_saldo = None
+                # cabeçalho da seção; a partir de out/2026 o livro REPETE "Receitas Competência Valor" / "Despesas Liquidação Documento Valor" no
+                # topo de cada página: se já estamos na seção, é só o cabeçalho da página (a hierarquia aberta continua)
                 if tn.startswith("RECEITAS") and "COMPETENCIA" in tn:
-                    modo, stack, ultimo, pend_saldo = "rec", [], None, None
+                    if modo != "rec":
+                        modo, stack, ultimo, pend_saldo = "rec", [], None, None
                     continue
                 if tn.startswith("DESPESAS") and "LIQUIDACAO" in tn:
-                    modo, stack, ultimo = "desp", [], None
+                    if modo != "desp":
+                        modo, stack, ultimo = "desp", [], None
                     continue
                 if re.match(r"^Total de Receitas\s+100,00%", t):
                     total_rec = _valor_direita(l)
@@ -222,16 +227,21 @@ class Extrator:
                             break
                     ultimo = None
                     continue
+                if valor is None and modo == "desp" and ultimo is not None and l["x0"] >= 300 and not _RE_HDR_PCT.match(t):
+                    # o nº do documento quebrou em duas linhas ("Fatura-" / "0201857283"): continuação do documento, não um subgrupo
+                    docs[id(ultimo)] = (docs.get(id(ultimo), "") + " " + t).strip() if hasattr(ultimo, "categoria") else docs.get(id(ultimo), "")
+                    continue
                 if valor is None:
                     mh = _RE_HDR_PCT.match(t)
                     if mh:
                         stack = [mh.group(1).strip()]            # nível 1
+                        x_n1 = l["x0"]                           # margem do nível 1 (muda de um livro para outro: 37,9 em set/26, 48,4 em out/26)
                         ultimo = None
-                    elif l["x0"] < 36 and ultimo is not None:    # continuação do histórico do item anterior
+                    elif l["x0"] < x_n1 - 1.9 and ultimo is not None:    # continuação do histórico do item anterior
                         ultimo.descricao += " " + t
-                    elif l["x0"] < 36:
+                    elif l["x0"] < x_n1 - 1.9:
                         pass
-                    elif l["x0"] >= 43 and len(stack) >= 1:
+                    elif l["x0"] >= x_n1 + 3.0 and len(stack) >= 1:
                         stack = stack[:1] + [t]                  # nível 2
                         ultimo = None
                     elif len(stack) >= 2:

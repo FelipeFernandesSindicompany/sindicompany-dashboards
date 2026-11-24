@@ -1,0 +1,12 @@
+[
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 30391.05,
+    "reescrever": {
+      "o_que_verificar": "Qual a justificativa do aumento nesses lançamentos (maior consumo, reajuste, serviço extra ou custas de processos judiciais)?"
+    },
+    "motivo": "pergunta ajustada: as notas fiscais e guias desses lançamentos já estão anexadas, então não se pede o envio da nota fiscal",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  }
+]
