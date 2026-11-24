@@ -1,0 +1,45 @@
+[
+  {
+    "codigo": "L006",
+    "valor_listagem": 1809.7,
+    "divergencia_real": true,
+    "valor_exibido": 1809.7,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento L006 (detalhamento do pedido Ticket nº 5273171)",
+    "resumo": "Vale-alimentação/refeição de novembro (Ticket) — R$ 1.809,70",
+    "como": "O único documento anexado é o detalhamento do pedido nº 5273171 da Ticket/Edenred (1 funcionário, período de 01/11 a 30/11/2026): Ticket Flex Diário R$ 945,88 (26 dias × R$ 36,38) + Ticket Flex Mensal R$ 662,48, total de benefícios de R$ 1.608,36. O lançamento é de R$ 1.809,70 — R$ 201,34 a mais — e o anexo não traz o valor total cobrado nem o comprovante do pagamento.",
+    "pergunta": "A diferença de R$ 201,34 entre o total de benefícios do pedido (R$ 1.608,36) e o valor lançado (R$ 1.809,70) refere-se a taxa/tarifa do pedido? Podem anexar o boleto ou o comprovante do pagamento de R$ 1.809,70?"
+  },
+  {
+    "codigo": "L099",
+    "valor_listagem": 6126.41,
+    "divergencia_real": true,
+    "valor_exibido": 6126.41,
+    "severidade": "atencao",
+    "documento": "anexo do lançamento L099 (ordem de pagamento, contrato, espelho do lançamento, comprovante PIX e NFTS nº 205)",
+    "resumo": "Parcela 3/3 do piso da quadra — SPERANDIO ARTEFATOS PLASTICOS (R$ 6.126,41)",
+    "como": "O comprovante do PIX (23/10/2026) é de R$ 6.126,41, igual ao valor a pagar do espelho do lançamento (valor do lançamento R$ 7.453,66 menos R$ 1.327,25 de ISS retido). Mas a ordem de pagamento anexada traz R$ 7.746,72 (\"PARC. 3/3\") e o contrato (R$ 26.545,02) prevê 3 parcelas de R$ 8.848,34, R$ 8.848,33 e R$ 8.848,33, com a última vencida em 30/09/2026. Os lançamentos da obra foram: R$ 8.848,34 em agosto (entrada), R$ 7.746,73 em setembro (parcela 1/2) e R$ 7.453,66 em outubro (parcela 3/3, paga R$ 6.126,41): somando o ISS retido, R$ 24.048,73 — R$ 2.496,29 abaixo do contrato.545,02).",
+    "pergunta": "Por que as parcelas pagas (R$ 8.848,34, R$ 7.746,73 e R$ 7.453,66) são diferentes das parcelas do contrato (R$ 8.848,3x) e por que a ordem de pagamento traz R$ 7.746,72? A soma lançada (R$ 24.048,73 com o ISS retido) fica R$ 2.496,29 abaixo dos R$ 26.545,02 do contrato: houve desconto ou ainda há parcela a pagar? A parcela, que venceu em 30/09/2026, foi paga em 23/10/2026: houve juros ou correção (cláusula 7.5 do contrato)?"
+  },
+  {
+    "codigo": "L022",
+    "valor_listagem": 110.92,
+    "resumo": "CLARO - débito automático (R$ 110,92)",
+    "documento": "anexo do lançamento L022 (extrato bancário)",
+    "como": "Conferido visualmente na imagem do anexo: o extrato bancário mostra o débito automático \"DA CLARO S.A.\" de R$ 110,92 em 15/out, igual ao valor listado. A leitura automática (OCR) não conseguiu ler a imagem."
+  },
+  {
+    "codigo": "L026",
+    "valor_listagem": 99.97,
+    "resumo": "VIVO - débito automático (R$ 99,97)",
+    "documento": "anexo do lançamento L026 (extrato bancário)",
+    "como": "Conferido visualmente na imagem do anexo: o extrato bancário mostra o débito automático \"DA VIVO-SP\" de R$ 99,97 em 26/out, igual ao valor listado. A leitura automática (OCR) não conseguiu ler a imagem."
+  },
+  {
+    "codigo": "L034",
+    "valor_listagem": 583.75,
+    "resumo": "Jonas Lucena Lourenço - manutenção do gerador, NF 159 (R$ 583,75)",
+    "documento": "anexo do lançamento L034 (boleto Inter e NFS-e)",
+    "como": "Conferido visualmente no anexo: boleto da NF 159/26 (manutenção preventiva mensal do grupo gerador, ref. setembro/2026) no valor de R$ 583,80, com vencimento em 12/10/2026 e desconto de 0,01% até essa data (R$ 0,05): valor a pagar de R$ 583,75, igual ao listado. A leitura automática não reconheceu o layout do boleto."
+  }
+]

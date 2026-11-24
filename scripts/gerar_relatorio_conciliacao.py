@@ -145,7 +145,15 @@ GERAR_ACHADOS_POR_EMPRESA = {
 # "lirba_pdf" no cadastro, mas o PDF é do sistema GCONT, não ContasData).
 from conciliacao.condominios._planilha_refino import gerar_achados_planilha_refinado as _gerar_achados_planilha_refinado
 
+def _gerar_achados_hub(registros, dados_financeiros=None, pasta_dados=None, mes_atual=None):
+    """Hub Home Club: planilha .xls (regras do DataDigitus, como sempre) ou PDF com links do portal (comprovantes baixados -> regras das planilhas com link)."""
+    if any(r.tipo_documento == "comprovante_anexado" for r in registros):
+        return _gerar_achados_planilha_refinado(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+    return gerar_achados_datadigitus(registros, dados_financeiros, pasta_dados=pasta_dados, mes_atual=mes_atual)
+
+
 GERAR_ACHADOS_POR_CONDO = {
+    "hub_home_club_tatuape": _gerar_achados_hub,
     # Gardens: comprovantes por OCR pareados por conteúdo + consistência da listagem (conciliacao/condominios/gardens_living_club.py)
     "gardens_living_club": gerar_achados_lirba_e_datadigitus,
     "club_park_butanta": gerar_achados_gcont_portal,

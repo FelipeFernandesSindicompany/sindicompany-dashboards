@@ -1,0 +1,51 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -98451.7,
+    "motivo": "alerta de saldo negativo (TARIFAS CONCESSIONÁRIAS e DESPESAS REEMBOLSÁVEIS): mesma decisão já tomada para setembro/2026 (retirado do relatório)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 89139.69,
+    "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 40.31,
+    "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 620.0,
+    "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 38.42,
+    "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 21000.0,
+    "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 583.75,
+    "motivo": "falso positivo de formato: o arquivo de outubro (PDF) e os meses anteriores (planilha) nomeiam as subcontas em níveis diferentes; a comparação de subcontas entre os dois formatos não é confiável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  }
+]
