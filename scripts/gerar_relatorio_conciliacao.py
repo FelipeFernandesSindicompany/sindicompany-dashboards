@@ -352,7 +352,7 @@ def _nome_arquivo_relatorio(condo: dict, mes: str) -> str:
 
 
 _EMPRESAS_SO_PLANILHA = {"habitacional_xlsx", "lfc_xlsx"}
-_CONDOS_PLANILHA_E_PDF = {"onze_22", "cores", "elo_elo_duo"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
+_CONDOS_PLANILHA_E_PDF = {"onze_22", "cores", "elo_elo_duo", "go_liberdade"}     # recebem planilha (.xlsx) ou "Pasta Digital" em PDF (ver conciliacao/condominios/onze_22.py)
 
 
 def _conferir_identidade_do_arquivo(condo: dict, arquivo: Path) -> None:

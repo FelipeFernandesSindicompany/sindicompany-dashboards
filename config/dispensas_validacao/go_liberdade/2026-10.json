@@ -1,0 +1,23 @@
+[
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 5745.66,
+    "motivo": "mesmo lançamento (Tokio Marine, PC 01/06) já está no item do fornecedor novo; informação incorporada lá",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -148508.83,
+    "motivo": "saldo negativo da CAIXA ORDINARIO e do MELHORAMENTOS: mesma decisão já tomada para setembro/2026 (retirado do relatório)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 10251.84,
+    "motivo": "ponto de atenção de gestor (CAIXA ORDINARIO pagou a mais do que recebeu): mesma decisão já tomada para setembro/2026 (retirado do relatório)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  }
+]

@@ -271,12 +271,18 @@
     },
     "go_liberdade": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Go Liberdade",
+      "aviso_escopo_por_extensao": {".pdf": "O balancete completo (com os comprovantes, as notas fiscais e o demonstrativo de receitas) não foi enviado. Esta validação utilizou o Resumo Financeiro e o Demonstrativo de Despesas disponíveis, e por isso não foi possível conferir comprovantes, notas fiscais, receitas nem rendimentos. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto: ele foi conferido apenas no que o arquivo disponível permite."},
+      "leitor_financeiro": "regras_gerais",
+      "emissao_pdf": "resumo_emissoes_ordinaria",
       "regras": {
         "rendimento": {
           "ignorar_contas": [
             "ORDINARIA",
             "CAIXA ORDINARIO"
           ]
+        },
+        "subcontas": {
+          "comparar_entre_formatos": true
         },
         "gestor": {}
       }

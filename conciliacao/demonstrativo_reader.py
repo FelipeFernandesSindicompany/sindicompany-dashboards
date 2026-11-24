@@ -373,6 +373,13 @@ def _previsto_realizado_resumo_emissoes(caminho: Path, mes: str):
             ls = [l.strip() for l in t.split("\n")]
             for k, l in enumerate(ls):
                 if rx.match(l) and k >= 2 and re.match(r"^-?[\d.]+,\d{2}$", ls[k - 1]) and re.match(r"^-?[\d.]+,\d{2}$", ls[k - 2]):
+                    # mês SEM emissão (Go Liberdade, out/2026): os números antes da linha "EM ATRASO EM <fim>" são só os do "EM ATRASO EM <mês anterior>"
+                    # (nenhuma linha de emissão entre os dois rótulos) — não são previsto x realizado
+                    j = k - 1
+                    while j >= 0 and re.match(r"^-?[\d.]+,\d{2}$", ls[j]):
+                        j -= 1
+                    if j >= 0 and re.match(r"^(?:COTAS|COND[ÔO]MINOS)\s+EM\s+ATRASO\s+EM\s+\d{2}/\d{2}/\d{4}$", ls[j], re.IGNORECASE):
+                        continue
                     return _brl_para_float(ls[k - 2]), _brl_para_float(ls[k - 1])
     return None
 

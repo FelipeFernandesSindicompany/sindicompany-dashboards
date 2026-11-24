@@ -1,0 +1,16 @@
+[
+  {
+    "codigo": "L037",
+    "valor_listagem": 696.36,
+    "resumo": "ANRS ELETRICA - NF 180, retirada de ponto de curto-circuito (R$ 696,36)",
+    "documento": "comprovante de pagamento do lançamento L037 (Itaú, ficha de compensação)",
+    "como": "Conferido visualmente na imagem do comprovante: o Itaú mostra valor do lançamento e valor pago de R$ 696,36 (Seiscentos e Noventa e Seis Reais e Trinta e Seis Centavos) a ANRS Elétrica Ltda, pago em 22/10/2026 — igual ao valor listado. A leitura automática (OCR) havia lido R$ 810,00."
+  },
+  {
+    "codigo": "L044",
+    "valor_listagem": 606.0,
+    "resumo": "BRUNO M ROCHA - NF 82, aquisição de materiais diversos (R$ 606,00)",
+    "documento": "comprovante de pagamento do lançamento L044 (Itaú, TED)",
+    "como": "Conferido visualmente na imagem do comprovante: o Itaú mostra valor do lançamento e valor pago de R$ 606,00 (Seiscentos e Seis Reais) a Bruno Moliani da Rocha, TED de 30/10/2026 — igual ao valor listado. A leitura automática (OCR) havia lido R$ 506,00."
+  }
+]
