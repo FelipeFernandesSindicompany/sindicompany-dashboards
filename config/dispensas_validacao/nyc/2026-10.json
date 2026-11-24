@@ -1,0 +1,44 @@
+[
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 767.73,
+    "motivo": "retirado do relatório por decisão do responsável (24/11/2026): subconta nova neste mês, apenas classificação contábil",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 95.97,
+    "motivo": "retirado do relatório por decisão do responsável (24/11/2026): subconta nova neste mês, apenas classificação contábil",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 856.2,
+    "motivo": "retirado do relatório por decisão do responsável (24/11/2026): subconta nova neste mês, apenas classificação contábil",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 227.0,
+    "motivo": "retirado do relatório por decisão do responsável (24/11/2026): subconta nova neste mês, apenas classificação contábil",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 154.85,
+    "motivo": "retirado do relatório por decisão do responsável (24/11/2026): subconta nova neste mês, apenas classificação contábil",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 22.8,
+    "motivo": "retirado do relatório por decisão do responsável (24/11/2026): subconta nova neste mês, apenas classificação contábil",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-24"
+  }
+]
