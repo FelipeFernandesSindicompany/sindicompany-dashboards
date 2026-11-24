@@ -105,7 +105,7 @@ def _lancamentos_despesas_liquidadas(caminho: Path) -> list[RegistroComprovante]
     return saida
 
 
-def _registros_demonstrativo_analitico(caminho: Path, config: dict) -> tuple[list, list]:
+def _registros_demonstrativo_analitico(caminho: Path, config: dict, extrator=None) -> tuple[list, list]:
     """Arquivo reduzido da HSA de set/2026 (17 páginas: só os "Demonstrativo Analítico" de cada conta + Resumo Financeiro, sem as capas de comprovante
     nem a listagem "Despesas liquidadas"): cada lançamento do Demonstrativo vira uma `despesa_listada` (fornecedor, data de liquidação, valor, documento)
     e as linhas que trazem o link público do portal da HSA (Superlógica: ".../areadocondomino/publico/arquivos?...idParcela=...") para os documentos do
@@ -115,7 +115,7 @@ def _registros_demonstrativo_analitico(caminho: Path, config: dict) -> tuple[lis
     from conciliacao.condominios.club_park_butanta import _margem
     from conciliacao.regras_gerais.extratores.i_gloo_alphaville import Extrator
 
-    dados = Extrator(config).extrair(caminho, "")
+    dados = (extrator or Extrator)(config).extrair(caminho, "")
     registros: list[RegistroComprovante] = []
     linhas: list = []
     with fitz.open(str(caminho)) as doc:

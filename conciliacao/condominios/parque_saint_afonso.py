@@ -21,8 +21,34 @@ Meses antigos (jun-ago/2025, out-dez/2025) vêm em outro formato (PDF escaneado
 sem texto): nenhuma página "Comprovantes de despesas" é achada e o conciliador
 devolve [] (mesmo comportamento anterior, sem inventar leitura).
 """
+import re
+
 from conciliacao.condominios._gcont_comum import ConciliadorGcontNativo
 
 
 class Conciliador(ConciliadorGcontNativo):
-    pass
+    def extrair_comprovantes(self, caminho) -> list:
+        registros = super().extrair_comprovantes(caminho)
+        if any(r.tipo_documento in ("despesa_com_comprovante", "despesa_listada") for r in registros):
+            return registros
+        # out/2026: prestação RESUMIDA (4 páginas, só o W020A "Demonstrativo de Receitas e Despesas Analítico"): sem as páginas de comprovante, mas cada
+        # lançamento traz o link público do portal da GCONT (Superlógica, "...areadocondomino/publico/arquivos?...idParcela=") com os documentos do
+        # pagamento — mesmo caminho da variante reduzida do I-Gloo (cada lançamento vira `despesa_listada` e o comprovante é baixado do portal)
+        try:
+            from pathlib import Path
+
+            from conciliacao.condominios.club_park_butanta import _anexar_comprovantes_do_portal
+            from conciliacao.condominios.i_gloo_alphaville import _registros_demonstrativo_analitico
+            from conciliacao.regras_gerais.extratores.parque_saint_afonso import Extrator
+
+            regs, linhas = _registros_demonstrativo_analitico(Path(caminho), self.config, Extrator)
+            registros = registros + regs
+            if any(l["uri"] for l in linhas):
+                _anexar_comprovantes_do_portal(Path(caminho), None, registros, linhas=linhas)
+                if any(r.tipo_documento == "comprovante_anexado" for r in registros):
+                    # tarifa debitada pelo banco / tarifa da garantidora não têm documento no portal
+                    registros[:] = [r for r in registros if not (r.tipo_documento == "despesa_listada" and re.match(
+                        r"(?i)\s*(banco |despesas banc|tar[ -]|tarifa)", (r.fornecedor or "")))]
+        except Exception as exc:
+            print(f"[AVISO] não foi possível ler o Demonstrativo Analítico/links do portal: {exc}")
+        return registros

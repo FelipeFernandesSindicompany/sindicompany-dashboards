@@ -363,7 +363,7 @@ def _anexar_comprovantes_do_portal(caminho: Path, dados, registros: list, linhas
             except Exception:
                 t = ""
             textos.append(f"[{nome}]\n{t}")
-            eh_prova = bool(re.search(r"comprovante\s+de\s+(pagamento|transfer)", t, re.IGNORECASE)) or bool(
+            eh_prova = bool(re.search(r"comprovante\s+de\s+(pagamento|transfer|opera[çc][ãa]o)", t, re.IGNORECASE)) or bool(
                 re.fullmatch(r"[\d._,]+(_DEBITO_AUTOMATICO)?\.pdf", nome, re.IGNORECASE))
             if eh_prova and prova is None:
                 prova, prova_texto, prova_dados = arq, t, _extrair_dados_ocr(t)

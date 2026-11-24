@@ -540,6 +540,9 @@
     },
     "parque_saint_afonso": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Saint Afonso",
+      "aviso_escopo_por_mes": {
+        "2026-10": "O arquivo de outubro/2026 é a prestação de contas resumida (Demonstrativo de Receitas e Despesas Analítico, 4 páginas, sem as páginas de comprovante). Os comprovantes de pagamento e as notas fiscais foram conferidos pelos links do portal da administradora que acompanham cada lançamento. O arquivo não traz o Resumo Financeiro por conta, o previsto x arrecadado, a inadimplência nem os extratos bancários; por isso o saldo é apresentado como uma conta única e essas conferências (saldo e rendimento por conta bancária, arrecadação e inadimplência) não foram feitas. A ausência de divergências neste relatório não significa que o balancete esteja integralmente correto."
+      },
       "regras": {
         "gestor": {}
       }

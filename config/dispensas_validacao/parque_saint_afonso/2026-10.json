@@ -1,0 +1,61 @@
+[
+  {
+    "tipo": "nota_fiscal_ausente",
+    "valor_total": 194.17,
+    "motivo": "o anexo do lançamento traz a Fatura nº 803 da Genske Advogados (reembolso de despesa: recibo de Uber do comparecimento em assembleia, R$ 194,17) e o boleto do mesmo valor — o documento que a listagem cita (NF-803) é essa fatura",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "duplicidade",
+    "valor_total": 470.45,
+    "motivo": "os 3 lançamentos de R$ 470,45 da Comgás são débitos automáticos distintos: cada um tem o seu comprovante, com instalações e controles diferentes (37885430, 37885340 e 37885383)",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "lancamento_em_outra_subconta",
+    "valor_total": 5092.26,
+    "motivo": "falso positivo: em setembro/2026 a Enel também estava lançada em DESPESAS COM CONSUMO > Energia Elétrica; a comparação havia tomado só as linhas da Energia Solar (OBRAS E MELHORIAS)",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  },
+  {
+    "verificacao": "duplicidade_no_mes",
+    "valor_total": 342.9,
+    "motivo": "mesma ocorrência do item de duplicidade da NF-6174 (R$ 171,45), mantido com a impressão das duas linhas",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  },
+  {
+    "verificacao": "duplicidade_no_mes",
+    "valor_total": 1223.64,
+    "motivo": "mesma ocorrência do item de duplicidade da NF-14501 (R$ 611,82), mantido com a impressão das duas linhas",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "duplicidade",
+    "valor_total": 171.45,
+    "reescrever": {
+      "titulo": "NF-6174 da Intelligenz Brasil paga duas vezes — Conserto Submersível (R$ 171,45)",
+      "paragrafo": "A NF-6174 (Conserto Submersível, R$ 171,45) da Intelligenz Brasil Comércio e Reparação está lançada duas vezes no mês: em 06/10/2026 e em 27/10/2026. Cada lançamento tem o seu comprovante de pagamento (são dois pagamentos) e o mesmo documento anexado (NF/boleto da NF-6174).",
+      "o_que_verificar": "A NF-6174 (R$ 171,45) foi paga duas vezes (06/10/2026 e 27/10/2026)? Em caso de pagamento em duplicidade, haverá estorno?"
+    },
+    "motivo": "texto ajustado: os anexos já estão no portal; a pergunta é só sobre o pagamento repetido",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  },
+  {
+    "tipo": "duplicidade",
+    "valor_total": 611.82,
+    "reescrever": {
+      "titulo": "NF-14501 da Intelligenz Brasil paga duas vezes — conserto do equipamento Submersível (R$ 611,82)",
+      "paragrafo": "A NF-14501 (conserto do equipamento Submersível, R$ 611,82) da Intelligenz Brasil Comércio e Reparação está lançada duas vezes no mês: em 06/10/2026 e em 27/10/2026. Cada lançamento tem o seu comprovante de pagamento (são dois pagamentos) e a mesma nota fiscal anexada.",
+      "o_que_verificar": "A NF-14501 (R$ 611,82) foi paga duas vezes (06/10/2026 e 27/10/2026)? Em caso de pagamento em duplicidade, haverá estorno?"
+    },
+    "motivo": "texto ajustado: os anexos já estão no portal; a pergunta é só sobre o pagamento repetido",
+    "decidido_por": "conferência dos anexos do portal",
+    "data": "2026-11-24"
+  }
+]

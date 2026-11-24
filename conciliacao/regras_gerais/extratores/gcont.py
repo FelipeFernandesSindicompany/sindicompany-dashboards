@@ -67,6 +67,10 @@ class Extrator:
                                                 "legíveis): não há texto confiável para ler receitas e lançamentos")
             self._periodo_confere(paginas, mes, dados)
             contas = self._ler_resumo(paginas)
+            resumida = False
+            if len(contas) < 1:
+                contas = self._conta_unica_do_analitico(paginas)
+                resumida = bool(contas)
             if len(contas) < 1:
                 return self._sem_leitura(dados, "o texto do arquivo não é legível (PDF digitalizado: o Resumo Financeiro "
                                                 "não pôde ser lido)")
@@ -78,7 +82,10 @@ class Extrator:
                 return self._sem_leitura(dados, "o texto do arquivo não é legível (PDF digitalizado: o Demonstrativo "
                                                 "Analítico não pôde ser lido)")
             self._montar(dados, grupos, razao, por_nome)
-            self._conferir(dados, por_nome)
+            if resumida:
+                self._conferir_resumida(dados, por_nome)
+            else:
+                self._conferir(dados, por_nome)
             return dados
         finally:
             doc.close()
@@ -105,7 +112,12 @@ class Extrator:
         nomes = re.search(r"HSA CONDOM[ÍI]NIOS|ADMINISTRADORA GCONT|G\s?C\s?O?\s?N\s?T\b|gcont\.net\.br", inicio, re.I)
         if not nomes:
             raise ValueError("formato não reconhecido como GCONT/HSA")
-        return bool(re.search(r"^W0\d\d[A-Z]\s", inicio, re.M) and re.search(r"Resumo Financeiro", inicio))
+        if re.search(r"^W0\d\d[A-Z]\s", inicio, re.M) and re.search(r"Resumo Financeiro", inicio):
+            return True
+        # prestação RESUMIDA (out/2026 do Parque Saint Afonso: 4 páginas, só o W020A): sem Resumo Financeiro, mas com o Demonstrativo Analítico
+        # de texto legível e os saldos inicial/final impressos
+        return bool(re.search(r"^W020A\s", inicio, re.M) and re.search(r"^Demonstrativo de Receitas e Despesas Anal[ií]tico", inicio, re.M)
+                    and re.search(r"^Saldo em \d{2}/\d{2}/\d{4}\s+-?[\d.]+,\d{2}", inicio, re.M) and re.search(r"^Total de DESPESAS", inicio, re.M))
 
     def _periodo_confere(self, paginas: list, mes: str, dados: DadosRegras) -> None:
         for p in paginas:
@@ -144,6 +156,33 @@ class Extrator:
             if tabelas:
                 return tabelas.get("Grupos") or tabelas.get("Conta") or []
         return []
+
+    def _conta_unica_do_analitico(self, paginas: list) -> list:
+        """Prestação resumida (só o W020A, sem Resumo Financeiro nem Movimentação por conta): uma conta única "TOTAL" montada com o saldo
+        inicial, o total de receitas, o total de despesas e o saldo final impressos no próprio demonstrativo."""
+        for nome, linhas in self._blocos_analiticos(paginas):
+            _, _, tot = self._ler_bloco(linhas)
+            if None not in (tot.get("saldo_anterior"), tot.get("saldo_atual"), tot.get("receitas"), tot.get("despesas")) and len(tot) == 4:
+                return [ContaMes(nome="TOTAL", saldo_anterior=tot["saldo_anterior"], creditos=tot["receitas"], debitos=tot["despesas"],
+                                 saldo_atual=tot["saldo_atual"], pagina=1)]
+        return []
+
+    def _conferir_resumida(self, dados: DadosRegras, contas: dict) -> None:
+        """Na prestação resumida a única conferência possível é a aritmética do próprio demonstrativo: o que foi lido tem que fechar com os totais."""
+        c = next(iter(contas.values()))
+        lidos = round(sum(l.valor for l in dados.lancamentos), 2)
+        if abs(lidos - c.debitos) > _CENTAVO:
+            self._sem_leitura(dados, f"os lançamentos lidos somam {_fmt(lidos)}, diferente do 'Total de DESPESAS' impresso ({_fmt(c.debitos)})")
+            dados.receitas, dados.lancamentos = [], []
+            return
+        pos = round(sum(r.valor for r in dados.receitas if r.valor >= 0), 2)
+        neg = round(sum(-r.valor for r in dados.receitas if r.valor < 0), 2)
+        if abs(pos - neg - c.creditos) > _CENTAVO:
+            dados.avisos.append(f"as receitas lidas somam {_fmt(pos - neg)}, diferente do 'Total de RECEITAS' impresso ({_fmt(c.creditos)})")
+            dados.cobertura["receitas"] = dados.cobertura["rendimentos"] = False
+            dados.motivos_nao_cobertos["receitas"] = dados.motivos_nao_cobertos["rendimentos"] = "a soma das receitas lidas não fecha com o total impresso"
+        if abs(c.saldo_anterior + c.creditos - c.debitos - c.saldo_atual) > _CENTAVO:
+            dados.avisos.append("saldo inicial + receitas - despesas não fecha com o saldo final impresso")
 
     # -- blocos analíticos --------------------------------------------------------
     def _blocos_analiticos(self, paginas: list) -> list:

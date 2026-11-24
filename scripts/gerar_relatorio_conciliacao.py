@@ -151,7 +151,7 @@ GERAR_ACHADOS_POR_CONDO = {
     "club_park_butanta": gerar_achados_gcont_portal,
     # Mesmo formato GCONT/HSA do Club Park (comprovante em página de texto nativo,
     # "Parcela <código>") — ver conciliacao/condominios/{parque_saint_afonso,i_gloo_alphaville}.py.
-    "parque_saint_afonso": gerar_achados_gcont,
+    "parque_saint_afonso": gerar_achados_gcont_portal,
     # set/2026: Demonstrativo Analítico + comprovantes baixados dos links do portal da HSA (sem anexos cai no gcont comum)
     "i_gloo_alphaville": gerar_achados_gcont_portal,
     # Top Nine: capas GCONT + anexos lidos por OCR no formato Lirba (conciliacao/condominios/top_nine.py) -> matching Lirba padrão
@@ -1216,7 +1216,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
 
         # Itens que listam VÁRIOS lançamentos (concessionária / holerite não anexado) com print curado (config/ajustes_evidencias): o print é um só,
         # com todos os lançamentos marcados — sem o comprovante de UM deles na frente
-        if primeiro_registro is not None and achado.tipo in ("conta_concessionaria_nao_anexada", "holerite_nao_anexado") and any(
+        if primeiro_registro is not None and achado.tipo in ("conta_concessionaria_nao_anexada", "holerite_nao_anexado", "duplicidade") and any(
                 achado.tipo == _aj.get("tipo") and abs((achado.valor_encontrado or 0.0) - _aj.get("valor", 0.0)) <= 0.01 for _aj in _ajustes_evid):
             primeiro_registro = None
         evidencia_vetorial = None
@@ -1445,6 +1445,7 @@ def etapa_render(condo: dict, mes: str) -> Path:
         analise=analise,
         categorias_novas=categorias_novas_lista,
         aviso_escopo=(condo.get("aviso_escopo")
+                      or (condo.get("aviso_escopo_por_mes") or {}).get(mes)
                       # PDF escaneado (sem camada de texto): números lidos por OCR e conferidos pelas somas do próprio balancete
                       or (condo.get("aviso_escopo_pdf_escaneado") if (_pdf_sem_texto(pdf_origem) or (version_dir / "ocr_pdf_sem_texto.flag").exists()) else None)
                       # aviso por extensão = "comprovantes não enviados": só vale quando NENHUM comprovante veio no arquivo (o PDF completo do Elo
