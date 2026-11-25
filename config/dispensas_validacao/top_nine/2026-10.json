@@ -1,0 +1,30 @@
+[
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 78.13,
+    "motivo": "rendimento de R$ 78,13 creditado só na CONTA ORDINÁRIA retirado do relatório a pedido do responsável (25/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 204.99,
+    "motivo": "subconta nova 2,1,26 Seguro de Vida (R$ 204,99) retirada do relatório a pedido do responsável (25/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 170.05,
+    "motivo": "subconta nova 2,1,30 Uniformes (R$ 170,05) retirada do relatório a pedido do responsável (25/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 178.0,
+    "motivo": "subconta nova 2,3,88 Despesas reembolsáveis (R$ 178,00) retirada do relatório a pedido do responsável (25/11/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  }
+]
