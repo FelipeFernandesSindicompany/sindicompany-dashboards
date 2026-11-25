@@ -21,6 +21,10 @@ Dois formatos do mesmo balancete, os dois da Angélica:
     Também grava ao lado do cache do OCR um PDF "pesquisável" (camada de texto invisível sobre as páginas lidas) que o render usa para
     localizar as linhas dos prints de evidência (`render._pdf_para_busca`): o original continua sendo a imagem mostrada.
 
+  * PDF COM TEXTO no layout matricial novo (out/2026, 9 páginas: 1.1 Relatório de Pendências, 2.1 Demonstrativo de Despesas e 5.4 Resumo Financeiro,
+    sem o 4.1 Demonstrativo Financeiro e sem comprovantes): lido por `_extrair_texto_resumo` com os MESMOS leitores do escaneado (as palavras vêm
+    do texto do PDF, sem OCR); as receitas/contas vêm do 5.4 Resumo Financeiro e a inadimplência do total do Relatório de Pendências.
+
 Particularidades:
   * as contas têm nome fixo por código (001 ORDINÁRIA ... 054 I.P.T.U.), os mesmos do formato com texto — a continuidade de saldos e as
     regras comparam os meses pelo nome; o OCR lê "13o." como "130.";
@@ -58,15 +62,78 @@ class Extrator(_dd.Extrator):
     def extrair(self, caminho: Path, mes: str) -> DadosRegras:
         import fitz
 
+        self._texto_nativo = False
         doc = fitz.open(str(caminho))
         try:
             com_texto = sum(len(doc[i].get_text().strip()) for i in range(min(len(doc), 12))) > 200
             n = len(doc)
+            tn = _norm(" ".join(doc[i].get_text() for i in range(min(n, 30)))) if com_texto else ""
         finally:
             doc.close()
         if com_texto:
+            if self._layout_resumo(tn):
+                return self._extrair_texto_resumo(Path(caminho), mes, n)
             return super().extrair(caminho, mes)
         return self._extrair_ocr(Path(caminho), mes, n)
+
+    @staticmethod
+    def _layout_resumo(tn: str) -> bool:
+        """Layout matricial novo com texto: tem "5.4 RESUMO FINANCEIRO" e "2.1 DEMONSTRATIVO DE DESPESAS", mas não o "RESUMO FINANCEIRO CONTABIL" nem o
+        "DEMONSTRATIVO FINANCEIRO" (Posição Financeira) dos outros formatos."""
+        return ("5 4 RESUMO FINANCEIRO" in tn and "2 1 DEMONSTRATIVO DE DESPESAS" in tn
+                and "RESUMO FINANCEIRO CONTABIL" not in tn and "DEMONSTRATIVO FINANCEIRO" not in tn)
+
+    def eh_layout_resumo(self, caminho: Path) -> bool:
+        import fitz
+
+        doc = fitz.open(str(caminho))
+        try:
+            tn = _norm(" ".join(doc[i].get_text() for i in range(min(len(doc), 30))))
+        finally:
+            doc.close()
+        return self._layout_resumo(tn)
+
+    # ── PDF com texto no layout matricial (sem 4.1): mesmos leitores do escaneado, palavras do próprio PDF ───────────
+    _RUIDO = re.compile(r"^(ADMINISTRADORA ANGELICA|0175 |SOFTWARE DATADIGITUS|\d{2} \d{2} \d{2} \d{2} \d{2} \d{2} SOFTWARE)")
+
+    def _extrair_texto_resumo(self, caminho: Path, mes: str, n_paginas: int) -> DadosRegras:
+        import fitz
+
+        dados = DadosRegras(mes=mes, arquivo=caminho.name)
+        paginas = []
+        doc = fitz.open(str(caminho))
+        try:
+            for i in range(n_paginas):
+                pg = doc[i]
+                ws = []
+                for x0, y0, x1, y1, t, *_ in pg.get_text("words"):
+                    t = t.strip()
+                    if not t or re.fullmatch(r"\|+|\+|[+\-—–¯_=]{3,}", t):
+                        continue
+                    ws.append({"t": t, "x0": round(x0, 1), "top": round(y0, 1), "x1": round(x1, 1), "bottom": round(y1, 1)})
+                ls = [l for l in _linhas(ws) if not self._RUIDO.match(_norm(l["texto"]))]
+                paginas.append((i + 1, float(pg.rect.width), ls))
+        finally:
+            doc.close()
+        self._texto_nativo = True
+        dados.variante = None
+        achou_pos = self._ler_posicao(dados, paginas, resumo=True)
+        totais = {}
+        achou_desp = self._ler_despesas(dados, paginas, caminho, totais)
+        self._conferir(dados, {}, totais, achou_pos, achou_desp, caminho)
+        self.totais_despesas = dict(totais)          # {nome_da_conta: TOTAL DA CONTA, 'geral': TOTAL GERAL} — usado pelo conciliador
+        # inadimplência: total do Relatório de Pendências (em set/2026 fechava com a soma dos condôminos em atraso das contas)
+        pend = next((_vl(l, W, 0.55)[0] for pag, W, ls in paginas for l in ls if _norm(l["texto"]).startswith("TOTAL DAS PENDENCIAS")), None)
+        if pend is not None:
+            dados.indicadores = {"prev": 0.0, "real": 0.0, "inad": round(pend, 2), "inadProc": 0.0}
+        dados.cobertura = {"receitas": achou_pos, "rendimentos": achou_pos and bool(dados.contas), "lancamentos": achou_desp and bool(dados.lancamentos)}
+        if not achou_pos:
+            dados.motivos_nao_cobertos["receitas"] = dados.motivos_nao_cobertos["rendimentos"] = "não li o 5.4 Resumo Financeiro no PDF"
+        if not dados.cobertura["lancamentos"]:
+            dados.motivos_nao_cobertos["lancamentos"] = "não li o Demonstrativo de Despesas no PDF"
+        dados.avisos.insert(0, "PDF resumido (Relatório de Pendências, Demonstrativo de Despesas e Resumo Financeiro): o Demonstrativo de Despesas deste layout "
+                               "não traz data dos lançamentos")
+        return dados
 
     # ── leitura do balancete escaneado ───────────────────────────────────────────────────────────────────────
     def _extrair_ocr(self, caminho: Path, mes: str, n_paginas: int) -> DadosRegras:
@@ -151,7 +218,7 @@ class Extrator(_dd.Extrator):
         return res
 
     # 4.1 Demonstrativo Financeiro: Posição Financeira por conta -> ContaMes + receitas
-    def _ler_posicao(self, dados: DadosRegras, paginas) -> bool:
+    def _ler_posicao(self, dados: DadosRegras, paginas, resumo: bool = False) -> bool:
         em_sec = False
         conta = None
         em_pos = False
@@ -167,6 +234,9 @@ class Extrator(_dd.Extrator):
                 if re.match(r"^\d\.\d\s+DEMONSTRATIVO FINANCEIRO", tn) or tn.startswith("4 1 DEMONSTRATIVO FINANCEIRO"):
                     em_sec = True
                     continue
+                if resumo and re.match(r"^5 4 RESUMO FINANCEIRO", tn):       # layout sem o 4.1: as contas vêm do 5.4 Resumo Financeiro
+                    em_sec = True
+                    continue
                 if tn.startswith("RESUMO DAS CONTAS"):
                     em_sec = False
                 if not em_sec:
@@ -179,7 +249,9 @@ class Extrator(_dd.Extrator):
                 m = _RE_CONTA_HDR.match(t)
                 if m and _vl(l, W, 0.55)[0] is None:
                     cod, conta = m.group(1), self._nome_conta(m.group(1), m.group(2))
-                    em_pos, pend = False, ""
+                    em_pos, pend = resumo, ""
+                    if resumo and not any(c.nome == conta for c in dados.contas):
+                        dados.contas.append(ContaMes(nome=conta, pagina=pag))
                     continue
                 if tn.startswith("POSICAO FINANCEIRA"):
                     em_pos, pend = True, ""
@@ -309,6 +381,12 @@ class Extrator(_dd.Extrator):
                     continue
                 if conta is None:
                     continue
+                if v is not None and not pend and getattr(self, "_texto_nativo", False) and not any(w["x0"] < vx - 0.5 for w in l["w"]):
+                    # layout com texto: o subtotal do grupo é só o valor, sem "%"
+                    if grupo is not None:
+                        grupos.setdefault((conta, grupo), {"itens": [], "pagina": pag})["total"] = v
+                    grupo, espera_grupo, pend = None, True, []
+                    continue
                 if v is None:
                     if espera_grupo and not pend and tn.upper() == tn.upper() and not re.search(r"\d", tn):
                         grupo, espera_grupo = t, False
@@ -328,12 +406,13 @@ class Extrator(_dd.Extrator):
                 grupos[(conta, grupo)]["itens"].append({"desc": desc, "valor": v, "pag": pag, "bbox": bbox, "vbb": bb, "linha": l})
                 pend = []
         self._grupos = grupos
-        self._reparar(caminho, grupos)
+        if not getattr(self, "_texto_nativo", False):
+            self._reparar(caminho, grupos)
         for (cta, grp), g in grupos.items():
             for it in g["itens"]:
                 dados.lancamentos.append(LancamentoDespesa(
                     descricao=it["desc"], valor=it["valor"], categoria=grp, conta=cta, pagina=it["pag"],
-                    local=f"OCR, página {it['pag']}", bbox=tuple(round(x, 1) for x in it["bbox"])))
+                    local=(f"página {it['pag']}" if getattr(self, "_texto_nativo", False) else f"OCR, página {it['pag']}"), bbox=tuple(round(x, 1) for x in it["bbox"])))
         return achou
 
     def _reparar(self, caminho: Path, grupos: dict):

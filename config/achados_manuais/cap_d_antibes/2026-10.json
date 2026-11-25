@@ -1,0 +1,117 @@
+[
+  {
+    "id": "MAN-0001",
+    "valor": 5199.62,
+    "linha": "TARIFAS PÚBLICAS",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25",
+    "titulo": "Sabesp com o mesmo valor (R$ 5.199,62) de maio a outubro, com consumos diferentes",
+    "paragrafo": "Os lançamentos da Sabesp de maio a outubro/2026 têm exatamente o mesmo valor, R$ 5.199,62, mas as leituras informadas variam: maio 551 m³, junho 608 m³, julho 556 m³, agosto 527 m³, setembro 591 m³ e outubro 574 m³. Em abril o valor foi R$ 5.548,00 (613 m³).",
+    "o_que_verificar": "1) Por que o valor da Sabesp não muda de maio a outubro, mesmo com consumos diferentes? É tarifa/contrato de valor fixo, estimativa ou o valor lançado não é o da conta de cada mês?\n2) Podem enviar as contas (faturas) da Sabesp desses meses para conferência?",
+    "evidencias": [
+      {
+        "arquivo": "Prestação de Contas 08.2026.pdf",
+        "pagina": 2,
+        "buscar": "SABESP\\s+CONSUMO",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Agosto/2026 — Sabesp, 527 m³: R$ 5.199,62"
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 15,
+        "buscar": "SABESP\\s+CONSUMO",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Setembro/2026 — Sabesp, 591 m³: R$ 5.199,62"
+      },
+      {
+        "pagina": 6,
+        "buscar": "SABESP\\s+CONSUMO",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Outubro/2026 — Sabesp, 574 m³: R$ 5.199,62"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "valor": 1470.0,
+    "linha": "ENCARGOS TRABALHISTAS / MATERIAIS DE CONSUMO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25",
+    "titulo": "Fornecedor e valor diferentes dos meses anteriores — Proteção Saúde (BAPS) e material de limpeza",
+    "paragrafo": "• Benefício Proteção Saúde (BAPS): de abril a setembro foi lançado como \"Vila Velha Saúde\", R$ 240,28 por mês, com número de nota; em outubro o lançamento é \"VB Serviço Ltda\", R$ 270,00 (R$ 29,72 a mais), sem número de nota.\n• Material de limpeza: nas compras de abril (R$ 1.042,61), junho (R$ 1.611,31) e agosto (R$ 1.395,44) o fornecedor era a Sarit Ltda.; em outubro o lançamento é de Cristovam Pinho (NF-492), R$ 1.200,00, fornecedor sem lançamento anterior.",
+    "o_que_verificar": "1) O BAPS mudou de prestador (de Vila Velha Saúde para VB Serviço Ltda)? Por que o valor passou de R$ 240,28 para R$ 270,00 e o lançamento não traz o número da nota?\n2) Por que o material de limpeza foi comprado de um fornecedor novo (Cristovam Pinho), no valor exato de R$ 1.200,00? Houve cotação ou aprovação?",
+    "evidencias": [
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 15,
+        "buscar": "BENEF.CIO\\s+PROTE",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Setembro/2026 — BAPS, Vila Velha Saúde (R$ 240,28)"
+      },
+      {
+        "pagina": 6,
+        "buscar": "BENEF.CIO\\s+PROTE",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Outubro/2026 — BAPS, VB Serviço Ltda (R$ 270,00)"
+      },
+      {
+        "arquivo": "Prestação de Contas 08.2026.pdf",
+        "pagina": 3,
+        "buscar": "SARIT",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Agosto/2026 — material de limpeza, Sarit Ltda. (R$ 1.395,44), último lançamento do fornecedor"
+      },
+      {
+        "pagina": 6,
+        "buscar": "CRISTOVAM",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Outubro/2026 — material de limpeza, Cristovam Pinho, NF-492 (R$ 1.200,00)"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0003",
+    "valor": 1342.4,
+    "linha": "SERVIÇOS PRESTADOS",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25",
+    "titulo": "Gerenciamento da AI Serviços: parcela 02/15 da modernização dos elevadores não aparece e há um lançamento de R$ 1.342,40 como \"trincas\"",
+    "paragrafo": "Em setembro/2026 a AI Serviços teve dois lançamentos de gerenciamento: tratamento de trincas do 16º andar (NF-502, R$ 1.315,83, Conta Obras) e modernização dos elevadores \"PARC.01/15\" (NF-513, R$ 1.342,40, Conta Reforma Elevador). Em outubro há um só: \"Gerenciamento de obras — tratamento de trincas 16º andar\" (NF-557), R$ 1.342,40, na Conta Obras — o mesmo valor da parcela de gerenciamento dos elevadores — e nenhuma parcela 02/15 na Conta Reforma Elevador (só a da Otis, parcela 03/15, R$ 14.078,69).",
+    "o_que_verificar": "1) O lançamento de R$ 1.342,40 (NF-557) é o gerenciamento do tratamento de trincas ou a parcela 02/15 do gerenciamento da modernização dos elevadores?\n2) Se é a dos elevadores, por que foi lançado na Conta Obras e com o histórico de trincas? Se é a das trincas, por que o valor mudou de R$ 1.315,83 para R$ 1.342,40 e a parcela 02/15 dos elevadores não foi paga?",
+    "evidencias": [
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 16,
+        "buscar": "NF-502",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Setembro/2026 — gerenciamento das trincas do 16º andar, NF-502 (R$ 1.315,83)"
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 16,
+        "buscar": "NF-513",
+        "linhas_contexto": 1,
+        "linha_inteira": true,
+        "legenda": "Setembro/2026 — modernização dos elevadores, PARC.01/15, AI Serviços NF-513 (R$ 1.342,40)"
+      },
+      {
+        "pagina": 7,
+        "buscar": "TRINCAS\\s+16",
+        "linhas_contexto": 2,
+        "linha_inteira": true,
+        "legenda": "Outubro/2026 — gerenciamento de obras, trincas do 16º andar, NF-557 (R$ 1.342,40)"
+      }
+    ]
+  }
+]

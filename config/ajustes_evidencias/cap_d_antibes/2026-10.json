@@ -1,0 +1,63 @@
+[
+  {
+    "tipo": "observacao_gestor",
+    "valor": 14880.98,
+    "evidencias": [
+      {
+        "pagina": 7,
+        "bbox": [
+          30,
+          333.0,
+          565,
+          381.8
+        ],
+        "destaques": [
+          [
+            36,
+            334,
+            563,
+            381
+          ]
+        ],
+        "legenda": "Outubro/2026 — Conta Obras: marcenaria do armário no apto. 161, parcelas 1/2 (R$ 7.570,98) e 2/2 (R$ 3.560,00), NF-5"
+      },
+      {
+        "pagina": 6,
+        "bbox": [
+          30,
+          729.4,
+          565,
+          741.7
+        ],
+        "destaques": [
+          [
+            36,
+            729.8,
+            563,
+            741.4
+          ]
+        ],
+        "legenda": "Outubro/2026 — Conta Ordinária: alvenaria e pintura no apto. 161, NF-226 (R$ 3.750,00)"
+      },
+      {
+        "arquivo": "Prestação de Contas 09.2026.pdf",
+        "pagina": 15,
+        "bbox": [
+          40,
+          677,
+          560,
+          701
+        ],
+        "destaques": [
+          [
+            45,
+            679,
+            555,
+            699
+          ]
+        ],
+        "legenda": "Setembro/2026 — sinistro ocorrido na unidade 161, montagem de móveis (R$ 1.000,00)"
+      }
+    ]
+  }
+]

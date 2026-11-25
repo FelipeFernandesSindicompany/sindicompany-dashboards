@@ -1,0 +1,34 @@
+[
+  {
+    "tipo": "parcelas_mesmo_mes",
+    "valor_total": 11130.98,
+    "motivo": "as parcelas da marcenaria (unidade 161) passaram para o item único dos serviços na unidade 161",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 14880.98,
+    "reescrever": {
+      "titulo": "Serviços na unidade 161 (R$ 14.880,98): marcenaria com duas parcelas pagas no mesmo mês e alvenaria/pintura",
+      "paragrafo": "Em outubro/2026 há três lançamentos de serviços na unidade 161, no total de R$ 14.880,98:\n• Marcenaria — fabricação de armário no apto. 161 (Rafael V. Matos, NF-5, Conta Obras): parcela 1/2 de R$ 7.570,98 e parcela 2/2 de R$ 3.560,00, as duas pagas no mesmo mês e com valores diferentes (R$ 11.130,98).\n• Alvenaria e pintura no apto. 161 (Tiago H. da Silva, NF-226, Conta Ordinária): R$ 3.750,00, fornecedor sem lançamento nos 6 meses anteriores.\nEm setembro/2026 já havia um lançamento \"Sinistro ocorrido unid. 161 — montagem de móveis\" (Rafael V. Matos, NF-4, R$ 1.000,00): somando setembro e outubro, os serviços na unidade 161 chegam a R$ 15.880,98. Observação baseada apenas nos arquivos do próprio condomínio; não é, por si só, prova de irregularidade.",
+      "o_que_verificar": "1) Esses serviços decorrem do sinistro ocorrido na unidade 161 (lançamento de setembro)? Se sim, houve ressarcimento pelo seguro ou pelo proprietário e onde será lançado o crédito?\n2) Como foram contratados (cotações, aprovação do síndico/conselho) e por que a marcenaria foi paga pela Conta Obras e a alvenaria/pintura pela Conta Ordinária?\n3) Por que as duas parcelas da marcenaria (R$ 7.570,98 e R$ 3.560,00, diferentes entre si) foram pagas no mesmo mês, ambas com a NF-5? Qual o valor total contratado?\n4) Onde estão as notas fiscais (NF-5 e NF-226) e os comprovantes de pagamento?",
+      "valor_exibido": 14880.98
+    },
+    "motivo": "item único dos serviços na unidade 161 (parcelas da marcenaria + alvenaria/pintura + sinistro de setembro)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -13578.14,
+    "reescrever": {
+      "titulo": "Conta Reforma Elevador com saldo negativo (R$ -13.578,14) e sem crédito no mês",
+      "paragrafo": "A CONTA REFORMA ELEVADOR fechou outubro com saldo negativo de R$ 13.578,14 (saldo anterior R$ 500,55): em outubro pagou a parcela 03/15 da modernização dos elevadores (Otis, R$ 14.078,69) e não teve nenhum crédito no mês. Em setembro a conta havia sido recomposta com créditos de R$ 30.000,45 (de R$ -14.078,69 para R$ 500,55). Restam 12 parcelas (04/15 a 15/15) — cerca de R$ 168.944,28, se mantido o valor de R$ 14.078,69. Saldo negativo significa despesas pagas com o caixa de outras contas.",
+      "o_que_verificar": "1) Como e quando o saldo negativo da conta será recomposto? Está prevista nova transferência entre contas?\n2) Qual será a fonte dos recursos das 12 parcelas restantes, já que a conta não teve crédito em outubro?"
+    },
+    "motivo": "texto com o contexto da obra dos elevadores e as perguntas sobre a recomposição do saldo",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-25"
+  }
+]
