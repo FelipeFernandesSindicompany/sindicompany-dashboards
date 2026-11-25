@@ -869,8 +869,8 @@
     }
   },
   "Dashboard_Financeiro_TopNine.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "abr25",
       "mai25",
@@ -888,15 +888,16 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 36781.36,
-      "tCred": 25901.67,
-      "tDeb": 22166.37,
+      "tit": "Setembro / 2026",
+      "tAtual": 40829.49,
+      "tCred": 25997.95,
+      "tDeb": 21949.82,
       "inad": 0,
-      "tAnt": 33046.06
+      "tAnt": 36781.36
     }
   },
   "Dashboard_Financeiro_UpperItaim.html": {
