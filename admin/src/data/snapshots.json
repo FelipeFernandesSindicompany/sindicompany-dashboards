@@ -125,8 +125,8 @@
     }
   },
   "Dashboard_Financeiro_CinqueTerre.html": {
-    "lastKey": "ago26",
-    "lastMonth": "Ago/26",
+    "lastKey": "set26",
+    "lastMonth": "Set/26",
     "allKeys": [
       "mar25",
       "abr25",
@@ -145,15 +145,16 @@
       "mai26",
       "jun26",
       "jul26",
-      "ago26"
+      "ago26",
+      "set26"
     ],
     "data": {
-      "tit": "Agosto / 2026",
-      "tAtual": 1463200.45,
-      "tCred": 472515.37,
-      "tDeb": 573100.13,
+      "tit": "Setembro / 2026",
+      "tAtual": 1363088,
+      "tCred": 498062.36,
+      "tDeb": 598174.81,
       "inad": 0,
-      "tAnt": 1563785.21
+      "tAnt": 1463200.45
     }
   },
   "Dashboard_Financeiro_CidadReal.html": {
