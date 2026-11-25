@@ -98,6 +98,17 @@ def aplicar_config_receitas_negativas(dados: DadosRegras, condo: dict) -> None:
                             "negativa por configuração (regras.receita_negativa.ignorar_tipos/ignorar_descricao)")
 
 
+def _cod_tela(texto: str) -> Optional[str]:
+    """Código da tela W0xx da página: no topo (layout até set/2026: "W015D Moema Top Nine (257)") ou no RODAPÉ (out/2026: a Conister passou a abrir cada
+    página com o cabeçalho "Conister Administração Condominial / Rua Barão de Itapetininga... / Tel." e o código foi para o fim: "W015D Moema Top Nine
+    (257) / 10 de 157")."""
+    m = re.search(r"\bW\d{3}[A-Z]\b", texto[:200])
+    if m:
+        return m.group(0)
+    m = re.search(r"\bW\d{3}[A-Z]\b(?=\s+Moema Top Nine)", texto[-200:])
+    return m.group(0) if m else None
+
+
 def _tipo_receita(grupo: str) -> str:
     n = _norm(grupo)
     if "RENDIMENTO" in n:
@@ -124,10 +135,9 @@ class Extrator:
             n_cab = min(len(doc), 40)                      # as telas do balancete ficam no começo do PDF
             tipos = {}
             for i in range(n_cab):
-                t = doc[i].get_text()[:200]
-                m = re.search(r"\bW\d{3}[A-Z]\b", t)
-                if m:
-                    tipos.setdefault(m.group(0), []).append(i)
+                cod = _cod_tela(doc[i].get_text())
+                if cod:
+                    tipos.setdefault(cod, []).append(i)
             if not tipos.get("W016B") and not tipos.get("W020B") and tipos.get("W020C") and tipos.get("W018L"):
                 self._extrair_resumo(doc, tipos, dados)       # versão resumida (10 págs, sem comprovantes) que a Conister passou a enviar
                 aplicar_config_receitas_negativas(dados, self.condo)
@@ -272,7 +282,7 @@ class Extrator:
     def _fim_secao(doc, i0: int, tipos: dict) -> int:
         """Primeira página depois de i0 que começa outra tela W0xx (ou o fim do PDF)."""
         for i in range(i0 + 1, len(doc)):
-            if re.search(r"\bW\d{3}[A-Z]\b", doc[i].get_text()[:200]):
+            if _cod_tela(doc[i].get_text()):
                 return i
         return len(doc)
 

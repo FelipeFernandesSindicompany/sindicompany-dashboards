@@ -1,0 +1,44 @@
+[
+  {
+    "tipo": "divergencia_valor",
+    "valor": 100.0,
+    "evidencias": [
+      {
+        "pagina": 94,
+        "bbox": [
+          30,
+          92,
+          590,
+          140
+        ],
+        "destaques": [
+          [
+            40,
+            110,
+            585,
+            124
+          ]
+        ],
+        "legenda": "Outubro/2026 — lançamento 2.2.6 Telefone TV e Internet, Vivo móvel (R$ 100,00)"
+      },
+      {
+        "pagina": 95,
+        "bbox": [
+          300,
+          118,
+          520,
+          236
+        ],
+        "destaques": [
+          [
+            432,
+            146,
+            514,
+            202
+          ]
+        ],
+        "legenda": "Fatura anexada: TIM, total R$ 81,99, vencimento 20/10/2026 (débito automático)"
+      }
+    ]
+  }
+]

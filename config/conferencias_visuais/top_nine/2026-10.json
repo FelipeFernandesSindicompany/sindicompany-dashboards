@@ -1,0 +1,27 @@
+[
+  {
+    "codigo": "MD68432",
+    "valor_listagem": 812.44,
+    "resumo": "Sabesp - fornecimento de água e esgoto (R$ 812,44)",
+    "documento": "anexo da movimentação direta 68432 (pág. 92 do PDF)",
+    "como": "Conferido visualmente na imagem do anexo: fatura de água e esgoto da Sabesp do Edifício Moema Top Nine (Rua Periquito, 280), emitida em 07/10/2026, com vencimento em 16/10/2026, débito automático, no valor total de R$ 812,44 — igual ao valor listado. A leitura automática (OCR) não conseguiu ler o total desta fatura."
+  },
+  {
+    "codigo": "P111800",
+    "valor_listagem": 40.8,
+    "resumo": "Conister - disponibilização de dados via internet (R$ 40,80)",
+    "documento": "pág. 123 do PDF (comprovante de transferência Itaú)",
+    "como": "Conferido visualmente na imagem do anexo: o comprovante bancário é uma transferência de R$ 1.332,10 em 01/10/2026 para a conta da Conister, com o mesmo valor do comprovante da taxa de administração (parcela 111799, R$ 1.291,30): um único pagamento que quita as duas despesas (R$ 1.291,30 da taxa de administração + R$ 40,80 do serviço de internet = R$ 1.332,10). Não há divergência: o valor lido no comprovante é a soma dos dois lançamentos."
+  },
+  {
+    "codigo": "MD68434",
+    "valor_listagem": 100.0,
+    "divergencia_real": true,
+    "valor_exibido": 100.0,
+    "severidade": "atencao",
+    "documento": "anexo da movimentação direta 68434 (págs. 95 a 98 do PDF: fatura da TIM)",
+    "resumo": "Telefone móvel lançado como \"Vivo móvel\" (R$ 100,00) com fatura da TIM de R$ 81,99",
+    "como": "O lançamento de 19/10/2026 é \"2.2.6 Telefone TV e Internet — Vivo móvel\", R$ 100,00. O anexo é uma fatura da TIM (plano TIM Controle Smart, ref. 01/09 a 30/09/2026) de R$ 81,99, com vencimento em 20/10/2026 e débito automático no Itaú, em nome de uma pessoa física — e não da Vivo, nem do condomínio.",
+    "pergunta": "Por que a despesa foi lançada como \"Vivo móvel\" (R$ 100,00) se a fatura anexada é da TIM e de R$ 81,99? De quem é a linha móvel (a fatura está em nome de pessoa física) e por que o condomínio paga essa conta? A diferença de R$ 18,01 é de outra cobrança?"
+  }
+]
