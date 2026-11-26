@@ -4,6 +4,7 @@
     "alvorada": {
       "pasta_prestacao": "Dashboard de Análise de Balancete Alvorada",
       "leitor_financeiro": "regras_gerais",
+      "emissao_pdf": "resumo_emissoes_ordinaria",
       "regras": {
         "rendimento": {
           "base": "atual",
