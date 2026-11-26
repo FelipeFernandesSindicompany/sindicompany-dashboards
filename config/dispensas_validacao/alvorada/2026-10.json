@@ -5,5 +5,12 @@
     "motivo": "saldo negativo da REPARACAO DA FACHADA: mesma decisão já tomada para setembro/2026 (retirado do relatório)",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-26"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 653.19,
+    "motivo": "subconta nova SEGUROS (parcela 1/6 do seguro predial Allianz) retirada do relatório a pedido do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
   }
 ]
