@@ -1,0 +1,61 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -62013.46,
+    "reescrever": {
+      "titulo": "Conta PROVISAO TRABALHISTA com saldo negativo (R$ -4.414,05): férias do zelador pagas sem saldo na conta",
+      "paragrafo": "A conta PROVISAO TRABALHISTA fechou outubro com saldo negativo de R$ 4.414,05 (saldo anterior R$ 0,00): o único lançamento do mês é o pagamento das férias do zelador (Rogério, período de 05/10 a 03/11/2026, R$ 4.414,05) e a conta não teve nenhum crédito. Saldo negativo significa despesas pagas com o caixa de outras contas.",
+      "o_que_verificar": "Por que a conta PROVISAO TRABALHISTA estava sem saldo para pagar as férias do zelador? De qual conta saiu o caixa e como e quando a provisão será recomposta?",
+      "valor_exibido": -4414.05
+    },
+    "motivo": "alerta da conta ORDINÁRIA mantido fora do relatório (mesma decisão de setembro/2026); fica só a conta PROVISAO TRABALHISTA, nova em outubro",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 2655.34,
+    "motivo": "pergunta sobre rendimento concentrado no Fundo de Reserva retirada do relatório (mesma decisão de setembro/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
+  },
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 3312.26,
+    "motivo": "falso positivo: é o recolhimento mensal do INSS sobre serviços tomados (em setembro, R$ 3.195,12), só mudou a redação do histórico",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
+  },
+  {
+    "verificacao": "deficit_conta",
+    "valor_total": 9737.58,
+    "motivo": "déficit da conta ORDINÁRIA retirado do relatório (é o mesmo tema do saldo negativo da ORDINÁRIA, já retirado em setembro/2026)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
+  },
+  {
+    "verificacao": "recorrente_ausente",
+    "valor_total": 1102.9,
+    "reescrever": {
+      "titulo": "Adiantamento salarial (R$ 1.102,90) não aparece em outubro",
+      "paragrafo": "O adiantamento salarial de R$ 1.102,90 foi lançado em agosto e em setembro/2026 (e em julho), sempre no mesmo valor, e não aparece em outubro. Em outubro há só a folha de setembro (R$ 2.382,74, em setembro a folha de agosto foi de R$ 2.146,58), o vale-transporte, o vale-alimentação e as férias do zelador (R$ 4.414,05). Pode ser lançamento que ficou para novembro ou pagamento não feito. Observação baseada apenas nos arquivos do próprio condomínio; não é, por si só, prova de irregularidade.",
+      "o_que_verificar": "O adiantamento salarial de outubro foi pago? Em qual lançamento ele aparece ou em que mês será lançado?",
+      "valor_exibido": 1102.9
+    },
+    "motivo": "texto objetivo, sem o 'set/26' do histórico",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
+  },
+  {
+    "tipo": "atraso_pagamento",
+    "valor_total": 767.25,
+    "reescrever": {
+      "titulo": "Pagamento da manutenção de cerca elétrica e interfones (HTS) em atraso, com multa e juros de R$ 17,25",
+      "paragrafo": "O boleto da HTS Manutenção e Instalação (NFS-e nº 2112, R$ 750,00) venceu em 12/10/2026 e foi pago em 21/10/2026, 9 dias depois. O pagamento foi de R$ 767,25: R$ 750,00 + multa de R$ 15,00 + juros de R$ 2,25 (encargos de R$ 17,25), e esse é o valor lançado. O encargo foi pago pelo condomínio.",
+      "o_que_verificar": "Por que o boleto da HTS foi pago após o vencimento? A multa e os juros de R$ 17,25 serão cobrados da administradora ou do prestador, ou ficam como despesa do condomínio?"
+    },
+    "motivo": "texto com os valores de multa e juros conferidos no comprovante",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26"
+  }
+]

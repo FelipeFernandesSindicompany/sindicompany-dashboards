@@ -217,7 +217,9 @@ class Extrator:
         'ContasData' na marca d'água, índice 'Prestação de Contas', 'Nº lancto.'). Levanta ValueError se não for.
         Devolve False quando é ContasData mas não traz os demonstrativos (arquivo parcial, só gráficos/devedores)."""
         inicio = "\n".join(p.texto for p in paginas[:40])
-        marcas = re.search(r"Voltar ao [íi]ndice|ContasData|N[ºo°] lancto", inicio, re.I)
+        # "Emitido em dd/mm/aaaa": rodapé da exportação Stimulsoft quando a marca "ContasData" fica numa camada sem texto
+        # extraível (Villa Park Osasco, versões reemitidas em 19/10/2026)
+        marcas = re.search(r"Voltar ao [íi]ndice|ContasData|N[ºo°] lancto|Emitido em \d{2}/\d{2}/\d{4}", inicio, re.I)
         # "Prestação de Contas" (livro completo, com índice) OU "Demonstrativo de Contas" (exportação parcial só
         # com os demonstrativos, ex.: Splendor Square ago/2026, gerada pelo Stimulsoft, sem índice nem comprovantes)
         indice = (re.search(r"Presta[çc][ãa]o de Contas|Demonstrativo de Contas|Demonstrativo de Despesas", inicio)
@@ -341,6 +343,11 @@ class Extrator:
             if len(vs) >= 2:
                 a, c = _num(vs[0][4]), _num(vs[1][4])
                 b["tot_deb"], b["tot_cred"] = (a, c) if col["deb"] < col["cred"] else (c, a)
+            elif len(vs) == 1:       # conta que só teve débito (ou só crédito): o total vem numa coluna só
+                if abs(vs[0][2] - col["deb"]) < abs(vs[0][2] - col["cred"]):
+                    b["tot_deb"] = _num(vs[0][4])
+                else:
+                    b["tot_cred"] = _num(vs[0][4])
             return
         w = din[-1]
         desc = " ".join(x[4] for x in l.pal if x[2] < din[0][0] - 0.5).strip()

@@ -1,0 +1,26 @@
+[
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor": -62013.46,
+    "evidencias": [
+      {
+        "pagina": 14,
+        "bbox": [
+          40,
+          257,
+          565,
+          321
+        ],
+        "destaques": [
+          [
+            60,
+            309,
+            490,
+            320
+          ]
+        ],
+        "legenda": "Posição Financeira da conta PROVISAO TRABALHISTA — saldo anterior R$ 0,00, débito de R$ 4.414,05 (férias) e saldo atual devedor de R$ 4.414,05"
+      }
+    ]
+  }
+]

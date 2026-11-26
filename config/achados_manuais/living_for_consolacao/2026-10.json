@@ -1,0 +1,51 @@
+[
+  {
+    "id": "MAN-0001",
+    "valor": 360.0,
+    "linha": "SERVIÇOS EVENTUAIS/REPAROS",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-26",
+    "titulo": "Ar-condicionado (R$ 360,00): histórico do lançamento diz \"Falta NF\" e não há Nota Fiscal anexada",
+    "paragrafo": "O lançamento 0029 (Ar Condicionado, R$ 360,00) tem o histórico \"Falta NF\" na própria listagem da administradora. O anexo traz só o comprovante de pagamento e o boleto do prestador (Leandro Alexandre dos Santos, CNPJ 58.952.793/0001-29, pago em 30/10/2026); não há Nota Fiscal do serviço.",
+    "o_que_verificar": "Qual foi o serviço de ar-condicionado prestado por Leandro Alexandre dos Santos? A Nota Fiscal foi solicitada ao prestador e podem enviá-la?",
+    "evidencias": [
+      {
+        "pagina": 19,
+        "bbox": [
+          30,
+          114,
+          565,
+          147
+        ],
+        "destaques": [
+          [
+            100,
+            133,
+            134,
+            145
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0029, histórico \"Falta NF\""
+      },
+      {
+        "pagina": 130,
+        "bbox": [
+          40,
+          200,
+          800,
+          380
+        ],
+        "destaques": [
+          [
+            48,
+            350,
+            200,
+            366
+          ]
+        ],
+        "legenda": "Comprovante de pagamento — só o boleto, histórico \"Falta NF\" (págs. 130 e 131 do PDF)"
+      }
+    ]
+  }
+]
