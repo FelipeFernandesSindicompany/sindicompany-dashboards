@@ -1,0 +1,16 @@
+[
+  {
+    "codigo": "09030852",
+    "valor_listagem": 623.0,
+    "resumo": "Zaparolli Irmãos (jardinagem), NF 55 (R$ 623,00)",
+    "documento": "anexo do lançamento 09030852 (NFS-e nº 55)",
+    "como": "Conferido visualmente na imagem do anexo: a NFS-e nº 55 (emitida em 28/09/2026) é de R$ 700,00 de jardinagem, com retenção de 11% de INSS de R$ 77,00 e valor líquido de R$ 623,00 (vencimento 30/10) — igual ao valor listado. A diferença de R$ 77,00 é a retenção, não um erro."
+  },
+  {
+    "codigo": "09014284",
+    "valor_listagem": 653.19,
+    "resumo": "Allianz Seguros, parcela 01/06 do seguro predial (R$ 653,19)",
+    "documento": "anexo do lançamento 09014284 (apólice Allianz, página 3 de 5)",
+    "como": "Conferido visualmente na imagem do anexo: a apólice traz, em \"Informações de pagamento\", 6 parcelas de R$ 653,19 (a última de R$ 653,26), com a parcela 1 vencendo em 24/10/2026 — igual ao valor listado. A leitura automática (OCR) havia lido R$ 44,89."
+  }
+]
