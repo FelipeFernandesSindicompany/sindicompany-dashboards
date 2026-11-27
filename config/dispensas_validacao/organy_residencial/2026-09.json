@@ -1,0 +1,42 @@
+[
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 185.25,
+    "motivo": "categoria nova e comprovante em branco da cobrança de R$ 185,25 consolidados em um único item (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "conteudo_nao_verificavel",
+    "valor_total": 185.25,
+    "motivo": "consolidado no item único da cobrança de R$ 185,25 (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 271.02,
+    "motivo": "subconta nova IR S/APLICAÇÃO (BENFEITORIAS) consolidada em um único item (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "conteudo_nao_verificavel",
+    "valor_total": 271.02,
+    "motivo": "consolidado no item único do IR S/APLICAÇÃO de R$ 271,02 (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 0.0,
+    "reescrever": {
+      "titulo": "Rendimento do mês creditado só na ORDINÁRIA (R$ 9,76); FUNDO DE RESERVA sem rendimento",
+      "paragrafo": "A conta FUNDO DE RESERVA (saldo contábil de R$ 114.301,01) recebeu rendimento em agosto, mas em setembro não recebeu nenhum. O único rendimento do mês, de R$ 9,76 (\"RENDIMENTO S/ APLICACAO\"), foi creditado na conta ORDINÁRIA e corresponde ao das aplicações automáticas da conta corrente (extrato, pág. 20). A aplicação CDB (R$ 50.726,99 em 30/09, Resumo Financeiro Bancário, pág. 22) não tem nenhum rendimento creditado no mês.",
+      "o_que_verificar": "O saldo do Fundo de Reserva permaneceu aplicado no CDB durante o mês? Por que o rendimento da aplicação não foi creditado no Fundo de Reserva?"
+    },
+    "motivo": "texto com o destino do rendimento do mês",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  }
+]

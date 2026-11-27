@@ -1,0 +1,243 @@
+[
+  {
+    "id": "MAN-0001",
+    "valor": 220.0,
+    "linha": "CONTAS DE CONSUMO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Conta da Claro (R$ 220,00) paga duas vezes em 08/10/2026",
+    "paragrafo": "A conta da Claro 419314969 (referência 09/2026, R$ 220,00, vencimento 08/10/2026) aparece em dois lançamentos: o 0022, pago pela administradora via Sispag (comprovante de pagamento de concessionárias, pág. 107, com a fatura de débito automático anexada), e o 0023, com o histórico \"DUPLICIDADE\", pago em 08/10 por débito automático do Itaú (DA CLARO S.A. 193149691, pág. 112). Foram debitados R$ 440,00 por uma fatura de R$ 220,00.",
+    "o_que_verificar": "Os R$ 220,00 pagos em duplicidade à Claro serão devolvidos ou compensados na próxima fatura? Quando e onde será lançado o crédito?",
+    "evidencias": [
+      {
+        "pagina": 24,
+        "bbox": [
+          30,
+          650,
+          565,
+          690
+        ],
+        "destaques": [
+          [
+            36,
+            658,
+            563,
+            668
+          ],
+          [
+            36,
+            668,
+            563,
+            678
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamentos 0022 e 0023 (CLARO 419314969, R$ 220,00 cada, o segundo com o histórico DUPLICIDADE)"
+      },
+      {
+        "pagina": 107,
+        "bbox": [
+          30,
+          150,
+          565,
+          330
+        ],
+        "legenda": "Lançamento 0022 — pagamento via Sispag em 08/10/2026 (R$ 220,00)"
+      },
+      {
+        "pagina": 112,
+        "bbox": [
+          30,
+          130,
+          565,
+          360
+        ],
+        "legenda": "Lançamento 0023 — débito automático da Claro em 08/10/2026 (R$ 220,00)"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "valor": 279.3,
+    "linha": "DESPESAS COM COBRANÇA",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Despesas com cobrança (R$ 279,30) sem fornecedor, sem descrição e sem comprovante, de novo",
+    "paragrafo": "O lançamento 0055 (DESPESAS COM COBRANÇA, R$ 279,30) tem só esse histórico: sem fornecedor, serviço ou data, e a página do comprovante (pág. 204 do PDF) está em branco. É a segunda vez seguida: em setembro foram R$ 185,25 da mesma categoria, também sem comprovante.",
+    "o_que_verificar": "Quais são essas despesas de cobrança (R$ 185,25 em setembro e R$ 279,30 em outubro): fornecedor, serviço e data? Podem enviar os comprovantes?",
+    "evidencias": [
+      {
+        "pagina": 25,
+        "bbox": [
+          30,
+          758,
+          565,
+          800
+        ],
+        "destaques": [
+          [
+            36,
+            761,
+            563,
+            782
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0055, DESPESAS COM COBRANÇA (R$ 279,30), sem fornecedor"
+      },
+      {
+        "pagina": 204,
+        "bbox": [
+          30,
+          95,
+          565,
+          200
+        ],
+        "destaques": [
+          [
+            36,
+            131,
+            563,
+            143
+          ]
+        ],
+        "legenda": "Comprovante do lançamento 0055 (pág. 204) — página sem nenhum documento anexado"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0003",
+    "valor": 312.54,
+    "linha": "BENFEITORIAS",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "IR s/ aplicação (R$ 312,54) em BENFEITORIAS, sem comprovante, e o saldo devedor da conta aumenta",
+    "paragrafo": "O lançamento 0060 (\"IR S/APLICAÇÃO 10/2026\", R$ 312,54, em 31/10/2026) foi lançado na conta BENFEITORIAS, que já estava com saldo devedor de R$ 271,02 pelo mesmo tipo de lançamento em setembro e fechou outubro com R$ 583,56 devedores, sem nenhum crédito. A página do comprovante (pág. 224 do PDF) está em branco. No Resumo Financeiro Bancário (pág. 23), os débitos da APLICAÇÃO CDB (R$ 40.314,04) são a transferência de R$ 40.001,50 mais esses R$ 312,54: o valor saiu da aplicação, mas nada no balancete explica a natureza do débito.",
+    "o_que_verificar": "O que são o IR de R$ 271,02 (setembro) e de R$ 312,54 (outubro): IR retido no resgate do CDB? Por que são lançados na conta BENFEITORIAS, que está devedora (R$ 583,56), e como e quando ela será recomposta? Podem enviar o comprovante (informe do resgate)?",
+    "evidencias": [
+      {
+        "pagina": 26,
+        "bbox": [
+          30,
+          300,
+          565,
+          345
+        ],
+        "destaques": [
+          [
+            36,
+            319,
+            563,
+            338
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0060, IR S/APLICAÇÃO 10/2026 (R$ 312,54), em BENFEITORIAS"
+      },
+      {
+        "pagina": 15,
+        "bbox": [
+          40,
+          562,
+          565,
+          630
+        ],
+        "destaques": [
+          [
+            60,
+            594,
+            490,
+            606
+          ],
+          [
+            60,
+            615,
+            490,
+            627
+          ]
+        ],
+        "legenda": "Posição Financeira da conta BENFEITORIAS — saldo anterior devedor de R$ 271,02, débito de R$ 312,54 e saldo atual devedor de R$ 583,56"
+      },
+      {
+        "pagina": 23,
+        "bbox": [
+          40,
+          88,
+          565,
+          145
+        ],
+        "destaques": [
+          [
+            60,
+            121,
+            565,
+            132
+          ]
+        ],
+        "legenda": "Resumo Financeiro Bancário (pág. 23) — débitos da APLICAÇÃO CDB: R$ 40.314,04 (R$ 40.001,50 de transferência + R$ 312,54)"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0004",
+    "valor": 600.0,
+    "linha": "ORDINÁRIA",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Crédito não identificado de R$ 600,00 na conta ORDINÁRIA",
+    "paragrafo": "A Posição Financeira da conta ORDINÁRIA traz um crédito de R$ 600,00 em \"CREDITO NAO IDENTIFICADO\" em outubro, sem indicar quem pagou ou a que unidade se refere. No mesmo mês a conta nova MELHORIAS recebeu R$ 600,00 de cotas antecipadas.",
+    "o_que_verificar": "De quem é o crédito de R$ 600,00 e a que unidade e cobrança se refere? Ele tem relação com os R$ 600,00 de cotas antecipadas da conta MELHORIAS? Quando será identificado e baixado?",
+    "evidencias": [
+      {
+        "pagina": 15,
+        "bbox": [
+          40,
+          180,
+          565,
+          245
+        ],
+        "destaques": [
+          [
+            60,
+            209,
+            490,
+            221
+          ]
+        ],
+        "legenda": "Posição Financeira da conta ORDINÁRIA — crédito de R$ 600,00 em CREDITO NAO IDENTIFICADO"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0005",
+    "valor": 4683.84,
+    "linha": "CONSUMO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Nova conta de gás na COMGAS (usuário 69414033, R$ 4.683,84) em outubro",
+    "paragrafo": "O gás passou de dois para três usuários da COMGAS: além dos usuários 61797693 (R$ 13.332,67) e 61797685 (R$ 2.831,15), que já existiam em setembro (R$ 14.485,34 e R$ 2.810,39), outubro traz o usuário 69414033, de R$ 4.683,84 (lançamento 0067, pago em 15/10/2026). A conta CONSUMO, que já estava devedora, fechou outubro com saldo devedor de R$ 58.439,64.",
+    "o_que_verificar": "Que ponto de consumo é o usuário de gás 69414033 (nova ligação, bloco, área comum) e desde quando existe? O valor de R$ 4.683,84 é de um mês de consumo ou inclui valores atrasados? Podem enviar a fatura?",
+    "evidencias": [
+      {
+        "pagina": 26,
+        "bbox": [
+          30,
+          486,
+          565,
+          556
+        ],
+        "destaques": [
+          [
+            36,
+            519,
+            563,
+            550
+          ]
+        ],
+        "legenda": "Listagem de despesas — consumo de gás de outubro: usuários 61797693, 61797685 e 69414033 (R$ 4.683,84)"
+      }
+    ]
+  }
+]

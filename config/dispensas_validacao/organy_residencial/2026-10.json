@@ -1,0 +1,83 @@
+[
+  {
+    "verificacao": "fornecedor_novo",
+    "valor_total": 5365.5,
+    "reescrever": {
+      "titulo": "Fundo de Reserva usado pela primeira vez: R$ 5.365,50 de entrada da porta de abrigo dos relógios (Wellington Barbosa Santos)",
+      "paragrafo": "Em 26/10/2026 foram pagos R$ 5.365,50, direto do FUNDO DE RESERVA, a Wellington Barbosa Santos (NF 23, \"serviços prestados\"), fornecedor sem lançamento nos 6 meses anteriores. Nos anexos (págs. 218 a 222): o contrato particular é de R$ 10.731,00, com 50% (R$ 5.365,50) de entrada e o restante na entrega, em 30 dias úteis; a NFS-e (emitida em 22/10/2026) é de R$ 5.365,50 para \"porta abrigo relógio água e energia\" (fabricação e instalação, com as medidas das portas); a consulta de 23/10 mostra que o prestador não é optante pelo Simples Nacional. Ficam R$ 5.365,50 a pagar na entrega. Nos meses anteriores o Fundo de Reserva só tinha créditos.",
+      "o_que_verificar": "1) Essa obra foi aprovada em assembleia ou pelo conselho, com cotações, para ser paga pelo Fundo de Reserva? 2) Os R$ 5.365,50 restantes também sairão do Fundo de Reserva e existe previsão de reposição do fundo? 3) Sendo o prestador não optante pelo Simples Nacional, a nota foi emitida sem retenções?",
+      "valor_exibido": 5365.5
+    },
+    "motivo": "item único do pagamento pelo Fundo de Reserva (fornecedor novo + uso do fundo + subconta nova)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "verificacao": "uso_fundo",
+    "valor_total": 5365.5,
+    "motivo": "incluído no item único do pagamento pelo Fundo de Reserva",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 5365.5,
+    "motivo": "incluído no item único do pagamento pelo Fundo de Reserva",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "subconta_atipica",
+    "valor_total": 640.0,
+    "motivo": "despesa do salão (disjuntores, com NFS-e anexada) paga com o saldo da conta Salão de Festas: não é irregularidade",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": -28800.4,
+    "motivo": "falso positivo: a conta MELHORIAS DE SEGURANÇA abriu outubro com R$ 28.800,40, igual ao saldo final de setembro; a conta MELHORIAS (saldo anterior R$ 0,00) é nova",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "verificacao": "valor_atipico",
+    "valor_total": 32812.15,
+    "motivo": "a ENEL (R$ 11.964,49) está estável frente a setembro (R$ 11.763,42); o que mudou é uma ligação nova de gás, tratada em achado manual",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "conta_concessionaria_nao_anexada",
+    "valor_total": 220.0,
+    "motivo": "incluído no item da duplicidade do pagamento da Claro (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "conteudo_nao_verificavel",
+    "valor_total": 279.3,
+    "motivo": "consolidado no item único da cobrança de R$ 279,30 (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "conteudo_nao_verificavel",
+    "valor_total": 312.54,
+    "motivo": "consolidado no item único do IR de R$ 312,54 (achado manual)",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "rendimento_desproporcional",
+    "valor_total": 0.0,
+    "reescrever": {
+      "titulo": "Rendimento do mês creditado só na ORDINÁRIA (R$ 5,30); FUNDO DE RESERVA sem rendimento pelo 2º mês",
+      "paragrafo": "A conta FUNDO DE RESERVA (saldo contábil de R$ 114.385,01) não recebeu rendimento em outubro, como em setembro; só havia recebido em agosto. O único rendimento do mês, de R$ 5,30 (\"RENDIMENTO S/ APLICACAO\"), foi creditado na conta ORDINÁRIA. A aplicação CDB caiu de R$ 50.726,99 para R$ 10.412,95 (Resumo Financeiro Bancário, pág. 23).",
+      "o_que_verificar": "O saldo do Fundo de Reserva permaneceu aplicado no CDB durante o mês? Por que o rendimento da aplicação não foi creditado no Fundo de Reserva?"
+    },
+    "motivo": "texto com o destino do rendimento do mês",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  }
+]

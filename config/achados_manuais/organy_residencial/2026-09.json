@@ -1,0 +1,118 @@
+[
+  {
+    "id": "MAN-0001",
+    "valor": 185.25,
+    "linha": "DESPESAS COM COBRANÇA",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Despesas com cobrança (R$ 185,25): categoria nova, sem fornecedor no histórico e sem comprovante",
+    "paragrafo": "O lançamento 0056 (DESPESAS COM COBRANÇA, R$ 185,25) é de uma categoria que não aparecia nos meses anteriores. O histórico é só \"DESPESAS COM COBRANÇA\", sem data, sem fornecedor e sem descrição do serviço, e a página do comprovante (pág. 213 do PDF) está em branco.",
+    "o_que_verificar": "Qual é a despesa de cobrança de R$ 185,25 (fornecedor, serviço e data)? Por que a categoria apareceu só agora e podem enviar o comprovante do pagamento?",
+    "evidencias": [
+      {
+        "pagina": 25,
+        "bbox": [
+          30,
+          108,
+          565,
+          136
+        ],
+        "destaques": [
+          [
+            36,
+            112,
+            563,
+            134
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0056, DESPESAS COM COBRANÇA (R$ 185,25), sem data nem fornecedor"
+      },
+      {
+        "pagina": 213,
+        "bbox": [
+          30,
+          95,
+          565,
+          200
+        ],
+        "destaques": [
+          [
+            36,
+            131,
+            563,
+            143
+          ]
+        ],
+        "legenda": "Comprovante do lançamento 0056 (pág. 213) — página sem nenhum documento anexado"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "valor": 271.02,
+    "linha": "BENFEITORIAS",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "IR s/ aplicação (R$ 271,02) lançado em conta nova (BENFEITORIAS), sem comprovante nem explicação",
+    "paragrafo": "O lançamento 0058 (\"REND PAGO APLIC AUT APR\", R$ 271,02, em 30/09/2026) foi classificado em IR S/APLICAÇÃO, subconta da conta BENFEITORIAS, que não existia no mês anterior e fechou setembro com saldo devedor de R$ 271,02, sem nenhum crédito. A página do comprovante (pág. 217 do PDF) está em branco. No Resumo Financeiro Bancário (pág. 22), os débitos da APLICAÇÃO CDB (R$ 62.272,05) são a transferência de R$ 62.001,03 mais esses R$ 271,02: o valor saiu da aplicação, mas nada no balancete explica a natureza do débito.",
+    "o_que_verificar": "O que são os R$ 271,02 (IR retido no resgate da aplicação CDB?) e a que rendimento se referem? Por que foram lançados na nova conta BENFEITORIAS, que ficou com saldo devedor, e como e quando ela será recomposta? Podem enviar o comprovante (informe do resgate)?",
+    "evidencias": [
+      {
+        "pagina": 25,
+        "bbox": [
+          30,
+          200,
+          565,
+          250
+        ],
+        "destaques": [
+          [
+            36,
+            224,
+            563,
+            236
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0058, REND PAGO APLIC AUT APR (R$ 271,02), em BENFEITORIAS / IR S/APLICAÇÃO"
+      },
+      {
+        "pagina": 14,
+        "bbox": [
+          40,
+          562,
+          565,
+          630
+        ],
+        "destaques": [
+          [
+            60,
+            594,
+            490,
+            606
+          ]
+        ],
+        "legenda": "Posição Financeira da conta BENFEITORIAS — débito de R$ 271,02 e saldo atual devedor"
+      },
+      {
+        "pagina": 22,
+        "bbox": [
+          40,
+          88,
+          565,
+          145
+        ],
+        "destaques": [
+          [
+            60,
+            121,
+            565,
+            132
+          ]
+        ],
+        "legenda": "Resumo Financeiro Bancário (pág. 22) — débitos da APLICAÇÃO CDB: R$ 62.272,05 (R$ 62.001,03 de transferência + R$ 271,02)"
+      }
+    ]
+  }
+]
