@@ -1,0 +1,18 @@
+[
+  {
+    "codigo": "0027",
+    "valor_listagem": 190.22,
+    "resumo": "HFX Assessoria (NF 4077): rateio do pagamento de R$ 1.900,00 entre o Studio e o Residencial",
+    "documento": "págs. 118 a 123 do PDF (comprovante Itaú, boleto e NFS-e da HFX)",
+    "como": "Conferido visualmente nos anexos: o comprovante de pagamento do Itaú (10/09/2026), o boleto e a NFS-e nº 4077 da HFX Assessoria em Administração e Fiscalização de Obras são de R$ 1.900,00. A listagem do Organy Studio registra R$ 190,22 e a do Organy Residencial R$ 1.709,78, que somam exatamente R$ 1.900,00. É um rateio do pagamento entre os dois condomínios, não uma divergência."
+  },
+  {
+    "codigo": "0036",
+    "valor_listagem": 178.0,
+    "divergencia_real": true,
+    "documento": "pág. 150 do PDF",
+    "resumo": "O comprovante do seguro HDI mostra R$ 1.607,70, e a listagem R$ 178,00 (HDI SEGUROS)",
+    "como": "Conferido visualmente no anexo (pág. 150 do PDF): o comprovante de débito automático do Itaú (DEB AUTOR HDI SEGUROS, conta 98863-2, 'CONDOMINIO ORGANY') mostra R$ 1.607,70 — não é erro de leitura. A listagem do Organy Studio registra R$ 178,00 e a do Organy Residencial R$ 1.373,09, que somam R$ 1.551,09; faltam R$ 56,61 para os R$ 1.607,70 debitados. A mesma diferença de R$ 56,61 já existia em agosto/2026.",
+    "pergunta": "O débito automático do seguro HDI foi de R$ 1.607,70, mas o Organy Studio lançou R$ 178,00 e o Organy Residencial R$ 1.373,09 (soma R$ 1.551,09). Para qual lançamento, de qual condomínio, foram os R$ 56,61 restantes? Podem enviar o rateio do seguro?"
+  }
+]

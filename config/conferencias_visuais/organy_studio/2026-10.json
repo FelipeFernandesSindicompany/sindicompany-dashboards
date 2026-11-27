@@ -1,0 +1,25 @@
+[
+  {
+    "codigo": "0020",
+    "valor_listagem": 190.22,
+    "resumo": "HFX Assessoria (NF 4298): rateio do pagamento de R$ 1.900,00 entre o Studio e o Residencial",
+    "documento": "págs. 108 a 112 do PDF (comprovante Itaú, boleto e NFS-e da HFX)",
+    "como": "Conferido visualmente nos anexos: o comprovante de pagamento do Itaú, o boleto e a NFS-e nº 4298 da HFX Assessoria em Administração e Fiscalização de Obras são de R$ 1.900,00. A listagem do Organy Studio registra R$ 190,22 e a do Organy Residencial R$ 1.709,78, que somam exatamente R$ 1.900,00. É um rateio do pagamento entre os dois condomínios, não uma divergência."
+  },
+  {
+    "codigo": "0031",
+    "valor_listagem": 178.0,
+    "divergencia_real": true,
+    "documento": "pág. 153 do PDF",
+    "resumo": "O comprovante do seguro HDI mostra R$ 1.607,70, e a listagem R$ 178,00 (HDI SEGUROS)",
+    "como": "Conferido visualmente no anexo (pág. 153 do PDF): o comprovante de débito automático do Itaú (DEB AUTOR HDI SEGUROS, conta 98863-2, 'CONDOMINIO ORGANY') mostra R$ 1.607,70 — não é erro de leitura. A listagem do Organy Studio registra R$ 178,00 e a do Organy Residencial R$ 1.373,09, que somam R$ 1.551,09; faltam R$ 56,61 para os R$ 1.607,70 debitados. A mesma diferença de R$ 56,61 existe em agosto, setembro e outubro/2026.",
+    "pergunta": "O débito automático do seguro HDI foi de R$ 1.607,70 em outubro, mas o Organy Studio lançou R$ 178,00 e o Organy Residencial R$ 1.373,09 (soma R$ 1.551,09). Para qual lançamento, de qual condomínio, foram os R$ 56,61 restantes? Podem enviar o rateio do seguro? A diferença é a mesma de agosto e setembro."
+  },
+  {
+    "codigo": "0037",
+    "valor_listagem": 9414.76,
+    "resumo": "Sabesp - água e esgoto (R$ 9.414,76)",
+    "documento": "pág. 170 do PDF (fatura Sabesp)",
+    "como": "Conferido visualmente no anexo: a fatura da Sabesp (fornecimento 86040976730159, emissão 09/10/2026, vencimento 20/10/2026, débito automático) tem TOTAL de R$ 9.414,76, igual ao valor listado."
+  }
+]

@@ -1,0 +1,94 @@
+[
+  {
+    "id": "MAN-0001",
+    "valor": 9414.76,
+    "linha": "CONSUMO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Sabesp de outubro (R$ 9.414,76) paga com multa e juros de R$ 272,97 e com consumo ainda muito acima da média",
+    "paragrafo": "A fatura da Sabesp de outubro (emissão 09/10, vencimento 20/10/2026) traz multa de R$ 206,55 e juros de mora de R$ 66,42, R$ 272,97 de encargos por atraso, e consumo de 156 m³ em 30 dias, contra a média de 30,4 m³ e o aviso \"Alta de consumo, verifique as instalações internas\". O histórico de consumo impresso na própria fatura mostra 591 m³ (junho), 494 m³ (julho), 175 m³ (agosto) e 154 m³ (setembro): o consumo segue 5 vezes acima da média há 5 meses.",
+    "o_que_verificar": "Por que a conta de outubro veio com multa e juros? A causa do consumo alto (vazamento, hidrômetro, consumo real) foi investigada e foi pedida revisão das contas à Sabesp? Os encargos serão ressarcidos pela administradora?",
+    "evidencias": [
+      {
+        "pagina": 19,
+        "bbox": [
+          30,
+          480,
+          565,
+          502
+        ],
+        "destaques": [
+          [
+            36,
+            486,
+            563,
+            500
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0037, SABESP 10/2026 (R$ 9.414,76)"
+      },
+      {
+        "pagina": 170,
+        "bbox": [
+          140,
+          190,
+          540,
+          470
+        ],
+        "destaques": [
+          [
+            335,
+            208,
+            540,
+            250
+          ],
+          [
+            145,
+            330,
+            320,
+            348
+          ],
+          [
+            200,
+            443,
+            430,
+            463
+          ]
+        ],
+        "legenda": "Fatura da Sabesp de outubro — multa e juros de mora, consumo de 156 m³ e histórico de consumo (591, 494, 175 e 154 m³)"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "valor": 20206.88,
+    "linha": "BANCO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Saldo bancário negativo: Itaú fechou outubro em R$ -20.206,88",
+    "paragrafo": "No Resumo Financeiro Bancário, a conta do Banco Itaú encerrou outubro com saldo de R$ -20.206,88 (créditos de R$ 33.471,12 e débitos de R$ 29.042,19). O saldo anterior do mês é R$ -24.635,81, enquanto setembro tinha fechado em R$ -23.902,84 (diferença de R$ 732,97). Não há tarifas ou juros de limite lançados.",
+    "o_que_verificar": "A conta corrente continua usando limite (cheque especial)? Há juros ou tarifas cobrados por isso e onde estão lançados? Como e quando o saldo será coberto?",
+    "evidencias": [
+      {
+        "pagina": 17,
+        "bbox": [
+          40,
+          88,
+          565,
+          140
+        ],
+        "destaques": [
+          [
+            60,
+            112,
+            565,
+            122
+          ]
+        ],
+        "legenda": "Resumo Financeiro Bancário — Banco Itaú: saldo anterior de R$ -24.635,81 e saldo atual de R$ -20.206,88"
+      }
+    ]
+  }
+]

@@ -1,0 +1,179 @@
+[
+  {
+    "id": "MAN-0001",
+    "valor": 89274.58,
+    "linha": "CONSUMO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Sabesp: R$ 89.274,58 pagos em setembro, com contas de julho pagas com 7 semanas de atraso, multa e juros e consumo muito acima da média",
+    "paragrafo": "Em setembro foram pagas 4 faturas da Sabesp (fornecimento 86040976730159), no total de R$ 89.274,58, o que levou a conta CONSUMO a R$ -85.890,81:\n• Duas contas de 07/2026, pagas em 01 e 02/09: R$ 36.787,54 (vencimento 14/07/2026; 591 m³ em 37 dias; inclui R$ 40,00 de religação) e R$ 30.743,22 (vencimento 27/07/2026; 494 m³ em 30 dias).\n• Conta de 08/2026, R$ 10.327,72 (vencimento 27/08/2026; 175 m³), paga em 24/09.\n• Conta de 09/2026, R$ 11.416,10 (vencimento 24/09/2026; 154 m³), que traz multa de R$ 1.350,61, atualização monetária de R$ 87,07 e juros de mora de R$ 987,91 (R$ 2.425,59 de encargos).\nTodas as faturas trazem o aviso \"Alta de consumo, verifique as instalações internas\" e a média de consumo é de 30,4 m³.",
+    "o_que_verificar": "1) Por que as contas de julho só foram pagas em setembro, com o condomínio arcando com multa e juros (R$ 2.425,59 só na conta de 09/2026)? Houve corte do fornecimento (a conta de julho cobra religação)?\n2) O consumo de 591, 494, 175 e 154 m³, contra a média de 30,4 m³, foi investigado (vazamento, hidrômetro)? Foi pedida revisão das contas à Sabesp?\n3) Como e quando será recomposto o saldo negativo da conta CONSUMO?",
+    "evidencias": [
+      {
+        "pagina": 19,
+        "bbox": [
+          30,
+          545,
+          565,
+          598
+        ],
+        "destaques": [
+          [
+            36,
+            552,
+            563,
+            594
+          ]
+        ],
+        "legenda": "Listagem de despesas — quatro lançamentos da SABESP em setembro (R$ 36.787,54; R$ 30.743,22; R$ 11.416,10; R$ 10.327,72)"
+      },
+      {
+        "pagina": 180,
+        "bbox": [
+          100,
+          190,
+          520,
+          420
+        ],
+        "destaques": [
+          [
+            335,
+            240,
+            475,
+            265
+          ],
+          [
+            175,
+            336,
+            350,
+            356
+          ]
+        ],
+        "legenda": "Conta de 07/2026 (R$ 36.787,54): vencimento 14/07/2026, consumo de 591 m³ e aviso de alto consumo"
+      },
+      {
+        "pagina": 183,
+        "bbox": [
+          100,
+          190,
+          520,
+          420
+        ],
+        "destaques": [
+          [
+            335,
+            240,
+            475,
+            265
+          ],
+          [
+            175,
+            336,
+            350,
+            356
+          ]
+        ],
+        "legenda": "Conta de 07/2026 (R$ 30.743,22): vencimento 27/07/2026, consumo de 494 m³"
+      },
+      {
+        "pagina": 186,
+        "bbox": [
+          100,
+          190,
+          520,
+          420
+        ],
+        "destaques": [
+          [
+            335,
+            214,
+            480,
+            262
+          ]
+        ],
+        "legenda": "Conta de 09/2026 (R$ 11.416,10): multa de R$ 1.350,61, atualização de R$ 87,07 e juros de R$ 987,91"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0002",
+    "valor": 7110.44,
+    "linha": "CONSUMO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "COMGAS (R$ 7.110,44): histórico não bate com o débito, referência repetida e fatura não anexada",
+    "paragrafo": "O lançamento 0049 (16/09/2026) está descrito como \"COMGAS - USUARIO 61797693 - 06/2026\", mas o comprovante é um débito automático identificado como \"DA COMGAS 61797677\" (o usuário que o Organy Studio pagou em julho). O usuário 61797693 é o que o Organy Residencial paga todo mês (R$ 14.485,34 em setembro). A mesma descrição \"61797693 - 06/2026\" já havia sido lançada em agosto (R$ 9.191,76). Só há o comprovante do débito, sem a fatura.",
+    "o_que_verificar": "Quais são o usuário e o mês de referência corretos do gás de R$ 7.110,44 (a descrição diz 61797693 - 06/2026, o débito é do 61797677)? Por que a referência 06/2026 aparece em agosto e em setembro? Podem enviar a fatura?",
+    "evidencias": [
+      {
+        "pagina": 19,
+        "bbox": [
+          30,
+          615,
+          565,
+          640
+        ],
+        "destaques": [
+          [
+            36,
+            623,
+            563,
+            636
+          ]
+        ],
+        "legenda": "Listagem de despesas — lançamento 0049, COMGAS USUARIO 61797693 - 06/2026 (R$ 7.110,44)"
+      },
+      {
+        "pagina": 190,
+        "bbox": [
+          60,
+          260,
+          540,
+          420
+        ],
+        "destaques": [
+          [
+            105,
+            330,
+            440,
+            348
+          ]
+        ],
+        "legenda": "Comprovante do débito automático — identificação no extrato: DA COMGAS 61797677"
+      }
+    ]
+  },
+  {
+    "id": "MAN-0003",
+    "valor": 23902.84,
+    "linha": "BANCO",
+    "severidade": "atencao",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27",
+    "titulo": "Saldo bancário negativo: Itaú fechou setembro em R$ -23.902,84",
+    "paragrafo": "No Resumo Financeiro Bancário, a conta do Banco Itaú encerrou setembro com saldo negativo de R$ -23.902,84 (saldo anterior de R$ 60.969,00; créditos de R$ 35.705,57 e débitos de R$ 120.577,41, puxados pelas contas de água). O balancete não lista tarifas ou juros de limite da conta.",
+    "o_que_verificar": "A conta corrente está usando limite (cheque especial)? Há juros ou tarifas cobrados por isso e onde serão lançados? Como e quando o saldo será coberto?",
+    "evidencias": [
+      {
+        "pagina": 17,
+        "bbox": [
+          40,
+          88,
+          565,
+          140
+        ],
+        "destaques": [
+          [
+            60,
+            112,
+            565,
+            122
+          ]
+        ],
+        "legenda": "Resumo Financeiro Bancário — Banco Itaú: saldo atual de R$ -23.902,84"
+      }
+    ]
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "tipo": "continuidade_saldo",
+    "valor_total": -732.97,
+    "reescrever": {
+      "titulo": "Saldo anterior de outubro/2026 diferente do saldo final de setembro/2026 — ORDINÁRIA (R$ 732,97)",
+      "paragrafo": "A conta ORDINÁRIA abriu outubro com R$ 30.613,07, mas fechou setembro com R$ 31.346,04 (R$ 732,97 a menos). A mesma diferença aparece no saldo bancário do Itaú: saldo final de setembro de R$ -23.902,84 e saldo anterior de outubro de R$ -24.635,81. No Organy Residencial, em setembro, o saldo anterior da Ordinária também estava R$ 732,97 acima do saldo final de agosto.",
+      "o_que_verificar": "Por que o saldo anterior de outubro não é igual ao saldo final de setembro? Os R$ 732,97 foram transferidos ou lançados para o Organy Residencial? Podem enviar o balancete corrigido de setembro?",
+      "valor_exibido": -732.97
+    },
+    "motivo": "texto com a mesma diferença no saldo bancário e no Organy Residencial",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "verificacao": "recorrente_ausente",
+    "valor_total": 4125.17,
+    "reescrever": {
+      "titulo": "Conta de energia da instalação 42543312 (ENEL) não aparece em outubro",
+      "paragrafo": "A conta de energia da instalação 42543312 foi lançada todo mês, sempre no fim do mês: R$ 4.430,03 em julho, R$ 3.951,65 em agosto e R$ 4.125,17 em setembro (30/09). Em outubro não há nenhum lançamento da ENEL. Pode ter ficado para novembro ou estar sem pagamento. Observação baseada apenas nos arquivos do próprio condomínio; não é, por si só, prova de irregularidade.",
+      "o_que_verificar": "A conta de energia de outubro da instalação 42543312 foi paga? Em qual lançamento ela aparece ou em que mês será lançada?",
+      "valor_exibido": 4125.17
+    },
+    "motivo": "texto objetivo com o histórico da conta",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "verificacao": "uso_fundo",
+    "valor_total": 350.0,
+    "reescrever": {
+      "titulo": "Fundo de Reserva: R$ 350,00 pagos direto do fundo (ACFC4 Aquecedores, relé de falta de fase)",
+      "paragrafo": "Em 06/10/2026 foram pagos R$ 350,00, direto da conta FUNDO DE RESERVA, à ACFC4 Aquecedores (NF 2510, relé de falta de fase BVF1-P). Em agosto o Fundo de Reserva também foi usado (Intelligenz, R$ 1.570,16).",
+      "o_que_verificar": "O uso do Fundo de Reserva para pagar esse serviço foi aprovado?",
+      "valor_exibido": 350.0
+    },
+    "motivo": "pergunta só sobre a aprovação do uso do fundo",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  }
+]
