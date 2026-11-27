@@ -38,5 +38,12 @@
     "motivo": "texto com o destino do rendimento do mês",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-27"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -50318.73,
+    "motivo": "alerta de saldo negativo (CONSUMO e BENFEITORIAS) retirado do relatório de setembro/2026 a pedido do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
   }
 ]

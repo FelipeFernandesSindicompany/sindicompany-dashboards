@@ -1,54 +1,5 @@
 [
   {
-    "id": "MAN-0001",
-    "valor": 185.25,
-    "linha": "DESPESAS COM COBRANÇA",
-    "severidade": "atencao",
-    "decidido_por": "responsável pela validação",
-    "data": "2026-11-27",
-    "titulo": "Despesas com cobrança (R$ 185,25): categoria nova, sem fornecedor no histórico e sem comprovante",
-    "paragrafo": "O lançamento 0056 (DESPESAS COM COBRANÇA, R$ 185,25) é de uma categoria que não aparecia nos meses anteriores. O histórico é só \"DESPESAS COM COBRANÇA\", sem data, sem fornecedor e sem descrição do serviço, e a página do comprovante (pág. 213 do PDF) está em branco.",
-    "o_que_verificar": "Qual é a despesa de cobrança de R$ 185,25 (fornecedor, serviço e data)? Por que a categoria apareceu só agora e podem enviar o comprovante do pagamento?",
-    "evidencias": [
-      {
-        "pagina": 25,
-        "bbox": [
-          30,
-          108,
-          565,
-          136
-        ],
-        "destaques": [
-          [
-            36,
-            112,
-            563,
-            134
-          ]
-        ],
-        "legenda": "Listagem de despesas — lançamento 0056, DESPESAS COM COBRANÇA (R$ 185,25), sem data nem fornecedor"
-      },
-      {
-        "pagina": 213,
-        "bbox": [
-          30,
-          95,
-          565,
-          200
-        ],
-        "destaques": [
-          [
-            36,
-            131,
-            563,
-            143
-          ]
-        ],
-        "legenda": "Comprovante do lançamento 0056 (pág. 213) — página sem nenhum documento anexado"
-      }
-    ]
-  },
-  {
     "id": "MAN-0002",
     "valor": 271.02,
     "linha": "BENFEITORIAS",
