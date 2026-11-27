@@ -5,7 +5,7 @@
     "reescrever": {
       "titulo": "Fundo de Reserva usado pela primeira vez: R$ 5.365,50 de entrada da porta de abrigo dos relógios (Wellington Barbosa Santos)",
       "paragrafo": "Em 26/10/2026 foram pagos R$ 5.365,50, direto do FUNDO DE RESERVA, a Wellington Barbosa Santos (NF 23, \"serviços prestados\"), fornecedor sem lançamento nos 6 meses anteriores. Nos anexos (págs. 218 a 222): o contrato particular é de R$ 10.731,00, com 50% (R$ 5.365,50) de entrada e o restante na entrega, em 30 dias úteis; a NFS-e (emitida em 22/10/2026) é de R$ 5.365,50 para \"porta abrigo relógio água e energia\" (fabricação e instalação, com as medidas das portas); a consulta de 23/10 mostra que o prestador não é optante pelo Simples Nacional. Ficam R$ 5.365,50 a pagar na entrega. Nos meses anteriores o Fundo de Reserva só tinha créditos.",
-      "o_que_verificar": "1) Essa obra foi aprovada em assembleia ou pelo conselho, com cotações, para ser paga pelo Fundo de Reserva? 2) Os R$ 5.365,50 restantes também sairão do Fundo de Reserva e existe previsão de reposição do fundo? 3) Sendo o prestador não optante pelo Simples Nacional, a nota foi emitida sem retenções?",
+      "o_que_verificar": "O uso do Fundo de Reserva para pagar essa obra foi aprovado (assembleia ou conselho)?",
       "valor_exibido": 5365.5
     },
     "motivo": "item único do pagamento pelo Fundo de Reserva (fornecedor novo + uso do fundo + subconta nova)",
@@ -77,6 +77,13 @@
       "o_que_verificar": "O saldo do Fundo de Reserva permaneceu aplicado no CDB durante o mês? Por que o rendimento da aplicação não foi creditado no Fundo de Reserva?"
     },
     "motivo": "texto com o destino do rendimento do mês",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -58439.64,
+    "motivo": "alerta de saldo negativo (CONSUMO e BENFEITORIAS) retirado do relatório de outubro/2026 a pedido do responsável",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-27"
   }

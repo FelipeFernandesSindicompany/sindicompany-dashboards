@@ -57,55 +57,6 @@
     ]
   },
   {
-    "id": "MAN-0002",
-    "valor": 279.3,
-    "linha": "DESPESAS COM COBRANÇA",
-    "severidade": "atencao",
-    "decidido_por": "responsável pela validação",
-    "data": "2026-11-27",
-    "titulo": "Despesas com cobrança (R$ 279,30) sem fornecedor, sem descrição e sem comprovante, de novo",
-    "paragrafo": "O lançamento 0055 (DESPESAS COM COBRANÇA, R$ 279,30) tem só esse histórico: sem fornecedor, serviço ou data, e a página do comprovante (pág. 204 do PDF) está em branco. É a segunda vez seguida: em setembro foram R$ 185,25 da mesma categoria, também sem comprovante.",
-    "o_que_verificar": "Quais são essas despesas de cobrança (R$ 185,25 em setembro e R$ 279,30 em outubro): fornecedor, serviço e data? Podem enviar os comprovantes?",
-    "evidencias": [
-      {
-        "pagina": 25,
-        "bbox": [
-          30,
-          758,
-          565,
-          800
-        ],
-        "destaques": [
-          [
-            36,
-            761,
-            563,
-            782
-          ]
-        ],
-        "legenda": "Listagem de despesas — lançamento 0055, DESPESAS COM COBRANÇA (R$ 279,30), sem fornecedor"
-      },
-      {
-        "pagina": 204,
-        "bbox": [
-          30,
-          95,
-          565,
-          200
-        ],
-        "destaques": [
-          [
-            36,
-            131,
-            563,
-            143
-          ]
-        ],
-        "legenda": "Comprovante do lançamento 0055 (pág. 204) — página sem nenhum documento anexado"
-      }
-    ]
-  },
-  {
     "id": "MAN-0003",
     "valor": 312.54,
     "linha": "BENFEITORIAS",
