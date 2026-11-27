@@ -5,5 +5,12 @@
     "motivo": "o gás de R$ 7.110,44 passou para o achado manual do COMGAS (descrição diferente do débito)",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-27"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -85890.81,
+    "motivo": "alerta de saldo negativo (CONSUMO e FUNDO PARA EVENTUAIS) retirado do relatório de setembro/2026 a pedido do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
   }
 ]

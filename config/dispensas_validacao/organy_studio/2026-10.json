@@ -37,5 +37,12 @@
     "motivo": "pergunta só sobre a aprovação do uso do fundo",
     "decidido_por": "responsável pela validação",
     "data": "2026-11-27"
+  },
+  {
+    "tipo": "saldo_negativo_persistente",
+    "valor_total": -82991.74,
+    "motivo": "alerta de saldo negativo (CONSUMO e FUNDO PARA EVENTUAIS) retirado do relatório de outubro/2026 a pedido do responsável",
+    "decidido_por": "responsável pela validação",
+    "data": "2026-11-27"
   }
 ]
